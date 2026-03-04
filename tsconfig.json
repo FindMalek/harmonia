@@ -1,0 +1,3 @@
+{
+  "extends": "@harmonia/config/tsconfig.base.json"
+}

@@ -1,0 +1,32 @@
+{
+  "name": "harmonia",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "db:push": "turbo -F @harmonia/db db:push",
+    "db:studio": "turbo -F @harmonia/db db:studio",
+    "db:generate": "turbo -F @harmonia/db db:generate",
+    "db:migrate": "turbo -F @harmonia/db db:migrate"
+  },
+  "dependencies": {
+    "@harmonia/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@harmonia/config": "workspace:*",
+    "@types/node": "^22.13.14",
+    "turbo": "^2.8.12",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.26.1"
+}
