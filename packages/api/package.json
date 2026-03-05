@@ -1,31 +1,31 @@
 {
-  "name": "@harmonia/api",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {},
-  "dependencies": {
-    "@harmonia/auth": "workspace:*",
-    "@harmonia/db": "workspace:*",
-    "@harmonia/env": "workspace:*",
-    "@orpc/client": "catalog:",
-    "@orpc/openapi": "catalog:",
-    "@orpc/server": "catalog:",
-    "@orpc/zod": "catalog:",
-    "@types/pg": "^8.16.0",
-    "dotenv": "catalog:",
-    "drizzle-orm": "catalog:",
-    "next": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@harmonia/config": "workspace:*",
-    "typescript": "catalog:"
-  }
+	"name": "@harmonia/api",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"@harmonia/auth": "workspace:*",
+		"@harmonia/db": "workspace:*",
+		"@harmonia/env": "workspace:*",
+		"@orpc/client": "catalog:",
+		"@orpc/openapi": "catalog:",
+		"@orpc/server": "catalog:",
+		"@orpc/zod": "catalog:",
+		"@types/pg": "^8.16.0",
+		"dotenv": "catalog:",
+		"drizzle-orm": "catalog:",
+		"next": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"typescript": "catalog:"
+	}
 }

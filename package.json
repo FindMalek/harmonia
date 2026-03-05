@@ -1,34 +1,36 @@
 {
-  "name": "harmonia",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "type": "module",
-  "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:native": "turbo -F native dev",
-    "dev:web": "turbo -F web dev",
-    "db:push": "turbo -F @harmonia/db db:push",
-    "db:studio": "turbo -F @harmonia/db db:studio",
-    "db:generate": "turbo -F @harmonia/db db:generate",
-    "db:migrate": "turbo -F @harmonia/db db:migrate",
-    "sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
+	"name": "harmonia",
+	"private": true,
+	"workspaces": ["apps/*", "packages/*"],
+	"type": "module",
+	"scripts": {
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"check": "biome check --write .",
+		"lint": "biome lint --write .",
+		"format": "biome format --write .",
+		"fix:all": "biome check --write --unsafe . || true",
+		"check-types": "turbo check-types",
+		"dev:native": "turbo -F native dev",
+		"dev:web": "turbo -F web dev",
+		"db:push": "turbo -F @harmonia/db db:push",
+		"db:studio": "turbo -F @harmonia/db db:studio",
+		"db:generate": "turbo -F @harmonia/db db:generate",
+		"db:migrate": "turbo -F @harmonia/db db:migrate",
+		"sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
 		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push"
-  },
-  "dependencies": {
-    "@harmonia/env": "workspace:*",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@harmonia/config": "workspace:*",
-    "@types/node": "^22.13.14",
-    "turbo": "^2.8.12",
-    "typescript": "catalog:"
-  },
-  "packageManager": "pnpm@10.26.1"
+	},
+	"dependencies": {
+		"@harmonia/env": "workspace:*",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@harmonia/config": "workspace:*",
+		"@types/node": "^22.13.14",
+		"turbo": "^2.8.12",
+		"typescript": "catalog:"
+	},
+	"packageManager": "pnpm@10.26.1"
 }

@@ -6,14 +6,14 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
+	database: drizzleAdapter(db, {
+		provider: "pg",
 
-    schema: schema,
-  }),
-  trustedOrigins: [env.CORS_ORIGIN],
-  emailAndPassword: {
-    enabled: true,
-  },
-  plugins: [nextCookies()],
+		schema: schema,
+	}),
+	trustedOrigins: [env.CORS_ORIGIN],
+	emailAndPassword: {
+		enabled: true,
+	},
+	plugins: [nextCookies()],
 });
