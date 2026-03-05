@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@harmonia/db";
 import { cluster } from "@harmonia/db/schema/cluster";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
+import { playlist } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { protectedProcedure } from "../index";
@@ -71,6 +72,38 @@ export const pipelineRouter = {
 				lyricsPending: lyricsPending[0]?.count ?? 0,
 			},
 			clusters: clusterStats?.total ?? 0,
+		};
+	}),
+
+	clearAnalysis: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+
+		await db
+			.delete(playlist)
+			.where(
+				and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)),
+			);
+
+		await db.delete(cluster).where(eq(cluster.userId, userId));
+
+		const result = await db
+			.update(track)
+			.set({
+				llmMood: null,
+				llmTags: null,
+				llmClassifiedAt: null,
+				genreDomainId: null,
+				domainAssignedAt: null,
+				embedding: null,
+				embeddingGeneratedAt: null,
+				embeddingInput: null,
+				analysisSnapshot: null,
+			})
+			.where(eq(track.userId, userId));
+
+		return {
+			cleared: true,
+			tracksUpdated: result.rowCount ?? 0,
 		};
 	}),
 };

@@ -16,7 +16,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { CopyableError } from "@/components/copyable-error";
-import { Brain, FileText, Layers, Loader2, Music2 } from "lucide-react";
+import { Brain, FileText, Layers, Loader2, Music2, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -89,7 +89,46 @@ export function DashboardOverview({
 		}),
 	);
 
+	const clearAnalysisMutation = useMutation(
+		orpc.pipeline.clearAnalysis.mutationOptions({
+			onSuccess: (data) => {
+				toast.success(
+					`Analysis cleared (${data.tracksUpdated} tracks reset)`,
+				);
+				queryClient.invalidateQueries();
+			},
+			onError: (error) => {
+				const msg = error.message ?? "Failed to clear analysis";
+				toast.error(msg, {
+					action: {
+						label: "Copy",
+						onClick: async () => {
+							try {
+								await navigator.clipboard.writeText(msg);
+								toast.success("Copied");
+							} catch {
+								toast.error("Failed to copy");
+							}
+						},
+					},
+				});
+			},
+		}),
+	);
+
+	const handleClearAnalysis = () => {
+		if (
+			window.confirm(
+				"This will remove all AI classification, embeddings, clusters, and generated playlists. You can re-run the pipeline to regenerate. Continue?",
+			)
+		) {
+			clearAnalysisMutation.mutate({});
+		}
+	};
+
 	const showLinkSpotify = spotifyEnabled && spotifyData?.hasSpotify === false;
+	const hasAnalysis =
+		(stats?.tracks.classified ?? 0) > 0 || (stats?.clusters ?? 0) > 0;
 	const lastRun = runs?.[0];
 
 	return (
@@ -114,6 +153,27 @@ export function DashboardOverview({
 							}}
 						>
 							Link Spotify
+						</Button>
+					)}
+					{hasAnalysis && (
+						<Button
+							variant="outline"
+							size="sm"
+							className="text-destructive hover:bg-destructive/10"
+							onClick={handleClearAnalysis}
+							disabled={clearAnalysisMutation.isPending}
+						>
+							{clearAnalysisMutation.isPending ? (
+								<>
+									<Loader2 className="size-3.5 animate-spin" />
+									Clearing...
+								</>
+							) : (
+								<>
+									<Trash2 className="size-3.5" />
+									Remove Analysis
+								</>
+							)}
 						</Button>
 					)}
 					<Button
