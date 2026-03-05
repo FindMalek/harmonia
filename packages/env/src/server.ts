@@ -21,8 +21,10 @@ export const env = createEnv({
 		SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
 		// Optional - Embeddings (Phase 3)
 		OPENAI_API_KEY: z.string().min(1).optional(),
-		// Optional - LLM classification (Phase 3)
-		GOOGLE_GEMINI_API_KEY: z.string().min(1).optional(),
+		// Optional - LLM classification (Groq GPT-OSS 120B)
+		GROQ_API_KEY: z.string().min(1).optional(),
+		// Optional - Cron secret for organize.run
+		CRON_SECRET: z.string().min(1).optional(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,
