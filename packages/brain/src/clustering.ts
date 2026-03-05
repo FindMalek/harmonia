@@ -3,8 +3,7 @@ import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, isNotNull } from "drizzle-orm";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore – density-clustering has no default TS types
+
 import Clustering from "density-clustering";
 
 const CLUSTER_MIN_POINTS = 5;
@@ -31,7 +30,12 @@ export async function runClustering(userId: string): Promise<void> {
 		return;
 	}
 
-	const dbscan = new (Clustering as any).DBSCAN();
+	type DBSCANModule = {
+		DBSCAN: new () => {
+			run: (data: number[][], eps: number, minPts: number) => number[][];
+		};
+	};
+	const dbscan = new (Clustering as DBSCANModule).DBSCAN();
 	const clusters = dbscan.run(
 		embeddings,
 		CLUSTER_EPSILON,
@@ -49,7 +53,11 @@ export async function runClustering(userId: string): Promise<void> {
 	for (const indices of clusters) {
 		if (indices.length === 0) continue;
 
-		const clusterTracksForUser = indices.map((index) => tracks[index]);
+		const clusterTracksForUser = indices
+			.map((index) => tracks[index])
+			.filter((t): t is (typeof tracks)[number] => t != null);
+
+		if (clusterTracksForUser.length === 0) continue;
 
 		const size = clusterTracksForUser.length;
 
@@ -82,6 +90,8 @@ export async function runClustering(userId: string): Promise<void> {
 			})
 			.returning({ id: cluster.id });
 
+		if (!inserted) continue;
+
 		const clusterId = inserted.id;
 
 		const joinRows = clusterTracksForUser.map((t, position) => ({
@@ -109,7 +119,7 @@ function computeCentroid(vectors: number[][]): number[] {
 
 	for (const vector of vectors) {
 		for (let index = 0; index < dimension; index++) {
-			sums[index] += vector[index] ?? 0;
+			sums[index] = (sums[index] ?? 0) + (vector[index] ?? 0);
 		}
 	}
 

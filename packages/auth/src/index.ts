@@ -5,7 +5,9 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
-const spotifyEnabled = !!env.SPOTIFY_CLIENT_ID && !!env.SPOTIFY_CLIENT_SECRET;
+const spotifyClientId = env.SPOTIFY_CLIENT_ID;
+const spotifyClientSecret = env.SPOTIFY_CLIENT_SECRET;
+const spotifyEnabled = !!spotifyClientId && !!spotifyClientSecret;
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -17,13 +19,14 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 	},
-	socialProviders: spotifyEnabled
-		? {
-				spotify: {
-					clientId: env.SPOTIFY_CLIENT_ID!,
-					clientSecret: env.SPOTIFY_CLIENT_SECRET!,
-				},
-			}
-		: {},
+	socialProviders:
+		spotifyEnabled && spotifyClientId && spotifyClientSecret
+			? {
+					spotify: {
+						clientId: spotifyClientId,
+						clientSecret: spotifyClientSecret,
+					},
+				}
+			: {},
 	plugins: [nextCookies()],
 });

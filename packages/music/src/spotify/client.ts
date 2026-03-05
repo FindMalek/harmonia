@@ -2,7 +2,7 @@ import { db } from "@harmonia/db";
 import { account } from "@harmonia/db/schema/auth";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { and, eq } from "drizzle-orm/pg-core";
+import { and, eq } from "drizzle-orm";
 
 import type {
 	SpotifyAudioFeatures,

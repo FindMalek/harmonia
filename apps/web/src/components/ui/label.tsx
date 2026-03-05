@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
 	return (
+		// Reusable primitive; parent associates via htmlFor + input id
+		// biome-ignore lint/a11y/noLabelWithoutControl: association is provided by consumer
 		<label
 			data-slot="label"
 			className={cn(

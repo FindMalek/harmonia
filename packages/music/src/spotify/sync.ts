@@ -31,7 +31,7 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 
 	const tracks: SpotifyTrack[] = savedItems
 		.map((item) => item.track)
-		.filter((t): t is SpotifyTrack => Boolean(t && t.id));
+		.filter((t): t is SpotifyTrack => Boolean(t?.id));
 
 	const audioFeatures = await fetchAudioFeatures(
 		tracks.map((t) => t.id),
@@ -40,7 +40,7 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 
 	const featuresById = new Map<string, SpotifyAudioFeatures>();
 	for (const features of audioFeatures) {
-		if (features && features.id) {
+		if (features?.id) {
 			featuresById.set(features.id, features);
 		}
 	}

@@ -183,8 +183,7 @@ function getLogger(): Logger {
 export const logger: Logger = new Proxy({} as Logger, {
 	get(_target, property) {
 		const instance = getLogger();
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return (instance as any)[property as keyof Logger];
+		return instance[property as keyof Logger];
 	},
 });
 

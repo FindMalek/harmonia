@@ -85,10 +85,10 @@ export async function classifyTracksBatch(userId: string): Promise<void> {
 	for (const result of results) {
 		if (!result.trackId) continue;
 
-		const genreDomainId =
-			result.domainName && domainByName.get(result.domainName)
-				? domainByName.get(result.domainName)!
-				: null;
+		const domainId = result.domainName
+			? domainByName.get(result.domainName)
+			: undefined;
+		const genreDomainId = domainId ?? null;
 
 		updates.push({
 			trackId: result.trackId,
@@ -106,7 +106,7 @@ export async function classifyTracksBatch(userId: string): Promise<void> {
 					secondaryMoods: result.secondaryMoods ?? [],
 					themes: result.themes ?? [],
 					vocalType: result.vocalType ?? "unknown",
-					energyLevel: result.energyLevel ?? null,
+					energyLevel: result.energyLevel ?? "unknown",
 				},
 				llmClassifiedAt: new Date(),
 				genreDomainId: genreDomainId ?? null,
@@ -120,7 +120,7 @@ export async function classifyTracksBatch(userId: string): Promise<void> {
 						energyLevel: result.energyLevel ?? null,
 						domainName: result.domainName ?? null,
 					},
-					domain: genreDomainId ?? null,
+					domain: result.domainName ?? null,
 					embeddingDims: undefined,
 					modelVersions: {
 						llm: "groq/gpt-oss-120b",
