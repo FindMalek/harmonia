@@ -26,9 +26,8 @@ pnpm install
 
 This project uses PostgreSQL with Drizzle ORM.
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
-
+1. Copy `.env.example` to `.env` at the project root and fill in your values.
+2. Make sure you have a PostgreSQL database set up (e.g. Neon).
 3. Apply the schema to your database:
 
 ```bash
