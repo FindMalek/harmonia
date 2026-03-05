@@ -58,8 +58,12 @@ export const track = pgTable(
 		llmTags: jsonb("llm_tags").$type<{
 			secondaryMoods: string[];
 			themes: string[];
+			topics: string[];
+			vibe: string[];
 			vocalType: string;
 			energyLevel: string;
+			language: string;
+			era: string;
 		}>(),
 		llmClassifiedAt: timestamp("llm_classified_at"),
 

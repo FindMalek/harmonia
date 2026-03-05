@@ -1,4 +1,5 @@
 import { logger } from "@harmonia/logger";
+import pRetry from "p-retry";
 
 type LRCLibTrack = {
 	id: number;
@@ -31,36 +32,53 @@ export async function getLyricsFromLRCLib(params: {
 
 	const url = `https://lrclib.net/api/get?${searchParams.toString()}`;
 
-	const response = await fetch(url);
+	return pRetry(
+		async () => {
+			const response = await fetch(url);
 
-	if (response.status === 404) {
-		return null;
-	}
+			if (response.status === 404) {
+				return null;
+			}
 
-	if (!response.ok) {
-		logger.warn(
-			{
-				status: response.status,
-				statusText: response.statusText,
-				url,
+			if (response.status === 429) {
+				throw new Error("LRCLib rate limit hit (429)");
+			}
+
+			if (!response.ok) {
+				const err = new Error(
+					`LRCLib ${response.status}: ${response.statusText}`,
+				);
+				(err as NodeJS.ErrnoException).code = "ABORT_RETRY";
+				throw err;
+			}
+
+			const json = (await response.json()) as {
+				id: number;
+				plainLyrics?: string | null;
+				syncedLyrics?: string | null;
+				instrumental?: boolean;
+			};
+
+			return {
+				id: json.id,
+				plainLyrics: json.plainLyrics ?? null,
+				syncedLyrics: json.syncedLyrics ?? null,
+				instrumental: json.instrumental ?? false,
+			};
+		},
+		{
+			retries: 3,
+			minTimeout: 1000,
+			onFailedAttempt: (error) => {
+				logger.warn(
+					{
+						attempt: error.attemptNumber,
+						retriesLeft: error.retriesLeft,
+						url,
+					},
+					"LRCLib request failed, retrying",
+				);
 			},
-			"LRCLib request failed",
-		);
-
-		return null;
-	}
-
-	const json = (await response.json()) as {
-		id: number;
-		plainLyrics?: string | null;
-		syncedLyrics?: string | null;
-		instrumental?: boolean;
-	};
-
-	return {
-		id: json.id,
-		plainLyrics: json.plainLyrics ?? null,
-		syncedLyrics: json.syncedLyrics ?? null,
-		instrumental: json.instrumental ?? false,
-	};
+		},
+	);
 }

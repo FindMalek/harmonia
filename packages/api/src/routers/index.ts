@@ -7,6 +7,9 @@ import { and, eq } from "drizzle-orm";
 import { protectedProcedure, publicProcedure } from "../index";
 import { todoRouter } from "./todo";
 import { createOrganizeRouter } from "./organize";
+import { pipelineRouter } from "./pipeline";
+import { tracksRouter } from "./tracks";
+import { clustersRouter } from "./clusters";
 import { fetchLyricsForPendingTracks, syncLikedTracks } from "@harmonia/music";
 import {
 	classifyTracksBatch,
@@ -41,6 +44,9 @@ export const appRouter = {
 		embedTracksBatch,
 		runClustering,
 	}),
+	pipeline: pipelineRouter,
+	tracks: tracksRouter,
+	clusters: clustersRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

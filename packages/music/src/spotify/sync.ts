@@ -6,7 +6,15 @@ import { sql } from "drizzle-orm";
 import { fetchAllSavedTracks, getUserSpotifyAccessToken } from "./client";
 import type { SpotifyTrack } from "./types";
 
-export async function syncLikedTracks(userId: string): Promise<void> {
+export type SyncProgress = {
+	total: number;
+	done: boolean;
+};
+
+export async function syncLikedTracks(
+	userId: string,
+	onProgress?: (progress: SyncProgress) => Promise<void>,
+): Promise<SyncProgress> {
 	const accessToken = await getUserSpotifyAccessToken(userId);
 
 	if (!accessToken) {
@@ -14,7 +22,7 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 			{ userId },
 			"Skipping syncLikedTracks: no Spotify access token",
 		);
-		return;
+		return { total: 0, done: true };
 	}
 
 	logger.info({ userId }, "Starting syncLikedTracks from Spotify");
@@ -23,15 +31,13 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 
 	if (savedItems.length === 0) {
 		logger.info({ userId }, "No saved tracks found on Spotify");
-		return;
+		return { total: 0, done: true };
 	}
 
 	const tracks: SpotifyTrack[] = savedItems
 		.map((item) => item.track)
 		.filter((t): t is SpotifyTrack => Boolean(t?.id));
 
-	// Audio features disabled: Spotify /audio-features returns 403 for apps without Extended Quota (Nov 2024).
-	// See deprecation note in client.ts for alternatives (AcousticBrainz, Soundcharts, ReccoBeats).
 	const now = new Date();
 	const values = tracks.map((t) => ({
 		id: t.id,
@@ -56,7 +62,6 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 		updatedAt: now,
 	}));
 
-	// Upsert in batches to avoid huge single queries
 	const batchSize = 100;
 	for (let i = 0; i < values.length; i += batchSize) {
 		const batch = values.slice(i, i + batchSize);
@@ -74,24 +79,21 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 					albumName: sql`excluded.album_name`,
 					durationMs: sql`excluded.duration_ms`,
 					spotifyGenres: sql`excluded.spotify_genres`,
-					valence: sql`excluded.valence`,
-					energy: sql`excluded.energy`,
-					danceability: sql`excluded.danceability`,
-					tempo: sql`excluded.tempo`,
-					acousticness: sql`excluded.acousticness`,
-					instrumentalness: sql`excluded.instrumentalness`,
-					speechiness: sql`excluded.speechiness`,
-					liveness: sql`excluded.liveness`,
-					key: sql`excluded.key`,
-					mode: sql`excluded.mode`,
-					lyricsStatus: sql`excluded.lyrics_status`,
 					updatedAt: sql`excluded.updated_at`,
 				},
 			});
+	}
+
+	const result: SyncProgress = { total: values.length, done: true };
+
+	if (onProgress) {
+		await onProgress(result);
 	}
 
 	logger.info(
 		{ userId, totalTracks: values.length },
 		"Completed syncLikedTracks from Spotify",
 	);
+
+	return result;
 }

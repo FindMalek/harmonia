@@ -1,2 +1,6 @@
-export { syncLikedTracks } from "./spotify/sync";
-export { fetchLyricsForPendingTracks } from "./lyrics/fetch-lyrics";
+export { syncLikedTracks, type SyncProgress } from "./spotify/sync";
+export {
+	fetchLyricsForPendingTracks,
+	type LyricsProgress,
+} from "./lyrics/fetch-lyrics";
+export { getUserSpotifyAccessToken } from "./spotify/client";

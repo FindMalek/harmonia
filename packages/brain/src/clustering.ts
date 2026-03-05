@@ -8,8 +8,21 @@ import Clustering from "density-clustering";
 
 const CLUSTER_MIN_POINTS = 5;
 const CLUSTER_EPSILON = 0.5;
+const CLUSTER_MIN_SIZE = 20;
+const CLUSTER_MAX_SIZE = 80;
 
-export async function runClustering(userId: string): Promise<void> {
+export type ClusterProgress = {
+	clusters: number;
+	noise: number;
+	totalTracks: number;
+};
+
+export async function runClustering(
+	userId: string,
+	onProgress?: (progress: ClusterProgress) => Promise<void>,
+): Promise<ClusterProgress> {
+	const stats: ClusterProgress = { clusters: 0, noise: 0, totalTracks: 0 };
+
 	const tracks = await db
 		.select()
 		.from(track)
@@ -17,8 +30,10 @@ export async function runClustering(userId: string): Promise<void> {
 
 	if (tracks.length === 0) {
 		logger.info({ userId }, "No tracks with embeddings; skipping clustering");
-		return;
+		return stats;
 	}
+
+	stats.totalTracks = tracks.length;
 
 	const embeddings = tracks.map((t) => t.embedding as number[]);
 
@@ -27,30 +42,44 @@ export async function runClustering(userId: string): Promise<void> {
 			{ userId, count: embeddings.length },
 			"Not enough tracks for clustering; skipping",
 		);
-		return;
+		return stats;
 	}
 
 	type DBSCANModule = {
 		DBSCAN: new () => {
 			run: (data: number[][], eps: number, minPts: number) => number[][];
+			noise: number[];
 		};
 	};
 	const dbscan = new (Clustering as DBSCANModule).DBSCAN();
-	const clusters = dbscan.run(
+	const rawClusters = dbscan.run(
 		embeddings,
 		CLUSTER_EPSILON,
 		CLUSTER_MIN_POINTS,
 	) as number[][];
 
-	if (!clusters.length) {
+	stats.noise = dbscan.noise?.length ?? 0;
+
+	if (!rawClusters.length) {
 		logger.info({ userId }, "DBSCAN produced no clusters");
-		return;
+		return stats;
 	}
 
-	// Reset previous clusters for this user; cascade will remove clusterTracks
+	const mergedClusters = mergeSmallClusters(
+		rawClusters,
+		embeddings,
+		CLUSTER_MIN_SIZE,
+	);
+	const finalClusters = splitLargeClusters(
+		mergedClusters,
+		embeddings,
+		CLUSTER_MAX_SIZE,
+		CLUSTER_MIN_POINTS,
+	);
+
 	await db.delete(cluster).where(eq(cluster.userId, userId));
 
-	for (const indices of clusters) {
+	for (const indices of finalClusters) {
 		if (indices.length === 0) continue;
 
 		const clusterTracksForUser = indices
@@ -81,7 +110,7 @@ export async function runClustering(userId: string): Promise<void> {
 			.insert(cluster)
 			.values({
 				userId,
-				genreDomainId: genreDomainId ?? 1, // fallback to some domain to satisfy not-null constraint
+				genreDomainId: genreDomainId ?? 1,
 				centroid,
 				size,
 				avgValence,
@@ -103,12 +132,101 @@ export async function runClustering(userId: string): Promise<void> {
 		if (joinRows.length > 0) {
 			await db.insert(clusterTracks).values(joinRows);
 		}
+
+		stats.clusters++;
+	}
+
+	if (onProgress) {
+		await onProgress(stats);
 	}
 
 	logger.info(
-		{ userId, clusters: clusters.length },
+		{ userId, clusters: stats.clusters, noise: stats.noise },
 		"Completed clustering for user tracks",
 	);
+
+	return stats;
+}
+
+function mergeSmallClusters(
+	clusters: number[][],
+	embeddings: number[][],
+	minSize: number,
+): number[][] {
+	const large: number[][] = [];
+	const small: number[][] = [];
+
+	for (const c of clusters) {
+		if (c.length >= minSize) {
+			large.push([...c]);
+		} else {
+			small.push(c);
+		}
+	}
+
+	if (large.length === 0) return clusters;
+
+	const centroids = large.map((indices) =>
+		computeCentroid(indices.map((i) => embeddings[i] as number[])),
+	);
+
+	for (const smallCluster of small) {
+		const smallCentroid = computeCentroid(
+			smallCluster.map((i) => embeddings[i] as number[]),
+		);
+		let bestIdx = 0;
+		let bestDist = Number.POSITIVE_INFINITY;
+		for (let i = 0; i < centroids.length; i++) {
+			const dist = euclideanDistance(smallCentroid, centroids[i] as number[]);
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestIdx = i;
+			}
+		}
+		large[bestIdx]?.push(...smallCluster);
+	}
+
+	return large;
+}
+
+function splitLargeClusters(
+	clusters: number[][],
+	embeddings: number[][],
+	maxSize: number,
+	minPoints: number,
+): number[][] {
+	const result: number[][] = [];
+
+	for (const indices of clusters) {
+		if (indices.length <= maxSize) {
+			result.push(indices);
+			continue;
+		}
+
+		const subEmbeddings = indices.map((i) => embeddings[i] as number[]);
+		type DBSCANModule = {
+			DBSCAN: new () => {
+				run: (data: number[][], eps: number, minPts: number) => number[][];
+			};
+		};
+		const dbscan = new (Clustering as DBSCANModule).DBSCAN();
+		const subClusters = dbscan.run(
+			subEmbeddings,
+			CLUSTER_EPSILON * 0.7,
+			minPoints,
+		) as number[][];
+
+		if (subClusters.length <= 1) {
+			result.push(indices);
+			continue;
+		}
+
+		for (const sub of subClusters) {
+			result.push(sub.map((si) => indices[si] as number));
+		}
+	}
+
+	return result;
 }
 
 function computeCentroid(vectors: number[][]): number[] {
@@ -124,6 +242,15 @@ function computeCentroid(vectors: number[][]): number[] {
 	}
 
 	return sums.map((sum) => sum / vectors.length);
+}
+
+function euclideanDistance(a: number[], b: number[]): number {
+	let sum = 0;
+	for (let i = 0; i < a.length; i++) {
+		const diff = (a[i] ?? 0) - (b[i] ?? 0);
+		sum += diff * diff;
+	}
+	return Math.sqrt(sum);
 }
 
 function average(values: Array<number | null>): number | null {

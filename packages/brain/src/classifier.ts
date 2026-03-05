@@ -9,129 +9,157 @@ import { classifyTracksWithLLM } from "./llml";
 
 const CLASSIFICATION_BATCH_SIZE = 25;
 
-export async function classifyTracksBatch(userId: string): Promise<void> {
-	const pendingTracks = await db
-		.select()
-		.from(track)
-		.where(
-			and(
-				eq(track.userId, userId),
-				isNull(track.llmClassifiedAt),
-				// Only classify tracks that have completed lyrics step (found or not_found)
-				inArray(track.lyricsStatus, ["found", "not_found"]),
-			),
-		)
-		.limit(CLASSIFICATION_BATCH_SIZE);
+export type ClassifyProgress = {
+	classified: number;
+	total: number;
+	pending: number;
+};
 
-	if (pendingTracks.length === 0) {
-		logger.info({ userId }, "No tracks pending LLM classification");
-		return;
-	}
+export async function classifyTracksBatch(
+	userId: string,
+	onProgress?: (progress: ClassifyProgress) => Promise<void>,
+): Promise<ClassifyProgress> {
+	const stats: ClassifyProgress = { classified: 0, total: 0, pending: 0 };
 
-	logger.info(
-		{ userId, count: pendingTracks.length },
-		"Starting LLM classification batch",
-	);
-
-	const trackInputs: TrackForClassification[] = pendingTracks.map((t) => ({
-		id: t.id,
-		name: t.name,
-		artistNames: JSON.parse(t.artistNames) ?? [],
-		albumName: t.albumName,
-		durationMs: t.durationMs,
-		spotifyGenres: t.spotifyGenres ?? null,
-		lyrics: t.lyrics ?? null,
-		valence: t.valence ?? null,
-		energy: t.energy ?? null,
-		danceability: t.danceability ?? null,
-		tempo: t.tempo ?? null,
-	}));
-
-	const results = await classifyTracksWithLLM(trackInputs);
-
-	if (results.length === 0) {
-		logger.warn(
-			{ userId },
-			"LLM classification returned no results; skipping updates",
-		);
-		return;
-	}
-
-	const domainNames = Array.from(
-		new Set(
-			results
-				.map((r) => r.domainName)
-				.filter((name): name is string => !!name && name.length > 0),
-		),
-	);
-
-	let domainByName = new Map<string, number>();
-
-	if (domainNames.length > 0) {
-		const domains = await db
+	for (;;) {
+		const pendingTracks = await db
 			.select()
-			.from(genreDomain)
-			.where(inArray(genreDomain.name, domainNames));
+			.from(track)
+			.where(
+				and(
+					eq(track.userId, userId),
+					isNull(track.llmClassifiedAt),
+					inArray(track.lyricsStatus, ["found", "not_found"]),
+				),
+			)
+			.limit(CLASSIFICATION_BATCH_SIZE);
 
-		domainByName = new Map(domains.map((d) => [d.name, d.id]));
-	}
+		if (pendingTracks.length === 0) break;
 
-	const updates: Array<{
-		trackId: string;
-		result: ClassificationResult;
-		genreDomainId: number | null;
-	}> = [];
+		stats.pending = pendingTracks.length;
 
-	for (const result of results) {
-		if (!result.trackId) continue;
+		logger.info(
+			{ userId, batchSize: pendingTracks.length, classified: stats.classified },
+			"Starting LLM classification batch",
+		);
 
-		const domainId = result.domainName
-			? domainByName.get(result.domainName)
-			: undefined;
-		const genreDomainId = domainId ?? null;
+		const trackInputs: TrackForClassification[] = pendingTracks.map((t) => ({
+			id: t.id,
+			name: t.name,
+			artistNames: JSON.parse(t.artistNames) ?? [],
+			albumName: t.albumName,
+			durationMs: t.durationMs,
+			spotifyGenres: t.spotifyGenres ?? null,
+			lyrics: t.lyrics ?? null,
+			valence: t.valence ?? null,
+			energy: t.energy ?? null,
+			danceability: t.danceability ?? null,
+			tempo: t.tempo ?? null,
+		}));
 
-		updates.push({
-			trackId: result.trackId,
-			result,
-			genreDomainId,
-		});
-	}
+		const results = await classifyTracksWithLLM(trackInputs);
 
-	for (const { trackId, result, genreDomainId } of updates) {
-		await db
-			.update(track)
-			.set({
-				llmMood: result.mood ?? null,
-				llmTags: {
-					secondaryMoods: result.secondaryMoods ?? [],
-					themes: result.themes ?? [],
-					vocalType: result.vocalType ?? "unknown",
-					energyLevel: result.energyLevel ?? "unknown",
-				},
-				llmClassifiedAt: new Date(),
-				genreDomainId: genreDomainId ?? null,
-				domainAssignedAt: genreDomainId ? new Date() : null,
-				analysisSnapshot: {
-					llm: {
-						mood: result.mood,
+		if (results.length === 0) {
+			logger.warn(
+				{ userId },
+				"LLM classification returned no results; skipping batch",
+			);
+			break;
+		}
+
+		const domainNames = Array.from(
+			new Set(
+				results
+					.map((r) => r.domainName)
+					.filter((name): name is string => !!name && name.length > 0),
+			),
+		);
+
+		let domainByName = new Map<string, number>();
+
+		if (domainNames.length > 0) {
+			const domains = await db
+				.select()
+				.from(genreDomain)
+				.where(inArray(genreDomain.name, domainNames));
+
+			domainByName = new Map(domains.map((d) => [d.name, d.id]));
+		}
+
+		const updates: Array<{
+			trackId: string;
+			result: ClassificationResult;
+			genreDomainId: number | null;
+		}> = [];
+
+		for (const result of results) {
+			if (!result.trackId) continue;
+
+			const domainId = result.domainName
+				? domainByName.get(result.domainName)
+				: undefined;
+			const genreDomainId = domainId ?? null;
+
+			updates.push({
+				trackId: result.trackId,
+				result,
+				genreDomainId,
+			});
+		}
+
+		for (const { trackId, result, genreDomainId } of updates) {
+			await db
+				.update(track)
+				.set({
+					llmMood: result.mood ?? null,
+					llmTags: {
 						secondaryMoods: result.secondaryMoods ?? [],
 						themes: result.themes ?? [],
+						topics: result.topics ?? [],
+						vibe: result.vibe ?? [],
 						vocalType: result.vocalType ?? "unknown",
-						energyLevel: result.energyLevel ?? null,
-						domainName: result.domainName ?? null,
+						energyLevel: result.energyLevel ?? "unknown",
+						language: result.language ?? "unknown",
+						era: result.era ?? "unknown",
 					},
-					domain: result.domainName ?? null,
-					embeddingDims: undefined,
-					modelVersions: {
-						llm: "openai/gpt-oss-120b",
+					llmClassifiedAt: new Date(),
+					genreDomainId: genreDomainId ?? null,
+					domainAssignedAt: genreDomainId ? new Date() : null,
+					analysisSnapshot: {
+						llm: {
+							mood: result.mood,
+							secondaryMoods: result.secondaryMoods ?? [],
+							themes: result.themes ?? [],
+							topics: result.topics ?? [],
+							vibe: result.vibe ?? [],
+							vocalType: result.vocalType ?? "unknown",
+							energyLevel: result.energyLevel ?? null,
+							language: result.language ?? null,
+							era: result.era ?? null,
+							domainName: result.domainName ?? null,
+						},
+						domain: result.domainName ?? null,
+						embeddingDims: undefined,
+						modelVersions: {
+							llm: "openai/gpt-oss-120b",
+						},
 					},
-				},
-			})
-			.where(and(eq(track.userId, userId), eq(track.id, trackId)));
+				})
+				.where(and(eq(track.userId, userId), eq(track.id, trackId)));
+		}
+
+		stats.classified += updates.length;
+		stats.total += updates.length;
+
+		if (onProgress) {
+			await onProgress(stats);
+		}
 	}
 
 	logger.info(
-		{ userId, updated: updates.length },
-		"Completed LLM classification batch",
+		{ userId, classified: stats.classified },
+		"Completed LLM classification for all pending tracks",
 	);
+
+	return stats;
 }

@@ -3,21 +3,68 @@ import { z } from "zod";
 import { publicProcedure } from "../index";
 import type { Context } from "../context";
 
+import { db } from "@harmonia/db";
+import {
+	pipelineRun,
+	type PipelineProgress,
+} from "@harmonia/db/schema/pipeline-run";
 import { env } from "@harmonia/env/server";
 import { ORPCError } from "@orpc/server";
 import { logger } from "@harmonia/logger";
+import { eq } from "drizzle-orm";
 
-// These will be implemented in packages/music and packages/brain
-// and imported here once available.
-type SyncFn = (userId: string) => Promise<void>;
+import type { SyncProgress, LyricsProgress } from "@harmonia/music";
+import type {
+	ClassifyProgress,
+	EmbedProgress,
+	ClusterProgress,
+} from "@harmonia/brain";
+
+type SyncFn = (
+	userId: string,
+	onProgress?: (progress: SyncProgress) => Promise<void>,
+) => Promise<SyncProgress>;
+
+type LyricsFn = (
+	userId: string,
+	onProgress?: (progress: LyricsProgress) => Promise<void>,
+) => Promise<LyricsProgress>;
+
+type ClassifyFn = (
+	userId: string,
+	onProgress?: (progress: ClassifyProgress) => Promise<void>,
+) => Promise<ClassifyProgress>;
+
+type EmbedFn = (
+	userId: string,
+	onProgress?: (progress: EmbedProgress) => Promise<void>,
+) => Promise<EmbedProgress>;
+
+type ClusterFn = (
+	userId: string,
+	onProgress?: (progress: ClusterProgress) => Promise<void>,
+) => Promise<ClusterProgress>;
 
 type PipelineDeps = {
 	syncLikedTracks: SyncFn;
-	fetchLyricsForPendingTracks: SyncFn;
-	classifyTracksBatch: SyncFn;
-	embedTracksBatch: SyncFn;
-	runClustering: SyncFn;
+	fetchLyricsForPendingTracks: LyricsFn;
+	classifyTracksBatch: ClassifyFn;
+	embedTracksBatch: EmbedFn;
+	runClustering: ClusterFn;
 };
+
+async function updateRun(
+	runId: number,
+	data: {
+		status?: string;
+		currentStage?: string | null;
+		progress?: PipelineProgress;
+		error?: string;
+		completedAt?: Date;
+	},
+) {
+	await db.update(pipelineRun).set(data).where(eq(pipelineRun.id, runId));
+}
 
 export const createOrganizeRouter = ({
 	syncLikedTracks,
@@ -40,7 +87,7 @@ export const createOrganizeRouter = ({
 			})
 			.input(
 				z.object({
-					userId: z.string().optional(), // For cron: target user. For auth: ignored, uses session.
+					userId: z.string().optional(),
 				}),
 			)
 			.handler(async ({ input, context }) => {
@@ -48,14 +95,85 @@ export const createOrganizeRouter = ({
 
 				const { userId } = await resolveUserId(input.userId, context);
 
-				logger.info({ userId }, "Organize pipeline start");
+				const [run] = await db
+					.insert(pipelineRun)
+					.values({
+						userId,
+						status: "running",
+						currentStage: "sync",
+						startedAt: new Date(),
+					})
+					.returning({ id: pipelineRun.id });
+
+				if (!run) {
+					throw new ORPCError("INTERNAL_SERVER_ERROR", {
+						message: "Failed to create pipeline run",
+					});
+				}
+
+				const runId = run.id;
+				const progress: PipelineProgress = {};
 
 				try {
-					await syncLikedTracks(userId);
-					await fetchLyricsForPendingTracks(userId);
-					await classifyTracksBatch(userId);
-					await embedTracksBatch(userId);
-					await runClustering(userId);
+					await updateRun(runId, { currentStage: "sync" });
+					const syncResult = await syncLikedTracks(userId, async (p) => {
+						progress.sync = p;
+						await updateRun(runId, { progress });
+					});
+					progress.sync = syncResult;
+					await updateRun(runId, { progress });
+
+					await updateRun(runId, { currentStage: "lyrics" });
+					const lyricsResult = await fetchLyricsForPendingTracks(
+						userId,
+						async (p) => {
+							progress.lyrics = p;
+							await updateRun(runId, { progress });
+						},
+					);
+					progress.lyrics = lyricsResult;
+					await updateRun(runId, { progress });
+
+					await updateRun(runId, { currentStage: "classify" });
+					const classifyResult = await classifyTracksBatch(
+						userId,
+						async (p) => {
+							progress.classify = p;
+							await updateRun(runId, { progress });
+						},
+					);
+					progress.classify = classifyResult;
+					await updateRun(runId, { progress });
+
+					await updateRun(runId, { currentStage: "embed" });
+					const embedResult = await embedTracksBatch(userId, async (p) => {
+						progress.embed = p;
+						await updateRun(runId, { progress });
+					});
+					progress.embed = embedResult;
+					await updateRun(runId, { progress });
+
+					await updateRun(runId, { currentStage: "cluster" });
+					const clusterResult = await runClustering(userId, async (p) => {
+						progress.cluster = p;
+						await updateRun(runId, { progress });
+					});
+					progress.cluster = clusterResult;
+					await updateRun(runId, { progress });
+
+					await updateRun(runId, {
+						status: "completed",
+						currentStage: null,
+						progress,
+						completedAt: new Date(),
+					});
+
+					logger.info(
+						{ userId, runId },
+						"Organize pipeline completed successfully",
+					);
+
+					return { success: true, userId, runId };
 				} catch (err: unknown) {
 					const error = err instanceof Error ? err : new Error(String(err));
 					const cause =
@@ -76,12 +194,15 @@ export const createOrganizeRouter = ({
 						...(causeMessage !== undefined && { causeMessage }),
 					};
 					logger.error(safePayload, "Organize pipeline failed");
+
+					await updateRun(runId, {
+						status: "failed",
+						error: error.message,
+						completedAt: new Date(),
+					});
+
 					throw err;
 				}
-
-				logger.info({ userId }, "Organize pipeline completed successfully");
-
-				return { success: true, userId };
 			}),
 	};
 };

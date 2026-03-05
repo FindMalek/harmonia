@@ -13,6 +13,8 @@
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
 		"drizzle-orm": "catalog:",
+		"p-limit": "^7.3.0",
+		"p-retry": "^7.1.1",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

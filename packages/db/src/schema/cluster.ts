@@ -1,4 +1,5 @@
 import {
+	index,
 	integer,
 	jsonb,
 	pgTable,
@@ -13,21 +14,35 @@ import { genreDomain } from "./genre-domain";
 import { track } from "./track";
 import { user } from "./auth";
 
-export const cluster = pgTable("cluster", {
-	id: serial("id").primaryKey(),
-	userId: text("user_id")
-		.notNull()
-		.references(() => user.id, { onDelete: "cascade" }),
-	genreDomainId: integer("genre_domain_id")
-		.notNull()
-		.references(() => genreDomain.id),
-	centroid: jsonb("centroid").$type<number[]>(), // Or vector if preferred
-	size: integer("size").notNull(),
-	avgValence: real("avg_valence"),
-	avgEnergy: real("avg_energy"),
-	avgTempo: real("avg_tempo"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export type ClusterMeta = {
+	themeSummary: string;
+	dominantMood: string;
+	dominantEnergy: string;
+	topThemes: string[];
+	topVibes: string[];
+	suggestedArchetype: "mood" | "situation" | "genre" | "hybrid";
+};
+
+export const cluster = pgTable(
+	"cluster",
+	{
+		id: serial("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		genreDomainId: integer("genre_domain_id")
+			.notNull()
+			.references(() => genreDomain.id),
+		centroid: jsonb("centroid").$type<number[]>(),
+		size: integer("size").notNull(),
+		avgValence: real("avg_valence"),
+		avgEnergy: real("avg_energy"),
+		avgTempo: real("avg_tempo"),
+		metadata: jsonb("metadata").$type<ClusterMeta>(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [index("cluster_user_id_idx").on(table.userId)],
+);
 
 export const clusterTracks = pgTable(
 	"cluster_tracks",

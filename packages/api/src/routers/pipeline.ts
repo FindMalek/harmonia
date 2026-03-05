@@ -1,0 +1,76 @@
+import { z } from "zod";
+
+import { protectedProcedure } from "../index";
+import { db } from "@harmonia/db";
+import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
+import { track } from "@harmonia/db/schema/track";
+import { cluster } from "@harmonia/db/schema/cluster";
+import { and, count, desc, eq, sql } from "drizzle-orm";
+
+export const pipelineRouter = {
+	getAll: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+		const runs = await db
+			.select()
+			.from(pipelineRun)
+			.where(eq(pipelineRun.userId, userId))
+			.orderBy(desc(pipelineRun.createdAt))
+			.limit(50);
+
+		return runs;
+	}),
+
+	getById: protectedProcedure
+		.input(z.object({ id: z.number() }))
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const [run] = await db
+				.select()
+				.from(pipelineRun)
+				.where(
+					and(eq(pipelineRun.id, input.id), eq(pipelineRun.userId, userId)),
+				);
+
+			return run ?? null;
+		}),
+
+	stats: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+
+		const [trackStats] = await db
+			.select({
+				total: count(),
+				withLyrics: count(track.lyrics),
+				classified: count(track.llmClassifiedAt),
+				embedded: count(track.embeddingGeneratedAt),
+			})
+			.from(track)
+			.where(eq(track.userId, userId));
+
+		const [clusterStats] = await db
+			.select({ total: count() })
+			.from(cluster)
+			.where(eq(cluster.userId, userId));
+
+		const lyricsPending = await db
+			.select({ count: count() })
+			.from(track)
+			.where(
+				and(
+					eq(track.userId, userId),
+					sql`(${track.lyricsStatus} = 'pending' OR ${track.lyricsStatus} IS NULL)`,
+				),
+			);
+
+		return {
+			tracks: {
+				total: trackStats?.total ?? 0,
+				withLyrics: trackStats?.withLyrics ?? 0,
+				classified: trackStats?.classified ?? 0,
+				embedded: trackStats?.embedded ?? 0,
+				lyricsPending: lyricsPending[0]?.count ?? 0,
+			},
+			clusters: clusterStats?.total ?? 0,
+		};
+	}),
+};
