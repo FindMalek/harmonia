@@ -6,7 +6,7 @@ The first migration enables the pgvector extension for vector similarity search 
 
 **To run migrations:**
 
-1. Ensure `apps/web/.env` exists with `DATABASE_URL` (Neon PostgreSQL connection string).
+1. Ensure root `.env` exists with `DATABASE_URL` (Neon PostgreSQL connection string).
 2. Run from repo root:
    ```bash
    pnpm db:migrate
