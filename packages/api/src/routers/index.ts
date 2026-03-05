@@ -10,11 +10,15 @@ import { createOrganizeRouter } from "./organize";
 import { pipelineRouter } from "./pipeline";
 import { tracksRouter } from "./tracks";
 import { clustersRouter } from "./clusters";
+import { playlistsRouter } from "./playlists";
 import { fetchLyricsForPendingTracks, syncLikedTracks } from "@harmonia/music";
 import {
 	classifyTracksBatch,
 	embedTracksBatch,
 	runClustering,
+	generateClusterMetadata,
+	generatePlaylists,
+	matchNewTracksToPlaylists,
 } from "@harmonia/brain";
 
 export const appRouter = {
@@ -43,10 +47,14 @@ export const appRouter = {
 		classifyTracksBatch,
 		embedTracksBatch,
 		runClustering,
+		generateClusterMetadata,
+		generatePlaylists,
+		matchNewTracksToPlaylists,
 	}),
 	pipeline: pipelineRouter,
 	tracks: tracksRouter,
 	clusters: clustersRouter,
+	playlists: playlistsRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

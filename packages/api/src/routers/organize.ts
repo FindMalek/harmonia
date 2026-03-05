@@ -4,10 +4,7 @@ import { publicProcedure } from "../index";
 import type { Context } from "../context";
 
 import { db } from "@harmonia/db";
-import {
-	pipelineRun,
-	type PipelineProgress,
-} from "@harmonia/db/schema/pipeline-run";
+import { pipelineRun, type PipelineProgress } from "@harmonia/db/schema/pipeline-run";
 import { env } from "@harmonia/env/server";
 import { ORPCError } from "@orpc/server";
 import { logger } from "@harmonia/logger";
@@ -18,6 +15,7 @@ import type {
 	ClassifyProgress,
 	EmbedProgress,
 	ClusterProgress,
+	GenerateProgress,
 } from "@harmonia/brain";
 
 type SyncFn = (
@@ -45,12 +43,24 @@ type ClusterFn = (
 	onProgress?: (progress: ClusterProgress) => Promise<void>,
 ) => Promise<ClusterProgress>;
 
+type GenerateClusterMetaFn = (userId: string) => Promise<number>;
+
+type GeneratePlaylistsFn = (
+	userId: string,
+	onProgress?: (progress: GenerateProgress) => Promise<void>,
+) => Promise<GenerateProgress>;
+
+type MatchTracksFn = (userId: string) => Promise<number>;
+
 type PipelineDeps = {
 	syncLikedTracks: SyncFn;
 	fetchLyricsForPendingTracks: LyricsFn;
 	classifyTracksBatch: ClassifyFn;
 	embedTracksBatch: EmbedFn;
 	runClustering: ClusterFn;
+	generateClusterMetadata: GenerateClusterMetaFn;
+	generatePlaylists: GeneratePlaylistsFn;
+	matchNewTracksToPlaylists: MatchTracksFn;
 };
 
 async function updateRun(
@@ -72,6 +82,9 @@ export const createOrganizeRouter = ({
 	classifyTracksBatch,
 	embedTracksBatch,
 	runClustering,
+	generateClusterMetadata,
+	generatePlaylists,
+	matchNewTracksToPlaylists,
 }: PipelineDeps) => {
 	return {
 		run: publicProcedure
@@ -81,7 +94,7 @@ export const createOrganizeRouter = ({
 					path: "/organize/run",
 					summary: "Run full organize pipeline",
 					description:
-						"Syncs Spotify, fetches lyrics (LRCLib), classifies with Groq LLM, generates OpenAI embeddings, and clusters. Requires auth or X-Organize-Secret header.",
+						"Syncs Spotify, fetches lyrics, classifies with AI, generates embeddings, clusters tracks, and generates playlists. Requires auth or X-Organize-Secret header.",
 					tags: ["organize"],
 				},
 			})
@@ -160,6 +173,20 @@ export const createOrganizeRouter = ({
 					});
 					progress.cluster = clusterResult;
 					await updateRun(runId, { progress });
+
+					await updateRun(runId, { currentStage: "generate" });
+					await generateClusterMetadata(userId);
+					const generateResult = await generatePlaylists(
+						userId,
+						async (p) => {
+							progress.generate = p;
+							await updateRun(runId, { progress });
+						},
+					);
+					progress.generate = generateResult;
+					await updateRun(runId, { progress });
+
+					await matchNewTracksToPlaylists(userId);
 
 					await updateRun(runId, {
 						status: "completed",
