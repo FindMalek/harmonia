@@ -15,7 +15,9 @@
     "db:push": "turbo -F @harmonia/db db:push",
     "db:studio": "turbo -F @harmonia/db db:studio",
     "db:generate": "turbo -F @harmonia/db db:generate",
-    "db:migrate": "turbo -F @harmonia/db db:migrate"
+    "db:migrate": "turbo -F @harmonia/db db:migrate",
+    "sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
+		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push"
   },
   "dependencies": {
     "@harmonia/env": "workspace:*",
