@@ -4,8 +4,8 @@ import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 
-import type { ClassificationResult, TrackForClassification } from "./schemas";
 import { classifyTracksWithLLM } from "./llml";
+import type { ClassificationResult, TrackForClassification } from "./schemas";
 
 const CLASSIFICATION_BATCH_SIZE = 25;
 

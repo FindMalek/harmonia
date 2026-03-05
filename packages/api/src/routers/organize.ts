@@ -1,22 +1,25 @@
 import { z } from "zod";
 
-import { publicProcedure } from "../index";
 import type { Context } from "../context";
+import { publicProcedure } from "../index";
 
 import { db } from "@harmonia/db";
-import { pipelineRun, type PipelineProgress } from "@harmonia/db/schema/pipeline-run";
+import {
+	type PipelineProgress,
+	pipelineRun,
+} from "@harmonia/db/schema/pipeline-run";
 import { env } from "@harmonia/env/server";
-import { ORPCError } from "@orpc/server";
 import { logger } from "@harmonia/logger";
+import { ORPCError } from "@orpc/server";
 import { eq } from "drizzle-orm";
 
-import type { SyncProgress, LyricsProgress } from "@harmonia/music";
 import type {
 	ClassifyProgress,
-	EmbedProgress,
 	ClusterProgress,
+	EmbedProgress,
 	GenerateProgress,
 } from "@harmonia/brain";
+import type { LyricsProgress, SyncProgress } from "@harmonia/music";
 
 type SyncFn = (
 	userId: string,
@@ -176,13 +179,10 @@ export const createOrganizeRouter = ({
 
 					await updateRun(runId, { currentStage: "generate" });
 					await generateClusterMetadata(userId);
-					const generateResult = await generatePlaylists(
-						userId,
-						async (p) => {
-							progress.generate = p;
-							await updateRun(runId, { progress });
-						},
-					);
+					const generateResult = await generatePlaylists(userId, async (p) => {
+						progress.generate = p;
+						await updateRun(runId, { progress });
+					});
 					progress.generate = generateResult;
 					await updateRun(runId, { progress });
 

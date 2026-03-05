@@ -1,6 +1,6 @@
+import { client } from "@/utils/orpc";
 import { auth } from "@harmonia/auth";
 import type { NextRequest } from "next/server";
-import { client } from "@/utils/orpc";
 
 export async function GET(
 	req: NextRequest,

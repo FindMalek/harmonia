@@ -1,10 +1,14 @@
+import { createOpenAI } from "@ai-sdk/openai";
 import { db } from "@harmonia/db";
-import { cluster, clusterTracks, type ClusterMeta } from "@harmonia/db/schema/cluster";
+import {
+	cluster,
+	type ClusterMeta,
+	clusterTracks,
+} from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import { and, eq, isNull } from "drizzle-orm";
 import pRetry from "p-retry";
 
@@ -17,7 +21,10 @@ const groq = createOpenAI({
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
 	if (!env.GROQ_API_KEY) {
-		logger.warn({}, "No GROQ_API_KEY configured; skipping cluster metadata generation");
+		logger.warn(
+			{},
+			"No GROQ_API_KEY configured; skipping cluster metadata generation",
+		);
 		return 0;
 	}
 
@@ -120,7 +127,10 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 			generated++;
 		} catch (err) {
 			logger.error(
-				{ clusterId: c.id, error: err instanceof Error ? err.message : String(err) },
+				{
+					clusterId: c.id,
+					error: err instanceof Error ? err.message : String(err),
+				},
 				"Failed to generate cluster metadata",
 			);
 		}

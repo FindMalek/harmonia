@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import path from "path";
+import { fileURLToPath } from "url";
+import { neon } from "@neondatabase/serverless";
 /**
  * Inserts the initial migration (0000_cheerful_ironclad) into drizzle.__drizzle_migrations
  * so that `pnpm db:migrate` skips it. Use when the DB already has the schema (e.g. from
@@ -8,9 +11,6 @@
  * Or from packages/db: node scripts/mark-migrations-applied.mjs
  */
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import { neon } from "@neondatabase/serverless";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load root .env (packages/db/scripts -> ../../../.env)

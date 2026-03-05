@@ -7,9 +7,9 @@ export {
 	type GenerateProgress,
 } from "./playlist-generator";
 export { matchNewTracksToPlaylists } from "./track-matcher";
-export {
-	type ClassificationResult,
-	type TrackForClassification,
-	type ClusterMetadata,
-	type PlaylistMetadata,
+export type {
+	ClassificationResult,
+	TrackForClassification,
+	ClusterMetadata,
+	PlaylistMetadata,
 } from "./schemas";

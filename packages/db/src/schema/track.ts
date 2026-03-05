@@ -10,8 +10,8 @@ import {
 	vector,
 } from "drizzle-orm/pg-core";
 
-import { genreDomain } from "./genre-domain";
 import { user } from "./auth";
+import { genreDomain } from "./genre-domain";
 
 export const track = pgTable(
 	"track",

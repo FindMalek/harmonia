@@ -3,9 +3,7 @@ import { env } from "@harmonia/env/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { authClient } from "@/lib/auth-client";
-
-import Dashboard from "./dashboard";
+import { DashboardOverview } from "./overview";
 
 export default async function DashboardPage() {
 	const session = await auth.api.getSession({
@@ -17,11 +15,5 @@ export default async function DashboardPage() {
 	}
 
 	const spotifyEnabled = !!env.SPOTIFY_CLIENT_ID;
-	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.user.name}</p>
-			<Dashboard session={session} spotifyEnabled={spotifyEnabled} />
-		</div>
-	);
+	return <DashboardOverview spotifyEnabled={spotifyEnabled} />;
 }

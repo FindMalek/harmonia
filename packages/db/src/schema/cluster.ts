@@ -10,9 +10,9 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 
+import { user } from "./auth";
 import { genreDomain } from "./genre-domain";
 import { track } from "./track";
-import { user } from "./auth";
 
 export type ClusterMeta = {
 	themeSummary: string;

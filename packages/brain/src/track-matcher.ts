@@ -21,16 +21,14 @@ export async function matchNewTracksToPlaylists(
 			sql`playlist_clusters`,
 			sql`playlist_clusters.playlist_id = ${playlist.id}`,
 		)
-		.innerJoin(
-			cluster,
-			sql`${cluster.id} = playlist_clusters.cluster_id`,
-		)
-		.where(
-			and(eq(playlist.userId, userId), isNotNull(cluster.centroid)),
-		);
+		.innerJoin(cluster, sql`${cluster.id} = playlist_clusters.cluster_id`)
+		.where(and(eq(playlist.userId, userId), isNotNull(cluster.centroid)));
 
 	if (playlists.length === 0) {
-		logger.info({ userId }, "No playlists with centroids; skipping track matching");
+		logger.info(
+			{ userId },
+			"No playlists with centroids; skipping track matching",
+		);
 		return 0;
 	}
 
@@ -48,9 +46,7 @@ export async function matchNewTracksToPlaylists(
 			embedding: track.embedding,
 		})
 		.from(track)
-		.where(
-			and(eq(track.userId, userId), isNotNull(track.embedding)),
-		);
+		.where(and(eq(track.userId, userId), isNotNull(track.embedding)));
 
 	const tracksToMatch = unassignedTracks.filter(
 		(t) => !assignedTrackIds.has(t.id),
@@ -81,7 +77,9 @@ export async function matchNewTracksToPlaylists(
 
 		if (bestPlaylistId !== null && bestSimilarity >= SIMILARITY_THRESHOLD) {
 			const [maxPos] = await db
-				.select({ max: sql<number>`COALESCE(MAX(${playlistTracks.position}), -1)` })
+				.select({
+					max: sql<number>`COALESCE(MAX(${playlistTracks.position}), -1)`,
+				})
 				.from(playlistTracks)
 				.where(eq(playlistTracks.playlistId, bestPlaylistId));
 

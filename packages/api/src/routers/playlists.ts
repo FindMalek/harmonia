@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-import { protectedProcedure } from "../index";
 import { db } from "@harmonia/db";
 import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
+import { exportAllPlaylists, exportPlaylistToSpotify } from "@harmonia/music";
 import { and, desc, eq } from "drizzle-orm";
+import { protectedProcedure } from "../index";
 
 export const playlistsRouter = {
 	list: protectedProcedure.handler(async ({ context }) => {
@@ -27,9 +28,7 @@ export const playlistsRouter = {
 			const [result] = await db
 				.select()
 				.from(playlist)
-				.where(
-					and(eq(playlist.id, input.id), eq(playlist.userId, userId)),
-				);
+				.where(and(eq(playlist.id, input.id), eq(playlist.userId, userId)));
 
 			if (!result) return null;
 
@@ -68,18 +67,31 @@ export const playlistsRouter = {
 
 			const updates: Record<string, unknown> = {};
 			if (input.name !== undefined) updates.name = input.name;
-			if (input.description !== undefined) updates.description = input.description;
+			if (input.description !== undefined)
+				updates.description = input.description;
 
 			if (Object.keys(updates).length === 0) return null;
 
 			const [updated] = await db
 				.update(playlist)
 				.set(updates)
-				.where(
-					and(eq(playlist.id, input.id), eq(playlist.userId, userId)),
-				)
+				.where(and(eq(playlist.id, input.id), eq(playlist.userId, userId)))
 				.returning();
 
 			return updated ?? null;
 		}),
+
+	export: protectedProcedure
+		.input(z.object({ id: z.number() }))
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const result = await exportPlaylistToSpotify(userId, input.id);
+			return result;
+		}),
+
+	exportAll: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+		const result = await exportAllPlaylists(userId);
+		return result;
+	}),
 };

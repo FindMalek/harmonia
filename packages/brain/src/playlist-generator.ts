@@ -1,8 +1,9 @@
+import { createOpenAI } from "@ai-sdk/openai";
 import { db } from "@harmonia/db";
 import {
 	cluster,
-	clusterTracks,
 	type ClusterMeta,
+	clusterTracks,
 } from "@harmonia/db/schema/cluster";
 import {
 	playlist,
@@ -13,7 +14,6 @@ import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
@@ -49,9 +49,9 @@ export async function generatePlaylists(
 		return stats;
 	}
 
-	await db.delete(playlist).where(
-		and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)),
-	);
+	await db
+		.delete(playlist)
+		.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)));
 
 	for (const c of clusters) {
 		const trackRows = await db
@@ -95,13 +95,13 @@ export async function generatePlaylists(
 						prompt: [
 							"You are a creative music curator generating a playlist from a cluster of similar tracks.",
 							"",
-							`Cluster info:`,
+							"Cluster info:",
 							meta ? `Theme: ${meta.themeSummary}` : "",
-							meta ? `Mood: ${meta.dominantMood}` : `Top moods: ${[...new Set(moods)].slice(0, 5).join(", ")}`,
-							meta ? `Energy: ${meta.dominantEnergy}` : "",
 							meta
-								? `Archetype: ${meta.suggestedArchetype}`
-								: "",
+								? `Mood: ${meta.dominantMood}`
+								: `Top moods: ${[...new Set(moods)].slice(0, 5).join(", ")}`,
+							meta ? `Energy: ${meta.dominantEnergy}` : "",
+							meta ? `Archetype: ${meta.suggestedArchetype}` : "",
 							`Top themes: ${[...new Set(themes)].slice(0, 5).join(", ") || "various"}`,
 							`Top vibes: ${[...new Set(vibes)].slice(0, 5).join(", ") || "various"}`,
 							`Track count: ${trackRows.length}`,
@@ -226,11 +226,8 @@ function orderTracksByEnergy(
 	const mid = Math.floor(n / 2);
 
 	for (let i = 0; i < n; i++) {
-		if (i < mid) {
-			result.push(withEnergy[i]!);
-		} else {
-			result.push(withEnergy[n - 1 - (i - mid)]!);
-		}
+		const item = i < mid ? withEnergy[i] : withEnergy[n - 1 - (i - mid)];
+		if (item) result.push(item);
 	}
 
 	return result;

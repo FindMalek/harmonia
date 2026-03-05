@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { protectedProcedure } from "../index";
 import { db } from "@harmonia/db";
 import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { and, desc, eq } from "drizzle-orm";
+import { protectedProcedure } from "../index";
 
 export const clustersRouter = {
 	list: protectedProcedure.handler(async ({ context }) => {

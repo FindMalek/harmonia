@@ -11,10 +11,10 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 
-import { genreDomain } from "./genre-domain";
-import { cluster } from "./cluster";
-import { track } from "./track";
 import { user } from "./auth";
+import { cluster } from "./cluster";
+import { genreDomain } from "./genre-domain";
+import { track } from "./track";
 
 export const playlist = pgTable(
 	"playlist",

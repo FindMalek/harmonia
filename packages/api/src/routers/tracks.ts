@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { protectedProcedure } from "../index";
 import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
+import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { protectedProcedure } from "../index";
 
 export const tracksRouter = {
 	list: protectedProcedure
@@ -25,12 +25,11 @@ export const tracksRouter = {
 			const conditions = [eq(track.userId, userId)];
 
 			if (input.search) {
-				conditions.push(
-					or(
-						ilike(track.name, `%${input.search}%`),
-						ilike(track.artistNames, `%${input.search}%`),
-					)!,
+				const searchCondition = or(
+					ilike(track.name, `%${input.search}%`),
+					ilike(track.artistNames, `%${input.search}%`),
 				);
+				if (searchCondition) conditions.push(searchCondition);
 			}
 
 			if (input.lyricsStatus) {

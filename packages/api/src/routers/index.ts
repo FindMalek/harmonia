@@ -4,22 +4,22 @@ import { db } from "@harmonia/db";
 import { account } from "@harmonia/db/schema/auth";
 import { and, eq } from "drizzle-orm";
 
-import { protectedProcedure, publicProcedure } from "../index";
-import { todoRouter } from "./todo";
-import { createOrganizeRouter } from "./organize";
-import { pipelineRouter } from "./pipeline";
-import { tracksRouter } from "./tracks";
-import { clustersRouter } from "./clusters";
-import { playlistsRouter } from "./playlists";
-import { fetchLyricsForPendingTracks, syncLikedTracks } from "@harmonia/music";
 import {
 	classifyTracksBatch,
 	embedTracksBatch,
-	runClustering,
 	generateClusterMetadata,
 	generatePlaylists,
 	matchNewTracksToPlaylists,
+	runClustering,
 } from "@harmonia/brain";
+import { fetchLyricsForPendingTracks, syncLikedTracks } from "@harmonia/music";
+import { protectedProcedure, publicProcedure } from "../index";
+import { clustersRouter } from "./clusters";
+import { createOrganizeRouter } from "./organize";
+import { pipelineRouter } from "./pipeline";
+import { playlistsRouter } from "./playlists";
+import { todoRouter } from "./todo";
+import { tracksRouter } from "./tracks";
 
 export const appRouter = {
 	healthCheck: publicProcedure.handler(() => {

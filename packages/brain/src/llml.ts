@@ -1,13 +1,13 @@
+import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import pRetry from "p-retry";
 
 import {
-	classificationResultListSchema,
 	type ClassificationResult,
 	type TrackForClassification,
+	classificationResultListSchema,
 } from "./schemas";
 
 const groq = createOpenAI({
