@@ -26,7 +26,7 @@ export async function classifyTracksWithLLM(
 	}
 
 	const { object } = await generateObject({
-		model: groq("gpt-oss-120b"),
+		model: groq("openai/gpt-oss-120b"),
 		schema: classificationResultListSchema,
 		prompt: [
 			"You are an expert music analyst. You receive a list of tracks with metadata, audio features, and (optionally) lyrics.",

@@ -3,12 +3,8 @@ import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { sql } from "drizzle-orm";
 
-import {
-	fetchAllSavedTracks,
-	fetchAudioFeatures,
-	getUserSpotifyAccessToken,
-} from "./client";
-import type { SpotifyAudioFeatures, SpotifyTrack } from "./types";
+import { fetchAllSavedTracks, getUserSpotifyAccessToken } from "./client";
+import type { SpotifyTrack } from "./types";
 
 export async function syncLikedTracks(userId: string): Promise<void> {
 	const accessToken = await getUserSpotifyAccessToken(userId);
@@ -34,45 +30,31 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 		.map((item) => item.track)
 		.filter((t): t is SpotifyTrack => Boolean(t?.id));
 
-	const audioFeatures = await fetchAudioFeatures(
-		tracks.map((t) => t.id),
-		accessToken,
-	);
-
-	const featuresById = new Map<string, SpotifyAudioFeatures>();
-	for (const features of audioFeatures) {
-		if (features?.id) {
-			featuresById.set(features.id, features);
-		}
-	}
-
+	// Audio features disabled: Spotify /audio-features returns 403 for apps without Extended Quota (Nov 2024).
+	// See deprecation note in client.ts for alternatives (AcousticBrainz, Soundcharts, ReccoBeats).
 	const now = new Date();
-	const values = tracks.map((t) => {
-		const features = featuresById.get(t.id);
-
-		return {
-			id: t.id,
-			userId,
-			spotifyUri: t.uri,
-			name: t.name,
-			artistNames: JSON.stringify(t.artists.map((a) => a.name)),
-			albumName: t.album?.name ?? null,
-			durationMs: t.duration_ms ?? null,
-			spotifyGenres: null,
-			valence: features?.valence ?? null,
-			energy: features?.energy ?? null,
-			danceability: features?.danceability ?? null,
-			tempo: features?.tempo ?? null,
-			acousticness: features?.acousticness ?? null,
-			instrumentalness: features?.instrumentalness ?? null,
-			speechiness: features?.speechiness ?? null,
-			liveness: features?.liveness ?? null,
-			key: features?.key ?? null,
-			mode: features?.mode ?? null,
-			lyricsStatus: "pending",
-			updatedAt: now,
-		};
-	});
+	const values = tracks.map((t) => ({
+		id: t.id,
+		userId,
+		spotifyUri: t.uri,
+		name: t.name,
+		artistNames: JSON.stringify(t.artists.map((a) => a.name)),
+		albumName: t.album?.name ?? null,
+		durationMs: t.duration_ms ?? null,
+		spotifyGenres: null,
+		valence: null,
+		energy: null,
+		danceability: null,
+		tempo: null,
+		acousticness: null,
+		instrumentalness: null,
+		speechiness: null,
+		liveness: null,
+		key: null,
+		mode: null,
+		lyricsStatus: "pending",
+		updatedAt: now,
+	}));
 
 	// Upsert in batches to avoid huge single queries
 	const batchSize = 100;

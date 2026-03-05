@@ -32,7 +32,7 @@ export const auth = betterAuth({
 						clientId: spotifyClientId,
 						clientSecret: spotifyClientSecret,
 						redirectURI: `${env.BETTER_AUTH_URL}/api/auth/callback/spotify`,
-						scopes: [
+						scope: [
 							"user-read-email",
 							"user-read-private",
 							"user-library-read",

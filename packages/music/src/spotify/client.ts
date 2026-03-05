@@ -4,7 +4,7 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import type { SpotifyAudioFeatures, SpotifySavedTracksResponse } from "./types";
+import type { SpotifySavedTracksResponse } from "./types";
 
 type SpotifyTokenResponse = {
 	access_token: string;
@@ -171,41 +171,54 @@ export async function fetchAllSavedTracks(
 			break;
 		}
 
-		// next is a full URL; extract path + query
+		// next is a full URL; extract path + query relative to SPOTIFY_API_BASE
+		// (strip /v1 prefix to avoid double /v1/v1/ when prepending base)
 		const nextUrl = new URL(page.next);
-		url = nextUrl.pathname + nextUrl.search;
+		let path = nextUrl.pathname;
+		if (path.startsWith("/v1/")) path = path.slice(3);
+		url = path + nextUrl.search;
 	}
 
 	return allItems;
 }
 
-export async function fetchAudioFeatures(
-	trackIds: string[],
-	accessToken: string,
-): Promise<SpotifyAudioFeatures[]> {
-	if (trackIds.length === 0) return [];
-
-	const batches: string[][] = [];
-	for (let i = 0; i < trackIds.length; i += 100) {
-		batches.push(trackIds.slice(i, i + 100));
-	}
-
-	const allFeatures: SpotifyAudioFeatures[] = [];
-
-	for (const batch of batches) {
-		const params = new URLSearchParams({
-			ids: batch.join(","),
-		});
-
-		const { audio_features } = await spotifyFetch<{
-			audio_features: (SpotifyAudioFeatures | null)[];
-		}>(`/audio-features?${params.toString()}`, accessToken);
-
-		const filtered = (audio_features ?? []).filter(
-			(f): f is SpotifyAudioFeatures => f != null,
-		);
-		allFeatures.push(...filtered);
-	}
-
-	return allFeatures;
-}
+/**
+ * @deprecated Spotify restricted /audio-features to Extended Quota apps (Nov 27, 2024).
+ * Apps without Extended Quota get 403. Uncomment below to re-enable when quota is granted.
+ *
+ * Alternative providers for audio features (valence, energy, danceability, tempo, etc.):
+ * - AcousticBrainz (free, uses MusicBrainz MBID): https://acousticbrainz.org/api
+ *   Requires Spotify ID → MBID mapping via ISRC or MusicBrainz search.
+ * - Soundcharts (paid): BPM, key, energy, valence, danceability — catalog-based.
+ * - ReccoBeats (upload-based): https://reccobeats.com — requires audio files (MP3/WAV).
+ */
+// export async function fetchAudioFeatures(
+// 	trackIds: string[],
+// 	accessToken: string,
+// ): Promise<SpotifyAudioFeatures[]> {
+// 	if (trackIds.length === 0) return [];
+//
+// 	const batches: string[][] = [];
+// 	for (let i = 0; i < trackIds.length; i += 100) {
+// 		batches.push(trackIds.slice(i, i + 100));
+// 	}
+//
+// 	const allFeatures: SpotifyAudioFeatures[] = [];
+//
+// 	for (const batch of batches) {
+// 		const params = new URLSearchParams({
+// 			ids: batch.join(","),
+// 		});
+//
+// 		const { audio_features } = await spotifyFetch<{
+// 			audio_features: (SpotifyAudioFeatures | null)[];
+// 		}>(`/audio-features?${params.toString()}`, accessToken);
+//
+// 		const filtered = (audio_features ?? []).filter(
+// 			(f): f is SpotifyAudioFeatures => f != null,
+// 		);
+// 		allFeatures.push(...filtered);
+// 	}
+//
+// 	return allFeatures;
+// }

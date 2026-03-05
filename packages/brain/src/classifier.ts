@@ -123,7 +123,7 @@ export async function classifyTracksBatch(userId: string): Promise<void> {
 					domain: result.domainName ?? null,
 					embeddingDims: undefined,
 					modelVersions: {
-						llm: "groq/gpt-oss-120b",
+						llm: "openai/gpt-oss-120b",
 					},
 				},
 			})
