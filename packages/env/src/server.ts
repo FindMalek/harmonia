@@ -25,6 +25,8 @@ export const env = createEnv({
 		GROQ_API_KEY: z.string().min(1).optional(),
 		// Optional - Cron secret for organize.run
 		CRON_SECRET: z.string().min(1).optional(),
+		// Optional - Target user ID when cron triggers organize.run
+		CRON_USER_ID: z.string().min(1).optional(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

@@ -57,4 +57,3 @@ async function handler(_req: NextRequest) {
 }
 
 export const POST = handler;
-

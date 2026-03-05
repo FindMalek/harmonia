@@ -36,4 +36,3 @@ export type SpotifyAudioFeatures = {
 export type SpotifyAudioFeaturesResponse = {
 	audio_features: SpotifyAudioFeatures[];
 };
-

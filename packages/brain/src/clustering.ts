@@ -32,7 +32,11 @@ export async function runClustering(userId: string): Promise<void> {
 	}
 
 	const dbscan = new (Clustering as any).DBSCAN();
-	const clusters = dbscan.run(embeddings, CLUSTER_EPSILON, CLUSTER_MIN_POINTS) as number[][];
+	const clusters = dbscan.run(
+		embeddings,
+		CLUSTER_EPSILON,
+		CLUSTER_MIN_POINTS,
+	) as number[][];
 
 	if (!clusters.length) {
 		logger.info({ userId }, "DBSCAN produced no clusters");
@@ -49,7 +53,9 @@ export async function runClustering(userId: string): Promise<void> {
 
 		const size = clusterTracksForUser.length;
 
-		const centroid = computeCentroid(clusterTracksForUser.map((t) => t.embedding as number[]));
+		const centroid = computeCentroid(
+			clusterTracksForUser.map((t) => t.embedding as number[]),
+		);
 
 		const avgValence = average(
 			clusterTracksForUser.map((t) => t.valence ?? null),
@@ -57,9 +63,7 @@ export async function runClustering(userId: string): Promise<void> {
 		const avgEnergy = average(
 			clusterTracksForUser.map((t) => t.energy ?? null),
 		);
-		const avgTempo = average(
-			clusterTracksForUser.map((t) => t.tempo ?? null),
-		);
+		const avgTempo = average(clusterTracksForUser.map((t) => t.tempo ?? null));
 
 		const genreDomainId = chooseDominantDomain(
 			clusterTracksForUser.map((t) => t.genreDomainId ?? null),
@@ -143,4 +147,3 @@ function chooseDominantDomain(domainIds: Array<number | null>): number | null {
 
 	return bestId;
 }
-

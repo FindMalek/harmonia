@@ -14,7 +14,9 @@ export const trackForClassificationSchema = z.object({
 	tempo: z.number().nullable(),
 });
 
-export type TrackForClassification = z.infer<typeof trackForClassificationSchema>;
+export type TrackForClassification = z.infer<
+	typeof trackForClassificationSchema
+>;
 
 export const classificationResultSchema = z.object({
 	trackId: z.string(),
@@ -28,5 +30,6 @@ export const classificationResultSchema = z.object({
 
 export type ClassificationResult = z.infer<typeof classificationResultSchema>;
 
-export const classificationResultListSchema = z.array(classificationResultSchema);
-
+export const classificationResultListSchema = z.array(
+	classificationResultSchema,
+);

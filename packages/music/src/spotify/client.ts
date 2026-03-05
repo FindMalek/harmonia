@@ -144,7 +144,10 @@ export async function fetchAllSavedTracks(
 
 	// Basic paging loop
 	for (;;) {
-		const page = await spotifyFetch<SpotifySavedTracksResponse>(url, accessToken);
+		const page = await spotifyFetch<SpotifySavedTracksResponse>(
+			url,
+			accessToken,
+		);
 		allItems.push(...page.items);
 
 		if (!page.next) {
@@ -187,4 +190,3 @@ export async function fetchAudioFeatures(
 
 	return allFeatures;
 }
-

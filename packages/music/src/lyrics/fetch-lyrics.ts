@@ -69,4 +69,3 @@ export async function fetchLyricsForPendingTracks(
 		"Completed LRCLib lyrics fetch for pending tracks",
 	);
 }
-

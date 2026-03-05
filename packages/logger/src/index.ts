@@ -129,7 +129,7 @@ function isNodeEnvironment(): boolean {
 	return (
 		typeof process !== "undefined" &&
 		typeof process.stdout !== "undefined" &&
-		typeof window === "undefined"
+		!("window" in globalThis)
 	);
 }
 

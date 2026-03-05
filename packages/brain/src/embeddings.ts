@@ -47,10 +47,7 @@ export async function embedTracksBatch(userId: string): Promise<void> {
 			energyLevel: "",
 		};
 
-		const parts = [
-			`Title: ${t.name}`,
-			`Artists: ${artistNames.join(", ")}`,
-		];
+		const parts = [`Title: ${t.name}`, `Artists: ${artistNames.join(", ")}`];
 
 		if (t.albumName) {
 			parts.push(`Album: ${t.albumName}`);
@@ -120,7 +117,7 @@ export async function embedTracksBatch(userId: string): Promise<void> {
 		const input = inputs[index];
 		const embedding = json.data[index]?.embedding;
 
-		if (!embedding) continue;
+		if (!input || !embedding) continue;
 
 		await db
 			.update(track)
@@ -129,7 +126,7 @@ export async function embedTracksBatch(userId: string): Promise<void> {
 				embeddingGeneratedAt: now,
 				embeddingInput: input.text,
 				analysisSnapshot: {
-					llm: null,
+					llm: {},
 					domain: null,
 					embeddingDims: embedding.length,
 					modelVersions: {
@@ -145,4 +142,3 @@ export async function embedTracksBatch(userId: string): Promise<void> {
 		"Completed embedding batch for tracks",
 	);
 }
-

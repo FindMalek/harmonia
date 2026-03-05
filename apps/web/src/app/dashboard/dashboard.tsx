@@ -30,7 +30,7 @@ export default function Dashboard({
 				type="button"
 				onClick={() => organizeMutation.mutate({ userId: undefined })}
 				disabled={organizeMutation.isPending}
-				className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+				className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm shadow hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{organizeMutation.isPending
 					? "Running organize pipeline..."
@@ -39,4 +39,3 @@ export default function Dashboard({
 		</div>
 	);
 }
-

@@ -1,16 +1,22 @@
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray } from "drizzle-orm";
 
-import { fetchAllSavedTracks, fetchAudioFeatures, getUserSpotifyAccessToken } from "./client";
+import {
+	fetchAllSavedTracks,
+	fetchAudioFeatures,
+	getUserSpotifyAccessToken,
+} from "./client";
 import type { SpotifyAudioFeatures, SpotifyTrack } from "./types";
 
 export async function syncLikedTracks(userId: string): Promise<void> {
 	const accessToken = await getUserSpotifyAccessToken(userId);
 
 	if (!accessToken) {
-		logger.info({ userId }, "Skipping syncLikedTracks: no Spotify access token");
+		logger.info(
+			{ userId },
+			"Skipping syncLikedTracks: no Spotify access token",
+		);
 		return;
 	}
 
@@ -101,4 +107,3 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 		"Completed syncLikedTracks from Spotify",
 	);
 }
-

@@ -23,7 +23,10 @@ export async function getLyricsFromLRCLib(params: {
 	}
 
 	if (params.durationMs && Number.isFinite(params.durationMs)) {
-		searchParams.set("duration", Math.round(params.durationMs / 1000).toString());
+		searchParams.set(
+			"duration",
+			Math.round(params.durationMs / 1000).toString(),
+		);
 	}
 
 	const url = `https://lrclib.net/api/get?${searchParams.toString()}`;
@@ -61,4 +64,3 @@ export async function getLyricsFromLRCLib(params: {
 		instrumental: json.instrumental ?? false,
 	};
 }
-
