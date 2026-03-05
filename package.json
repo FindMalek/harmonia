@@ -18,6 +18,7 @@
 		"db:generate": "turbo -F @harmonia/db db:generate",
 		"db:migrate": "turbo -F @harmonia/db db:migrate",
 		"db:migrate:direct": "pnpm exec drizzle-kit migrate --config=packages/db/drizzle.config.ts",
+		"db:mark-migrations-applied": "turbo -F @harmonia/db db:mark-migrations-applied",
 		"sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
 		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push"
 	},

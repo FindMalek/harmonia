@@ -165,16 +165,3 @@ CREATE INDEX "track_user_id_idx" ON "track" USING btree ("user_id");--> statemen
 CREATE INDEX "track_genre_domain_id_idx" ON "track" USING btree ("genre_domain_id");--> statement-breakpoint
 CREATE INDEX "track_lyrics_status_idx" ON "track" USING btree ("lyrics_status");--> statement-breakpoint
 CREATE INDEX "track_embedding_idx" ON "track" USING hnsw ("embedding" vector_cosine_ops);
---> statement-breakpoint
--- Seed initial genre domains
-INSERT INTO "genre_domain" ("name", "description") VALUES
-  ('Electronic', 'Electronic and dance-oriented music'),
-  ('Hip-Hop', 'Hip-hop, rap, and related subgenres'),
-  ('Rock', 'Rock and alternative rock'),
-  ('Classical', 'Classical, orchestral, and chamber music'),
-  ('Jazz', 'Jazz and related improvisational styles'),
-  ('Indie/Alt', 'Indie and alternative styles across genres'),
-  ('Pop', 'Mainstream and indie pop'),
-  ('World', 'Global and regional traditional styles'),
-  ('Ambient', 'Ambient, drone, and background textures'),
-  ('Soundtrack', 'Film, game, and TV soundtracks');

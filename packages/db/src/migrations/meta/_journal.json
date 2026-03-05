@@ -1,20 +1,13 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "6",
-			"when": 1709568000000,
-			"tag": "20240304180000_enable_pgvector",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1772724541689,
-			"tag": "0001_ambiguous_cyclops",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1772728003984,
+      "tag": "0000_cheerful_ironclad",
+      "breakpoints": true
+    }
+  ]
 }
