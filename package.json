@@ -15,7 +15,8 @@
     "db:push": "turbo -F @harmonia/db db:push",
     "db:studio": "turbo -F @harmonia/db db:studio",
     "db:generate": "turbo -F @harmonia/db db:generate",
-    "db:migrate": "turbo -F @harmonia/db db:migrate"
+    "db:migrate": "turbo -F @harmonia/db db:migrate",
+    "db:migrate:direct": "pnpm exec drizzle-kit migrate --config=packages/db/drizzle.config.ts"
   },
   "dependencies": {
     "@harmonia/env": "workspace:*",
