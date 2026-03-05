@@ -4,6 +4,7 @@ import { publicProcedure } from "../index";
 import type { Context } from "../context";
 
 import { ORPCError } from "@orpc/server";
+import { logger } from "@harmonia/logger";
 
 // These will be implemented in packages/music and packages/brain
 // and imported here once available.
@@ -44,13 +45,19 @@ export const createOrganizeRouter = ({
 				}),
 			)
 			.handler(async ({ input, context }) => {
+				logger.info({ input }, "organize.run invoked");
+
 				const { userId } = await resolveUserId(input.userId, context);
+
+				logger.info({ userId }, "Organize pipeline start");
 
 				await syncLikedTracks(userId);
 				await fetchLyricsForPendingTracks(userId);
 				await classifyTracksBatch(userId);
 				await embedTracksBatch(userId);
 				await runClustering(userId);
+
+				logger.info({ userId }, "Organize pipeline completed successfully");
 
 				return { success: true, userId };
 			}),
@@ -66,11 +73,24 @@ async function resolveUserId(
 	const allowedByAuth = context.session?.user?.id;
 
 	if (!allowedByCron && !allowedByAuth) {
+		logger.warn(
+			{
+				hasSession: !!context.session,
+				hasCronHeader: !!cronSecret,
+			},
+			"Unauthorized organize.run attempt",
+		);
+
 		throw new ORPCError("UNAUTHORIZED");
 	}
 
 	const userId = allowedByAuth ?? inputUserId;
 	if (!userId) {
+		logger.warn(
+			{ inputUserId },
+			"userId required for cron organize.run but was not provided",
+		);
+
 		throw new ORPCError("BAD_REQUEST", { message: "userId required for cron" });
 	}
 

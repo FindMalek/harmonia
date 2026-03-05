@@ -12,6 +12,7 @@
 		"@harmonia/api": "workspace:*",
 		"@harmonia/auth": "workspace:*",
 		"@harmonia/env": "workspace:*",
+		"@harmonia/logger": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
