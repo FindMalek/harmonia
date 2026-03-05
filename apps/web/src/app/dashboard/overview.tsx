@@ -15,6 +15,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { CopyableError } from "@/components/copyable-error";
+import { Brain, FileText, Layers, Loader2, Music2 } from "lucide-react";
+import { ErrorState } from "@/components/error-state";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DashboardOverview({
 	spotifyEnabled = false,
@@ -23,10 +27,25 @@ export function DashboardOverview({
 }) {
 	const router = useRouter();
 	const { data: spotifyData } = useQuery(orpc.hasSpotifyLinked.queryOptions());
-	const { data: stats, isLoading: statsLoading } = useQuery(
-		orpc.pipeline.stats.queryOptions(),
-	);
-	const { data: runs } = useQuery(orpc.pipeline.getAll.queryOptions());
+	const { data: runs } = useQuery({
+		...orpc.pipeline.getAll.queryOptions(),
+		refetchInterval: (query) =>
+			query.state.data?.some((r: { status: string }) => r.status === "running")
+				? 2000
+				: false,
+		refetchIntervalInBackground: false,
+	});
+	const {
+		data: stats,
+		isLoading: statsLoading,
+		isError: statsError,
+		error: statsErrorMessage,
+		refetch: refetchStats,
+	} = useQuery({
+		...orpc.pipeline.stats.queryOptions(),
+		refetchInterval: runs?.[0]?.status === "running" ? 3000 : false,
+		refetchIntervalInBackground: false,
+	});
 
 	const organizeMutation = useMutation(
 		orpc.organize.run.mutationOptions({
@@ -52,7 +71,19 @@ export function DashboardOverview({
 						},
 					);
 				} else {
-					toast.error(msg);
+					toast.error(msg, {
+						action: {
+							label: "Copy",
+							onClick: async () => {
+								try {
+									await navigator.clipboard.writeText(msg);
+									toast.success("Copied");
+								} catch {
+									toast.error("Failed to copy");
+								}
+							},
+						},
+					});
 				}
 			},
 		}),
@@ -90,28 +121,50 @@ export function DashboardOverview({
 						onClick={() => organizeMutation.mutate({ userId: undefined })}
 						disabled={organizeMutation.isPending}
 					>
-						{organizeMutation.isPending ? "Running..." : "Run Pipeline"}
+						{organizeMutation.isPending ? (
+							<>
+								<Loader2 className="size-3.5 animate-spin" />
+								Running...
+							</>
+						) : (
+							"Run Pipeline"
+						)}
 					</Button>
 				</div>
 			</div>
 
+			{statsError && (
+				<ErrorState
+					message={
+						statsErrorMessage instanceof Error
+							? statsErrorMessage.message
+							: "Failed to load stats"
+					}
+					onRetry={() => refetchStats()}
+				/>
+			)}
+
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				<StatCard
+					icon={Music2}
 					title="Total Tracks"
 					value={stats?.tracks.total ?? 0}
 					loading={statsLoading}
 				/>
 				<StatCard
+					icon={FileText}
 					title="Lyrics Found"
 					value={stats?.tracks.withLyrics ?? 0}
 					loading={statsLoading}
 				/>
 				<StatCard
+					icon={Brain}
 					title="AI Classified"
 					value={stats?.tracks.classified ?? 0}
 					loading={statsLoading}
 				/>
 				<StatCard
+					icon={Layers}
 					title="Clusters"
 					value={stats?.clusters ?? 0}
 					loading={statsLoading}
@@ -156,7 +209,13 @@ export function DashboardOverview({
 								</p>
 							)}
 							{lastRun.error && (
-								<p className="mt-1 text-red-500">{lastRun.error}</p>
+								<div className="mt-2">
+									<CopyableError
+										text={lastRun.error}
+										variant="error"
+										className="text-xs"
+									/>
+								</div>
 							)}
 						</div>
 					</CardContent>
@@ -167,21 +226,30 @@ export function DashboardOverview({
 }
 
 function StatCard({
+	icon: Icon,
 	title,
 	value,
 	loading,
 }: {
+	icon: React.ComponentType<{ className?: string }>;
 	title: string;
 	value: number;
 	loading: boolean;
 }) {
 	return (
-		<Card>
+		<Card className="transition-all duration-200 hover:shadow-md">
 			<CardContent className="pt-4">
-				<p className="text-muted-foreground text-xs">{title}</p>
-				<p className="font-semibold text-2xl tabular-nums">
-					{loading ? "..." : value.toLocaleString()}
-				</p>
+				<div className="flex items-center gap-2">
+					<Icon className="text-muted-foreground size-4 shrink-0" />
+					<p className="text-muted-foreground text-xs">{title}</p>
+				</div>
+				{loading ? (
+					<Skeleton className="mt-1 h-8 w-16" />
+				) : (
+					<p className="font-semibold text-2xl tabular-nums">
+						{value.toLocaleString()}
+					</p>
+				)}
 			</CardContent>
 		</Card>
 	);

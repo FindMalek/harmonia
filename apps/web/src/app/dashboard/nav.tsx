@@ -18,7 +18,7 @@ export function DashboardNav() {
 	const pathname = usePathname();
 
 	return (
-		<nav className="mt-2 flex gap-1">
+		<nav className="mt-2 flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:overflow-visible sm:pb-0">
 			{navItems.map(({ href, label }) => {
 				const isActive =
 					href === "/dashboard"
@@ -30,7 +30,7 @@ export function DashboardNav() {
 						key={href}
 						href={href as Href}
 						className={cn(
-							"px-3 py-1.5 font-medium text-xs transition-colors",
+							"shrink-0 px-3 py-1.5 font-medium text-xs transition-colors duration-200",
 							isActive
 								? "bg-primary text-primary-foreground"
 								: "text-muted-foreground hover:bg-muted hover:text-foreground",

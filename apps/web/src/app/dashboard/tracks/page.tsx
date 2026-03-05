@@ -1,9 +1,18 @@
 "use client";
 
+import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -14,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
+import { Music2 } from "lucide-react";
 import { useState } from "react";
 
 export default function TracksPage() {
@@ -21,7 +31,7 @@ export default function TracksPage() {
 	const [search, setSearch] = useState("");
 	const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
 
-	const { data, isLoading } = useQuery(
+	const { data, isLoading, isError, error, refetch } = useQuery(
 		orpc.tracks.list.queryOptions({
 			input: { page, pageSize: 30, search: search || undefined },
 		}),
@@ -56,6 +66,15 @@ export default function TracksPage() {
 				/>
 			</div>
 
+			{isError && (
+				<ErrorState
+					message={
+						error instanceof Error ? error.message : "Failed to load tracks"
+					}
+					onRetry={() => refetch()}
+				/>
+			)}
+
 			<div className="flex gap-4">
 				<div className={selectedTrackId ? "flex-1" : "w-full"}>
 					<div className="overflow-auto border">
@@ -69,60 +88,85 @@ export default function TracksPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{isLoading && (
-									<TableRow>
-										<TableCell
-											colSpan={4}
-											className="text-center text-muted-foreground text-xs"
-										>
-											Loading...
-										</TableCell>
-									</TableRow>
-								)}
-								{data?.tracks.map((t) => {
-									const artists = safeParseArray(t.artistNames);
-									return (
-										<TableRow
-											key={t.id}
-											className="cursor-pointer"
-											onClick={() => setSelectedTrackId(t.id)}
-											data-state={
-												selectedTrackId === t.id ? "selected" : undefined
-											}
-										>
-											<TableCell className="max-w-[200px] truncate font-medium text-xs">
-												{t.name}
-											</TableCell>
-											<TableCell className="max-w-[150px] truncate text-muted-foreground text-xs">
-												{artists.join(", ")}
-											</TableCell>
-											<TableCell>
-												<div className="flex gap-1">
-													<StatusBadge
-														status={t.lyricsStatus ?? "pending"}
-														type="lyrics"
-													/>
-													{t.llmClassifiedAt && (
-														<Badge variant="outline" className="text-[10px]">
-															AI
-														</Badge>
-													)}
-													{t.embeddingGeneratedAt && (
-														<Badge variant="outline" className="text-[10px]">
-															EMB
-														</Badge>
-													)}
-												</div>
-											</TableCell>
-											<TableCell className="text-muted-foreground text-xs">
-												{t.llmMood ?? "—"}
-											</TableCell>
-										</TableRow>
-									);
-								})}
+								{isLoading
+									? Array.from({ length: 6 }).map((_, i) => (
+											<TableRow key={i}>
+												<TableCell>
+													<Skeleton className="h-4 w-[180px]" />
+												</TableCell>
+												<TableCell>
+													<Skeleton className="h-4 w-[120px]" />
+												</TableCell>
+												<TableCell>
+													<Skeleton className="h-4 w-[80px]" />
+												</TableCell>
+												<TableCell>
+													<Skeleton className="h-4 w-[60px]" />
+												</TableCell>
+											</TableRow>
+										))
+									: (data?.tracks.map((t) => {
+											const artists = safeParseArray(t.artistNames);
+											return (
+												<TableRow
+													key={t.id}
+													className="cursor-pointer"
+													onClick={() => setSelectedTrackId(t.id)}
+													data-state={
+														selectedTrackId === t.id ? "selected" : undefined
+													}
+												>
+													<TableCell className="max-w-[200px] truncate font-medium text-xs">
+														{t.name}
+													</TableCell>
+													<TableCell className="max-w-[150px] truncate text-muted-foreground text-xs">
+														{artists.join(", ")}
+													</TableCell>
+													<TableCell>
+														<div className="flex gap-1">
+															<StatusBadge
+																status={t.lyricsStatus ?? "pending"}
+																type="lyrics"
+															/>
+															{t.llmClassifiedAt && (
+																<Badge
+																	variant="outline"
+																	className="text-[10px]"
+																>
+																	AI
+																</Badge>
+															)}
+															{t.embeddingGeneratedAt && (
+																<Badge
+																	variant="outline"
+																	className="text-[10px]"
+																>
+																	EMB
+																</Badge>
+															)}
+														</div>
+													</TableCell>
+													<TableCell className="text-muted-foreground text-xs">
+														{t.llmMood ?? "—"}
+													</TableCell>
+												</TableRow>
+											);
+										}) ?? null)}
 							</TableBody>
 						</Table>
 					</div>
+
+					{!isLoading && data && data.tracks.length === 0 && (
+						<EmptyState
+							icon={Music2}
+							title="No tracks found"
+							description={
+								search
+									? "Try a different search term."
+									: "Sync your Spotify library to get started."
+							}
+						/>
+					)}
 
 					{totalPages > 1 && (
 						<div className="mt-3 flex items-center justify-between">
@@ -151,12 +195,14 @@ export default function TracksPage() {
 					)}
 				</div>
 
-				{selectedTrackId && selectedTrack && (
-					<TrackDetail
-						track={selectedTrack}
-						onClose={() => setSelectedTrackId(null)}
-					/>
-				)}
+				<Sheet
+					open={!!selectedTrackId && !!selectedTrack}
+					onOpenChange={(open) => !open && setSelectedTrackId(null)}
+				>
+					<SheetContent side="right" className="w-full max-w-md sm:max-w-lg">
+						{selectedTrack && <TrackDetail track={selectedTrack} />}
+					</SheetContent>
+				</Sheet>
 			</div>
 		</div>
 	);
@@ -164,7 +210,6 @@ export default function TracksPage() {
 
 function TrackDetail({
 	track,
-	onClose,
 }: {
 	track: {
 		id: string;
@@ -180,27 +225,21 @@ function TrackDetail({
 		embeddingGeneratedAt: Date | string | null;
 		clusterId: number | null;
 	};
-	onClose: () => void;
 }) {
 	const artists = safeParseArray(track.artistNames);
 	const tags = (track.llmTags as Record<string, unknown>) ?? {};
 	const [showLyrics, setShowLyrics] = useState(false);
 
 	return (
-		<Card className="w-[360px] shrink-0">
-			<CardHeader>
-				<div className="flex items-start justify-between">
-					<CardTitle className="text-sm">{track.name}</CardTitle>
-					<Button variant="ghost" size="icon-xs" onClick={onClose}>
-						&times;
-					</Button>
-				</div>
+		<div className="flex flex-col gap-4">
+			<SheetHeader>
+				<SheetTitle>{track.name}</SheetTitle>
 				<p className="text-muted-foreground text-xs">{artists.join(", ")}</p>
 				{track.albumName && (
 					<p className="text-muted-foreground text-xs">{track.albumName}</p>
 				)}
-			</CardHeader>
-			<CardContent className="space-y-3 text-xs">
+			</SheetHeader>
+			<div className="space-y-3 text-xs">
 				<Section title="Status">
 					<div className="flex flex-wrap gap-1">
 						<StatusBadge
@@ -297,8 +336,8 @@ function TrackDetail({
 						</p>
 					)}
 				</Section>
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }
 

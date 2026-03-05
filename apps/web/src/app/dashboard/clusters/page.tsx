@@ -1,5 +1,7 @@
 "use client";
 
+import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -8,6 +10,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -18,12 +27,17 @@ import {
 } from "@/components/ui/table";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
+import { Layers } from "lucide-react";
 import { useState } from "react";
 
 export default function ClustersPage() {
-	const { data: clusters, isLoading } = useQuery(
-		orpc.clusters.list.queryOptions(),
-	);
+	const {
+		data: clusters,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	} = useQuery(orpc.clusters.list.queryOptions());
 	const [selectedClusterId, setSelectedClusterId] = useState<number | null>(
 		null,
 	);
@@ -35,9 +49,40 @@ export default function ClustersPage() {
 		enabled: selectedClusterId !== null,
 	});
 
+	if (isError) {
+		return (
+			<div className="space-y-4">
+				<div>
+					<h2 className="font-semibold text-base">Clusters</h2>
+					<p className="text-muted-foreground text-xs">
+						Clusters discovered from your library
+					</p>
+				</div>
+				<ErrorState
+					message={
+						error instanceof Error ? error.message : "Failed to load clusters"
+					}
+					onRetry={() => refetch()}
+				/>
+			</div>
+		);
+	}
+
 	if (isLoading) {
 		return (
-			<div className="text-muted-foreground text-xs">Loading clusters...</div>
+			<div className="space-y-4">
+				<div>
+					<h2 className="font-semibold text-base">Clusters</h2>
+					<p className="text-muted-foreground text-xs">
+						Clusters discovered from your library
+					</p>
+				</div>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<ClusterCardSkeleton key={i} />
+					))}
+				</div>
+			</div>
 		);
 	}
 
@@ -64,7 +109,7 @@ export default function ClustersPage() {
 					return (
 						<Card
 							key={c.id}
-							className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+							className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-md ${
 								selectedClusterId === c.id ? "ring-2 ring-primary" : ""
 							}`}
 							onClick={() => setSelectedClusterId(c.id)}
@@ -112,59 +157,92 @@ export default function ClustersPage() {
 			</div>
 
 			{!clusters?.length && (
-				<p className="text-muted-foreground text-xs">
-					No clusters yet. Run the pipeline first.
-				</p>
+				<EmptyState
+					icon={Layers}
+					title="No clusters yet"
+					description="Run the pipeline to discover clusters in your library."
+					action={{
+						label: "Run Pipeline",
+						onClick: () => (window.location.href = "/dashboard"),
+					}}
+					variant="card"
+				/>
 			)}
 
-			{clusterDetail && (
-				<Card className="mt-4">
-					<CardHeader>
-						<CardTitle className="text-sm">
-							Cluster #{clusterDetail.id} &mdash; Tracks
-						</CardTitle>
-						<CardDescription>
-							{clusterDetail.tracks?.length ?? 0} tracks in this cluster
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="max-h-[400px] overflow-auto">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead className="text-xs">#</TableHead>
-										<TableHead className="text-xs">Track</TableHead>
-										<TableHead className="text-xs">Artist</TableHead>
-										<TableHead className="text-xs">Mood</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{clusterDetail.tracks?.map((t) => {
-										const artists = safeParseArray(t.artistNames);
-										return (
-											<TableRow key={t.id}>
-												<TableCell className="text-muted-foreground text-xs">
-													{(t.position ?? 0) + 1}
-												</TableCell>
-												<TableCell className="font-medium text-xs">
-													{t.name}
-												</TableCell>
-												<TableCell className="text-muted-foreground text-xs">
-													{artists.join(", ")}
-												</TableCell>
-												<TableCell className="text-muted-foreground text-xs">
-													{t.llmMood ?? "—"}
-												</TableCell>
-											</TableRow>
-										);
-									})}
-								</TableBody>
-							</Table>
+			<Sheet
+				open={selectedClusterId !== null && !!clusterDetail}
+				onOpenChange={(open) => !open && setSelectedClusterId(null)}
+			>
+				<SheetContent side="right" className="w-full max-w-md sm:max-w-lg">
+					{clusterDetail && (
+						<div className="flex flex-col gap-4">
+							<SheetHeader>
+								<SheetTitle className="text-sm">
+									Cluster #{clusterDetail.id} &mdash; Tracks
+								</SheetTitle>
+								<p className="text-muted-foreground text-xs">
+									{clusterDetail.tracks?.length ?? 0} tracks in this cluster
+								</p>
+							</SheetHeader>
+							<div className="max-h-[400px] overflow-auto">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="text-xs">#</TableHead>
+											<TableHead className="text-xs">Track</TableHead>
+											<TableHead className="text-xs">Artist</TableHead>
+											<TableHead className="text-xs">Mood</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{clusterDetail.tracks?.map((t) => {
+											const artists = safeParseArray(t.artistNames);
+											return (
+												<TableRow key={t.id}>
+													<TableCell className="text-muted-foreground text-xs">
+														{(t.position ?? 0) + 1}
+													</TableCell>
+													<TableCell className="font-medium text-xs">
+														{t.name}
+													</TableCell>
+													<TableCell className="text-muted-foreground text-xs">
+														{artists.join(", ")}
+													</TableCell>
+													<TableCell className="text-muted-foreground text-xs">
+														{t.llmMood ?? "—"}
+													</TableCell>
+												</TableRow>
+											);
+										})}
+									</TableBody>
+								</Table>
+							</div>
 						</div>
-					</CardContent>
-				</Card>
-			)}
+					)}
+				</SheetContent>
+			</Sheet>
 		</div>
+	);
+}
+
+function ClusterCardSkeleton() {
+	return (
+		<Card>
+			<CardHeader>
+				<div className="flex items-center justify-between">
+					<Skeleton className="h-4 w-24" />
+					<Skeleton className="h-5 w-16" />
+				</div>
+				<Skeleton className="mt-2 h-3 w-full" />
+				<Skeleton className="mt-1 h-3 w-48" />
+			</CardHeader>
+			<CardContent>
+				<div className="flex flex-wrap gap-1">
+					<Skeleton className="h-5 w-20" />
+					<Skeleton className="h-5 w-16" />
+				</div>
+			</CardContent>
+		</Card>
 	);
 }
 

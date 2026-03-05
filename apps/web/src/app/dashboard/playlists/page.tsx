@@ -1,5 +1,7 @@
 "use client";
 
+import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +12,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
 	Table,
@@ -21,13 +30,18 @@ import {
 } from "@/components/ui/table";
 import { orpc, queryClient } from "@/utils/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Disc3, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function PlaylistsPage() {
-	const { data: playlists, isLoading } = useQuery(
-		orpc.playlists.list.queryOptions(),
-	);
+	const {
+		data: playlists,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	} = useQuery(orpc.playlists.list.queryOptions());
 	const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(
 		null,
 	);
@@ -50,7 +64,20 @@ export default function PlaylistsPage() {
 				}
 			},
 			onError: (error) => {
-				toast.error(error.message ?? "Export failed");
+				const msg = error.message ?? "Export failed";
+				toast.error(msg, {
+					action: {
+						label: "Copy",
+						onClick: async () => {
+							try {
+								await navigator.clipboard.writeText(msg);
+								toast.success("Copied");
+							} catch {
+								toast.error("Failed to copy");
+							}
+						},
+					},
+				});
 			},
 		}),
 	);
@@ -64,14 +91,58 @@ export default function PlaylistsPage() {
 				queryClient.invalidateQueries();
 			},
 			onError: (error) => {
-				toast.error(error.message ?? "Export failed");
+				const msg = error.message ?? "Export failed";
+				toast.error(msg, {
+					action: {
+						label: "Copy",
+						onClick: async () => {
+							try {
+								await navigator.clipboard.writeText(msg);
+								toast.success("Copied");
+							} catch {
+								toast.error("Failed to copy");
+							}
+						},
+					},
+				});
 			},
 		}),
 	);
 
+	if (isError) {
+		return (
+			<div className="space-y-4">
+				<div>
+					<h2 className="font-semibold text-base">Playlists</h2>
+					<p className="text-muted-foreground text-xs">
+						Generated playlists from your library
+					</p>
+				</div>
+				<ErrorState
+					message={
+						error instanceof Error ? error.message : "Failed to load playlists"
+					}
+					onRetry={() => refetch()}
+				/>
+			</div>
+		);
+	}
+
 	if (isLoading) {
 		return (
-			<div className="text-muted-foreground text-xs">Loading playlists...</div>
+			<div className="space-y-4">
+				<div>
+					<h2 className="font-semibold text-base">Playlists</h2>
+					<p className="text-muted-foreground text-xs">
+						Generated playlists from your library
+					</p>
+				</div>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<PlaylistCardSkeleton key={i} />
+					))}
+				</div>
+			</div>
 		);
 	}
 
@@ -90,9 +161,14 @@ export default function PlaylistsPage() {
 					onClick={() => exportAllMutation.mutate({})}
 					disabled={exportAllMutation.isPending || !playlists?.length}
 				>
-					{exportAllMutation.isPending
-						? "Exporting..."
-						: "Export All to Spotify"}
+					{exportAllMutation.isPending ? (
+						<>
+							<Loader2 className="size-3.5 animate-spin" />
+							Exporting...
+						</>
+					) : (
+						"Export All to Spotify"
+					)}
 				</Button>
 			</div>
 
@@ -110,18 +186,58 @@ export default function PlaylistsPage() {
 			</div>
 
 			{!playlists?.length && (
-				<p className="text-muted-foreground text-xs">
-					No playlists yet. Run the pipeline to generate them.
-				</p>
-			)}
-
-			{playlistDetail && (
-				<PlaylistDetail
-					playlist={playlistDetail}
-					onClose={() => setSelectedPlaylistId(null)}
+				<EmptyState
+					icon={Disc3}
+					title="No playlists yet"
+					description="Run the pipeline to generate playlists from your library."
+					action={{
+						label: "Run Pipeline",
+						onClick: () => (window.location.href = "/dashboard"),
+					}}
+					variant="card"
 				/>
 			)}
+
+			<Sheet
+				open={selectedPlaylistId !== null && !!playlistDetail}
+				onOpenChange={(open) => !open && setSelectedPlaylistId(null)}
+			>
+				<SheetContent side="right" className="w-full max-w-md sm:max-w-lg">
+					{playlistDetail && (
+						<PlaylistDetail
+							playlist={playlistDetail}
+							onClose={() => setSelectedPlaylistId(null)}
+						/>
+					)}
+				</SheetContent>
+			</Sheet>
 		</div>
+	);
+}
+
+function PlaylistCardSkeleton() {
+	return (
+		<Card>
+			<CardHeader>
+				<div className="flex items-start gap-3">
+					<Skeleton className="h-8 w-8 shrink-0" />
+					<div className="min-w-0 flex-1 space-y-1">
+						<Skeleton className="h-4 w-32" />
+						<Skeleton className="h-3 w-full" />
+						<Skeleton className="h-3 w-24" />
+					</div>
+				</div>
+			</CardHeader>
+			<CardContent>
+				<div className="flex gap-1">
+					<Skeleton className="h-5 w-16" />
+					<Skeleton className="h-5 w-14" />
+				</div>
+			</CardContent>
+			<CardFooter>
+				<Skeleton className="h-6 w-24" />
+			</CardFooter>
+		</Card>
 	);
 }
 
@@ -149,7 +265,7 @@ function PlaylistCard({
 }) {
 	return (
 		<Card
-			className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+			className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-md ${
 				isSelected ? "ring-2 ring-primary" : ""
 			}`}
 			onClick={onSelect}
@@ -200,7 +316,14 @@ function PlaylistCard({
 						}}
 						disabled={isExporting}
 					>
-						Export to Spotify
+						{isExporting ? (
+							<>
+								<Loader2 className="size-3 animate-spin" />
+								Exporting...
+							</>
+						) : (
+							"Export to Spotify"
+						)}
 					</Button>
 				) : (
 					<a
@@ -250,14 +373,27 @@ function PlaylistDetail({
 				queryClient.invalidateQueries();
 			},
 			onError: (error) => {
-				toast.error(error.message ?? "Update failed");
+				const msg = error.message ?? "Update failed";
+				toast.error(msg, {
+					action: {
+						label: "Copy",
+						onClick: async () => {
+							try {
+								await navigator.clipboard.writeText(msg);
+								toast.success("Copied");
+							} catch {
+								toast.error("Failed to copy");
+							}
+						},
+					},
+				});
 			},
 		}),
 	);
 
 	return (
-		<Card className="mt-4">
-			<CardHeader>
+		<div className="flex flex-col gap-4">
+			<SheetHeader>
 				<div className="flex items-start justify-between">
 					{editing ? (
 						<div className="flex-1 space-y-2">
@@ -297,9 +433,11 @@ function PlaylistDetail({
 					) : (
 						<>
 							<div>
-								<CardTitle className="text-sm">{playlist.name}</CardTitle>
+								<SheetTitle className="text-sm">{playlist.name}</SheetTitle>
 								{playlist.description && (
-									<CardDescription>{playlist.description}</CardDescription>
+									<p className="text-muted-foreground text-xs">
+										{playlist.description}
+									</p>
 								)}
 							</div>
 							<div className="flex gap-1">
@@ -317,8 +455,8 @@ function PlaylistDetail({
 						</>
 					)}
 				</div>
-			</CardHeader>
-			<CardContent>
+			</SheetHeader>
+			<div>
 				<div className="max-h-[400px] overflow-auto">
 					<Table>
 						<TableHeader>
@@ -359,8 +497,8 @@ function PlaylistDetail({
 						</TableBody>
 					</Table>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }
 

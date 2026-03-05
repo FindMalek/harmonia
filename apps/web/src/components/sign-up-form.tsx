@@ -35,7 +35,21 @@ export default function SignUpForm({
 						toast.success("Sign up successful");
 					},
 					onError: (error) => {
-						toast.error(error.error.message || error.error.statusText);
+						const msg =
+							error.error.message || error.error.statusText || "Sign up failed";
+						toast.error(msg, {
+							action: {
+								label: "Copy",
+								onClick: async () => {
+									try {
+										await navigator.clipboard.writeText(msg);
+										toast.success("Copied");
+									} catch {
+										toast.error("Failed to copy");
+									}
+								},
+							},
+						});
 					},
 				},
 			);

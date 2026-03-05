@@ -1,5 +1,8 @@
 "use client";
 
+import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { PageLoader } from "@/components/page-loader";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -10,7 +13,11 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { orpc } from "@/utils/orpc";
+import { ChevronDown, ChevronRight, Play } from "lucide-react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+import { CopyableError } from "@/components/copyable-error";
 
 const STAGE_ORDER = [
 	"sync",
@@ -31,14 +38,53 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 export default function PipelinePage() {
-	const { data: runs, isLoading } = useQuery(
-		orpc.pipeline.getAll.queryOptions(),
-	);
+	const [expandedRunId, setExpandedRunId] = useState<number | null>(null);
+	const {
+		data: runs,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	} = useQuery({
+		...orpc.pipeline.getAll.queryOptions(),
+		refetchInterval: (query) =>
+			query.state.data?.some((r: { status: string }) => r.status === "running")
+				? 2000
+				: false,
+		refetchIntervalInBackground: false,
+	});
+
+	if (isError) {
+		return (
+			<div className="space-y-6">
+				<div>
+					<h2 className="font-semibold text-base">Pipeline</h2>
+					<p className="text-muted-foreground text-xs">
+						Monitor pipeline execution and history
+					</p>
+				</div>
+				<ErrorState
+					message={
+						error instanceof Error
+							? error.message
+							: "Failed to load pipeline runs"
+					}
+					onRetry={() => refetch()}
+				/>
+			</div>
+		);
+	}
 
 	if (isLoading) {
 		return (
-			<div className="text-muted-foreground text-xs">
-				Loading pipeline runs...
+			<div className="space-y-6">
+				<div>
+					<h2 className="font-semibold text-base">Pipeline</h2>
+					<p className="text-muted-foreground text-xs">
+						Monitor pipeline execution and history
+					</p>
+				</div>
+				<PageLoader message="Loading pipeline runs..." />
 			</div>
 		);
 	}
@@ -60,12 +106,26 @@ export default function PipelinePage() {
 				<h3 className="mb-3 font-medium text-sm">Run History</h3>
 				<div className="space-y-2">
 					{runs?.map((run) => (
-						<RunRow key={run.id} run={run} />
+						<RunRow
+							key={run.id}
+							run={run}
+							expanded={expandedRunId === run.id}
+							onToggle={() =>
+								setExpandedRunId((id) => (id === run.id ? null : run.id))
+							}
+						/>
 					))}
 					{(!runs || runs.length === 0) && (
-						<p className="text-muted-foreground text-xs">
-							No pipeline runs yet. Click "Run Pipeline" on the overview page.
-						</p>
+						<EmptyState
+							icon={Play}
+							title="No pipeline runs yet"
+							description="Click Run Pipeline on the overview page to start."
+							action={{
+								label: "Run Pipeline",
+								onClick: () => (window.location.href = "/dashboard"),
+							}}
+							variant="card"
+						/>
 					)}
 				</div>
 			</div>
@@ -116,10 +176,18 @@ function ActiveRunCard({
 			<CardContent>
 				<div className="space-y-3">
 					{STAGE_ORDER.map((stage, idx) => {
-						const stageData = progress[stage];
+						const stageData = progress[stage] as
+							| Record<string, unknown>
+							| undefined;
 						const isComplete = idx < currentStageIdx;
 						const isCurrent = idx === currentStageIdx;
 						const isPending = idx > currentStageIdx;
+						const progressValue = computeStageProgressValue(
+							stage,
+							stageData,
+							isComplete,
+							isCurrent,
+						);
 
 						return (
 							<div key={stage} className="space-y-1">
@@ -144,8 +212,8 @@ function ActiveRunCard({
 									</span>
 								</div>
 								<Progress
-									value={isComplete ? 100 : isCurrent ? 50 : isPending ? 0 : 0}
-									className="h-1"
+									value={progressValue}
+									className="h-1 transition-all"
 								/>
 							</div>
 						);
@@ -158,6 +226,8 @@ function ActiveRunCard({
 
 function RunRow({
 	run,
+	expanded,
+	onToggle,
 }: {
 	run: {
 		id: number;
@@ -168,6 +238,8 @@ function RunRow({
 		completedAt: Date | string | null;
 		error: string | null;
 	};
+	expanded: boolean;
+	onToggle: () => void;
 }) {
 	const statusColor =
 		run.status === "completed"
@@ -187,25 +259,107 @@ function RunRow({
 				)
 			: null;
 
+	const progress = (run.progress ?? {}) as Record<
+		string,
+		Record<string, unknown> | undefined
+	>;
+	const hasExpandableContent = run.error || Object.keys(progress).length > 0;
+
 	return (
-		<div className="flex items-center justify-between border-b py-2 text-xs last:border-b-0">
-			<div className="flex items-center gap-3">
-				<span className="font-mono text-muted-foreground">#{run.id}</span>
-				<span className={`font-medium ${statusColor}`}>{run.status}</span>
-				{run.currentStage && run.status === "running" && (
-					<span className="text-muted-foreground">
-						{STAGE_LABELS[run.currentStage]}
-					</span>
-				)}
-			</div>
-			<div className="flex items-center gap-3 text-muted-foreground">
-				{duration !== null && <span>{duration}s</span>}
-				{run.startedAt && (
-					<span>{new Date(run.startedAt).toLocaleString()}</span>
-				)}
-			</div>
+		<div className="border-b last:border-b-0">
+			<button
+				type="button"
+				className="flex w-full items-center justify-between py-2 text-left text-xs transition-colors hover:bg-muted/50"
+				onClick={hasExpandableContent ? onToggle : undefined}
+			>
+				<div className="flex items-center gap-2">
+					{hasExpandableContent ? (
+						expanded ? (
+							<ChevronDown className="size-3.5 shrink-0" />
+						) : (
+							<ChevronRight className="size-3.5 shrink-0" />
+						)
+					) : null}
+					<div className="flex items-center gap-3">
+						<span className="font-mono text-muted-foreground">#{run.id}</span>
+						<span className={`font-medium ${statusColor}`}>{run.status}</span>
+						{run.currentStage && run.status === "running" && (
+							<span className="text-muted-foreground">
+								{STAGE_LABELS[run.currentStage]}
+							</span>
+						)}
+					</div>
+				</div>
+				<div className="flex items-center gap-3 text-muted-foreground">
+					{duration !== null && <span>{duration}s</span>}
+					{run.startedAt && (
+						<span>{new Date(run.startedAt).toLocaleString()}</span>
+					)}
+				</div>
+			</button>
+			{expanded && hasExpandableContent && (
+				<div className="space-y-2 border-t pb-3 pl-6 pr-3 pt-2">
+					{run.error && (
+						<div>
+							<p className="mb-1 font-medium text-xs text-destructive">Error</p>
+							<CopyableError text={run.error} variant="error" />
+						</div>
+					)}
+					{Object.keys(progress).length > 0 && (
+						<div>
+							<p className="mb-1 font-medium text-muted-foreground text-xs">
+								Stage progress
+							</p>
+							<ul className="space-y-0.5 text-muted-foreground text-xs">
+								{STAGE_ORDER.filter((s) => progress[s]).map((stage) => (
+									<li key={stage}>
+										{STAGE_LABELS[stage]}:{" "}
+										{formatStageProgress(stage, progress[stage])}
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
+				</div>
+			)}
 		</div>
 	);
+}
+
+function computeStageProgressValue(
+	stage: string,
+	data: Record<string, unknown> | undefined,
+	isComplete: boolean,
+	isCurrent: boolean,
+): number {
+	if (isComplete) return 100;
+	if (!isCurrent) return 0;
+	if (!data) return 50;
+
+	switch (stage) {
+		case "sync":
+			return (data.done as boolean) ? 100 : 50;
+		case "lyrics": {
+			const processed = Number(data.processed ?? 0);
+			const total = Number(data.total ?? 1);
+			return total > 0 ? Math.round((processed / total) * 100) : 50;
+		}
+		case "classify": {
+			const classified = Number(data.classified ?? 0);
+			const total = Number(data.total ?? 1);
+			return total > 0 ? Math.round((classified / total) * 100) : 50;
+		}
+		case "embed": {
+			const embedded = Number(data.embedded ?? 0);
+			const total = Number(data.total ?? 1);
+			return total > 0 ? Math.round((embedded / total) * 100) : 50;
+		}
+		case "cluster":
+		case "generate":
+			return 50;
+		default:
+			return 50;
+	}
 }
 
 function formatStageProgress(

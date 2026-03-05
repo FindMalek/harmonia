@@ -115,6 +115,16 @@
 	--radius-4xl: calc(var(--radius) + 16px);
 }
 
+@layer utilities {
+	.scrollbar-none {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+	.scrollbar-none::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
