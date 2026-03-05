@@ -1,5 +1,9 @@
 import type { RouterClient } from "@orpc/server";
 
+import { db } from "@harmonia/db";
+import { account } from "@harmonia/db/schema/auth";
+import { and, eq } from "drizzle-orm";
+
 import { protectedProcedure, publicProcedure } from "../index";
 import { todoRouter } from "./todo";
 import { createOrganizeRouter } from "./organize";
@@ -19,6 +23,15 @@ export const appRouter = {
 			message: "This is private",
 			user: context.session?.user,
 		};
+	}),
+	hasSpotifyLinked: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+		const rows = await db
+			.select({ userId: account.userId })
+			.from(account)
+			.where(and(eq(account.userId, userId), eq(account.providerId, "spotify")))
+			.limit(1);
+		return { hasSpotify: rows.length > 0 };
 	}),
 	todo: todoRouter,
 	organize: createOrganizeRouter({

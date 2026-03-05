@@ -18,7 +18,9 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
-	console.error("DATABASE_URL is not set. Ensure root .env exists with DATABASE_URL.");
+	console.error(
+		"DATABASE_URL is not set. Ensure root .env exists with DATABASE_URL.",
+	);
 	process.exit(1);
 }
 

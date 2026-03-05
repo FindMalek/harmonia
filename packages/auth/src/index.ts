@@ -10,12 +10,18 @@ const spotifyClientSecret = env.SPOTIFY_CLIENT_SECRET;
 const spotifyEnabled = !!spotifyClientId && !!spotifyClientSecret;
 
 export const auth = betterAuth({
+	baseURL: env.BETTER_AUTH_URL,
 	database: drizzleAdapter(db, {
 		provider: "pg",
 
 		schema: schema,
 	}),
-	trustedOrigins: [env.CORS_ORIGIN],
+	trustedOrigins: [
+		env.CORS_ORIGIN,
+		env.BETTER_AUTH_URL,
+		"http://localhost:3001",
+		"http://127.0.0.1:3001",
+	],
 	emailAndPassword: {
 		enabled: true,
 	},
@@ -25,6 +31,7 @@ export const auth = betterAuth({
 					spotify: {
 						clientId: spotifyClientId,
 						clientSecret: spotifyClientSecret,
+						redirectURI: `${env.BETTER_AUTH_URL}/api/auth/callback/spotify`,
 					},
 				}
 			: {},

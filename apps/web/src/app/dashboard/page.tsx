@@ -15,11 +15,12 @@ export default async function DashboardPage() {
 		redirect("/login");
 	}
 
+	const spotifyEnabled = !!process.env.SPOTIFY_CLIENT_ID;
 	return (
 		<div>
 			<h1>Dashboard</h1>
 			<p>Welcome {session.user.name}</p>
-			<Dashboard session={session} />
+			<Dashboard session={session} spotifyEnabled={spotifyEnabled} />
 		</div>
 	);
 }

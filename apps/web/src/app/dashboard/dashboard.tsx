@@ -2,13 +2,20 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
+
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard({
 	session,
-}: { session: typeof authClient.$Infer.Session }) {
+	spotifyEnabled = false,
+}: {
+	session: typeof authClient.$Infer.Session;
+	spotifyEnabled?: boolean;
+}) {
 	const privateData = useQuery(orpc.privateData.queryOptions());
+	const { data: spotifyData } = useQuery(orpc.hasSpotifyLinked.queryOptions());
 
 	const organizeMutation = useMutation(
 		orpc.organize.run.mutationOptions({
@@ -23,9 +30,25 @@ export default function Dashboard({
 		}),
 	);
 
+	const showLinkSpotify = spotifyEnabled && spotifyData?.hasSpotify === false;
+
 	return (
 		<div className="space-y-4">
 			<p>API: {privateData.data?.message}</p>
+			{showLinkSpotify && (
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => {
+						authClient.signIn.social({
+							provider: "spotify",
+							callbackURL: "/dashboard",
+						});
+					}}
+				>
+					Link Spotify
+				</Button>
+			)}
 			<button
 				type="button"
 				onClick={() => organizeMutation.mutate({ userId: undefined })}

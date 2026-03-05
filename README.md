@@ -40,7 +40,17 @@ Then, run the development server:
 pnpm run dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
+Open [http://localhost:3001](http://localhost:3001) (or [http://127.0.0.1:3001](http://127.0.0.1:3001) if using Spotify) in your browser to see the fullstack application.
+
+### Spotify (optional)
+
+To sign in with Spotify and run the organize pipeline (sync liked tracks, lyrics, LLM, embeddings, clustering):
+
+1. Create an app at [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard).
+2. In the app settings, set **Redirect URI** to `{BETTER_AUTH_URL}/api/auth/callback/spotify` (e.g. `http://127.0.0.1:3001/api/auth/callback/spotify` for local dev — use `127.0.0.1`, not `localhost`).
+3. Copy **Client ID** and **Client Secret** into `.env` as `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`.
+4. Restart the dev server, then use **Sign in with Spotify** on the login page (or **Link Spotify** on the dashboard if you already have an account).
+5. On the dashboard, click **Run organize pipeline** to sync your liked tracks and run the full pipeline.
 
 ## Project Structure
 
