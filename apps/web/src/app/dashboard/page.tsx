@@ -1,4 +1,5 @@
 import { auth } from "@harmonia/auth";
+import { env } from "@harmonia/env/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
 		redirect("/login");
 	}
 
-	const spotifyEnabled = !!process.env.SPOTIFY_CLIENT_ID;
+	const spotifyEnabled = !!env.SPOTIFY_CLIENT_ID;
 	return (
 		<div>
 			<h1>Dashboard</h1>

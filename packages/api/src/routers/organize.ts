@@ -3,6 +3,7 @@ import { z } from "zod";
 import { publicProcedure } from "../index";
 import type { Context } from "../context";
 
+import { env } from "@harmonia/env/server";
 import { ORPCError } from "@orpc/server";
 import { logger } from "@harmonia/logger";
 
@@ -17,8 +18,6 @@ type PipelineDeps = {
 	embedTracksBatch: SyncFn;
 	runClustering: SyncFn;
 };
-
-const CRON_SECRET = process.env.CRON_SECRET;
 
 export const createOrganizeRouter = ({
 	syncLikedTracks,
@@ -51,11 +50,34 @@ export const createOrganizeRouter = ({
 
 				logger.info({ userId }, "Organize pipeline start");
 
-				await syncLikedTracks(userId);
-				await fetchLyricsForPendingTracks(userId);
-				await classifyTracksBatch(userId);
-				await embedTracksBatch(userId);
-				await runClustering(userId);
+				try {
+					await syncLikedTracks(userId);
+					await fetchLyricsForPendingTracks(userId);
+					await classifyTracksBatch(userId);
+					await embedTracksBatch(userId);
+					await runClustering(userId);
+				} catch (err: unknown) {
+					const error = err instanceof Error ? err : new Error(String(err));
+					const cause =
+						error.cause ??
+						(err &&
+							typeof err === "object" &&
+							"cause" in err &&
+							(err as { cause?: unknown }).cause);
+					const causeMessage =
+						cause instanceof Error
+							? cause.message
+							: cause != null
+								? String(cause)
+								: undefined;
+					const safePayload = {
+						message: error.message,
+						stack: error.stack,
+						...(causeMessage !== undefined && { causeMessage }),
+					};
+					logger.error(safePayload, "Organize pipeline failed");
+					throw err;
+				}
 
 				logger.info({ userId }, "Organize pipeline completed successfully");
 
@@ -69,7 +91,7 @@ async function resolveUserId(
 	context: Context,
 ): Promise<{ userId: string }> {
 	const cronSecret = context.headers?.get("X-Organize-Secret");
-	const allowedByCron = CRON_SECRET && cronSecret === CRON_SECRET;
+	const allowedByCron = env.CRON_SECRET && cronSecret === env.CRON_SECRET;
 	const allowedByAuth = context.session?.user?.id;
 
 	if (!allowedByCron && !allowedByAuth) {

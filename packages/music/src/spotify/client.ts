@@ -4,11 +4,7 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import type {
-	SpotifyAudioFeatures,
-	SpotifyAudioFeaturesResponse,
-	SpotifySavedTracksResponse,
-} from "./types";
+import type { SpotifyAudioFeatures, SpotifySavedTracksResponse } from "./types";
 
 type SpotifyTokenResponse = {
 	access_token: string;
@@ -127,8 +123,29 @@ async function spotifyFetch<T>(
 	});
 
 	if (!response.ok) {
+		const bodyText = await response.text();
+		let bodyJson: { error?: unknown; error_description?: unknown } = {};
+		try {
+			bodyJson = bodyText ? (JSON.parse(bodyText) as typeof bodyJson) : {};
+		} catch {
+			// ignore parse errors
+		}
+		logger.error(
+			{ status: response.status, path, body: bodyJson },
+			"Spotify API error",
+		);
+		if (response.status === 403) {
+			logger.warn(
+				{ path },
+				"Spotify 403: token may lack user-library-read. Sign out and sign in again with Spotify to re-authorize.",
+			);
+		}
+		const rawSummary =
+			bodyJson.error_description ?? bodyJson.error ?? response.statusText;
+		const summary =
+			typeof rawSummary === "string" ? rawSummary : JSON.stringify(rawSummary);
 		throw new Error(
-			`Spotify API error ${response.status} ${response.statusText} for ${path}`,
+			`Spotify API error ${response.status} for ${path}: ${summary}`,
 		);
 	}
 
@@ -180,12 +197,14 @@ export async function fetchAudioFeatures(
 			ids: batch.join(","),
 		});
 
-		const { audio_features } = await spotifyFetch<SpotifyAudioFeaturesResponse>(
-			`/audio-features?${params.toString()}`,
-			accessToken,
-		);
+		const { audio_features } = await spotifyFetch<{
+			audio_features: (SpotifyAudioFeatures | null)[];
+		}>(`/audio-features?${params.toString()}`, accessToken);
 
-		allFeatures.push(...audio_features);
+		const filtered = (audio_features ?? []).filter(
+			(f): f is SpotifyAudioFeatures => f != null,
+		);
+		allFeatures.push(...filtered);
 	}
 
 	return allFeatures;

@@ -17,8 +17,8 @@ export async function classifyTracksBatch(userId: string): Promise<void> {
 			and(
 				eq(track.userId, userId),
 				isNull(track.llmClassifiedAt),
-				// Require at least some source material: lyrics or basic metadata
-				isNull(track.lyricsStatus),
+				// Only classify tracks that have completed lyrics step (found or not_found)
+				inArray(track.lyricsStatus, ["found", "not_found"]),
 			),
 		)
 		.limit(CLASSIFICATION_BATCH_SIZE);

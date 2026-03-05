@@ -1,6 +1,7 @@
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
+import { sql } from "drizzle-orm";
 
 import {
 	fetchAllSavedTracks,
@@ -45,6 +46,7 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 		}
 	}
 
+	const now = new Date();
 	const values = tracks.map((t) => {
 		const features = featuresById.get(t.id);
 
@@ -67,6 +69,8 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 			liveness: features?.liveness ?? null,
 			key: features?.key ?? null,
 			mode: features?.mode ?? null,
+			lyricsStatus: "pending",
+			updatedAt: now,
 		};
 	});
 
@@ -81,23 +85,25 @@ export async function syncLikedTracks(userId: string): Promise<void> {
 			.onConflictDoUpdate({
 				target: track.id,
 				set: {
-					userId,
-					spotifyUri: track.spotifyUri,
-					name: track.name,
-					artistNames: track.artistNames,
-					albumName: track.albumName,
-					durationMs: track.durationMs,
-					spotifyGenres: track.spotifyGenres,
-					valence: track.valence,
-					energy: track.energy,
-					danceability: track.danceability,
-					tempo: track.tempo,
-					acousticness: track.acousticness,
-					instrumentalness: track.instrumentalness,
-					speechiness: track.speechiness,
-					liveness: track.liveness,
-					key: track.key,
-					mode: track.mode,
+					userId: sql`excluded.user_id`,
+					spotifyUri: sql`excluded.spotify_uri`,
+					name: sql`excluded.name`,
+					artistNames: sql`excluded.artist_names`,
+					albumName: sql`excluded.album_name`,
+					durationMs: sql`excluded.duration_ms`,
+					spotifyGenres: sql`excluded.spotify_genres`,
+					valence: sql`excluded.valence`,
+					energy: sql`excluded.energy`,
+					danceability: sql`excluded.danceability`,
+					tempo: sql`excluded.tempo`,
+					acousticness: sql`excluded.acousticness`,
+					instrumentalness: sql`excluded.instrumentalness`,
+					speechiness: sql`excluded.speechiness`,
+					liveness: sql`excluded.liveness`,
+					key: sql`excluded.key`,
+					mode: sql`excluded.mode`,
+					lyricsStatus: sql`excluded.lyrics_status`,
+					updatedAt: sql`excluded.updated_at`,
 				},
 			});
 	}

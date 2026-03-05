@@ -31,17 +31,14 @@ async function handler(_req: NextRequest) {
 		meta: [],
 	});
 
-	const response = await fetch(
-		`${process.env.BETTER_AUTH_URL ?? ""}/api/rpc/organize/run`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"X-Organize-Secret": cronSecret,
-			},
-			body,
+	const response = await fetch(`${env.BETTER_AUTH_URL}/api/rpc/organize/run`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"X-Organize-Secret": cronSecret,
 		},
-	);
+		body,
+	});
 
 	if (!response.ok) {
 		logger.error(

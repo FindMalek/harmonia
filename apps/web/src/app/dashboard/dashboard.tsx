@@ -1,5 +1,6 @@
 "use client";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
@@ -14,6 +15,7 @@ export default function Dashboard({
 	session: typeof authClient.$Infer.Session;
 	spotifyEnabled?: boolean;
 }) {
+	const router = useRouter();
 	const privateData = useQuery(orpc.privateData.queryOptions());
 	const { data: spotifyData } = useQuery(orpc.hasSpotifyLinked.queryOptions());
 
@@ -25,7 +27,24 @@ export default function Dashboard({
 				);
 			},
 			onError: (error) => {
-				toast.error(error.message ?? "Failed to start organize pipeline");
+				const msg = error.message ?? "Failed to start organize pipeline";
+				const isSpotify403 = msg.includes("403") && msg.includes("Spotify");
+				if (isSpotify403) {
+					toast.error(
+						"Spotify 403: token may lack user-library-read. Sign out and sign in again with Spotify to re-authorize.",
+						{
+							action: {
+								label: "Reconnect Spotify",
+								onClick: async () => {
+									await authClient.signOut();
+									router.push("/login");
+								},
+							},
+						},
+					);
+				} else {
+					toast.error(msg);
+				}
 			},
 		}),
 	);

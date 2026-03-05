@@ -1,7 +1,7 @@
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 
 import { getLyricsFromLRCLib } from "./lrclib-client";
 
@@ -11,7 +11,12 @@ export async function fetchLyricsForPendingTracks(
 	const pendingTracks = await db
 		.select()
 		.from(track)
-		.where(and(eq(track.userId, userId), isNull(track.lyrics)))
+		.where(
+			and(
+				eq(track.userId, userId),
+				or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
+			),
+		)
 		.limit(50);
 
 	if (pendingTracks.length === 0) {
