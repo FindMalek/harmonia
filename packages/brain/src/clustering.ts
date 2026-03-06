@@ -1,5 +1,6 @@
 import { db } from "@harmonia/db";
 import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
+import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, isNotNull } from "drizzle-orm";
@@ -79,6 +80,8 @@ export async function runClustering(
 
 	await db.delete(cluster).where(eq(cluster.userId, userId));
 
+	const defaultGenreDomainId = await ensureDefaultGenreDomain();
+
 	for (const indices of finalClusters) {
 		if (indices.length === 0) continue;
 
@@ -110,7 +113,7 @@ export async function runClustering(
 			.insert(cluster)
 			.values({
 				userId,
-				genreDomainId: genreDomainId ?? 1,
+				genreDomainId: genreDomainId ?? defaultGenreDomainId,
 				centroid,
 				size,
 				avgValence,
@@ -262,6 +265,28 @@ function average(values: Array<number | null>): number | null {
 
 	const total = filtered.reduce((acc, value) => acc + value, 0);
 	return total / filtered.length;
+}
+
+async function ensureDefaultGenreDomain(): Promise<number> {
+	const [existing] = await db
+		.select({ id: genreDomain.id })
+		.from(genreDomain)
+		.limit(1);
+
+	if (existing) return existing.id;
+
+	const [inserted] = await db
+		.insert(genreDomain)
+		.values({
+			name: "Unknown",
+			description: "Default domain for unclassified clusters",
+		})
+		.returning({ id: genreDomain.id });
+
+	if (!inserted) {
+		throw new Error("Failed to create default genre domain");
+	}
+	return inserted.id;
 }
 
 function chooseDominantDomain(domainIds: Array<number | null>): number | null {
