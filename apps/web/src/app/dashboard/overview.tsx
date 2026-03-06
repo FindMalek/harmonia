@@ -92,9 +92,7 @@ export function DashboardOverview({
 	const clearAnalysisMutation = useMutation(
 		orpc.pipeline.clearAnalysis.mutationOptions({
 			onSuccess: (data) => {
-				toast.success(
-					`Analysis cleared (${data.tracksUpdated} tracks reset)`,
-				);
+				toast.success(`Analysis cleared (${data.tracksUpdated} tracks reset)`);
 				queryClient.invalidateQueries();
 			},
 			onError: (error) => {

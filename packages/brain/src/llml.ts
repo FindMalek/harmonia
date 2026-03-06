@@ -1,7 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { generateObject, NoObjectGeneratedError } from "ai";
+import { generateText, Output, NoObjectGeneratedError } from "ai";
 import pRetry from "p-retry";
 
 import {
@@ -107,14 +107,16 @@ export async function classifyTracksWithLLM(
 	return pRetry(
 		async () => {
 			try {
-				const { object } = await generateObject({
+				const { output } = await generateText({
 					model: groq("openai/gpt-oss-120b"),
-					schema: classificationResultListSchema,
 					prompt: buildClassificationPrompt(tracks),
 					temperature: 0,
+					output: Output.object({
+						schema: classificationResultListSchema,
+					}),
 				});
 
-				for (const item of object.results) {
+				for (const item of output.results) {
 					if (!item.trackId) {
 						logger.warn(
 							{ item },
@@ -123,7 +125,7 @@ export async function classifyTracksWithLLM(
 					}
 				}
 
-				return object.results;
+				return output.results;
 			} catch (err) {
 				if (NoObjectGeneratedError.isInstance(err)) {
 					const e = err as { text?: string; cause?: unknown };
@@ -132,7 +134,9 @@ export async function classifyTracksWithLLM(
 						(typeof e.cause === "object" &&
 						e.cause !== null &&
 						"failed_generation" in e.cause
-							? String((e.cause as { failed_generation?: string }).failed_generation)
+							? String(
+									(e.cause as { failed_generation?: string }).failed_generation,
+								)
 							: undefined);
 					logger.warn(
 						{

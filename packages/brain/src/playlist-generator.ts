@@ -13,7 +13,7 @@ import {
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
@@ -89,9 +89,11 @@ export async function generatePlaylists(
 		try {
 			const generated = await pRetry(
 				async () => {
-					const { object } = await generateObject({
+					const { output } = await generateText({
 						model: groq("openai/gpt-oss-120b"),
-						schema: playlistMetadataSchema,
+						output: Output.object({
+							schema: playlistMetadataSchema,
+						}),
 						temperature: 0,
 						prompt: [
 							"You are a creative music curator generating a playlist from a cluster of similar tracks.",
@@ -117,7 +119,7 @@ export async function generatePlaylists(
 							.filter(Boolean)
 							.join("\n"),
 					});
-					return object;
+					return output;
 				},
 				{
 					retries: 2,

@@ -8,7 +8,7 @@ import {
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
 import pRetry from "p-retry";
 
@@ -83,9 +83,11 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 		try {
 			const meta = await pRetry(
 				async () => {
-					const { object } = await generateObject({
+					const { output } = await generateText({
 						model: groq("openai/gpt-oss-120b"),
-						schema: clusterMetadataSchema,
+						output: Output.object({
+							schema: clusterMetadataSchema,
+						}),
 						temperature: 0,
 						prompt: [
 							"You are analyzing a cluster of similar music tracks. Based on the aggregate characteristics below, generate metadata for this cluster.",
@@ -106,7 +108,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 							"- suggestedArchetype: 'mood' | 'situation' | 'genre' | 'hybrid'",
 						].join("\n"),
 					});
-					return object;
+					return output;
 				},
 				{
 					retries: 2,

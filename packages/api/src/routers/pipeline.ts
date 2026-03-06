@@ -80,9 +80,7 @@ export const pipelineRouter = {
 
 		await db
 			.delete(playlist)
-			.where(
-				and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)),
-			);
+			.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)));
 
 		await db.delete(cluster).where(eq(cluster.userId, userId));
 
