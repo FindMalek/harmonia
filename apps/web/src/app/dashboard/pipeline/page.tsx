@@ -12,9 +12,9 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { orpc } from "@/utils/orpc";
+import { client, orpc, queryClient } from "@/utils/orpc";
 import { ChevronDown, ChevronRight, Play } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { CopyableError } from "@/components/copyable-error";
@@ -47,11 +47,6 @@ export default function PipelinePage() {
 		refetch,
 	} = useQuery({
 		...orpc.pipeline.getAll.queryOptions(),
-		refetchInterval: (query) =>
-			query.state.data?.some((r: { status: string }) => r.status === "running")
-				? 2000
-				: false,
-		refetchIntervalInBackground: false,
 	});
 
 	if (isError) {
@@ -100,7 +95,16 @@ export default function PipelinePage() {
 				</p>
 			</div>
 
-			{activeRun && <ActiveRunCard run={activeRun} />}
+			{activeRun && (
+				<ActiveRunCard
+					run={activeRun}
+					onComplete={() =>
+						queryClient.invalidateQueries({
+							queryKey: orpc.pipeline.getAll.key(),
+						})
+					}
+				/>
+			)}
 
 			<div>
 				<h3 className="mb-3 font-medium text-sm">Run History</h3>
@@ -142,7 +146,8 @@ type Run = NonNullable<
 	: never;
 
 function ActiveRunCard({
-	run,
+	run: initialRun,
+	onComplete,
 }: {
 	run: {
 		id: number;
@@ -151,7 +156,63 @@ function ActiveRunCard({
 		progress: unknown;
 		startedAt: Date | string | null;
 	};
+	onComplete: () => void;
 }) {
+	const [run, setRun] = useState(initialRun);
+	const onCompleteRef = useRef(onComplete);
+	onCompleteRef.current = onComplete;
+
+	useEffect(() => {
+		const controller = new AbortController();
+		let cancelled = false;
+
+		(async () => {
+			try {
+				const iterator = await client.pipeline.streamStatus(
+					{ id: initialRun.id },
+					{ signal: controller.signal },
+				);
+				for await (const event of iterator) {
+					if (cancelled) break;
+					if (event.event === "progress") {
+						setRun({
+							id: event.runId,
+							status: event.status,
+							currentStage: event.currentStage,
+							progress: event.progress,
+							startedAt: event.startedAt,
+						});
+					} else if (
+						event.event === "completed" ||
+						event.event === "failed" ||
+						event.event === "error"
+					) {
+						if (event.event === "completed" || event.event === "failed") {
+							setRun((prev) => ({
+								...prev,
+								status: event.event,
+								progress: event.progress,
+								completedAt: event.completedAt,
+								...(event.event === "failed" ? { error: event.error } : {}),
+							}));
+						}
+						onCompleteRef.current();
+						break;
+					}
+				}
+			} catch (err) {
+				if (err instanceof Error && err.name !== "AbortError" && !cancelled) {
+					onCompleteRef.current();
+				}
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+			controller.abort();
+		};
+	}, [initialRun.id]);
+
 	const progress = (run.progress ?? {}) as Record<
 		string,
 		Record<string, unknown>
