@@ -7,7 +7,7 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { classifyTracksWithLLM } from "./llml";
 import type { ClassificationResult, TrackForClassification } from "./schemas";
 
-const CLASSIFICATION_BATCH_SIZE = 25;
+const CLASSIFICATION_BATCH_SIZE = 12;
 
 export type ClassifyProgress = {
 	classified: number;

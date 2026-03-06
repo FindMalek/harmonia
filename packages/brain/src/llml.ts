@@ -1,7 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { generateObject } from "ai";
+import { generateObject, NoObjectGeneratedError } from "ai";
 import pRetry from "p-retry";
 
 import {
@@ -86,6 +86,7 @@ High-level genre domain. Infer from spotifyGenres when provided. Examples: "Pop"
 4. **Consistency**: Use similar vocabulary across tracks in the batch when the same concept applies.
 5. **Order matters**: Return results in the exact same order as the input. Match by position, not by content.
 6. **No hallucination**: Only include themes/topics/vibes you can justify from the input. Empty arrays are fine.
+7. **Output format**: Return a JSON object with a \`results\` array. Each element is one classification object. Output valid JSON only—no markdown, no code blocks, no extra text.
 
 # Input Tracks (JSON)
 
@@ -105,22 +106,45 @@ export async function classifyTracksWithLLM(
 
 	return pRetry(
 		async () => {
-			const { object } = await generateObject({
-				model: groq("openai/gpt-oss-120b"),
-				schema: classificationResultListSchema,
-				prompt: buildClassificationPrompt(tracks),
-			});
+			try {
+				const { object } = await generateObject({
+					model: groq("openai/gpt-oss-120b"),
+					schema: classificationResultListSchema,
+					prompt: buildClassificationPrompt(tracks),
+					temperature: 0,
+				});
 
-			for (const item of object.results) {
-				if (!item.trackId) {
+				for (const item of object.results) {
+					if (!item.trackId) {
+						logger.warn(
+							{ item },
+							"LLM classification result missing trackId; this item will be ignored",
+						);
+					}
+				}
+
+				return object.results;
+			} catch (err) {
+				if (NoObjectGeneratedError.isInstance(err)) {
+					const e = err as { text?: string; cause?: unknown };
+					const failedText =
+						e.text ??
+						(typeof e.cause === "object" &&
+						e.cause !== null &&
+						"failed_generation" in e.cause
+							? String((e.cause as { failed_generation?: string }).failed_generation)
+							: undefined);
 					logger.warn(
-						{ item },
-						"LLM classification result missing trackId; this item will be ignored",
+						{
+							errorMessage: err.message,
+							rawOutput: failedText,
+							cause: e.cause,
+						},
+						"LLM returned invalid JSON; see rawOutput for model output",
 					);
 				}
+				throw err;
 			}
-
-			return object.results;
 		},
 		{
 			retries: 3,

@@ -86,6 +86,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 					const { object } = await generateObject({
 						model: groq("openai/gpt-oss-120b"),
 						schema: clusterMetadataSchema,
+						temperature: 0,
 						prompt: [
 							"You are analyzing a cluster of similar music tracks. Based on the aggregate characteristics below, generate metadata for this cluster.",
 							"",

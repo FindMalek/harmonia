@@ -92,6 +92,7 @@ export async function generatePlaylists(
 					const { object } = await generateObject({
 						model: groq("openai/gpt-oss-120b"),
 						schema: playlistMetadataSchema,
+						temperature: 0,
 						prompt: [
 							"You are a creative music curator generating a playlist from a cluster of similar tracks.",
 							"",
