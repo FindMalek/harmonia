@@ -3,13 +3,17 @@
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
+	"scripts": {
+		"build": "tsc --noEmit"
+	},
 	"exports": {
 		".": {
 			"default": "./src/index.ts"
 		}
 	},
 	"dependencies": {
-		"@ai-sdk/openai": "^3.0.41",
+		"@ai-sdk/groq": "^3.0.0",
+		"@zenbase/llml": "^0.4.0",
 		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",

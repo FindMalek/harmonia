@@ -9,7 +9,9 @@
 			"default": "./src/*.ts"
 		}
 	},
-	"scripts": {},
+	"scripts": {
+		"build": "tsc --noEmit"
+	},
 	"dependencies": {
 		"@harmonia/auth": "workspace:*",
 		"@harmonia/db": "workspace:*",

@@ -1,4 +1,4 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { groq } from "@ai-sdk/groq";
 import { db } from "@harmonia/db";
 import {
 	cluster,
@@ -8,16 +8,12 @@ import {
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
+import { llml } from "@zenbase/llml";
 import { generateText, Output } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
 import pRetry from "p-retry";
 
 import { clusterMetadataSchema } from "./schemas";
-
-const groq = createOpenAI({
-	apiKey: env.GROQ_API_KEY,
-	baseURL: "https://api.groq.com/openai/v1",
-});
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
 	if (!env.GROQ_API_KEY) {
@@ -89,24 +85,25 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 							schema: clusterMetadataSchema,
 						}),
 						temperature: 0,
-						prompt: [
-							"You are analyzing a cluster of similar music tracks. Based on the aggregate characteristics below, generate metadata for this cluster.",
-							"",
-							`Cluster size: ${trackRows.length} tracks`,
-							`Top moods: ${topMoods.join(", ")}`,
-							`Top themes: ${topThemes.join(", ")}`,
-							`Top vibes: ${topVibes.join(", ")}`,
-							`Dominant energy: ${dominantEnergy}`,
-							`Sample tracks: ${sampleTracks.join("; ")}`,
-							"",
-							"Generate:",
-							"- themeSummary: a concise 1-sentence description of this cluster's musical identity",
-							"- dominantMood: the single most representative mood",
-							"- dominantEnergy: 'very low', 'low', 'medium', 'high', or 'very high'",
-							"- topThemes: 3-5 key themes",
-							"- topVibes: 3-5 situational descriptors",
-							"- suggestedArchetype: 'mood' | 'situation' | 'genre' | 'hybrid'",
-						].join("\n"),
+						prompt: llml({
+							role: "You are analyzing a cluster of similar music tracks. Based on the aggregate characteristics below, generate metadata for this cluster.",
+							clusterInfo: {
+								size: `${trackRows.length} tracks`,
+								topMoods: topMoods.join(", "),
+								topThemes: topThemes.join(", "),
+								topVibes: topVibes.join(", "),
+								dominantEnergy,
+								sampleTracks: sampleTracks.join("; "),
+							},
+							generate: [
+								"themeSummary: a concise 1-sentence description of this cluster's musical identity",
+								"dominantMood: the single most representative mood",
+								"dominantEnergy: very low | low | medium | high | very high",
+								"topThemes: 3-5 key themes",
+								"topVibes: 3-5 situational descriptors",
+								"suggestedArchetype: mood | situation | genre | hybrid",
+							],
+						}),
 					});
 					return output;
 				},

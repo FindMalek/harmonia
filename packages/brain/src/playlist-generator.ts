@@ -1,4 +1,4 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { groq } from "@ai-sdk/groq";
 import { db } from "@harmonia/db";
 import {
 	cluster,
@@ -13,16 +13,12 @@ import {
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
+import { llml } from "@zenbase/llml";
 import { generateText, Output } from "ai";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
 import { playlistMetadataSchema } from "./schemas";
-
-const groq = createOpenAI({
-	apiKey: env.GROQ_API_KEY,
-	baseURL: "https://api.groq.com/openai/v1",
-});
 
 export type GenerateProgress = {
 	playlists: number;
@@ -89,35 +85,36 @@ export async function generatePlaylists(
 		try {
 			const generated = await pRetry(
 				async () => {
+					const clusterInfo: Record<string, string | number> = {
+						mood: meta
+							? meta.dominantMood
+							: [...new Set(moods)].slice(0, 5).join(", "),
+						topThemes: [...new Set(themes)].slice(0, 5).join(", ") || "various",
+						topVibes: [...new Set(vibes)].slice(0, 5).join(", ") || "various",
+						trackCount: trackRows.length,
+						sampleTracks: sampleTracks.join("; "),
+					};
+					if (meta?.themeSummary) clusterInfo.theme = meta.themeSummary;
+					if (meta?.dominantEnergy) clusterInfo.energy = meta.dominantEnergy;
+					if (meta?.suggestedArchetype)
+						clusterInfo.archetype = meta.suggestedArchetype;
+
 					const { output } = await generateText({
 						model: groq("openai/gpt-oss-120b"),
 						output: Output.object({
 							schema: playlistMetadataSchema,
 						}),
 						temperature: 0,
-						prompt: [
-							"You are a creative music curator generating a playlist from a cluster of similar tracks.",
-							"",
-							"Cluster info:",
-							meta ? `Theme: ${meta.themeSummary}` : "",
-							meta
-								? `Mood: ${meta.dominantMood}`
-								: `Top moods: ${[...new Set(moods)].slice(0, 5).join(", ")}`,
-							meta ? `Energy: ${meta.dominantEnergy}` : "",
-							meta ? `Archetype: ${meta.suggestedArchetype}` : "",
-							`Top themes: ${[...new Set(themes)].slice(0, 5).join(", ") || "various"}`,
-							`Top vibes: ${[...new Set(vibes)].slice(0, 5).join(", ") || "various"}`,
-							`Track count: ${trackRows.length}`,
-							`Sample tracks: ${sampleTracks.join("; ")}`,
-							"",
-							"Generate:",
-							"- name: a creative, evocative playlist name (2-4 words, no generic names like 'My Playlist')",
-							"- description: 2-3 sentences capturing the feeling and vibe of this playlist",
-							"- taxonomy: 'mood' | 'situation' | 'genre' | 'hybrid'",
-							"- coverColor: a hex color code that matches the playlist vibe (e.g. '#1a1a2e' for dark moody, '#ff6b6b' for energetic)",
-						]
-							.filter(Boolean)
-							.join("\n"),
+						prompt: llml({
+							role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
+							clusterInfo,
+							generate: [
+								"name: a creative, evocative playlist name (2-4 words, no generic names like 'My Playlist')",
+								"description: 2-3 sentences capturing the feeling and vibe of this playlist",
+								"taxonomy: mood | situation | genre | hybrid",
+								"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
+							],
+						}),
 					});
 					return output;
 				},
