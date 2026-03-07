@@ -16,18 +16,18 @@ export const clustersRouter = {
 		.input(emptyInput)
 		.output(z.array(clusterListItemSchema))
 		.handler(async ({ context }) => {
-		const userId = context.session.user.id;
+			const userId = context.session.user.id;
 
-		const clusters = await db
-			.select()
-			.from(cluster)
-			.where(eq(cluster.userId, userId))
-			.orderBy(desc(cluster.createdAt));
+			const clusters = await db
+				.select()
+				.from(cluster)
+				.where(eq(cluster.userId, userId))
+				.orderBy(desc(cluster.createdAt));
 
-		return clusters;
-	}),
+			return clusters;
+		}),
 
-		getById: protectedProcedure
+	getById: protectedProcedure
 		.input(clusterGetByIdInput)
 		.output(z.union([clusterGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {

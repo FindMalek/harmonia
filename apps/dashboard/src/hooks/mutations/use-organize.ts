@@ -28,7 +28,10 @@ export function useOrganize() {
 	return useMutation(
 		orpc.organize.run.mutationOptions({
 			onSuccess: (data) => {
-				toast.success(`Pipeline started (run #${data.runId})`);
+				const first = data.results[0];
+				toast.success(
+					first ? `Pipeline started (run #${first.runId})` : "Pipeline started",
+				);
 				queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
 				router.push("/dashboard/pipeline" as Parameters<typeof router.push>[0]);
 			},

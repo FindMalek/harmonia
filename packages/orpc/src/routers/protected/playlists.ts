@@ -22,18 +22,18 @@ export const playlistsRouter = {
 		.input(emptyInput)
 		.output(z.array(playlistListItemSchema))
 		.handler(async ({ context }) => {
-		const userId = context.session.user.id;
+			const userId = context.session.user.id;
 
-		const playlists = await db
-			.select()
-			.from(playlist)
-			.where(eq(playlist.userId, userId))
-			.orderBy(desc(playlist.createdAt));
+			const playlists = await db
+				.select()
+				.from(playlist)
+				.where(eq(playlist.userId, userId))
+				.orderBy(desc(playlist.createdAt));
 
-		return playlists;
-	}),
+			return playlists;
+		}),
 
-		getById: protectedProcedure
+	getById: protectedProcedure
 		.input(playlistGetByIdInput)
 		.output(z.union([playlistGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -68,7 +68,7 @@ export const playlistsRouter = {
 			};
 		}),
 
-		update: protectedProcedure
+	update: protectedProcedure
 		.input(playlistUpdateInput)
 		.output(z.union([playlistUpdateOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -90,7 +90,7 @@ export const playlistsRouter = {
 			return updated ?? null;
 		}),
 
-		export: protectedProcedure
+	export: protectedProcedure
 		.input(playlistExportInput)
 		.output(z.union([playlistExportOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -99,12 +99,12 @@ export const playlistsRouter = {
 			return result;
 		}),
 
-		exportAll: protectedProcedure
+	exportAll: protectedProcedure
 		.input(emptyInput)
 		.output(playlistExportAllOutputSchema)
 		.handler(async ({ context }) => {
-		const userId = context.session.user.id;
-		const result = await exportAllPlaylists(userId);
-		return result;
-	}),
+			const userId = context.session.user.id;
+			const result = await exportAllPlaylists(userId);
+			return result;
+		}),
 };

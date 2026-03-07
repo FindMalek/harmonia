@@ -102,7 +102,7 @@ export function DashboardOverview() {
 					)}
 					<Button
 						size="sm"
-						onClick={() => organizeMutation.mutate({ userId: undefined })}
+						onClick={() => organizeMutation.mutate({})}
 						disabled={organizeMutation.isPending}
 					>
 						{organizeMutation.isPending ? (

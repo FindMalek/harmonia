@@ -80,7 +80,7 @@ export const tracksRouter = {
 			};
 		}),
 
-		getById: protectedProcedure
+	getById: protectedProcedure
 		.input(trackGetByIdInput)
 		.output(z.union([trackGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {

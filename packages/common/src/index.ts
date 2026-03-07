@@ -6,3 +6,4 @@ export {
 } from "./utils/origin";
 export * from "./services/brain";
 export * from "./services/music";
+export * from "./services/organize";

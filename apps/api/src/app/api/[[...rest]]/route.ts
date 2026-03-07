@@ -13,8 +13,6 @@ import type {
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import type { NextRequest } from "next/server";
-import { env } from "@harmonia/env";
-export const dynamic = "force-dynamic";
 
 let lastError: Error | null = null;
 

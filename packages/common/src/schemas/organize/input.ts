@@ -1,6 +1,4 @@
 import { z } from "zod";
 
-export const organizeRunInput = z.object({
-	userId: z.string().optional(),
-});
+export const organizeRunInput = z.object({});
 export type OrganizeRunInput = z.infer<typeof organizeRunInput>;

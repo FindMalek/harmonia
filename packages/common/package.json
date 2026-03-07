@@ -16,6 +16,9 @@
 		"./services/music": {
 			"default": "./src/services/music/index.ts"
 		},
+		"./services/organize": {
+			"default": "./src/services/organize/index.ts"
+		},
 		"./schemas": {
 			"default": "./src/schemas/index.ts"
 		},

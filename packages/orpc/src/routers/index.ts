@@ -2,10 +2,8 @@ import type { RouterClient } from "@orpc/server";
 import { protectedRouter } from "./protected";
 import { createPublicRouter } from "./public";
 
-export function createAppRouter(
-	deps?: Parameters<typeof createPublicRouter>[0],
-) {
-	const publicR = createPublicRouter(deps);
+export function createAppRouter() {
+	const publicR = createPublicRouter();
 	return {
 		...publicR,
 		...protectedRouter,

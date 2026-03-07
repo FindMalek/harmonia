@@ -1,4 +1,9 @@
-export { o, publicProcedure, protectedProcedure } from "./procedures";
+export {
+	o,
+	publicProcedure,
+	protectedProcedure,
+	cronOrAuthProcedure,
+} from "./procedures";
 export { createContext } from "./context";
 export type { Context } from "./context";
 export { createORPCClientUtils } from "./client";
