@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@source "../../**";
+@source "../../../apps/dashboard/src/**";
+@source "../../../apps/web/src/**";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
