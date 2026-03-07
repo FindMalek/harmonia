@@ -38,6 +38,7 @@ import {
 	IconStack2,
 	IconTrash,
 	IconX,
+	IconBrandBandlab,
 } from "@tabler/icons-react";
 import type * as React from "react";
 
@@ -82,4 +83,7 @@ export const Icons = {
 	// Theme
 	moon: IconMoon,
 	sun: IconSun,
+
+	// Brand
+	logo: IconBrandBandlab,
 } as const;

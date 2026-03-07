@@ -11,7 +11,7 @@ export default function AppProviders({
 	return (
 		<Providers queryClient={queryClient}>
 			{children}
-			<ReactQueryDevtools />
+			{/* <ReactQueryDevtools /> */}
 		</Providers>
 	);
 }
