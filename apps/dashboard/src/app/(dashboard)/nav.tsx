@@ -7,12 +7,12 @@ import { usePathname } from "next/navigation";
 type Href = LinkProps<string>["href"];
 
 const navItems: Array<{ href: string; label: string }> = [
-	{ href: "/dashboard", label: "Overview" },
-	{ href: "/dashboard/pipeline", label: "Pipeline" },
-	{ href: "/dashboard/tracks", label: "Tracks" },
-	{ href: "/dashboard/clusters", label: "Clusters" },
-	{ href: "/dashboard/playlists", label: "Playlists" },
-	{ href: "/dashboard/todos", label: "Todos" },
+	{ href: "/", label: "Overview" },
+	{ href: "/pipeline", label: "Pipeline" },
+	{ href: "/tracks", label: "Tracks" },
+	{ href: "/clusters", label: "Clusters" },
+	{ href: "/playlists", label: "Playlists" },
+	{ href: "/todos", label: "Todos" },
 ];
 
 export function DashboardNav() {
@@ -22,9 +22,7 @@ export function DashboardNav() {
 		<nav className="mt-2 flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:overflow-visible sm:pb-0">
 			{navItems.map(({ href, label }) => {
 				const isActive =
-					href === "/dashboard"
-						? pathname === "/dashboard"
-						: pathname.startsWith(href);
+					href === "/" ? pathname === "/" : pathname.startsWith(href);
 
 				return (
 					<Link

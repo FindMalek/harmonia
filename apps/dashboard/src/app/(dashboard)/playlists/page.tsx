@@ -131,7 +131,7 @@ export default function PlaylistsPage() {
 					description="Run the pipeline to generate playlists from your library."
 					action={{
 						label: "Run Pipeline",
-						onClick: () => (window.location.href = "/dashboard"),
+						onClick: () => (window.location.href = "/"),
 					}}
 					variant="card"
 				/>

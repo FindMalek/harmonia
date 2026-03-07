@@ -29,6 +29,7 @@ export default function AppHeader() {
 
 	return (
 		<Header
+			links={[{ to: "/", label: "Dashboard" }]}
 			linkComponent={NavLink}
 			authClient={authClient}
 			signInUrl="/login"
