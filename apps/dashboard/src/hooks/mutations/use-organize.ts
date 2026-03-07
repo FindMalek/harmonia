@@ -1,3 +1,4 @@
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc";
 import { queryKeys } from "@/lib/query-keys";
@@ -33,7 +34,7 @@ export function useOrganize() {
 					first ? `Pipeline started (run #${first.runId})` : "Pipeline started",
 				);
 				queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
-				router.push("/pipeline" as Parameters<typeof router.push>[0]);
+				router.push(DASHBOARD_ROUTES.pipeline.path);
 			},
 			onError: (error) => {
 				const msg = error.message ?? "Failed to start pipeline";

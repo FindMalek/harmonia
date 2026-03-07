@@ -22,6 +22,7 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { Icons } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { useClusters, useClusterDetail } from "@/hooks/queries/use-clusters";
 import { useDashboardUI } from "@/stores/dashboard-ui";
 
@@ -146,7 +147,8 @@ export default function ClustersPage() {
 					description="Run the pipeline to discover clusters in your library."
 					action={{
 						label: "Run Pipeline",
-						onClick: () => (window.location.href = "/"),
+						onClick: () =>
+							(window.location.href = DASHBOARD_ROUTES.overview.path),
 					}}
 					variant="card"
 				/>

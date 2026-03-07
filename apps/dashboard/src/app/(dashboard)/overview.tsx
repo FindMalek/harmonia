@@ -18,6 +18,7 @@ import {
 	usePipelineStats,
 } from "@/hooks/queries/use-pipeline";
 import { useSpotifyLinked } from "@/hooks/queries/use-spotify-linked";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { authClient } from "@/lib/auth-client";
 import { env } from "@/lib/env";
 import { Icons } from "@harmonia/ui";
@@ -72,7 +73,8 @@ export function DashboardOverview() {
 										(env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "") ||
 											(typeof window !== "undefined"
 												? window.location.origin
-												: "")) + "/",
+												: "")) +
+										DASHBOARD_ROUTES.overview.path,
 								});
 							}}
 						>
