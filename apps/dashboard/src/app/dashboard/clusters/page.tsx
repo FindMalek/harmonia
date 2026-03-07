@@ -29,13 +29,7 @@ export default function ClustersPage() {
 	const selectedClusterId = useDashboardUI((s) => s.selectedClusterId);
 	const setSelectedCluster = useDashboardUI((s) => s.setSelectedCluster);
 
-	const {
-		data: clusters,
-		isLoading,
-		isError,
-		error,
-		refetch,
-	} = useClusters();
+	const { data: clusters, isLoading, isError, error, refetch } = useClusters();
 	const { data: clusterDetail } = useClusterDetail(selectedClusterId);
 
 	if (isError) {

@@ -44,13 +44,7 @@ export default function PipelinePage() {
 	const setExpandedRun = useDashboardUI((s) => s.setExpandedRun);
 	const queryClient = useQueryClient();
 
-	const {
-		data: runs,
-		isLoading,
-		isError,
-		error,
-		refetch,
-	} = usePipelineRuns();
+	const { data: runs, isLoading, isError, error, refetch } = usePipelineRuns();
 
 	if (isError) {
 		return (

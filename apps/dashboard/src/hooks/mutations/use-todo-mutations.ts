@@ -25,10 +25,14 @@ export function useTodoToggle() {
 		onMutate: async (variables) => {
 			await queryClient.cancelQueries({ queryKey: queryKeys.todoList() });
 			const previous = queryClient.getQueryData<Todo[]>(queryKeys.todoList());
-			queryClient.setQueryData(queryKeys.todoList(), (old: Todo[] | undefined) =>
-				old?.map((t) =>
-					t.id === variables.id ? { ...t, completed: variables.completed } : t,
-				),
+			queryClient.setQueryData(
+				queryKeys.todoList(),
+				(old: Todo[] | undefined) =>
+					old?.map((t) =>
+						t.id === variables.id
+							? { ...t, completed: variables.completed }
+							: t,
+					),
 			);
 			return { previous };
 		},
@@ -51,8 +55,9 @@ export function useTodoDelete() {
 		onMutate: async (variables) => {
 			await queryClient.cancelQueries({ queryKey: queryKeys.todoList() });
 			const previous = queryClient.getQueryData<Todo[]>(queryKeys.todoList());
-			queryClient.setQueryData(queryKeys.todoList(), (old: Todo[] | undefined) =>
-				old?.filter((t) => t.id !== variables.id),
+			queryClient.setQueryData(
+				queryKeys.todoList(),
+				(old: Todo[] | undefined) => old?.filter((t) => t.id !== variables.id),
 			);
 			return { previous };
 		},
