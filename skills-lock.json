@@ -16,6 +16,11 @@
       "sourceType": "github",
       "computedHash": "38eb8cbf9e1739429a233e57196faa92a7d1436940e121776df17b808e44652a"
     },
+    "ci-pipeline": {
+      "source": "modh-labs/ai-software-os",
+      "sourceType": "github",
+      "computedHash": "ae40b30df6160d65e69ff63b0ab2e713412ef0a335c63f745b9d22055a19fb2e"
+    },
     "dce-edge": {
       "source": "vercel/next.js",
       "sourceType": "github",
