@@ -13,6 +13,7 @@
 		"build": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@harmonia/common": "workspace:*",
 		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"better-auth": "catalog:",

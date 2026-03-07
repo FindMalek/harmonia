@@ -37,6 +37,10 @@ pnpm run db:push
 - **db:push** – Syncs schema directly to the database (good for dev, no migration files).
 - **db:migrate** – Runs migration files in `packages/db/src/migrations/` (use for production).
 
+### CI migrations
+
+The `.github/workflows/drizzle-migrate.yml` workflow runs migrations on push to `main` when schema or migration files change. Add the `PRODUCTION_DATABASE_URL` secret in **GitHub repo → Settings → Secrets and variables → Actions**.
+
 Then, run the development server:
 
 ```bash

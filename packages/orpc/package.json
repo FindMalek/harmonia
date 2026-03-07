@@ -1,0 +1,38 @@
+{
+	"name": "@harmonia/orpc",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./context": {
+			"default": "./src/context.ts"
+		},
+		"./client": {
+			"default": "./src/client.ts"
+		},
+		"./utils/headers": {
+			"default": "./src/utils/headers.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@harmonia/core": "workspace:*",
+		"@harmonia/db": "workspace:*",
+		"@harmonia/env": "workspace:*",
+		"@harmonia/logger": "workspace:*",
+		"@harmonia/common": "workspace:*",
+		"@orpc/client": "catalog:",
+		"@orpc/server": "catalog:",
+		"@orpc/zod": "catalog:",
+		"drizzle-orm": "catalog:",
+		"next": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"typescript": "catalog:"
+	}
+}

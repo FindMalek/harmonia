@@ -1,0 +1,21 @@
+{
+	"name": "@harmonia/core",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@harmonia/auth": "workspace:*",
+		"@harmonia/db": "workspace:*",
+		"@harmonia/env": "workspace:*"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"typescript": "catalog:"
+	}
+}

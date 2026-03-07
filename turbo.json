@@ -1,6 +1,24 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
+	"globalEnv": [
+		"DATABASE_URL",
+		"NEXT_PUBLIC_*",
+		"BETTER_AUTH_SECRET",
+		"OTEL_*"
+	],
+	"globalPassThroughEnv": [
+		"DATABASE_URL",
+		"NEXT_PUBLIC_*",
+		"BETTER_AUTH_SECRET",
+		"SPOTIFY_CLIENT_ID",
+		"SPOTIFY_CLIENT_SECRET",
+		"OPENAI_API_KEY",
+		"GROQ_API_KEY",
+		"CRON_SECRET",
+		"CRON_USER_ID",
+		"OTEL_*"
+	],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],

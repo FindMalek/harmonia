@@ -7,8 +7,16 @@
 		"build": "tsc --noEmit"
 	},
 	"exports": {
+		".": "./src/index.ts",
 		"./server": "./src/server.ts",
-		"./web": "./src/web.ts"
+		"./web": "./src/web.ts",
+		"./dashboard": "./src/dashboard.ts",
+		"./base": "./src/base.ts",
+		"./presets": "./src/presets/index.ts",
+		"./presets/api": "./src/presets/api.ts",
+		"./presets/dashboard": "./src/presets/dashboard.ts",
+		"./presets/web": "./src/presets/web.ts",
+		"./presets/db": "./src/presets/db.ts"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "^0.13.1",
