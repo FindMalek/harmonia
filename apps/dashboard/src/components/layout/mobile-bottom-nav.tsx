@@ -13,9 +13,6 @@ type Href = LinkProps<string>["href"];
 export function MobileBottomNav() {
 	const pathname = usePathname();
 
-	// Check if the current route is a sub-route of playlists (e.g., /playlists/123)
-	// DASHBOARD_ROUTES.playlists.path is "/playlists"
-	// We check if it starts with "/playlists/" which implies a nested route
 	const isPlaylistDetail =
 		pathname.startsWith(`${DASHBOARD_ROUTES.playlists.path}/`) &&
 		DASHBOARD_ROUTES.playlists.children.detail.hideBottomNav;
