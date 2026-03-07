@@ -1,10 +1,3 @@
-/**
- * Centralized route configuration for the Harmonia frontend.
- * Single source of truth for paths, labels, icons, and nested routes.
- *
- * Icon keys must match keys in @harmonia/ui Icons (logo, play, music, layers, disc, fileText, etc.)
- */
-
 /** Web app routes (marketing, landing, etc.) */
 export const WEB_ROUTES = {
 	home: {
@@ -21,7 +14,7 @@ export const DASHBOARD_ROUTES = {
 	overview: {
 		path: "/",
 		label: "Overview",
-		icon: "logo",
+		icon: "home",
 		isNav: true,
 	},
 	pipeline: {
@@ -51,6 +44,7 @@ export const DASHBOARD_ROUTES = {
 			detail: {
 				path: "/playlists/:id",
 				label: "Playlist Detail",
+				hideBottomNav: true,
 			},
 		},
 	},
@@ -79,10 +73,7 @@ export type DashboardRouteKey = keyof DashboardRoutes;
 
 /** Dashboard routes that appear in the main navigation */
 export const DASHBOARD_NAV_ITEMS = (
-	Object.entries(DASHBOARD_ROUTES) as [
-		DashboardRouteKey,
-		(typeof DASHBOARD_ROUTES)[DashboardRouteKey],
-	][]
+	Object.entries(DASHBOARD_ROUTES)
 )
 	.filter(([, route]) => route.isNav)
 	.map(([key, route]) => ({ key, ...route }));

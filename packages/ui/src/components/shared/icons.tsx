@@ -41,6 +41,7 @@ import {
 	IconBrandBandlab,
 	IconSettings,
 	IconChartBar,
+	IconLayoutBoard,
 } from "@tabler/icons-react";
 import type * as React from "react";
 
@@ -92,4 +93,5 @@ export const Icons = {
 	// Navigation / App
 	settings: IconSettings,
 	chart: IconChartBar,
+	home: IconLayoutBoard,
 } as const;
