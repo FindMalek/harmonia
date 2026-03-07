@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { getServerSession } from "@/lib/get-server-session";
 import { SpotifySignInButton } from "@/components/app/spotify-sign-in-button";
 import { Icons } from "@harmonia/ui";
@@ -8,7 +9,7 @@ export default async function LoginPage() {
 	const session = await getServerSession();
 
 	if (session?.user) {
-		redirect("/");
+		redirect(DASHBOARD_ROUTES.overview.path);
 	}
 
 	return (

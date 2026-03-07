@@ -28,6 +28,7 @@ import { Icons } from "@harmonia/ui";
 import { useExportAllPlaylists } from "@/hooks/mutations/use-export-all-playlists";
 import { useExportPlaylist } from "@/hooks/mutations/use-export-playlist";
 import { useUpdatePlaylist } from "@/hooks/mutations/use-update-playlist";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { usePlaylistDetail, usePlaylists } from "@/hooks/queries/use-playlists";
 import { useDashboardUI } from "@/stores/dashboard-ui";
 import { useState } from "react";
@@ -131,7 +132,8 @@ export default function PlaylistsPage() {
 					description="Run the pipeline to generate playlists from your library."
 					action={{
 						label: "Run Pipeline",
-						onClick: () => (window.location.href = "/"),
+						onClick: () =>
+							(window.location.href = DASHBOARD_ROUTES.overview.path),
 					}}
 					variant="card"
 				/>
