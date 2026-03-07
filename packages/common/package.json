@@ -24,6 +24,9 @@
 		},
 		"./utils/origin": {
 			"default": "./src/utils/origin.ts"
+		},
+		"./utils/routes": {
+			"default": "./src/utils/routes.ts"
 		}
 	},
 	"dependencies": {

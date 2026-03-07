@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Header } from "@harmonia/ui";
 import { authClient } from "@/lib/auth-client";
 
@@ -29,12 +30,17 @@ export default function AppHeader() {
 
 	return (
 		<Header
-			links={[{ to: "/", label: "Dashboard" }]}
+			links={[
+				{
+					to: DASHBOARD_ROUTES.overview.path,
+					label: DASHBOARD_ROUTES.overview.label,
+				},
+			]}
 			linkComponent={NavLink}
 			authClient={authClient}
 			signInUrl="/login"
 			signInLinkComponent={SignInLink}
-			onSignOutSuccess={() => router.push("/")}
+			onSignOutSuccess={() => router.push(DASHBOARD_ROUTES.overview.path)}
 		/>
 	);
 }

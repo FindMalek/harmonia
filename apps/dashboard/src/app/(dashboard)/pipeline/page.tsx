@@ -13,6 +13,7 @@ import { CopyableError } from "@/components/shared/copyable-error";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { PageLoader } from "@/components/shared/page-loader";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { usePipelineRuns } from "@/hooks/queries/use-pipeline";
 import { client } from "@/lib/orpc";
 import { queryKeys } from "@/lib/query-keys";
@@ -121,7 +122,8 @@ export default function PipelinePage() {
 							description="Click Run Pipeline on the overview page to start."
 							action={{
 								label: "Run Pipeline",
-								onClick: () => (window.location.href = "/"),
+								onClick: () =>
+									(window.location.href = DASHBOARD_ROUTES.overview.path),
 							}}
 							variant="card"
 						/>
