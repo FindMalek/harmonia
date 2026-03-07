@@ -10,47 +10,17 @@ import { usePathname } from "next/navigation";
 
 type Href = LinkProps<string>["href"];
 
-// Helper to check if a route matches the current pathname
-function isRouteMatch(routePath: string, currentPathname: string) {
-	if (routePath === currentPathname) return true;
-
-	// If route has dynamic segments (e.g. /playlists/:id)
-	if (routePath.includes(":")) {
-		const routeSegments = routePath.split("/");
-		const pathSegments = currentPathname.split("/");
-
-		// Length must match
-		if (routeSegments.length !== pathSegments.length) return false;
-
-		// Check each segment
-		return routeSegments.every((segment, i) => {
-			// If segment starts with ":", it's a wildcard, so it matches anything
-			return segment.startsWith(":") || segment === pathSegments[i];
-		});
-	}
-
-	return false;
-}
-
 export function MobileBottomNav() {
 	const pathname = usePathname();
 
-	// Check if the current route or any of its children should hide the bottom nav
-	const shouldHideNav = Object.values(DASHBOARD_ROUTES).some((route) => {
-		// Check main route
-		if (route.hideBottomNav && isRouteMatch(route.path, pathname)) return true;
+	// Check if the current route is a sub-route of playlists (e.g., /playlists/123)
+	// DASHBOARD_ROUTES.playlists.path is "/playlists"
+	// We check if it starts with "/playlists/" which implies a nested route
+	const isPlaylistDetail =
+		pathname.startsWith(`${DASHBOARD_ROUTES.playlists.path}/`) &&
+		DASHBOARD_ROUTES.playlists.children.detail.hideBottomNav;
 
-		// Check children (if any)
-		if (route.children) {
-			return Object.values(route.children).some(
-				(child) => child.hideBottomNav && isRouteMatch(child.path, pathname),
-			);
-		}
-
-		return false;
-	});
-
-	if (shouldHideNav) {
+	if (isPlaylistDetail) {
 		return null;
 	}
 
