@@ -42,3 +42,11 @@ function withCors(
 
 export const GET = withCors(authGet);
 export const POST = withCors(authPost);
+export const OPTIONS = async (req: NextRequest) => {
+	const origin = req.headers.get("origin");
+	const corsHeaders = await getCorsHeaders(origin);
+	return new Response(null, {
+		status: 204,
+		headers: corsHeaders,
+	});
+};

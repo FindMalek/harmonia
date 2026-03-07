@@ -8,6 +8,13 @@ import { apiEnv } from "@harmonia/env";
 export async function getCorsHeaders(
 	origin: string | null,
 ): Promise<Record<string, string>> {
+	console.log("[CORS] allowedOrigins", [
+		apiEnv.NEXT_PUBLIC_API_URL,
+		apiEnv.NEXT_PUBLIC_WEB_URL,
+		apiEnv.NEXT_PUBLIC_DASHBOARD_URL,
+	  ]);
+	  console.log("[CORS] request origin", origin);
+	  
 	const allowedOrigins: string[] = [];
 	for (const url of [
 		apiEnv.NEXT_PUBLIC_API_URL,
