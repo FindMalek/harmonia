@@ -6,8 +6,7 @@ function getApiUrlFallback() {
 		process.env.NEXT_PUBLIC_API_URL ??
 		process.env.BETTER_AUTH_URL ??
 		process.env.CORS_ORIGIN ??
-		process.env.NEXT_PUBLIC_APP_URL ??
-		"http://localhost:3002"
+		process.env.NEXT_PUBLIC_APP_URL
 	);
 }
 

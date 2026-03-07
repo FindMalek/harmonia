@@ -25,8 +25,7 @@ function SignInLink({
 	);
 }
 
-const dashboardUrl =
-	env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "") ?? "http://localhost:3003";
+const dashboardUrl = env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "");
 
 export default function AppHeader() {
 	const router = useRouter();
@@ -35,7 +34,7 @@ export default function AppHeader() {
 		<Header
 			links={[
 				{ to: "/", label: "Home" },
-				{ to: dashboardUrl, label: "Dashboard" },
+				{ to: dashboardUrl ?? "", label: "Dashboard" },
 			]}
 			linkComponent={NavLink}
 			authClient={authClient}

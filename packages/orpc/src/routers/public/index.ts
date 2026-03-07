@@ -22,7 +22,7 @@ export function createPublicRouter(deps?: {
 	matchNewTracksToPlaylists?: typeof matchNewTracksToPlaylists;
 }) {
 	return {
-		healthCheck: publicProcedure.handler(() => {
+		health: publicProcedure.handler(() => {
 			return "OK";
 		}),
 		organize: createOrganizeRouter({

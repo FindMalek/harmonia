@@ -8,7 +8,7 @@ export type PublicRouterClient = RouterClient<PublicRouter>;
 
 export interface CreateORPCClientUtilsOptions {
 	/**
-	 * Base API URL (e.g. https://api.example.com or http://localhost:3001)
+	 * Base API URL (e.g. https://api.example.com)
 	 * RPC endpoint will be ${apiUrl}/api/rpc
 	 */
 	apiUrl: string;
