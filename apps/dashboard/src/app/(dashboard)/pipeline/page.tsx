@@ -121,7 +121,7 @@ export default function PipelinePage() {
 							description="Click Run Pipeline on the overview page to start."
 							action={{
 								label: "Run Pipeline",
-								onClick: () => (window.location.href = "/dashboard"),
+								onClick: () => (window.location.href = "/"),
 							}}
 							variant="card"
 						/>

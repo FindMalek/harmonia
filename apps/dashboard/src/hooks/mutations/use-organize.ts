@@ -33,7 +33,7 @@ export function useOrganize() {
 					first ? `Pipeline started (run #${first.runId})` : "Pipeline started",
 				);
 				queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
-				router.push("/dashboard/pipeline" as Parameters<typeof router.push>[0]);
+				router.push("/pipeline" as Parameters<typeof router.push>[0]);
 			},
 			onError: (error) => {
 				const msg = error.message ?? "Failed to start pipeline";

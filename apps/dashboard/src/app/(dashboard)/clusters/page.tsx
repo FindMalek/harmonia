@@ -146,7 +146,7 @@ export default function ClustersPage() {
 					description="Run the pipeline to discover clusters in your library."
 					action={{
 						label: "Run Pipeline",
-						onClick: () => (window.location.href = "/dashboard"),
+						onClick: () => (window.location.href = "/"),
 					}}
 					variant="card"
 				/>

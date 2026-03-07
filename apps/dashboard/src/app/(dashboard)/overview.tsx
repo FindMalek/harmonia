@@ -72,7 +72,7 @@ export function DashboardOverview() {
 										(env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "") ||
 											(typeof window !== "undefined"
 												? window.location.origin
-												: "")) + "/dashboard",
+												: "")) + "/",
 								});
 							}}
 						>
