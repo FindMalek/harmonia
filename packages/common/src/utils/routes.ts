@@ -72,9 +72,7 @@ export type DashboardRoutes = typeof DASHBOARD_ROUTES;
 export type DashboardRouteKey = keyof DashboardRoutes;
 
 /** Dashboard routes that appear in the main navigation */
-export const DASHBOARD_NAV_ITEMS = (
-	Object.entries(DASHBOARD_ROUTES)
-)
+export const DASHBOARD_NAV_ITEMS = Object.entries(DASHBOARD_ROUTES)
 	.filter(([, route]) => route.isNav)
 	.map(([key, route]) => ({ key, ...route }));
 
