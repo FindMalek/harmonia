@@ -45,6 +45,7 @@ export const DASHBOARD_ROUTES = {
 				path: "/playlists/:id",
 				label: "Playlist Detail",
 				hideBottomNav: true,
+				makePath: (id: string) => `/playlists/${id}`,
 			},
 		},
 	},
