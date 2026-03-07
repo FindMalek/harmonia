@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import { Icons } from "@harmonia/ui/components/icons";
+import { Icons } from "@harmonia/ui";
 import { Spinner } from "@harmonia/ui";
 import { useState } from "react";
 

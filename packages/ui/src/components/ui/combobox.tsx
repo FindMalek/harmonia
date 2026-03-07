@@ -11,7 +11,7 @@ import {
 	InputGroupButton,
 	InputGroupInput,
 } from "./input-group";
-import { Icons } from "../icons";
+import { Icons } from "../shared/icons";
 
 const Combobox = ComboboxPrimitive.Root;
 

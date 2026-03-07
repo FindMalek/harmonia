@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { cn } from "../../lib/utils";
-import { Icons } from "../icons";
+import { Icons } from "../shared/icons";
 
 type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
 	size?: "sm" | "default";

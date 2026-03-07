@@ -1,21 +1,17 @@
 "use client";
 
-import type { AuthClientForUI } from "../types/auth";
-import { Button } from "./ui/button";
+import type { AuthClientForUI } from "@harmonia/ui";
+import { Button } from "@harmonia/ui";
 
 type SpotifySignInButtonProps = {
 	authClient: AuthClientForUI;
-	spotifyEnabled?: boolean;
 	callbackURL?: string;
 };
 
 export function SpotifySignInButton({
 	authClient,
-	spotifyEnabled = true,
 	callbackURL = "/dashboard",
 }: SpotifySignInButtonProps) {
-	if (!spotifyEnabled) return null;
-
 	return (
 		<Button
 			type="button"

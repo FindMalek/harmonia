@@ -1,4 +1,4 @@
-import { Icons } from "./icons";
+import { Icons } from "@harmonia/ui";
 
 type PageLoaderProps = {
 	message?: string;

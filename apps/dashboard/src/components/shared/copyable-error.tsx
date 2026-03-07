@@ -2,9 +2,8 @@
 
 import { toast } from "sonner";
 
-import { Icons } from "./icons";
-import { Button } from "./ui/button";
-import { cn } from "../lib/utils";
+import { Button, cn } from "@harmonia/ui";
+import { Icons } from "@harmonia/ui";
 
 type CopyableErrorProps = {
 	text: string;

@@ -1,4 +1,3 @@
-import { env } from "@/lib/env";
 import { redirect } from "next/navigation";
 
 import { getServerSession } from "@/lib/get-server-session";
@@ -11,6 +10,5 @@ export default async function DashboardPage() {
 		redirect("/login");
 	}
 
-	const spotifyEnabled = !!env.SPOTIFY_CLIENT_ID;
-	return <DashboardOverview spotifyEnabled={spotifyEnabled} />;
+	return <DashboardOverview />;
 }

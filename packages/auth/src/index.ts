@@ -57,7 +57,7 @@ export function createAuth(
 		}),
 		trustedOrigins,
 		emailAndPassword: {
-			enabled: true,
+			enabled: false,
 		},
 		socialProviders:
 			spotifyEnabled && spotifyClientId && spotifyClientSecret

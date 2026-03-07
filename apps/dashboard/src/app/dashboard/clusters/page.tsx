@@ -7,8 +7,6 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-	EmptyState,
-	ErrorState,
 	Sheet,
 	SheetContent,
 	SheetHeader,
@@ -21,7 +19,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@harmonia/ui";
-import { Icons } from "@harmonia/ui/components/icons";
+import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { Icons } from "@harmonia/ui";
 import { orpc } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";

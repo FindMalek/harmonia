@@ -62,20 +62,13 @@ export {
 export { Spinner } from "./components/ui/spinner";
 
 // Shared components
-export { CopyableError } from "./components/copyable-error";
-export { EmptyState } from "./components/empty-state";
-export { ErrorState } from "./components/error-state";
 export type { HeaderLink } from "./components/header";
 export { Header } from "./components/header";
-export { Loader } from "./components/loader";
-export { ModeToggle } from "./components/mode-toggle";
-export { PageLoader } from "./components/page-loader";
-export { Providers } from "./components/providers";
-export { SignInForm } from "./components/sign-in-form";
-export { SignUpForm } from "./components/sign-up-form";
-export { SpotifySignInButton } from "./components/spotify-sign-in-button";
-export { ThemeProvider } from "./components/theme-provider";
-export { UserMenu } from "./components/user-menu";
+export { ModeToggle } from "./components/shared/mode-toggle";
+export { Providers } from "./components/providers/providers";
+export { ThemeProvider } from "./components/providers/theme-provider";
+export { UserMenu } from "./components/shared/user-menu";
+export { Icons } from "./components/shared/icons";
 
 // Lib
 export { cn } from "./lib/utils";

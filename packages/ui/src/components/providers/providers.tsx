@@ -4,7 +4,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import { ThemeProvider } from "./theme-provider";
-import { Toaster } from "./ui/sonner";
+import { TooltipProvider } from "../ui/tooltip";
+import { Toaster } from "../ui/sonner";
 
 type ProvidersProps = {
 	children: React.ReactNode;
@@ -25,7 +26,7 @@ export function Providers({ children, queryClient }: ProvidersProps) {
 			enableSystem
 			disableTransitionOnChange
 		>
-			{content}
+			<TooltipProvider>{content}</TooltipProvider>
 			<Toaster richColors />
 		</ThemeProvider>
 	);

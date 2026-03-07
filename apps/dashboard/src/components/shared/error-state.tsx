@@ -1,9 +1,9 @@
 "use client";
 
-import { Icons } from "./icons";
+import { Button, cn } from "@harmonia/ui";
+import { Icons } from "@harmonia/ui";
+
 import { CopyableError } from "./copyable-error";
-import { Button } from "./ui/button";
-import { cn } from "../lib/utils";
 
 type ErrorStateProps = {
 	message: string;

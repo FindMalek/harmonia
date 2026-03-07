@@ -9,7 +9,7 @@ import {
 } from "react-day-picker";
 
 import { cn } from "../../lib/utils";
-import { Icons } from "../icons";
+import { Icons } from "../shared/icons";
 import { Button, buttonVariants } from "./button";
 
 function Calendar({

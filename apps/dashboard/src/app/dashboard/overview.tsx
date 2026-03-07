@@ -15,17 +15,13 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-	CopyableError,
-	ErrorState,
 	Skeleton,
 } from "@harmonia/ui";
-import { Icons } from "@harmonia/ui/components/icons";
+import { CopyableError } from "@/components/shared/copyable-error";
+import { ErrorState } from "@/components/shared/error-state";
+import { Icons } from "@harmonia/ui";
 
-export function DashboardOverview({
-	spotifyEnabled = false,
-}: {
-	spotifyEnabled?: boolean;
-}) {
+export function DashboardOverview() {
 	const router = useRouter();
 	const { data: spotifyData } = useQuery(orpc.hasSpotifyLinked.queryOptions());
 	const { data: runs } = useQuery({
@@ -125,7 +121,7 @@ export function DashboardOverview({
 		}
 	};
 
-	const showLinkSpotify = spotifyEnabled && spotifyData?.hasSpotify === false;
+	const showLinkSpotify = spotifyData?.hasSpotify === false;
 	const hasAnalysis =
 		(stats?.tracks.classified ?? 0) > 0 || (stats?.clusters ?? 0) > 0;
 	const lastRun = runs?.[0];

@@ -6,7 +6,7 @@ import { z } from "zod";
 export const authModule = {
 	server: {
 		BETTER_AUTH_SECRET: z.string().min(32),
-		SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
+		SPOTIFY_CLIENT_ID: z.string().min(1),
 		SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
 		CRON_SECRET: z.string().min(1).optional(),
 		OPENAI_API_KEY: z.string().min(1).optional(),

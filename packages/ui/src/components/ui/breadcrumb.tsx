@@ -2,7 +2,7 @@ import * as React from "react";
 import { Slot } from "radix-ui";
 
 import { cn } from "../../lib/utils";
-import { Icons } from "../icons";
+import { Icons } from "../shared/icons";
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
 	return (

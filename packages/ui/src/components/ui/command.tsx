@@ -10,7 +10,7 @@ import {
 	DialogTitle,
 } from "./dialog";
 import { InputGroup, InputGroupAddon } from "./input-group";
-import { Icons } from "../icons";
+import { Icons } from "../shared/icons";
 
 function Command({
 	className,

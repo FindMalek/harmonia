@@ -4,7 +4,7 @@ import * as React from "react";
 import { Menubar as MenubarPrimitive } from "radix-ui";
 
 import { cn } from "../../lib/utils";
-import { Icons } from "../icons";
+import { Icons } from "../shared/icons";
 
 function Menubar({
 	className,

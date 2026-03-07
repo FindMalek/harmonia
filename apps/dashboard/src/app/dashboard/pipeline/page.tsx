@@ -7,15 +7,15 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-	CopyableError,
-	EmptyState,
-	ErrorState,
-	PageLoader,
 	Progress,
 } from "@harmonia/ui";
+import { CopyableError } from "@/components/shared/copyable-error";
+import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { PageLoader } from "@/components/shared/page-loader";
 import { client, orpc, queryClient } from "@/lib/orpc";
 
-import { Icons } from "@harmonia/ui/components/icons";
+import { Icons } from "@harmonia/ui";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 

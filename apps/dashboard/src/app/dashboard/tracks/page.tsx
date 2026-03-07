@@ -6,8 +6,6 @@ import {
 	Card,
 	CardContent,
 	CardHeader,
-	EmptyState,
-	ErrorState,
 	Input,
 	Sheet,
 	SheetContent,
@@ -21,10 +19,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@harmonia/ui";
+import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
 import { orpc } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
 
-import { Icons } from "@harmonia/ui/components/icons";
+import { Icons } from "@harmonia/ui";
 import { useState } from "react";
 
 export default function TracksPage() {

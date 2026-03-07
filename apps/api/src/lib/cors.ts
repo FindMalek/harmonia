@@ -12,9 +12,9 @@ export async function getCorsHeaders(
 		apiEnv.NEXT_PUBLIC_API_URL,
 		apiEnv.NEXT_PUBLIC_WEB_URL,
 		apiEnv.NEXT_PUBLIC_DASHBOARD_URL,
-	  ]);
-	  console.log("[CORS] request origin", origin);
-	  
+	]);
+	console.log("[CORS] request origin", origin);
+
 	const allowedOrigins: string[] = [];
 	for (const url of [
 		apiEnv.NEXT_PUBLIC_API_URL,
