@@ -10,40 +10,47 @@ import { usePathname } from "next/navigation";
 
 type Href = LinkProps<string>["href"];
 
-// Helper to flatten routes and find the current one
-const findCurrentRouteConfig = (pathname: string) => {
-	const flattenRoutes = (routes: any): any[] => {
-		return Object.values(routes).reduce((acc: any[], route: any) => {
-			acc.push(route);
-			if (route.children) {
-				acc.push(...flattenRoutes(route.children));
-			}
-			return acc;
-		}, []);
-	};
+// Helper to check if a route matches the current pathname
+function isRouteMatch(routePath: string, currentPathname: string) {
+	if (routePath === currentPathname) return true;
 
-	const allRoutes = flattenRoutes(DASHBOARD_ROUTES);
+	// If route has dynamic segments (e.g. /playlists/:id)
+	if (routePath.includes(":")) {
+		const routeSegments = routePath.split("/");
+		const pathSegments = currentPathname.split("/");
 
-	return allRoutes.find((route) => {
-		// Simple matching for static paths
-		if (route.path === pathname) return true;
+		// Length must match
+		if (routeSegments.length !== pathSegments.length) return false;
 
-		// For dynamic paths like /playlists/:id, we need a matcher
-		// If you don't have 'path-to-regexp', you can use a simple regex for now:
-		if (route.path.includes(":")) {
-			const regexPath = route.path.replace(/:[^\s/]+/g, "[^/]+");
-			return new RegExp(`^${regexPath}$`).test(pathname);
+		// Check each segment
+		return routeSegments.every((segment, i) => {
+			// If segment starts with ":", it's a wildcard, so it matches anything
+			return segment.startsWith(":") || segment === pathSegments[i];
+		});
+	}
+
+	return false;
+}
+
+export function MobileBottomNav() {
+	const pathname = usePathname();
+
+	// Check if the current route or any of its children should hide the bottom nav
+	const shouldHideNav = Object.values(DASHBOARD_ROUTES).some((route) => {
+		// Check main route
+		if (route.hideBottomNav && isRouteMatch(route.path, pathname)) return true;
+
+		// Check children (if any)
+		if (route.children) {
+			return Object.values(route.children).some(
+				(child) => child.hideBottomNav && isRouteMatch(child.path, pathname),
+			);
 		}
 
 		return false;
 	});
-};
 
-export function MobileBottomNav() {
-	const pathname = usePathname();
-	const currentRoute = findCurrentRouteConfig(pathname);
-
-	if (currentRoute?.hideBottomNav) {
+	if (shouldHideNav) {
 		return null;
 	}
 
