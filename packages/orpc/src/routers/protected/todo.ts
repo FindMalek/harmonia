@@ -3,7 +3,7 @@ import { todo } from "@harmonia/db/schema/todo";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { protectedProcedure } from "../../index";
+import { protectedProcedure } from "../../procedures";
 
 export const todoRouter = {
 	getAll: protectedProcedure.handler(async ({ context }) => {

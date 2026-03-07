@@ -4,7 +4,7 @@ import { db } from "@harmonia/db";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { protectedProcedure } from "../../index";
+import { protectedProcedure } from "../../procedures";
 
 export const tracksRouter = {
 	list: protectedProcedure

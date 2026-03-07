@@ -1,16 +1,15 @@
-import { createContext, appRouter } from "@harmonia/orpc";
+import { createContext, appRouter, type Context } from "@harmonia/orpc";
 import { logger } from "@harmonia/logger";
-import {
-	flushTelemetry,
-	isTracingInitialized,
-	registerTracing,
-} from "@harmonia/tracing";
+import { flushTelemetry } from "@harmonia/tracing";
 import { getCorsHeaders } from "@/lib/cors";
 import { getErrorMessage, safeErrorPayload } from "@/lib/payload";
 import { applyCors, jsonResponse } from "@/lib/response";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
-import { onError } from "@orpc/server";
+import type {
+	StandardHandleResult,
+	StandardHandlerInterceptorOptions,
+} from "@orpc/server/standard";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import type { NextRequest } from "next/server";
@@ -19,15 +18,28 @@ export const dynamic = "force-dynamic";
 
 let lastError: Error | null = null;
 
-const rpcErrorInterceptor = onError((error: unknown) => {
-	lastError = error instanceof Error ? error : new Error(String(error));
-	logger.error(safeErrorPayload(error), "RPC error");
-});
+type ErrorInterceptor = (
+	options: StandardHandlerInterceptorOptions<Context> & {
+		next: (
+			opts?: StandardHandlerInterceptorOptions<Context>,
+		) => Promise<StandardHandleResult>;
+	},
+) => Promise<StandardHandleResult>;
 
-const apiErrorInterceptor = onError((error: unknown) => {
-	lastError = error instanceof Error ? error : new Error(String(error));
-	logger.error(safeErrorPayload(error), "OpenAPI error");
-});
+function createErrorInterceptor(label: string): ErrorInterceptor {
+	return async (options) => {
+		try {
+			return await options.next();
+		} catch (error) {
+			lastError = error instanceof Error ? error : new Error(String(error));
+			logger.error(safeErrorPayload(error), label);
+			throw error;
+		}
+	};
+}
+
+const rpcErrorInterceptor = createErrorInterceptor("RPC error");
+const apiErrorInterceptor = createErrorInterceptor("OpenAPI error");
 
 const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [rpcErrorInterceptor],
@@ -106,7 +118,10 @@ async function handleRequest(req: NextRequest) {
 			try {
 				await flushTelemetry();
 			} catch {
-				// Silently fail - flushing failures shouldn't break the app
+				logger.error(
+					new Error("Failed to flush telemetry"),
+					"Failed to flush telemetry",
+				);
 			}
 		}
 	}

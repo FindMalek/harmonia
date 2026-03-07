@@ -8,7 +8,7 @@ import {
 	runClustering,
 	syncLikedTracks,
 } from "@harmonia/common";
-import { publicProcedure } from "../../index";
+import { publicProcedure } from "../../procedures";
 import { createOrganizeRouter } from "./organize";
 
 export function createPublicRouter(deps?: {

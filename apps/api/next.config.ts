@@ -16,8 +16,8 @@ const nextConfig: NextConfig = {
 	redirects: async () => {
 		return [
 			{
-				source: "/",
-				destination: "/api",
+				source: "/api",
+				destination: "/api/rpc/api-reference",
 				permanent: true,
 			},
 		];

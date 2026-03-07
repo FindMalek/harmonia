@@ -1,7 +1,7 @@
 import { db } from "@harmonia/db";
 import { account } from "@harmonia/db/schema/auth";
 import { and, eq } from "drizzle-orm";
-import { protectedProcedure } from "../../index";
+import { protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
 import { pipelineRouter } from "./pipeline";
 import { playlistsRouter } from "./playlists";

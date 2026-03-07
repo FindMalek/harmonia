@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import type { Context } from "../../context";
-import { publicProcedure } from "../../index";
+import { publicProcedure } from "../../procedures";
 
 import { db } from "@harmonia/db";
 import {

@@ -1,85 +1,85 @@
 {
-  "version": 1,
-  "skills": {
-    "ai-sdk": {
-      "source": "vercel/ai",
-      "sourceType": "github",
-      "computedHash": "58ce68f628890c3925aea2b5435a649251ac182057541045c68fc19a27aaa0ec"
-    },
-    "auth-better-auth": {
-      "source": "aussiegingersnap/cursor-skills",
-      "sourceType": "github",
-      "computedHash": "9a09f92911978d365448a8b9ad70a9ceb31055e5205a404e5b79bfcb3e33e104"
-    },
-    "authoring-skills": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "38eb8cbf9e1739429a233e57196faa92a7d1436940e121776df17b808e44652a"
-    },
-    "ci-pipeline": {
-      "source": "modh-labs/ai-software-os",
-      "sourceType": "github",
-      "computedHash": "ae40b30df6160d65e69ff63b0ab2e713412ef0a335c63f745b9d22055a19fb2e"
-    },
-    "dce-edge": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "7cd22f4bb113f37f14740d373b8a63d51c55aab2befdd980b26b17e5107d8e93"
-    },
-    "drizzle": {
-      "source": "leonaaardob/lb-drizzle-skill",
-      "sourceType": "github",
-      "computedHash": "10f7945cc40bfd3aa0395832781595b6fcf2a1f352d14ba3fe259132b5575805"
-    },
-    "flags": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "2ce1c081406d5815aa949a1e6b01496e9d2ebd1426d0334e8e5e35d132f7fcac"
-    },
-    "opentelemetry": {
-      "source": "julianobarbosa/claude-code-skills",
-      "sourceType": "github",
-      "computedHash": "c9600f83727a5dbdb3867eabb92f5d24b9003e51137a0bdb7325f6d9b44ffdea"
-    },
-    "orpc-fullstack": {
-      "source": "stephen-golban/orpc-fullstack",
-      "sourceType": "github",
-      "computedHash": "1f9da71c857ab3abc6e4119d2b04d7b7422627ea8897a4362a4ec8e47f61211f"
-    },
-    "pr-status-triage": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "62e0e2ba565f05a3dceaee0a79c328f48551e35d38990a759a24bd2971958f3c"
-    },
-    "react-vendoring": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "372b5cbc251e93da3759680b943ca1481cd268dbde1f0bd537fb16331c44279b"
-    },
-    "runtime-debug": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "6492f09c2281f9af8ab3b346234723c6070d58bb86bccc1ee2f3ad4c5c106b3a"
-    },
-    "tanstack-query": {
-      "source": "xeroc/skills",
-      "sourceType": "github",
-      "computedHash": "c2f9fc7462cea9733c550a09cec13d387b5c2eb38bae3401db6151e3a7cc245e"
-    },
-    "turborepo": {
-      "source": "Mindrally/skills",
-      "sourceType": "github",
-      "computedHash": "f0732bc2254423645d03b8016badcada961b627706aedea8ea9051e0b80c93c5"
-    },
-    "update-docs": {
-      "source": "vercel/next.js",
-      "sourceType": "github",
-      "computedHash": "b5f495ca63a08c70523ed59fbcf5b5665603d77299d8524ccddeacce024cbb33"
-    },
-    "zustand": {
-      "source": "oakoss/agent-skills",
-      "sourceType": "github",
-      "computedHash": "9fc511c23b1a9b837610f4e7a6cee1fb9ab3f83490aec260200dda2b14f896a9"
-    }
-  }
+	"version": 1,
+	"skills": {
+		"ai-sdk": {
+			"source": "vercel/ai",
+			"sourceType": "github",
+			"computedHash": "58ce68f628890c3925aea2b5435a649251ac182057541045c68fc19a27aaa0ec"
+		},
+		"auth-better-auth": {
+			"source": "aussiegingersnap/cursor-skills",
+			"sourceType": "github",
+			"computedHash": "9a09f92911978d365448a8b9ad70a9ceb31055e5205a404e5b79bfcb3e33e104"
+		},
+		"authoring-skills": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "38eb8cbf9e1739429a233e57196faa92a7d1436940e121776df17b808e44652a"
+		},
+		"ci-pipeline": {
+			"source": "modh-labs/ai-software-os",
+			"sourceType": "github",
+			"computedHash": "ae40b30df6160d65e69ff63b0ab2e713412ef0a335c63f745b9d22055a19fb2e"
+		},
+		"dce-edge": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "7cd22f4bb113f37f14740d373b8a63d51c55aab2befdd980b26b17e5107d8e93"
+		},
+		"drizzle": {
+			"source": "leonaaardob/lb-drizzle-skill",
+			"sourceType": "github",
+			"computedHash": "10f7945cc40bfd3aa0395832781595b6fcf2a1f352d14ba3fe259132b5575805"
+		},
+		"flags": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "2ce1c081406d5815aa949a1e6b01496e9d2ebd1426d0334e8e5e35d132f7fcac"
+		},
+		"opentelemetry": {
+			"source": "julianobarbosa/claude-code-skills",
+			"sourceType": "github",
+			"computedHash": "c9600f83727a5dbdb3867eabb92f5d24b9003e51137a0bdb7325f6d9b44ffdea"
+		},
+		"orpc-fullstack": {
+			"source": "stephen-golban/orpc-fullstack",
+			"sourceType": "github",
+			"computedHash": "1f9da71c857ab3abc6e4119d2b04d7b7422627ea8897a4362a4ec8e47f61211f"
+		},
+		"pr-status-triage": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "62e0e2ba565f05a3dceaee0a79c328f48551e35d38990a759a24bd2971958f3c"
+		},
+		"react-vendoring": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "372b5cbc251e93da3759680b943ca1481cd268dbde1f0bd537fb16331c44279b"
+		},
+		"runtime-debug": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "6492f09c2281f9af8ab3b346234723c6070d58bb86bccc1ee2f3ad4c5c106b3a"
+		},
+		"tanstack-query": {
+			"source": "xeroc/skills",
+			"sourceType": "github",
+			"computedHash": "c2f9fc7462cea9733c550a09cec13d387b5c2eb38bae3401db6151e3a7cc245e"
+		},
+		"turborepo": {
+			"source": "Mindrally/skills",
+			"sourceType": "github",
+			"computedHash": "f0732bc2254423645d03b8016badcada961b627706aedea8ea9051e0b80c93c5"
+		},
+		"update-docs": {
+			"source": "vercel/next.js",
+			"sourceType": "github",
+			"computedHash": "b5f495ca63a08c70523ed59fbcf5b5665603d77299d8524ccddeacce024cbb33"
+		},
+		"zustand": {
+			"source": "oakoss/agent-skills",
+			"sourceType": "github",
+			"computedHash": "9fc511c23b1a9b837610f4e7a6cee1fb9ab3f83490aec260200dda2b14f896a9"
+		}
+	}
 }

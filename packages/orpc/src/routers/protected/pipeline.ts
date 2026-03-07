@@ -7,7 +7,7 @@ import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, sql } from "drizzle-orm";
-import { protectedProcedure } from "../../index";
+import { protectedProcedure } from "../../procedures";
 
 const pipelineStatusEvent = z.discriminatedUnion("event", [
 	z.object({

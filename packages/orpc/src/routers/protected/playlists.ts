@@ -5,7 +5,7 @@ import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { exportAllPlaylists, exportPlaylistToSpotify } from "@harmonia/common";
 import { and, desc, eq } from "drizzle-orm";
-import { protectedProcedure } from "../../index";
+import { protectedProcedure } from "../../procedures";
 
 export const playlistsRouter = {
 	list: protectedProcedure.handler(async ({ context }) => {
