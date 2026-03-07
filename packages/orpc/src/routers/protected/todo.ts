@@ -1,7 +1,11 @@
+import {
+	todoCreateInput,
+	todoDeleteInput,
+	todoToggleInput,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { todo } from "@harmonia/db/schema/todo";
 import { and, eq } from "drizzle-orm";
-import { z } from "zod";
 
 import { protectedProcedure } from "../../procedures";
 
@@ -12,7 +16,7 @@ export const todoRouter = {
 	}),
 
 	create: protectedProcedure
-		.input(z.object({ text: z.string().min(1) }))
+		.input(todoCreateInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			return await db.insert(todo).values({
@@ -22,7 +26,7 @@ export const todoRouter = {
 		}),
 
 	toggle: protectedProcedure
-		.input(z.object({ id: z.number(), completed: z.boolean() }))
+		.input(todoToggleInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			return await db
@@ -32,7 +36,7 @@ export const todoRouter = {
 		}),
 
 	delete: protectedProcedure
-		.input(z.object({ id: z.number() }))
+		.input(todoDeleteInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			return await db

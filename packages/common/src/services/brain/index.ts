@@ -12,4 +12,4 @@ export type {
 	TrackForClassification,
 	ClusterMetadata,
 	PlaylistMetadata,
-} from "./schemas";
+} from "@harmonia/common/schemas";

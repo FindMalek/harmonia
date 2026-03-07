@@ -4,7 +4,7 @@ import { logger } from "@harmonia/logger";
 import { sql } from "drizzle-orm";
 
 import { fetchAllSavedTracks, getUserSpotifyAccessToken } from "./client";
-import type { SpotifyTrack } from "./types";
+import type { SpotifyTrack } from "@harmonia/common/schemas";
 
 export type SyncProgress = {
 	total: number;

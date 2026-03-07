@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import { clusterGetByIdInput } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
@@ -20,7 +19,7 @@ export const clustersRouter = {
 	}),
 
 	getById: protectedProcedure
-		.input(z.object({ id: z.number() }))
+		.input(clusterGetByIdInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 

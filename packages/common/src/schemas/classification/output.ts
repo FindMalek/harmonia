@@ -1,23 +1,5 @@
 import { z } from "zod";
 
-export const trackForClassificationSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	artistNames: z.array(z.string()),
-	albumName: z.string().nullable(),
-	durationMs: z.number().nullable(),
-	spotifyGenres: z.array(z.string()).nullable(),
-	lyrics: z.string().nullable(),
-	valence: z.number().nullable(),
-	energy: z.number().nullable(),
-	danceability: z.number().nullable(),
-	tempo: z.number().nullable(),
-});
-
-export type TrackForClassification = z.infer<
-	typeof trackForClassificationSchema
->;
-
 export const classificationResultSchema = z.object({
 	trackId: z.string(),
 	mood: z.string().nullable(),
@@ -31,9 +13,11 @@ export const classificationResultSchema = z.object({
 	era: z.string().nullable(),
 	domainName: z.string().nullable(),
 });
-
 export type ClassificationResult = z.infer<typeof classificationResultSchema>;
 
 export const classificationResultListSchema = z.object({
 	results: z.array(classificationResultSchema),
 });
+export type ClassificationResultList = z.infer<
+	typeof classificationResultListSchema
+>;

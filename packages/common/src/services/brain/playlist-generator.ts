@@ -18,7 +18,7 @@ import { generateText, Output } from "ai";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
-import { playlistMetadataSchema } from "./schemas";
+import { playlistMetadataSchema } from "@harmonia/common/schemas";
 
 export type GenerateProgress = {
 	playlists: number;

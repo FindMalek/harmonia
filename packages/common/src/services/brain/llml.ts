@@ -9,7 +9,7 @@ import {
 	type ClassificationResult,
 	type TrackForClassification,
 	classificationResultListSchema,
-} from "./schemas";
+} from "@harmonia/common/schemas";
 
 function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	return formatPrompt({

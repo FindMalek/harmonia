@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import { trackGetByIdInput, tracksListInput } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
@@ -8,16 +7,7 @@ import { protectedProcedure } from "../../procedures";
 
 export const tracksRouter = {
 	list: protectedProcedure
-		.input(
-			z.object({
-				page: z.number().default(1),
-				pageSize: z.number().default(50),
-				search: z.string().optional(),
-				lyricsStatus: z.string().optional(),
-				classified: z.boolean().optional(),
-				embedded: z.boolean().optional(),
-			}),
-		)
+		.input(tracksListInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const offset = (input.page - 1) * input.pageSize;
@@ -84,7 +74,7 @@ export const tracksRouter = {
 		}),
 
 	getById: protectedProcedure
-		.input(z.object({ id: z.string() }))
+		.input(trackGetByIdInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 

@@ -1,5 +1,8 @@
-import { z } from "zod";
-
+import {
+	playlistExportInput,
+	playlistGetByIdInput,
+	playlistUpdateInput,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
@@ -21,7 +24,7 @@ export const playlistsRouter = {
 	}),
 
 	getById: protectedProcedure
-		.input(z.object({ id: z.number() }))
+		.input(playlistGetByIdInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
@@ -55,13 +58,7 @@ export const playlistsRouter = {
 		}),
 
 	update: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				name: z.string().optional(),
-				description: z.string().optional(),
-			}),
-		)
+		.input(playlistUpdateInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
@@ -82,7 +79,7 @@ export const playlistsRouter = {
 		}),
 
 	export: protectedProcedure
-		.input(z.object({ id: z.number() }))
+		.input(playlistExportInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const result = await exportPlaylistToSpotify(userId, input.id);

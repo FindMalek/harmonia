@@ -13,7 +13,7 @@ import { generateText, Output } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
 import pRetry from "p-retry";
 
-import { clusterMetadataSchema } from "./schemas";
+import { clusterMetadataSchema } from "@harmonia/common/schemas";
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
 	if (!env.GROQ_API_KEY) {

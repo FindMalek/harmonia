@@ -1,5 +1,8 @@
-import { z } from "zod";
-
+import {
+	pipelineGetByIdInput,
+	pipelineStatusEventSchema,
+	pipelineStreamStatusInput,
+} from "@harmonia/common/schemas";
 import { eventIterator } from "@orpc/server";
 import { db } from "@harmonia/db";
 import { cluster } from "@harmonia/db/schema/cluster";
@@ -8,34 +11,6 @@ import { playlist } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { protectedProcedure } from "../../procedures";
-
-const pipelineStatusEvent = z.discriminatedUnion("event", [
-	z.object({
-		event: z.literal("progress"),
-		runId: z.number(),
-		status: z.string(),
-		currentStage: z.string().nullable(),
-		progress: z.unknown(),
-		startedAt: z.date().nullable(),
-	}),
-	z.object({
-		event: z.literal("completed"),
-		runId: z.number(),
-		progress: z.unknown(),
-		completedAt: z.date().nullable(),
-	}),
-	z.object({
-		event: z.literal("failed"),
-		runId: z.number(),
-		progress: z.unknown(),
-		error: z.string().nullable(),
-		completedAt: z.date().nullable(),
-	}),
-	z.object({
-		event: z.literal("error"),
-		message: z.string(),
-	}),
-]);
 
 export const pipelineRouter = {
 	getAll: protectedProcedure.handler(async ({ context }) => {
@@ -51,7 +26,7 @@ export const pipelineRouter = {
 	}),
 
 	getById: protectedProcedure
-		.input(z.object({ id: z.number() }))
+		.input(pipelineGetByIdInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const [run] = await db
@@ -65,8 +40,8 @@ export const pipelineRouter = {
 		}),
 
 	streamStatus: protectedProcedure
-		.input(z.object({ id: z.number() }))
-		.output(eventIterator(pipelineStatusEvent))
+		.input(pipelineStreamStatusInput)
+		.output(eventIterator(pipelineStatusEventSchema))
 		.handler(async function* ({ input, context, signal }) {
 			const userId = context.session.user.id;
 			const POLL_INTERVAL = 2000;

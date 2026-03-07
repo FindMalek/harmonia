@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { suggestedArchetypeEnum } from "./enum";
 
 export const clusterMetadataSchema = z.object({
 	themeSummary: z.string(),
@@ -6,7 +7,6 @@ export const clusterMetadataSchema = z.object({
 	dominantEnergy: z.string(),
 	topThemes: z.array(z.string()),
 	topVibes: z.array(z.string()),
-	suggestedArchetype: z.enum(["mood", "situation", "genre", "hybrid"]),
+	suggestedArchetype: suggestedArchetypeEnum,
 });
-
 export type ClusterMetadata = z.infer<typeof clusterMetadataSchema>;

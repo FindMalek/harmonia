@@ -5,7 +5,10 @@ import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import { classifyTracksWithLLM } from "./llml";
-import type { ClassificationResult, TrackForClassification } from "./schemas";
+import type {
+	ClassificationResult,
+	TrackForClassification,
+} from "@harmonia/common/schemas";
 
 const CLASSIFICATION_BATCH_SIZE = 12;
 

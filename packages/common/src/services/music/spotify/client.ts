@@ -4,7 +4,7 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import type { SpotifySavedTracksResponse } from "./types";
+import type { SpotifySavedTracksResponse } from "@harmonia/common/schemas";
 
 type SpotifyTokenResponse = {
 	access_token: string;

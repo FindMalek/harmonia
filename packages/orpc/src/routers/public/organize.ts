@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { organizeRunInput } from "@harmonia/common/schemas";
 
 import type { Context } from "../../context";
 import { publicProcedure } from "../../procedures";
@@ -102,11 +102,7 @@ export function createOrganizeRouter({
 					tags: ["organize"],
 				},
 			})
-			.input(
-				z.object({
-					userId: z.string().optional(),
-				}),
-			)
+			.input(organizeRunInput)
 			.handler(async ({ input, context }) => {
 				logger.info({ input }, "organize.run invoked");
 
