@@ -1,10 +1,3 @@
-/**
- * Centralized route configuration for the Harmonia frontend.
- * Single source of truth for paths, labels, icons, and nested routes.
- *
- * Icon keys must match keys in @harmonia/ui Icons (logo, play, music, layers, disc, fileText, etc.)
- */
-
 /** Web app routes (marketing, landing, etc.) */
 export const WEB_ROUTES = {
 	home: {
@@ -21,7 +14,7 @@ export const DASHBOARD_ROUTES = {
 	overview: {
 		path: "/",
 		label: "Overview",
-		icon: "logo",
+		icon: "home",
 		isNav: true,
 	},
 	pipeline: {
@@ -51,6 +44,8 @@ export const DASHBOARD_ROUTES = {
 			detail: {
 				path: "/playlists/:id",
 				label: "Playlist Detail",
+				hideBottomNav: true,
+				makePath: (id: string) => `/playlists/${id}`,
 			},
 		},
 	},
@@ -60,17 +55,32 @@ export const DASHBOARD_ROUTES = {
 		icon: "fileText",
 		isNav: true,
 	},
+	insights: {
+		path: "/insights",
+		label: "Insights",
+		icon: "chart",
+		isNav: true,
+	},
+	settings: {
+		path: "/settings",
+		label: "Settings",
+		icon: "settings",
+		isNav: true,
+	},
 } as const;
 
 export type DashboardRoutes = typeof DASHBOARD_ROUTES;
 export type DashboardRouteKey = keyof DashboardRoutes;
 
 /** Dashboard routes that appear in the main navigation */
-export const DASHBOARD_NAV_ITEMS = (
-	Object.entries(DASHBOARD_ROUTES) as [
-		DashboardRouteKey,
-		(typeof DASHBOARD_ROUTES)[DashboardRouteKey],
-	][]
-)
+export const DASHBOARD_NAV_ITEMS = Object.entries(DASHBOARD_ROUTES)
 	.filter(([, route]) => route.isNav)
 	.map(([key, route]) => ({ key, ...route }));
+
+/** Dashboard routes that appear in the mobile bottom navigation */
+export const DASHBOARD_MOBILE_NAV_ITEMS = [
+	{ ...DASHBOARD_ROUTES.overview, key: "overview", label: "Dashboard" },
+	{ ...DASHBOARD_ROUTES.playlists, key: "playlists" },
+	{ ...DASHBOARD_ROUTES.insights, key: "insights" },
+	{ ...DASHBOARD_ROUTES.settings, key: "settings" },
+];
