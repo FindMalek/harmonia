@@ -68,6 +68,7 @@ export { ModeToggle } from "./components/shared/mode-toggle";
 export { Providers } from "./components/providers/providers";
 export { ThemeProvider } from "./components/providers/theme-provider";
 export { UserMenu } from "./components/shared/user-menu";
+export type { Icon } from "./components/shared/icons";
 export { Icons } from "./components/shared/icons";
 
 // Lib

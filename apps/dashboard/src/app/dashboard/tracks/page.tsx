@@ -21,29 +21,19 @@ import {
 } from "@harmonia/ui";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
-import { orpc } from "@/lib/orpc";
-import { useQuery } from "@tanstack/react-query";
-
 import { Icons } from "@harmonia/ui";
+import { useTrackDetail, useTracks } from "@/hooks/queries/use-tracks";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import { useState } from "react";
 
 export default function TracksPage() {
-	const [page, setPage] = useState(1);
-	const [search, setSearch] = useState("");
-	const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+	const tracksFilters = useDashboardUI((s) => s.tracksFilters);
+	const setTracksFilters = useDashboardUI((s) => s.setTracksFilters);
+	const selectedTrackId = useDashboardUI((s) => s.selectedTrackId);
+	const setSelectedTrack = useDashboardUI((s) => s.setSelectedTrack);
 
-	const { data, isLoading, isError, error, refetch } = useQuery(
-		orpc.tracks.list.queryOptions({
-			input: { page, pageSize: 30, search: search || undefined },
-		}),
-	);
-
-	const { data: selectedTrack } = useQuery({
-		...orpc.tracks.getById.queryOptions({
-			input: { id: selectedTrackId ?? "" },
-		}),
-		enabled: !!selectedTrackId,
-	});
+	const { data, isLoading, isError, error, refetch } = useTracks(tracksFilters);
+	const { data: selectedTrack } = useTrackDetail(selectedTrackId);
 
 	const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
 
@@ -58,10 +48,9 @@ export default function TracksPage() {
 				</div>
 				<Input
 					placeholder="Search tracks..."
-					value={search}
+					value={tracksFilters.search}
 					onChange={(e) => {
-						setSearch(e.target.value);
-						setPage(1);
+						setTracksFilters({ search: e.target.value, page: 1 });
 					}}
 					className="w-64"
 				/>
@@ -112,7 +101,7 @@ export default function TracksPage() {
 												<TableRow
 													key={t.id}
 													className="cursor-pointer"
-													onClick={() => setSelectedTrackId(t.id)}
+													onClick={() => setSelectedTrack(t.id)}
 													data-state={
 														selectedTrackId === t.id ? "selected" : undefined
 													}
@@ -162,7 +151,7 @@ export default function TracksPage() {
 							icon={Icons.music}
 							title="No tracks found"
 							description={
-								search
+								tracksFilters.search
 									? "Try a different search term."
 									: "Sync your Spotify library to get started."
 							}
@@ -172,22 +161,30 @@ export default function TracksPage() {
 					{totalPages > 1 && (
 						<div className="mt-3 flex items-center justify-between">
 							<span className="text-muted-foreground text-xs">
-								Page {page} of {totalPages}
+								Page {tracksFilters.page} of {totalPages}
 							</span>
 							<div className="flex gap-1">
 								<Button
 									variant="outline"
 									size="xs"
-									onClick={() => setPage((p) => Math.max(1, p - 1))}
-									disabled={page <= 1}
+									onClick={() =>
+										setTracksFilters({
+											page: Math.max(1, tracksFilters.page - 1),
+										})
+									}
+									disabled={tracksFilters.page <= 1}
 								>
 									Prev
 								</Button>
 								<Button
 									variant="outline"
 									size="xs"
-									onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-									disabled={page >= totalPages}
+									onClick={() =>
+										setTracksFilters({
+											page: Math.min(totalPages, tracksFilters.page + 1),
+										})
+									}
+									disabled={tracksFilters.page >= totalPages}
 								>
 									Next
 								</Button>
@@ -198,7 +195,7 @@ export default function TracksPage() {
 
 				<Sheet
 					open={!!selectedTrackId && !!selectedTrack}
-					onOpenChange={(open) => !open && setSelectedTrackId(null)}
+					onOpenChange={(open) => !open && setSelectedTrack(null)}
 				>
 					<SheetContent side="right" className="w-full max-w-md sm:max-w-lg">
 						{selectedTrack && <TrackDetail track={selectedTrack} />}

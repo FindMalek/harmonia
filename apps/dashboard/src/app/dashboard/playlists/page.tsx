@@ -24,87 +24,29 @@ import {
 } from "@harmonia/ui";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
-import { orpc, queryClient } from "@/lib/orpc";
-import { useMutation, useQuery } from "@tanstack/react-query";
-
 import { Icons } from "@harmonia/ui";
+import { useExportAllPlaylists } from "@/hooks/mutations/use-export-all-playlists";
+import { useExportPlaylist } from "@/hooks/mutations/use-export-playlist";
+import { useUpdatePlaylist } from "@/hooks/mutations/use-update-playlist";
+import { usePlaylistDetail, usePlaylists } from "@/hooks/queries/use-playlists";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import { useState } from "react";
-import { toast } from "sonner";
 
 export default function PlaylistsPage() {
+	const selectedPlaylistId = useDashboardUI((s) => s.selectedPlaylistId);
+	const setSelectedPlaylist = useDashboardUI((s) => s.setSelectedPlaylist);
+
 	const {
 		data: playlists,
 		isLoading,
 		isError,
 		error,
 		refetch,
-	} = useQuery(orpc.playlists.list.queryOptions());
-	const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(
-		null,
-	);
+	} = usePlaylists();
+	const { data: playlistDetail } = usePlaylistDetail(selectedPlaylistId);
 
-	const { data: playlistDetail } = useQuery({
-		...orpc.playlists.getById.queryOptions({
-			input: { id: selectedPlaylistId ?? 0 },
-		}),
-		enabled: selectedPlaylistId !== null,
-	});
-
-	const exportMutation = useMutation(
-		orpc.playlists.export.mutationOptions({
-			onSuccess: (data) => {
-				if (data) {
-					toast.success("Playlist exported to Spotify!");
-					queryClient.invalidateQueries();
-				} else {
-					toast.error("Failed to export playlist");
-				}
-			},
-			onError: (error) => {
-				const msg = error.message ?? "Export failed";
-				toast.error(msg, {
-					action: {
-						label: "Copy",
-						onClick: async () => {
-							try {
-								await navigator.clipboard.writeText(msg);
-								toast.success("Copied");
-							} catch {
-								toast.error("Failed to copy");
-							}
-						},
-					},
-				});
-			},
-		}),
-	);
-
-	const exportAllMutation = useMutation(
-		orpc.playlists.exportAll.mutationOptions({
-			onSuccess: (data) => {
-				toast.success(
-					`Exported ${data.exported} playlists${data.failed > 0 ? ` (${data.failed} failed)` : ""}`,
-				);
-				queryClient.invalidateQueries();
-			},
-			onError: (error) => {
-				const msg = error.message ?? "Export failed";
-				toast.error(msg, {
-					action: {
-						label: "Copy",
-						onClick: async () => {
-							try {
-								await navigator.clipboard.writeText(msg);
-								toast.success("Copied");
-							} catch {
-								toast.error("Failed to copy");
-							}
-						},
-					},
-				});
-			},
-		}),
-	);
+	const exportMutation = useExportPlaylist();
+	const exportAllMutation = useExportAllPlaylists();
 
 	if (isError) {
 		return (
@@ -175,7 +117,7 @@ export default function PlaylistsPage() {
 						key={pl.id}
 						playlist={pl}
 						isSelected={selectedPlaylistId === pl.id}
-						onSelect={() => setSelectedPlaylistId(pl.id)}
+						onSelect={() => setSelectedPlaylist(pl.id)}
 						onExport={() => exportMutation.mutate({ id: pl.id })}
 						isExporting={exportMutation.isPending}
 					/>
@@ -197,13 +139,13 @@ export default function PlaylistsPage() {
 
 			<Sheet
 				open={selectedPlaylistId !== null && !!playlistDetail}
-				onOpenChange={(open) => !open && setSelectedPlaylistId(null)}
+				onOpenChange={(open) => !open && setSelectedPlaylist(null)}
 			>
 				<SheetContent side="right" className="w-full max-w-md sm:max-w-lg">
 					{playlistDetail && (
 						<PlaylistDetail
 							playlist={playlistDetail}
-							onClose={() => setSelectedPlaylistId(null)}
+							onClose={() => setSelectedPlaylist(null)}
 						/>
 					)}
 				</SheetContent>
@@ -362,31 +304,7 @@ function PlaylistDetail({
 	const [editName, setEditName] = useState(playlist.name);
 	const [editDesc, setEditDesc] = useState(playlist.description ?? "");
 
-	const updateMutation = useMutation(
-		orpc.playlists.update.mutationOptions({
-			onSuccess: () => {
-				toast.success("Playlist updated");
-				setEditing(false);
-				queryClient.invalidateQueries();
-			},
-			onError: (error) => {
-				const msg = error.message ?? "Update failed";
-				toast.error(msg, {
-					action: {
-						label: "Copy",
-						onClick: async () => {
-							try {
-								await navigator.clipboard.writeText(msg);
-								toast.success("Copied");
-							} catch {
-								toast.error("Failed to copy");
-							}
-						},
-					},
-				});
-			},
-		}),
-	);
+	const updateMutation = useUpdatePlaylist(() => setEditing(false));
 
 	return (
 		<div className="flex flex-col gap-4">

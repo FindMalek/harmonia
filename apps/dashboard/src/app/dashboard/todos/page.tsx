@@ -1,11 +1,5 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-
-import { Icons } from "@harmonia/ui";
-import { Spinner } from "@harmonia/ui";
-import { useState } from "react";
-
 import {
 	Button,
 	Card,
@@ -15,35 +9,24 @@ import {
 	CardTitle,
 	Checkbox,
 	Input,
+	Icons,
+	Spinner,
 } from "@harmonia/ui";
-import { orpc } from "@/lib/orpc";
+import {
+	useTodoCreate,
+	useTodoDelete,
+	useTodoToggle,
+} from "@/hooks/mutations/use-todo-mutations";
+import { useTodos } from "@/hooks/queries/use-todos";
+import { useState } from "react";
 
 export default function TodosPage() {
 	const [newTodoText, setNewTodoText] = useState("");
 
-	const todos = useQuery(orpc.todo.getAll.queryOptions());
-	const createMutation = useMutation(
-		orpc.todo.create.mutationOptions({
-			onSuccess: () => {
-				todos.refetch();
-				setNewTodoText("");
-			},
-		}),
-	);
-	const toggleMutation = useMutation(
-		orpc.todo.toggle.mutationOptions({
-			onSuccess: () => {
-				todos.refetch();
-			},
-		}),
-	);
-	const deleteMutation = useMutation(
-		orpc.todo.delete.mutationOptions({
-			onSuccess: () => {
-				todos.refetch();
-			},
-		}),
-	);
+	const todos = useTodos();
+	const createMutation = useTodoCreate(() => setNewTodoText(""));
+	const toggleMutation = useTodoToggle();
+	const deleteMutation = useTodoDelete();
 
 	const handleAddTodo = (e: React.FormEvent) => {
 		e.preventDefault();

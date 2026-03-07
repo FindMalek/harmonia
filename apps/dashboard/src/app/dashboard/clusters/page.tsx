@@ -22,28 +22,21 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { Icons } from "@harmonia/ui";
-import { orpc } from "@/lib/orpc";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useClusters, useClusterDetail } from "@/hooks/queries/use-clusters";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 
 export default function ClustersPage() {
+	const selectedClusterId = useDashboardUI((s) => s.selectedClusterId);
+	const setSelectedCluster = useDashboardUI((s) => s.setSelectedCluster);
+
 	const {
 		data: clusters,
 		isLoading,
 		isError,
 		error,
 		refetch,
-	} = useQuery(orpc.clusters.list.queryOptions());
-	const [selectedClusterId, setSelectedClusterId] = useState<number | null>(
-		null,
-	);
-
-	const { data: clusterDetail } = useQuery({
-		...orpc.clusters.getById.queryOptions({
-			input: { id: selectedClusterId ?? 0 },
-		}),
-		enabled: selectedClusterId !== null,
-	});
+	} = useClusters();
+	const { data: clusterDetail } = useClusterDetail(selectedClusterId);
 
 	if (isError) {
 		return (
@@ -108,7 +101,7 @@ export default function ClustersPage() {
 							className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-md ${
 								selectedClusterId === c.id ? "ring-2 ring-primary" : ""
 							}`}
-							onClick={() => setSelectedClusterId(c.id)}
+							onClick={() => setSelectedCluster(c.id)}
 						>
 							<CardHeader>
 								<div className="flex items-center justify-between">
@@ -167,7 +160,7 @@ export default function ClustersPage() {
 
 			<Sheet
 				open={selectedClusterId !== null && !!clusterDetail}
-				onOpenChange={(open) => !open && setSelectedClusterId(null)}
+				onOpenChange={(open) => !open && setSelectedCluster(null)}
 			>
 				<SheetContent side="right" className="w-full max-w-md sm:max-w-lg">
 					{clusterDetail && (

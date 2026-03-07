@@ -45,7 +45,7 @@ export function Header({
 					))}
 				</nav>
 				<div className="flex items-center gap-2">
-					<ModeToggle />
+					<ModeToggle variant="immediate"	/>
 					{authClient && (
 						<UserMenu
 							authClient={authClient}

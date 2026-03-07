@@ -1,13 +1,5 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-
-import { authClient } from "@/lib/auth-client";
-import { env } from "@/lib/env";
-import { orpc, queryClient } from "@/lib/orpc";
-
 import {
 	Button,
 	Card,
@@ -19,97 +11,30 @@ import {
 } from "@harmonia/ui";
 import { CopyableError } from "@/components/shared/copyable-error";
 import { ErrorState } from "@/components/shared/error-state";
+import { useClearAnalysis } from "@/hooks/mutations/use-clear-analysis";
+import { useOrganize } from "@/hooks/mutations/use-organize";
+import {
+	usePipelineRuns,
+	usePipelineStats,
+} from "@/hooks/queries/use-pipeline";
+import { useSpotifyLinked } from "@/hooks/queries/use-spotify-linked";
+import { authClient } from "@/lib/auth-client";
+import { env } from "@/lib/env";
 import { Icons } from "@harmonia/ui";
 
 export function DashboardOverview() {
-	const router = useRouter();
-	const { data: spotifyData } = useQuery(orpc.hasSpotifyLinked.queryOptions());
-	const { data: runs } = useQuery({
-		...orpc.pipeline.getAll.queryOptions(),
-		refetchInterval: (query) =>
-			query.state.data?.some((r: { status: string }) => r.status === "running")
-				? 2000
-				: false,
-		refetchIntervalInBackground: false,
-	});
+	const { data: spotifyData } = useSpotifyLinked();
+	const { data: runs } = usePipelineRuns();
 	const {
 		data: stats,
 		isLoading: statsLoading,
 		isError: statsError,
 		error: statsErrorMessage,
 		refetch: refetchStats,
-	} = useQuery({
-		...orpc.pipeline.stats.queryOptions(),
-		refetchInterval: runs?.[0]?.status === "running" ? 3000 : false,
-		refetchIntervalInBackground: false,
-	});
+	} = usePipelineStats(runs?.[0]?.status === "running" ? 3000 : false);
 
-	const organizeMutation = useMutation(
-		orpc.organize.run.mutationOptions({
-			onSuccess: (data) => {
-				toast.success(`Pipeline started (run #${data.runId})`);
-				queryClient.invalidateQueries();
-				router.push("/dashboard/pipeline" as Parameters<typeof router.push>[0]);
-			},
-			onError: (error) => {
-				const msg = error.message ?? "Failed to start pipeline";
-				const isSpotify403 = msg.includes("403") && msg.includes("Spotify");
-				if (isSpotify403) {
-					toast.error(
-						"Spotify 403: re-authorize by signing out and back in with Spotify.",
-						{
-							action: {
-								label: "Reconnect",
-								onClick: async () => {
-									await authClient.signOut();
-									router.push("/login");
-								},
-							},
-						},
-					);
-				} else {
-					toast.error(msg, {
-						action: {
-							label: "Copy",
-							onClick: async () => {
-								try {
-									await navigator.clipboard.writeText(msg);
-									toast.success("Copied");
-								} catch {
-									toast.error("Failed to copy");
-								}
-							},
-						},
-					});
-				}
-			},
-		}),
-	);
-
-	const clearAnalysisMutation = useMutation(
-		orpc.pipeline.clearAnalysis.mutationOptions({
-			onSuccess: (data) => {
-				toast.success(`Analysis cleared (${data.tracksUpdated} tracks reset)`);
-				queryClient.invalidateQueries();
-			},
-			onError: (error) => {
-				const msg = error.message ?? "Failed to clear analysis";
-				toast.error(msg, {
-					action: {
-						label: "Copy",
-						onClick: async () => {
-							try {
-								await navigator.clipboard.writeText(msg);
-								toast.success("Copied");
-							} catch {
-								toast.error("Failed to copy");
-							}
-						},
-					},
-				});
-			},
-		}),
-	);
+	const organizeMutation = useOrganize();
+	const clearAnalysisMutation = useClearAnalysis();
 
 	const handleClearAnalysis = () => {
 		if (

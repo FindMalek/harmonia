@@ -13,11 +13,13 @@ import { CopyableError } from "@/components/shared/copyable-error";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { PageLoader } from "@/components/shared/page-loader";
-import { client, orpc, queryClient } from "@/lib/orpc";
-
+import { usePipelineRuns } from "@/hooks/queries/use-pipeline";
+import { client } from "@/lib/orpc";
+import { queryKeys } from "@/lib/query-keys";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import { Icons } from "@harmonia/ui";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 const STAGE_ORDER = [
 	"sync",
@@ -38,16 +40,17 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 export default function PipelinePage() {
-	const [expandedRunId, setExpandedRunId] = useState<number | null>(null);
+	const expandedRunId = useDashboardUI((s) => s.expandedRunId);
+	const setExpandedRun = useDashboardUI((s) => s.setExpandedRun);
+	const queryClient = useQueryClient();
+
 	const {
 		data: runs,
 		isLoading,
 		isError,
 		error,
 		refetch,
-	} = useQuery({
-		...orpc.pipeline.getAll.queryOptions(),
-	});
+	} = usePipelineRuns();
 
 	if (isError) {
 		return (
@@ -99,9 +102,7 @@ export default function PipelinePage() {
 				<ActiveRunCard
 					run={activeRun}
 					onComplete={() =>
-						queryClient.invalidateQueries({
-							queryKey: orpc.pipeline.getAll.key(),
-						})
+						queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() })
 					}
 				/>
 			)}
@@ -115,7 +116,7 @@ export default function PipelinePage() {
 							run={run}
 							expanded={expandedRunId === run.id}
 							onToggle={() =>
-								setExpandedRunId((id) => (id === run.id ? null : run.id))
+								setExpandedRun(expandedRunId === run.id ? null : run.id)
 							}
 						/>
 					))}
@@ -136,14 +137,6 @@ export default function PipelinePage() {
 		</div>
 	);
 }
-
-type Run = NonNullable<
-	Awaited<ReturnType<typeof orpc.pipeline.getAll.queryOptions>>["queryFn"]
-> extends (...args: unknown[]) => Promise<infer T>
-	? T extends (infer U)[]
-		? U
-		: never
-	: never;
 
 function ActiveRunCard({
 	run: initialRun,
