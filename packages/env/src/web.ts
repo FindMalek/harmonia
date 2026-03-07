@@ -1,12 +1,7 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+/**
+ * Web app environment (client-side)
+ * Re-exports webEnv
+ */
+import { webEnv } from "./presets/web";
 
-export const env = createEnv({
-	client: {
-		NEXT_PUBLIC_APP_URL: z.string().url().optional(),
-	},
-	runtimeEnv: {
-		NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-	},
-	emptyStringAsUndefined: true,
-});
+export const env = webEnv;

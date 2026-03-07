@@ -1,36 +1,23 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createEnv } from "@t3-oss/env-core";
-import dotenv from "dotenv";
-import { z } from "zod";
+import { config } from "dotenv";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+config({ path: path.resolve(__dirname, "../../../.env") });
 
-export const env = createEnv({
-	server: {
-		DATABASE_URL: z.string().min(1),
-		BETTER_AUTH_SECRET: z.string().min(32),
-		BETTER_AUTH_URL: z.url(),
-		CORS_ORIGIN: z.url(),
-		NODE_ENV: z
-			.enum(["development", "production", "test"])
-			.default("development"),
-		// Optional - Spotify OAuth (Phase 1)
-		SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
-		SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
-		// Optional - Embeddings (Phase 3)
-		OPENAI_API_KEY: z.string().min(1).optional(),
-		// Optional - LLM classification (Groq GPT-OSS 120B)
-		GROQ_API_KEY: z.string().min(1).optional(),
-		// Optional - Cron secret for organize.run
-		CRON_SECRET: z.string().min(1).optional(),
-		// Optional - Target user ID when cron triggers organize.run
-		CRON_USER_ID: z.string().min(1).optional(),
+import { apiEnv } from "./presets/api";
+
+export const env = {
+	...apiEnv,
+	/** @deprecated Use NEXT_PUBLIC_API_URL - API hosts auth */
+	get BETTER_AUTH_URL() {
+		return apiEnv.NEXT_PUBLIC_API_URL;
 	},
-	runtimeEnv: process.env,
-	emptyStringAsUndefined: true,
-	skipValidation:
-		process.env.SKIP_ENV_VALIDATION === "true" ||
-		process.env.NODE_ENV === "test",
-});
+	/** @deprecated Use NEXT_PUBLIC_ALLOWED_ORIGIN */
+	get CORS_ORIGIN() {
+		return apiEnv.NEXT_PUBLIC_ALLOWED_ORIGIN ?? apiEnv.NEXT_PUBLIC_API_URL;
+	},
+} as typeof apiEnv & {
+	BETTER_AUTH_URL: string;
+	CORS_ORIGIN: string;
+};

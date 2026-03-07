@@ -1,0 +1,57 @@
+{
+	"name": "@harmonia/ui",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --noEmit",
+		"check-types": "tsc --noEmit"
+	},
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./components/icons": {
+			"types": "./src/components/icons.tsx",
+			"default": "./src/components/icons.tsx"
+		},
+		"./styles/globals.css": "./src/styles/globals.css"
+	},
+	"dependencies": {
+		"@base-ui/react": "^1.2.0",
+		"@tabler/icons-react": "^3.40.0",
+		"@tanstack/react-form": "^1.28.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"cmdk": "^1.1.1",
+		"date-fns": "^4.1.0",
+		"embla-carousel-react": "^8.6.0",
+		"input-otp": "^1.4.2",
+		"next-themes": "^0.4.6",
+		"radix-ui": "^1.4.3",
+		"react": "^19.2.3",
+		"react-day-picker": "^9.14.0",
+		"react-resizable-panels": "^4.7.1",
+		"recharts": "2.15.4",
+		"shadcn": "^4.0.0",
+		"sonner": "^2.0.7",
+		"tailwind-merge": "^3.5.0",
+		"tw-animate-css": "^1.4.0",
+		"vaul": "^1.1.2",
+		"zod": "catalog:"
+	},
+	"peerDependencies": {
+		"@tanstack/react-query": "^5.90.12",
+		"next": "catalog:"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"@tailwindcss/postcss": "^4.1.10",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"next": "catalog:",
+		"tailwindcss": "^4.1.10",
+		"typescript": "catalog:"
+	}
+}

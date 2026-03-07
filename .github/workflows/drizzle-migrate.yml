@@ -1,0 +1,45 @@
+# Drizzle migration workflow
+# Runs database migrations when schema or migration files change on main.
+#
+# Required secret:
+#   PRODUCTION_DATABASE_URL - Production PostgreSQL connection string.
+#   Add it in: GitHub repo → Settings → Secrets and variables → Actions.
+
+name: Drizzle Migrate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/db/src/migrations/**"
+      - "packages/db/src/schema/**"
+      - "packages/db/drizzle.config.ts"
+      - "packages/db/package.json"
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: pnpm db:migrate

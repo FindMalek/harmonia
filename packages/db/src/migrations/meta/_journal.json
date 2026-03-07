@@ -22,6 +22,13 @@
 			"when": 1772744814165,
 			"tag": "0002_cloudy_medusa",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1772846331118,
+			"tag": "0003_colossal_piledriver",
+			"breakpoints": true
 		}
 	]
 }
