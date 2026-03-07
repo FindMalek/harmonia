@@ -12,6 +12,16 @@ if (!process.env.VERCEL) {
 
 const nextConfig: NextConfig = {
 	typedRoutes: true,
+	serverExternalPackages: ["pino", "pino-pretty", "thread-stream"],
+	redirects: async () => {
+		return [
+			{
+				source: "/",
+				destination: "/api",
+				permanent: true,
+			},
+		];
+	},
 	// Ensure env vars are available during build (workers may not inherit process.env)
 	env: {
 		NEXT_PUBLIC_API_URL:

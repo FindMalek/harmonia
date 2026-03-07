@@ -1,7 +1,13 @@
 import { createContext, appRouter } from "@harmonia/orpc";
 import { logger } from "@harmonia/logger";
-import { flushTelemetry } from "@harmonia/tracing";
+import {
+	flushTelemetry,
+	isTracingInitialized,
+	registerTracing,
+} from "@harmonia/tracing";
 import { getCorsHeaders } from "@/lib/cors";
+import { getErrorMessage, safeErrorPayload } from "@/lib/payload";
+import { applyCors, jsonResponse } from "@/lib/response";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { onError } from "@orpc/server";
@@ -11,137 +17,84 @@ import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-function getErrorMessage(error: unknown): string | undefined {
-	if (error instanceof Error) return error.message;
-	if (error != null) return String(error);
-	return undefined;
-}
+let lastError: Error | null = null;
 
-function safeErrorPayload(error: unknown): {
-	message: string;
-	stack?: string;
-	causeMessage?: string;
-	code?: string;
-} {
-	const err = error instanceof Error ? error : new Error(String(error));
-	const cause =
-		err.cause ??
-		(error &&
-			typeof error === "object" &&
-			"cause" in error &&
-			(error as { cause?: unknown }).cause);
-	const causeMessage =
-		cause instanceof Error
-			? cause.message
-			: cause != null
-				? String(cause)
-				: undefined;
-	const code =
-		error && typeof error === "object" && "code" in error
-			? (error as { code?: string }).code
-			: undefined;
-	return {
-		message: err.message,
-		stack: err.stack,
-		...(causeMessage !== undefined && { causeMessage }),
-		...(code !== undefined && { code }),
-	};
-}
+const rpcErrorInterceptor = onError((error: unknown) => {
+	lastError = error instanceof Error ? error : new Error(String(error));
+	logger.error(safeErrorPayload(error), "RPC error");
+});
 
-let lastRpcError: Error | null = null;
+const apiErrorInterceptor = onError((error: unknown) => {
+	lastError = error instanceof Error ? error : new Error(String(error));
+	logger.error(safeErrorPayload(error), "OpenAPI error");
+});
 
 const rpcHandler = new RPCHandler(appRouter, {
-	interceptors: [
-		onError((error: unknown) => {
-			const err = error instanceof Error ? error : new Error(String(error));
-			lastRpcError = err;
-			logger.error(safeErrorPayload(error), "RPC error");
-		}),
-	],
+	interceptors: [rpcErrorInterceptor],
 });
+
 const apiHandler = new OpenAPIHandler(appRouter, {
 	plugins: [
 		new OpenAPIReferencePlugin({
 			schemaConverters: [new ZodToJsonSchemaConverter()],
+			specGenerateOptions: {
+				info: {
+					title: "Harmonia API",
+					version: "1.0.0",
+					description: "API documentation and playground for Harmonia",
+				},
+			},
 		}),
 	],
-	interceptors: [
-		onError((error: unknown) => {
-			const err = error instanceof Error ? error : new Error(String(error));
-			lastRpcError = err;
-			logger.error(safeErrorPayload(error), "OpenAPI error");
-		}),
-	],
+	interceptors: [apiErrorInterceptor],
 });
 
+function maybeDevErrorResponse(
+	response: Response,
+	corsHeaders: Record<string, string>,
+): Response {
+	if (
+		process.env.NODE_ENV !== "development" ||
+		response.status !== 500 ||
+		!lastError
+	) {
+		return response;
+	}
+	const message = getErrorMessage(lastError);
+	if (!message) return response;
+	return jsonResponse({ message }, 500, corsHeaders);
+}
+
 async function handleRequest(req: NextRequest) {
-	lastRpcError = null;
-	const origin = req.headers.get("origin");
-	const corsHeaders = await getCorsHeaders(origin);
+	lastError = null;
+	const corsHeaders = await getCorsHeaders(req.headers.get("origin"));
+
+	if (req.method === "OPTIONS") {
+		return new Response(null, {
+			status: 204,
+			headers: corsHeaders,
+		});
+	}
 
 	try {
-		// OPTIONS preflight
-		if (req.method === "OPTIONS") {
-			return new Response(null, {
-				status: 204,
-				headers: corsHeaders,
-			});
-		}
+		const context = await createContext(req.headers);
 
 		const rpcResult = await rpcHandler.handle(req, {
 			prefix: "/api/rpc",
-			context: await createContext(req.headers),
+			context,
 		});
 		if (rpcResult.response) {
-			const errMsg = getErrorMessage(lastRpcError);
-			if (
-				process.env.NODE_ENV === "development" &&
-				rpcResult.response.status === 500 &&
-				errMsg
-			) {
-				const body = JSON.stringify({ message: errMsg });
-				return new Response(body, {
-					status: 500,
-					headers: { "Content-Type": "application/json", ...corsHeaders },
-				});
-			}
-			const resHeaders = new Headers(rpcResult.response.headers);
-			for (const [k, v] of Object.entries(corsHeaders)) {
-				resHeaders.set(k, v);
-			}
-			return new Response(rpcResult.response.body, {
-				status: rpcResult.response.status,
-				statusText: rpcResult.response.statusText,
-				headers: resHeaders,
-			});
+			const withCors = applyCors(rpcResult.response, corsHeaders);
+			return maybeDevErrorResponse(withCors, corsHeaders);
 		}
 
 		const apiResult = await apiHandler.handle(req, {
 			prefix: "/api/rpc/api-reference",
-			context: await createContext(req.headers),
+			context,
 		});
 		if (apiResult.response) {
-			const errMsg = getErrorMessage(lastRpcError);
-			if (
-				process.env.NODE_ENV === "development" &&
-				apiResult.response.status === 500 &&
-				errMsg
-			) {
-				const body = JSON.stringify({ message: errMsg });
-				return new Response(body, {
-					status: 500,
-					headers: { "Content-Type": "application/json", ...corsHeaders },
-				});
-			}
-			const resHeaders = new Headers(apiResult.response.headers);
-			for (const [k, v] of Object.entries(corsHeaders)) {
-				resHeaders.set(k, v);
-			}
-			return new Response(apiResult.response.body, {
-				status: apiResult.response.status,
-				statusText: apiResult.response.statusText,
-				headers: resHeaders,
-			});
+			const withCors = applyCors(apiResult.response, corsHeaders);
+			return maybeDevErrorResponse(withCors, corsHeaders);
 		}
 
 		return new Response("Not found", {
@@ -150,7 +103,11 @@ async function handleRequest(req: NextRequest) {
 		});
 	} finally {
 		if (process.env.VERCEL) {
-			await flushTelemetry();
+			try {
+				await flushTelemetry();
+			} catch {
+				// Silently fail - flushing failures shouldn't break the app
+			}
 		}
 	}
 }
