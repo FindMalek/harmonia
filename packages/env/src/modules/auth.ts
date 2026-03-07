@@ -9,7 +9,6 @@ export const authModule = {
 		SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
 		SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
 		CRON_SECRET: z.string().min(1).optional(),
-		CRON_USER_ID: z.string().min(1).optional(),
 		OPENAI_API_KEY: z.string().min(1).optional(),
 		GROQ_API_KEY: z.string().min(1).optional(),
 	},

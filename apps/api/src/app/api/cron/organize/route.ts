@@ -26,13 +26,6 @@ async function handler(_req: NextRequest) {
 		return new Response("Unauthorized", { status: 401 });
 	}
 
-	const body = JSON.stringify({
-		json: {
-			userId: env.CRON_USER_ID ?? undefined,
-		},
-		meta: [],
-	});
-
 	const apiUrl = env.BETTER_AUTH_URL;
 	const response = await fetch(`${apiUrl}/api/rpc/organize/run`, {
 		method: "POST",
@@ -40,7 +33,6 @@ async function handler(_req: NextRequest) {
 			"Content-Type": "application/json",
 			"X-Organize-Secret": cronSecret,
 		},
-		body,
 	});
 
 	if (!response.ok) {

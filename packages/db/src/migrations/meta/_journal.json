@@ -1,34 +1,34 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1772728003984,
-      "tag": "0000_cheerful_ironclad",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1741190400000,
-      "tag": "0001_add_todo_user_id",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1772744814165,
-      "tag": "0002_cloudy_medusa",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1772846331118,
-      "tag": "0003_colossal_piledriver",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1772728003984,
+			"tag": "0000_cheerful_ironclad",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1741190400000,
+			"tag": "0001_add_todo_user_id",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1772744814165,
+			"tag": "0002_cloudy_medusa",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1772846331118,
+			"tag": "0003_colossal_piledriver",
+			"breakpoints": true
+		}
+	]
 }
