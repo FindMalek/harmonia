@@ -1,4 +1,7 @@
-import { organizeRunInput } from "@harmonia/common/schemas";
+import {
+	organizeRunInput,
+	organizeRunOutputSchema,
+} from "@harmonia/common/schemas";
 
 import type { Context } from "../../context";
 import { publicProcedure } from "../../procedures";
@@ -103,6 +106,7 @@ export function createOrganizeRouter({
 				},
 			})
 			.input(organizeRunInput)
+			.output(organizeRunOutputSchema)
 			.handler(async ({ input, context }) => {
 				logger.info({ input }, "organize.run invoked");
 

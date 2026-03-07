@@ -1,12 +1,21 @@
-import { clusterGetByIdInput } from "@harmonia/common/schemas";
+import {
+	clusterGetByIdInput,
+	clusterGetByIdOutputSchema,
+	clusterListItemSchema,
+	emptyInput,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { and, desc, eq } from "drizzle-orm";
+import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
 export const clustersRouter = {
-	list: protectedProcedure.handler(async ({ context }) => {
+	list: protectedProcedure
+		.input(emptyInput)
+		.output(z.array(clusterListItemSchema))
+		.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 
 		const clusters = await db
@@ -18,8 +27,9 @@ export const clustersRouter = {
 		return clusters;
 	}),
 
-	getById: protectedProcedure
+		getById: protectedProcedure
 		.input(clusterGetByIdInput)
+		.output(z.union([clusterGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
@@ -47,7 +57,7 @@ export const clustersRouter = {
 
 			return {
 				...result,
-				centroid: undefined,
+				centroid: result.centroid ?? null,
 				tracks,
 			};
 		}),

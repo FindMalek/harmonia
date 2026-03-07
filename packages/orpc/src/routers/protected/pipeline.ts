@@ -1,6 +1,11 @@
 import {
+	emptyInput,
+	pipelineClearAnalysisOutputSchema,
 	pipelineGetByIdInput,
+	pipelineGetByIdOutputSchema,
+	pipelineRunListItemSchema,
 	pipelineStatusEventSchema,
+	pipelineStatsOutputSchema,
 	pipelineStreamStatusInput,
 } from "@harmonia/common/schemas";
 import { eventIterator } from "@orpc/server";
@@ -10,10 +15,14 @@ import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
 export const pipelineRouter = {
-	getAll: protectedProcedure.handler(async ({ context }) => {
+	getAll: protectedProcedure
+		.input(emptyInput)
+		.output(z.array(pipelineRunListItemSchema))
+		.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 		const runs = await db
 			.select()
@@ -25,8 +34,9 @@ export const pipelineRouter = {
 		return runs;
 	}),
 
-	getById: protectedProcedure
+		getById: protectedProcedure
 		.input(pipelineGetByIdInput)
+		.output(z.union([pipelineGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const [run] = await db
@@ -107,7 +117,10 @@ export const pipelineRouter = {
 			}
 		}),
 
-	stats: protectedProcedure.handler(async ({ context }) => {
+	stats: protectedProcedure
+		.input(emptyInput)
+		.output(pipelineStatsOutputSchema)
+		.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 
 		const [trackStats] = await db
@@ -147,7 +160,10 @@ export const pipelineRouter = {
 		};
 	}),
 
-	clearAnalysis: protectedProcedure.handler(async ({ context }) => {
+	clearAnalysis: protectedProcedure
+		.input(emptyInput)
+		.output(pipelineClearAnalysisOutputSchema)
+		.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 
 		await db

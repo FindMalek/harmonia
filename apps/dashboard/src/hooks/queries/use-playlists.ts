@@ -2,7 +2,7 @@ import { orpc } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
 
 export function usePlaylists() {
-	return useQuery(orpc.playlists.list.queryOptions());
+	return useQuery(orpc.playlists.list.queryOptions({ input: {} }));
 }
 
 export function usePlaylistDetail(id: number | null) {

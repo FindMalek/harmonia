@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function usePipelineRuns() {
 	return useQuery({
-		...orpc.pipeline.getAll.queryOptions(),
+		...orpc.pipeline.getAll.queryOptions({ input: {} }),
 		refetchInterval: (query) =>
 			query.state.data?.some((r: { status: string }) => r.status === "running")
 				? 2000
@@ -14,7 +14,7 @@ export function usePipelineRuns() {
 
 export function usePipelineStats(refetchInterval: number | false) {
 	return useQuery({
-		...orpc.pipeline.stats.queryOptions(),
+		...orpc.pipeline.stats.queryOptions({ input: {} }),
 		refetchInterval,
 		refetchIntervalInBackground: false,
 	});

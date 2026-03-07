@@ -1,6 +1,7 @@
 export * from "./classification";
 export * from "./cluster";
 export * from "./organize";
+export * from "./shared";
 export * from "./pipeline";
 export * from "./playlist";
 export * from "./spotify";

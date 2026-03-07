@@ -2,7 +2,7 @@ import { orpc } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
 
 export function useClusters() {
-	return useQuery(orpc.clusters.list.queryOptions());
+	return useQuery(orpc.clusters.list.queryOptions({ input: {} }));
 }
 
 export function useClusterDetail(id: number | null) {

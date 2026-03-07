@@ -1,13 +1,20 @@
-import { trackGetByIdInput, tracksListInput } from "@harmonia/common/schemas";
+import {
+	trackGetByIdInput,
+	trackGetByIdOutputSchema,
+	tracksListInput,
+	tracksListOutputSchema,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
 export const tracksRouter = {
 	list: protectedProcedure
 		.input(tracksListInput)
+		.output(tracksListOutputSchema)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const offset = (input.page - 1) * input.pageSize;
@@ -73,8 +80,9 @@ export const tracksRouter = {
 			};
 		}),
 
-	getById: protectedProcedure
+		getById: protectedProcedure
 		.input(trackGetByIdInput)
+		.output(z.union([trackGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
