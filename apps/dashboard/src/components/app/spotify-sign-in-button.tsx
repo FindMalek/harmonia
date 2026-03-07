@@ -12,7 +12,6 @@ export function SpotifySignInButton() {
 	const handleSpotifySignIn = async () => {
 		setIsLoading(true);
 		try {
-		
 			await authClient.signIn.social({
 				provider: "spotify",
 				callbackURL: `${env.NEXT_PUBLIC_DASHBOARD_URL}${DASHBOARD_ROUTES.overview.path}`,
