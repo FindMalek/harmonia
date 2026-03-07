@@ -30,13 +30,7 @@ export {
 } from "./components/ui/dropdown-menu";
 export { Input } from "./components/ui/input";
 export { Label } from "./components/ui/label";
-export {
-	Progress,
-	ProgressIndicator,
-	ProgressLabel,
-	ProgressTrack,
-	ProgressValue,
-} from "./components/ui/progress";
+export { Progress } from "./components/ui/progress";
 export { ScrollArea, ScrollBar } from "./components/ui/scroll-area";
 export {
 	Sheet,
@@ -65,6 +59,7 @@ export {
 	TabsTrigger,
 	tabsListVariants,
 } from "./components/ui/tabs";
+export { Spinner } from "./components/ui/spinner";
 
 // Shared components
 export { CopyableError } from "./components/copyable-error";

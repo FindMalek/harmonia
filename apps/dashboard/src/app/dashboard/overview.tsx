@@ -19,7 +19,7 @@ import {
 	ErrorState,
 	Skeleton,
 } from "@harmonia/ui";
-import { Brain, FileText, Layers, Loader2, Music2, Trash2 } from "lucide-react";
+import { Icons } from "@harmonia/ui/components/icons";
 
 export function DashboardOverview({
 	spotifyEnabled = false,
@@ -168,12 +168,12 @@ export function DashboardOverview({
 						>
 							{clearAnalysisMutation.isPending ? (
 								<>
-									<Loader2 className="size-3.5 animate-spin" />
+									<Icons.spinner className="size-3.5 animate-spin" />
 									Clearing...
 								</>
 							) : (
 								<>
-									<Trash2 className="size-3.5" />
+									<Icons.trash className="size-3.5" />
 									Remove Analysis
 								</>
 							)}
@@ -186,7 +186,7 @@ export function DashboardOverview({
 					>
 						{organizeMutation.isPending ? (
 							<>
-								<Loader2 className="size-3.5 animate-spin" />
+								<Icons.spinner className="size-3.5 animate-spin" />
 								Running...
 							</>
 						) : (
@@ -209,25 +209,25 @@ export function DashboardOverview({
 
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				<StatCard
-					icon={Music2}
+					icon={Icons.music}
 					title="Total Tracks"
 					value={stats?.tracks.total ?? 0}
 					loading={statsLoading}
 				/>
 				<StatCard
-					icon={FileText}
+					icon={Icons.fileText}
 					title="Lyrics Found"
 					value={stats?.tracks.withLyrics ?? 0}
 					loading={statsLoading}
 				/>
 				<StatCard
-					icon={Brain}
+					icon={Icons.brain}
 					title="AI Classified"
 					value={stats?.tracks.classified ?? 0}
 					loading={statsLoading}
 				/>
 				<StatCard
-					icon={Layers}
+					icon={Icons.layers}
 					title="Clusters"
 					value={stats?.clusters ?? 0}
 					loading={statsLoading}

@@ -14,7 +14,8 @@ import {
 	Progress,
 } from "@harmonia/ui";
 import { client, orpc, queryClient } from "@/lib/orpc";
-import { ChevronDown, ChevronRight, Play } from "lucide-react";
+
+import { Icons } from "@harmonia/ui/components/icons";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -120,7 +121,7 @@ export default function PipelinePage() {
 					))}
 					{(!runs || runs.length === 0) && (
 						<EmptyState
-							icon={Play}
+							icon={Icons.play}
 							title="No pipeline runs yet"
 							description="Click Run Pipeline on the overview page to start."
 							action={{
@@ -334,9 +335,9 @@ function RunRow({
 				<div className="flex items-center gap-2">
 					{hasExpandableContent ? (
 						expanded ? (
-							<ChevronDown className="size-3.5 shrink-0" />
+							<Icons.chevronDown className="size-3.5 shrink-0" />
 						) : (
-							<ChevronRight className="size-3.5 shrink-0" />
+							<Icons.chevronRight className="size-3.5 shrink-0" />
 						)
 					) : null}
 					<div className="flex items-center gap-3">

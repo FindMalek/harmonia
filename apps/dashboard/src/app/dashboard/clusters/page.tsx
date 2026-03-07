@@ -21,9 +21,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@harmonia/ui";
+import { Icons } from "@harmonia/ui/components/icons";
 import { orpc } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
-import { Layers } from "lucide-react";
 import { useState } from "react";
 
 export default function ClustersPage() {
@@ -154,7 +154,7 @@ export default function ClustersPage() {
 
 			{!clusters?.length && (
 				<EmptyState
-					icon={Layers}
+					icon={Icons.layers}
 					title="No clusters yet"
 					description="Run the pipeline to discover clusters in your library."
 					action={{

@@ -1,11 +1,11 @@
-import type { LucideIcon } from "lucide-react";
-import { Music2 } from "lucide-react";
+import type { Icon } from "./icons";
+import { Icons } from "./icons";
 
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 
 type EmptyStateProps = {
-	icon?: LucideIcon;
+	icon?: Icon;
 	title: string;
 	description?: string;
 	action?: {
@@ -17,7 +17,7 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({
-	icon: Icon = Music2,
+	icon: Icon = Icons.music,
 	title,
 	description,
 	action,

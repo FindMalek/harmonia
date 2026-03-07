@@ -1,7 +1,6 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
-
+import { Icons } from "./icons";
 import { CopyableError } from "./copyable-error";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
@@ -21,7 +20,7 @@ export function ErrorState({ message, onRetry, className }: ErrorStateProps) {
 			)}
 		>
 			<div className="flex items-center gap-2 text-destructive">
-				<AlertCircle className="size-4 shrink-0" />
+				<Icons.alertCircle className="size-4 shrink-0" />
 				<span className="font-medium text-sm">Something went wrong</span>
 			</div>
 			<CopyableError text={message} variant="error" />

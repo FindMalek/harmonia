@@ -1,7 +1,9 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Trash2 } from "lucide-react";
+
+import { Icons } from "@harmonia/ui/components/icons";
+import { Spinner } from "@harmonia/ui";
 import { useState } from "react";
 
 import {
@@ -81,7 +83,7 @@ export default function TodosPage() {
 							disabled={createMutation.isPending || !newTodoText.trim()}
 						>
 							{createMutation.isPending ? (
-								<Loader2 className="h-4 w-4 animate-spin" />
+								<Spinner className="h-4 w-4 animate-spin" />
 							) : (
 								"Add"
 							)}
@@ -90,7 +92,7 @@ export default function TodosPage() {
 
 					{todos.isLoading ? (
 						<div className="flex justify-center py-4">
-							<Loader2 className="h-6 w-6 animate-spin" />
+							<Spinner className="h-6 w-6 animate-spin" />
 						</div>
 					) : todos.data?.length === 0 ? (
 						<p className="py-4 text-center">No todos yet. Add one above!</p>
@@ -122,7 +124,7 @@ export default function TodosPage() {
 										onClick={() => handleDeleteTodo(todo.id)}
 										aria-label="Delete todo"
 									>
-										<Trash2 className="h-4 w-4" />
+										<Icons.trash className="h-4 w-4" />
 									</Button>
 								</li>
 							))}

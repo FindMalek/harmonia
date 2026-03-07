@@ -1,8 +1,8 @@
 "use client";
 
-import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
+import { Icons } from "./icons";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 
@@ -46,7 +46,7 @@ export function CopyableError({
 				className="shrink-0"
 				aria-label={label}
 			>
-				<Copy className="size-3" />
+				<Icons.copy className="size-3" />
 			</Button>
 		</div>
 	);

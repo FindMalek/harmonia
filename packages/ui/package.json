@@ -12,6 +12,10 @@
 			"types": "./src/index.ts",
 			"default": "./src/index.ts"
 		},
+		"./components/icons": {
+			"types": "./src/components/icons.tsx",
+			"default": "./src/components/icons.tsx"
+		},
 		"./styles/globals.css": "./src/styles/globals.css"
 	},
 	"dependencies": {

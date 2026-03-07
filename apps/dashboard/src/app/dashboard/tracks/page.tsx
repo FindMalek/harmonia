@@ -23,7 +23,8 @@ import {
 } from "@harmonia/ui";
 import { orpc } from "@/lib/orpc";
 import { useQuery } from "@tanstack/react-query";
-import { Music2 } from "lucide-react";
+
+import { Icons } from "@harmonia/ui/components/icons";
 import { useState } from "react";
 
 export default function TracksPage() {
@@ -158,7 +159,7 @@ export default function TracksPage() {
 
 					{!isLoading && data && data.tracks.length === 0 && (
 						<EmptyState
-							icon={Music2}
+							icon={Icons.music}
 							title="No tracks found"
 							description={
 								search

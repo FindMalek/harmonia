@@ -5,7 +5,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
-import { IconX } from "@tabler/icons-react";
+import { Icons } from "../icons";
 
 function Dialog({
 	...props
@@ -74,7 +74,7 @@ function DialogContent({
 							className="absolute top-2 right-2"
 							size="icon-sm"
 						>
-							<IconX />
+							<Icons.x />
 							<span className="sr-only">Close</span>
 						</Button>
 					</DialogPrimitive.Close>

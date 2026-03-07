@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Accordion as AccordionPrimitive } from "radix-ui";
 
+import { Icons } from "../icons";
 import { cn } from "../../lib/utils";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 
 function Accordion({
 	className,
@@ -46,11 +46,11 @@ function AccordionTrigger({
 				{...props}
 			>
 				{children}
-				<IconChevronDown
+				<Icons.chevronDown
 					data-slot="accordion-trigger-icon"
 					className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
 				/>
-				<IconChevronUp
+				<Icons.chevronUp
 					data-slot="accordion-trigger-icon"
 					className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
 				/>

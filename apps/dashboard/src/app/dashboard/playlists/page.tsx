@@ -26,7 +26,8 @@ import {
 } from "@harmonia/ui";
 import { orpc, queryClient } from "@/lib/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Disc3, Loader2 } from "lucide-react";
+
+import { Icons } from "@harmonia/ui/components/icons";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -159,7 +160,7 @@ export default function PlaylistsPage() {
 				>
 					{exportAllMutation.isPending ? (
 						<>
-							<Loader2 className="size-3.5 animate-spin" />
+							<Icons.spinner className="size-3.5 animate-spin" />
 							Exporting...
 						</>
 					) : (
@@ -183,7 +184,7 @@ export default function PlaylistsPage() {
 
 			{!playlists?.length && (
 				<EmptyState
-					icon={Disc3}
+					icon={Icons.disc}
 					title="No playlists yet"
 					description="Run the pipeline to generate playlists from your library."
 					action={{
@@ -314,7 +315,7 @@ function PlaylistCard({
 					>
 						{isExporting ? (
 							<>
-								<Loader2 className="size-3 animate-spin" />
+								<Icons.spinner className="size-3 animate-spin" />
 								Exporting...
 							</>
 						) : (
