@@ -60,6 +60,18 @@ export const DASHBOARD_ROUTES = {
 		icon: "fileText",
 		isNav: true,
 	},
+	insights: {
+		path: "/insights",
+		label: "Insights",
+		icon: "chart",
+		isNav: true,
+	},
+	settings: {
+		path: "/settings",
+		label: "Settings",
+		icon: "settings",
+		isNav: true,
+	},
 } as const;
 
 export type DashboardRoutes = typeof DASHBOARD_ROUTES;
@@ -74,3 +86,11 @@ export const DASHBOARD_NAV_ITEMS = (
 )
 	.filter(([, route]) => route.isNav)
 	.map(([key, route]) => ({ key, ...route }));
+
+/** Dashboard routes that appear in the mobile bottom navigation */
+export const DASHBOARD_MOBILE_NAV_ITEMS = [
+	{ ...DASHBOARD_ROUTES.overview, key: "overview", label: "Dashboard" },
+	{ ...DASHBOARD_ROUTES.playlists, key: "playlists" },
+	{ ...DASHBOARD_ROUTES.insights, key: "insights" },
+	{ ...DASHBOARD_ROUTES.settings, key: "settings" },
+];

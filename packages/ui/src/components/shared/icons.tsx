@@ -39,6 +39,8 @@ import {
 	IconTrash,
 	IconX,
 	IconBrandBandlab,
+	IconSettings,
+	IconChartBar,
 } from "@tabler/icons-react";
 import type * as React from "react";
 
@@ -86,4 +88,8 @@ export const Icons = {
 
 	// Brand
 	logo: IconBrandBandlab,
+
+	// Navigation / App
+	settings: IconSettings,
+	chart: IconChartBar,
 } as const;

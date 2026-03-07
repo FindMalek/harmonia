@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/get-server-session";
 import AppHeader from "@/components/layout/app-header";
 import { DashboardNav } from "./nav";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 
 export default async function DashboardLayout({
 	children,
@@ -26,10 +27,13 @@ export default async function DashboardLayout({
 							{session.user.name}
 						</span>
 					</div>
-					<DashboardNav />
+					<div className="hidden md:block">
+						<DashboardNav />
+					</div>
 				</div>
-				<div className="flex-1 overflow-auto p-4">{children}</div>
+				<div className="flex-1 overflow-auto p-4 pb-20 md:pb-4">{children}</div>
 			</div>
+			<MobileBottomNav />
 		</div>
 	);
 }
