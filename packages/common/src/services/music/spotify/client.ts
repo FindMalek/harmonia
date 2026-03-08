@@ -13,7 +13,7 @@ import type {
 	SpotifyTokenResponse,
 } from "@harmonia/common/schemas";
 
-const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+export const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const RATE_LIMIT_MAX_RETRIES = 3;
 const RATE_LIMIT_MAX_WAIT_SEC = 60;
 
@@ -119,20 +119,31 @@ export async function getUserSpotifyAccessToken(
 	return json.access_token;
 }
 
-async function spotifyFetch<T>(
+export type SpotifyRequestOptions = {
+	method?: "GET" | "POST" | "PUT" | "DELETE";
+	body?: unknown;
+};
+
+/**
+ * Unified Spotify API request helper. Handles auth, 429 retries, and error formatting.
+ */
+export async function spotifyRequest<T>(
 	path: string,
 	accessToken: string,
-	init?: RequestInit,
+	options: SpotifyRequestOptions = {},
 	retriesLeft = RATE_LIMIT_MAX_RETRIES,
 ): Promise<T> {
-	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, {
-		...init,
+	const { method = "GET", body } = options;
+	const init: RequestInit = {
+		method,
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			"Content-Type": "application/json",
-			...(init?.headers ?? {}),
 		},
-	});
+		...(body !== undefined && { body: JSON.stringify(body) }),
+	};
+
+	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, init);
 
 	if (response.status === 429 && retriesLeft > 0) {
 		const waitSec = Math.min(
@@ -144,7 +155,7 @@ async function spotifyFetch<T>(
 			"Spotify rate limit (429); waiting before retry",
 		);
 		await sleep(waitSec * 1000);
-		return spotifyFetch(path, accessToken, init, retriesLeft - 1);
+		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
 	}
 
 	if (!response.ok) {
@@ -177,6 +188,10 @@ async function spotifyFetch<T>(
 	return (await response.json()) as T;
 }
 
+function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
+	return spotifyRequest<T>(path, accessToken, { method: "GET" });
+}
+
 export async function fetchAllSavedTracks(
 	accessToken: string,
 ): Promise<SpotifySavedTracksResponse["items"]> {
@@ -185,10 +200,7 @@ export async function fetchAllSavedTracks(
 	const allItems: SpotifySavedTracksResponse["items"] = [];
 
 	for (;;) {
-		const page = await spotifyFetch<SpotifySavedTracksResponse>(
-			url,
-			accessToken,
-		);
+		const page = await spotifyGet<SpotifySavedTracksResponse>(url, accessToken);
 		allItems.push(...page.items);
 
 		if (!page.next) {
@@ -212,7 +224,7 @@ export async function fetchAllUserPlaylists(
 	const allPlaylists: SpotifyPlaylistSimplified[] = [];
 
 	for (;;) {
-		const page = await spotifyFetch<SpotifyPlaylistsResponse>(url, accessToken);
+		const page = await spotifyGet<SpotifyPlaylistsResponse>(url, accessToken);
 		allPlaylists.push(...page.items);
 
 		if (!page.next) {
@@ -228,16 +240,21 @@ export async function fetchAllUserPlaylists(
 	return allPlaylists;
 }
 
-export async function fetchAllPlaylistTracks(
+const PLAYLIST_ITEMS_LIMIT = 50;
+const PLAYLIST_ITEMS_FIELDS =
+	"items(track(id,name,uri,album(name),artists(name),duration_ms))";
+
+export async function fetchPlaylistItems(
 	accessToken: string,
 	playlistId: string,
+	options?: { fields?: string },
 ): Promise<SpotifyPlaylistTrackItem[]> {
-	const limit = 100;
-	let url = `/playlists/${playlistId}/tracks?limit=${limit}`;
+	const fields = options?.fields ?? PLAYLIST_ITEMS_FIELDS;
+	let url = `/playlists/${playlistId}/items?limit=${PLAYLIST_ITEMS_LIMIT}&fields=${encodeURIComponent(fields)}`;
 	const allItems: SpotifyPlaylistTrackItem[] = [];
 
 	for (;;) {
-		const page = await spotifyFetch<SpotifyPlaylistTracksResponse>(
+		const page = await spotifyGet<SpotifyPlaylistTracksResponse>(
 			url,
 			accessToken,
 		);
@@ -254,4 +271,11 @@ export async function fetchAllPlaylistTracks(
 	}
 
 	return allItems;
+}
+
+export async function fetchAllPlaylistTracks(
+	accessToken: string,
+	playlistId: string,
+): Promise<SpotifyPlaylistTrackItem[]> {
+	return fetchPlaylistItems(accessToken, playlistId);
 }

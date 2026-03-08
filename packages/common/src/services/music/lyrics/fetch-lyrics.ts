@@ -1,3 +1,4 @@
+import type { LyricsProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
@@ -8,13 +9,6 @@ import { getLyricsFromLRCLib } from "./lrclib-client";
 
 const LYRICS_BATCH_SIZE = 50;
 const LYRICS_CONCURRENCY = 5;
-
-export type LyricsProgress = {
-	found: number;
-	notFound: number;
-	processed: number;
-	total: number;
-};
 
 export async function fetchLyricsForPendingTracks(
 	userId: string,

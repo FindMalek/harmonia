@@ -36,6 +36,13 @@
 			"when": 1773002922495,
 			"tag": "0004_quiet_ezekiel",
 			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1773003684593,
+			"tag": "0005_narrow_tarot",
+			"breakpoints": true
 		}
 	]
 }

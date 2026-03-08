@@ -15,7 +15,6 @@ export function LibraryOverviewSkeleton() {
 				Library Overview
 			</h3>
 			<div className="space-y-0">
-				<StatRow label="Tracks" value={0} loading={true} />
 				<StatRow label="Playlists" value={0} loading={true} />
 				<StatRow label="Artists" value={0} loading={true} />
 				<StatRow label="Albums" value={0} loading={true} />
@@ -31,11 +30,6 @@ export function LibraryOverview({ stats, isLoading }: LibraryOverviewProps) {
 				Library Overview
 			</h3>
 			<div className="space-y-0">
-				<StatRow
-					label="Tracks"
-					value={stats?.totalTracks ?? 0}
-					loading={isLoading}
-				/>
 				<StatRow
 					label="Playlists"
 					value={stats?.totalPlaylists ?? 0}

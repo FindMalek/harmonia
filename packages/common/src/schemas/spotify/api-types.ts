@@ -10,6 +10,7 @@ export type SpotifyTokenResponse = {
 export type SpotifyPlaylistSimplified = {
 	id: string;
 	name: string;
+	snapshot_id?: string | null;
 	tracks: { href: string; total: number };
 };
 
@@ -23,6 +24,8 @@ export type SpotifyPlaylistTrackItem = {
 	track: {
 		id: string | null;
 		name: string;
+		uri?: string;
+		duration_ms?: number | null;
 		artists: Array<{ name: string }>;
 		album: { name: string } | null;
 	} | null;
@@ -31,4 +34,9 @@ export type SpotifyPlaylistTrackItem = {
 export type SpotifyPlaylistTracksResponse = {
 	items: SpotifyPlaylistTrackItem[];
 	next: string | null;
+};
+
+export type SpotifyCreatePlaylistResponse = {
+	id: string;
+	external_urls: { spotify: string };
 };

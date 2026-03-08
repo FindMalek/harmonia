@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { llmTagsSchema } from "../track/output";
 import { taxonomyEnum } from "./enum";
 
 export const playlistMetadataSchema = z.object({
@@ -36,7 +37,7 @@ const playlistTrackItemSchema = z.object({
 	albumName: z.string().nullable(),
 	durationMs: z.number().nullable(),
 	llmMood: z.string().nullable(),
-	llmTags: z.record(z.string(), z.unknown()).nullable(),
+	llmTags: llmTagsSchema.nullable(),
 	position: z.number(),
 });
 

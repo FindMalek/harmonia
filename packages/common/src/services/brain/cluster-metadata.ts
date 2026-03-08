@@ -1,3 +1,4 @@
+import { getLlmTags } from "@harmonia/common/types";
 import { groq } from "@ai-sdk/groq";
 import { db } from "@harmonia/db";
 import {
@@ -57,13 +58,10 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 
 		for (const t of trackRows) {
 			if (t.llmMood) moods.push(t.llmMood);
-			const tags = (t.llmTags as Record<string, unknown>) ?? {};
-			const tThemes = tags.themes as string[] | undefined;
-			const tVibes = tags.vibe as string[] | undefined;
-			const tEnergy = tags.energyLevel as string | undefined;
-			if (tThemes) themes.push(...tThemes);
-			if (tVibes) vibes.push(...tVibes);
-			if (tEnergy) energyLevels.push(tEnergy);
+			const tags = getLlmTags(t.llmTags);
+			if (tags.themes) themes.push(...tags.themes);
+			if (tags.vibe) vibes.push(...tags.vibe);
+			if (tags.energyLevel) energyLevels.push(tags.energyLevel);
 		}
 
 		const topMoods = topN(moods, 5);

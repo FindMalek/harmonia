@@ -6,7 +6,7 @@ import {
 	matchNewTracksToPlaylists,
 	runClustering,
 } from "../brain";
-import { fetchLyricsForPendingTracks, syncLikedTracks } from "../music";
+import { fetchLyricsForPendingTracks, syncLibraryTracks } from "../music";
 import type { OrganizeRunResult } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import {
@@ -53,7 +53,7 @@ export async function runOrganizeForUser({
 
 	try {
 		await updateRun(runId, { currentStage: "sync" });
-		const syncResult = await syncLikedTracks(
+		const syncResult = await syncLibraryTracks(
 			userId,
 			async (p: Record<string, unknown>) => {
 				progress.sync = p;

@@ -1,6 +1,28 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	integer,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
+
+export const userPlaylistSnapshots = pgTable(
+	"user_playlist_snapshots",
+	{
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		playlistId: text("playlist_id").notNull(),
+		snapshotId: text("snapshot_id").notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.userId, table.playlistId] })],
+);
 
 export const userSpotifyLibraryStats = pgTable("user_spotify_library_stats", {
 	userId: text("user_id")
