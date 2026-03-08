@@ -12,4 +12,5 @@ export const queryKeys = {
 	todo: () => orpc.todo.key(),
 	todoList: () => orpc.todo.getAll.key(),
 	hasSpotifyLinked: () => orpc.hasSpotifyLinked.key(),
+	spotifyLibraryStats: () => orpc.spotify.libraryStats.key(),
 } as const;

@@ -5,6 +5,7 @@ import { protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
 import { pipelineRouter } from "./pipeline";
 import { playlistsRouter } from "./playlists";
+import { spotifyRouter } from "./spotify";
 import { todoRouter } from "./todo";
 import { tracksRouter } from "./tracks";
 
@@ -29,6 +30,7 @@ export const protectedRouter = {
 	clusters: clustersRouter,
 	playlists: playlistsRouter,
 	pipeline: pipelineRouter,
+	spotify: spotifyRouter,
 };
 
 export type ProtectedRouter = typeof protectedRouter;

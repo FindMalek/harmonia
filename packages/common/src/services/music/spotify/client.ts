@@ -178,3 +178,81 @@ export async function fetchAllSavedTracks(
 
 	return allItems;
 }
+
+type SpotifyPlaylistSimplified = {
+	id: string;
+	name: string;
+	tracks: { href: string; total: number };
+};
+
+type SpotifyPlaylistsResponse = {
+	items: SpotifyPlaylistSimplified[];
+	next: string | null;
+	total: number;
+};
+
+export async function fetchAllUserPlaylists(
+	accessToken: string,
+): Promise<SpotifyPlaylistSimplified[]> {
+	const limit = 50;
+	let url = `/me/playlists?limit=${limit}`;
+	const allPlaylists: SpotifyPlaylistSimplified[] = [];
+
+	for (;;) {
+		const page = await spotifyFetch<SpotifyPlaylistsResponse>(url, accessToken);
+		allPlaylists.push(...page.items);
+
+		if (!page.next) {
+			break;
+		}
+
+		const nextUrl = new URL(page.next);
+		let path = nextUrl.pathname;
+		if (path.startsWith("/v1/")) path = path.slice(3);
+		url = path + nextUrl.search;
+	}
+
+	return allPlaylists;
+}
+
+type SpotifyPlaylistTrackItem = {
+	track: {
+		id: string | null;
+		name: string;
+		artists: Array<{ name: string }>;
+		album: { name: string } | null;
+	} | null;
+};
+
+type SpotifyPlaylistTracksResponse = {
+	items: SpotifyPlaylistTrackItem[];
+	next: string | null;
+};
+
+export async function fetchAllPlaylistTracks(
+	accessToken: string,
+	playlistId: string,
+): Promise<SpotifyPlaylistTrackItem[]> {
+	const limit = 100;
+	let url = `/playlists/${playlistId}/tracks?limit=${limit}`;
+	const allItems: SpotifyPlaylistTrackItem[] = [];
+
+	for (;;) {
+		const page = await spotifyFetch<SpotifyPlaylistTracksResponse>(
+			url,
+			accessToken,
+		);
+		allItems.push(...page.items);
+
+		if (!page.next) {
+			break;
+		}
+
+		const nextUrl = new URL(page.next);
+		let path = nextUrl.pathname;
+		if (path.startsWith("/v1/")) path = path.slice(3);
+		url = path + nextUrl.search;
+	}
+
+	return allItems;
+}

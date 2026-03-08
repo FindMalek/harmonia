@@ -70,6 +70,8 @@ export function createAuth(
 								"user-read-email",
 								"user-read-private",
 								"user-library-read",
+								"playlist-read-private",
+								"playlist-read-collaborative",
 								"playlist-modify-private",
 								"playlist-modify-public",
 							],
