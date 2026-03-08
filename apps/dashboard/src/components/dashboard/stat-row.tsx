@@ -13,7 +13,11 @@ export function StatRow({ label, value, loading }: StatRowProps) {
 		<div className="flex items-center justify-between border-b py-4 last:border-0">
 			<span className="text-sm">{label}</span>
 			<span className="font-mono text-sm">
-				{loading ? <Skeleton className="h-4 w-10" /> : value.toLocaleString()}
+				{loading ? (
+					<Skeleton className="h-4 w-10" />
+				) : (
+					value.toLocaleString("en-US")
+				)}
 			</span>
 		</div>
 	);

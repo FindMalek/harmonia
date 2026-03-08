@@ -4,14 +4,14 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import type { SpotifySavedTracksResponse } from "@harmonia/common/schemas";
-
-type SpotifyTokenResponse = {
-	access_token: string;
-	expires_in: number;
-	scope?: string;
-	token_type: string;
-};
+import type {
+	SpotifyPlaylistSimplified,
+	SpotifyPlaylistsResponse,
+	SpotifyPlaylistTrackItem,
+	SpotifyPlaylistTracksResponse,
+	SpotifySavedTracksResponse,
+	SpotifyTokenResponse,
+} from "@harmonia/common/schemas";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 
@@ -155,7 +155,7 @@ async function spotifyFetch<T>(
 export async function fetchAllSavedTracks(
 	accessToken: string,
 ): Promise<SpotifySavedTracksResponse["items"]> {
-	const limit = 50;
+	const limit = 100;
 	let url = `/me/tracks?limit=${limit}`;
 	const allItems: SpotifySavedTracksResponse["items"] = [];
 
@@ -178,18 +178,6 @@ export async function fetchAllSavedTracks(
 
 	return allItems;
 }
-
-type SpotifyPlaylistSimplified = {
-	id: string;
-	name: string;
-	tracks: { href: string; total: number };
-};
-
-type SpotifyPlaylistsResponse = {
-	items: SpotifyPlaylistSimplified[];
-	next: string | null;
-	total: number;
-};
 
 export async function fetchAllUserPlaylists(
 	accessToken: string,
@@ -214,20 +202,6 @@ export async function fetchAllUserPlaylists(
 
 	return allPlaylists;
 }
-
-type SpotifyPlaylistTrackItem = {
-	track: {
-		id: string | null;
-		name: string;
-		artists: Array<{ name: string }>;
-		album: { name: string } | null;
-	} | null;
-};
-
-type SpotifyPlaylistTracksResponse = {
-	items: SpotifyPlaylistTrackItem[];
-	next: string | null;
-};
 
 export async function fetchAllPlaylistTracks(
 	accessToken: string,

@@ -1,14 +1,10 @@
 "use client";
 
+import type { LibraryOverviewStats } from "@/types/dashboard";
 import { StatRow } from "./stat-row";
 
 type LibraryOverviewProps = {
-	stats: {
-		totalTracks: number;
-		totalPlaylists: number;
-		uniqueAlbums: number;
-		uniqueArtists: number;
-	} | null;
+	stats: LibraryOverviewStats | null;
 	isLoading: boolean;
 };
 

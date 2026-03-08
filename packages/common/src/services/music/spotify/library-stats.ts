@@ -1,3 +1,4 @@
+import type { SpotifyPlaylistTrackItem } from "@harmonia/common/schemas";
 import type { SpotifyLibraryStats } from "../../../schemas/spotify/output";
 import { logger } from "@harmonia/logger";
 
@@ -8,16 +9,7 @@ import {
 	getUserSpotifyAccessToken,
 } from "./client";
 
-function extractTrackInfo(
-	items: Array<{
-		track: {
-			id: string | null;
-			name: string;
-			artists: Array<{ name: string }>;
-			album: { name: string } | null;
-		} | null;
-	}>,
-): {
+function extractTrackInfo(items: SpotifyPlaylistTrackItem[]): {
 	trackIds: Set<string>;
 	albumNames: Set<string>;
 	artistNames: Set<string>;
@@ -84,16 +76,7 @@ export async function getSpotifyLibraryStats(
 	for (const playlist of playlists) {
 		try {
 			const items = await fetchAllPlaylistTracks(accessToken, playlist.id);
-			const info = extractTrackInfo(
-				items as Array<{
-					track: {
-						id: string | null;
-						name: string;
-						artists: Array<{ name: string }>;
-						album: { name: string } | null;
-					} | null;
-				}>,
-			);
+			const info = extractTrackInfo(items);
 			for (const id of info.trackIds) trackIds.add(id);
 			for (const name of info.albumNames) albumNames.add(name);
 			for (const name of info.artistNames) artistNames.add(name);

@@ -3,13 +3,7 @@
 import { Button, Icons } from "@harmonia/ui";
 import { useOrganize } from "@/hooks/mutations/use-organize";
 
-type AnalyzeMusicButtonProps = {
-	hasSpotifyLinked: boolean;
-};
-
-export function AnalyzeMusicButton({
-	hasSpotifyLinked,
-}: AnalyzeMusicButtonProps) {
+export function AnalyzeMusicButton() {
 	const organizeMutation = useOrganize();
 	const isPending = organizeMutation.isPending;
 
@@ -19,8 +13,7 @@ export function AnalyzeMusicButton({
 			variant="default"
 			className="flex h-auto w-full flex-col items-start justify-between gap-2 rounded-xl p-6 text-left sm:flex-row sm:items-center"
 			onClick={() => organizeMutation.mutate({})}
-			disabled={!hasSpotifyLinked || isPending}
-			isLoading={false}
+			disabled={isPending}
 		>
 			<div className="flex flex-1 flex-col gap-0.5">
 				<span className="font-semibold text-xl">Analyze My Music</span>
