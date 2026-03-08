@@ -1,12 +1,28 @@
 "use client";
 
-import type { LibraryOverviewStats } from "@/types/dashboard";
+import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
 import { StatRow } from "./stat-row";
 
 type LibraryOverviewProps = {
-	stats: LibraryOverviewStats | null;
+	stats: SpotifyLibraryStats | null;
 	isLoading: boolean;
 };
+
+export function LibraryOverviewSkeleton() {
+	return (
+		<div className="space-y-4">
+			<h3 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+				Library Overview
+			</h3>
+			<div className="space-y-0">
+				<StatRow label="Tracks" value={0} loading={true} />
+				<StatRow label="Playlists" value={0} loading={true} />
+				<StatRow label="Artists" value={0} loading={true} />
+				<StatRow label="Albums" value={0} loading={true} />
+			</div>
+		</div>
+	);
+}
 
 export function LibraryOverview({ stats, isLoading }: LibraryOverviewProps) {
 	return (

@@ -2,10 +2,14 @@ import {
 	dehydrate,
 	HydrationBoundary,
 	QueryClient,
+	QueryClientProvider,
 } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
-import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { LibraryOverviewSkeleton } from "@/components/dashboard/library-overview";
+import { LibraryStatsWrapper } from "@/components/dashboard/library-stats-wrapper";
 import { getServerSession } from "@/lib/get-server-session";
 import { orpc } from "@/lib/orpc";
 
@@ -20,19 +24,17 @@ export default async function DashboardPage() {
 
 	const queryClient = new QueryClient();
 	await Promise.all([
-		queryClient.prefetchQuery(
-			orpc.spotify.libraryStats.queryOptions({ input: {} }),
-		),
 		queryClient.prefetchQuery(orpc.pipeline.stats.queryOptions({ input: {} })),
 		queryClient.prefetchQuery(orpc.pipeline.getAll.queryOptions({ input: {} })),
-		queryClient.prefetchQuery(
-			orpc.hasSpotifyLinked.queryOptions({ input: {} }),
-		),
 	]);
 
 	return (
 		<HydrationBoundary state={dehydrate(queryClient)}>
-			<DashboardOverview />
+			<DashboardShell>
+				<Suspense fallback={<LibraryOverviewSkeleton />}>
+					<LibraryStatsWrapper userId={session.user.id} />
+				</Suspense>
+			</DashboardShell>
 		</HydrationBoundary>
 	);
 }

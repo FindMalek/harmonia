@@ -14,6 +14,17 @@ import type {
 } from "@harmonia/common/schemas";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+const RATE_LIMIT_MAX_RETRIES = 3;
+const RATE_LIMIT_MAX_WAIT_SEC = 60;
+
+function parseRetryAfter(header: string | null): number {
+	const sec = parseInt(header ?? "30", 10);
+	return Number.isFinite(sec) ? Math.max(1, sec) : 30;
+}
+
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function getSpotifyAccount(userId: string) {
 	const rows = await db
@@ -112,6 +123,7 @@ async function spotifyFetch<T>(
 	path: string,
 	accessToken: string,
 	init?: RequestInit,
+	retriesLeft = RATE_LIMIT_MAX_RETRIES,
 ): Promise<T> {
 	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, {
 		...init,
@@ -121,6 +133,19 @@ async function spotifyFetch<T>(
 			...(init?.headers ?? {}),
 		},
 	});
+
+	if (response.status === 429 && retriesLeft > 0) {
+		const waitSec = Math.min(
+			parseRetryAfter(response.headers.get("Retry-After")),
+			RATE_LIMIT_MAX_WAIT_SEC,
+		);
+		logger.warn(
+			{ path, waitSec, retriesLeft },
+			"Spotify rate limit (429); waiting before retry",
+		);
+		await sleep(waitSec * 1000);
+		return spotifyFetch(path, accessToken, init, retriesLeft - 1);
+	}
 
 	if (!response.ok) {
 		const bodyText = await response.text();
@@ -155,7 +180,7 @@ async function spotifyFetch<T>(
 export async function fetchAllSavedTracks(
 	accessToken: string,
 ): Promise<SpotifySavedTracksResponse["items"]> {
-	const limit = 100;
+	const limit = 50;
 	let url = `/me/tracks?limit=${limit}`;
 	const allItems: SpotifySavedTracksResponse["items"] = [];
 
