@@ -9,13 +9,14 @@ import {
 
 import { user } from "./auth";
 
+/** Pipeline stage progress. Typed definitions live in @harmonia/common/types. */
 export type PipelineProgress = {
-	sync?: Record<string, unknown>;
-	lyrics?: Record<string, unknown>;
-	classify?: Record<string, unknown>;
-	embed?: Record<string, unknown>;
-	cluster?: Record<string, unknown>;
-	generate?: Record<string, unknown>;
+	sync?: { total: number; done: boolean };
+	lyrics?: { found: number; notFound: number; processed: number; total: number };
+	classify?: { classified: number; total: number; pending: number };
+	embed?: { embedded: number; total: number; pending: number };
+	cluster?: { clusters: number; noise: number; totalTracks: number };
+	generate?: { playlists: number };
 	export?: Record<string, unknown>;
 };
 

@@ -36,9 +36,14 @@ export const organizeRouter = {
 			logger.info({ caller: context.caller }, "organize.run invoked");
 
 			if (context.caller === "user") {
+				if (!context.userId) {
+					throw new ORPCError("UNAUTHORIZED", {
+						message: "User ID missing in auth context",
+					});
+				}
 				try {
 					const result = await runOrganizeForUser({
-						userId: context.userId!,
+						userId: context.userId,
 					});
 					return { success: true, results: [result] };
 				} catch (err) {

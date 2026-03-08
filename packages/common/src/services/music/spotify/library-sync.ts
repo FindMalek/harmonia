@@ -160,7 +160,7 @@ export async function syncLibraryTracks(
 		cachedRows.map((r) => [r.playlistId, r.snapshotId]),
 	);
 
-	// 4. Fetch changed playlists with concurrency
+	// 4. Fetch only playlists whose snapshot_id changed (skip unchanged to reduce API calls)
 	const limit = pLimit(PLAYLIST_FETCH_CONCURRENCY);
 	const playlistsToFetch = playlists.filter((p) => {
 		const cached = snapshotCache.get(p.id);

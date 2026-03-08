@@ -74,7 +74,7 @@ export const playlistsRouter = {
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
-			const updates: Record<string, unknown> = {};
+			const updates: { name?: string; description?: string } = {};
 			if (input.name !== undefined) updates.name = input.name;
 			if (input.description !== undefined)
 				updates.description = input.description;

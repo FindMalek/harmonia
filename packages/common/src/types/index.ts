@@ -14,4 +14,3 @@ export type {
 	ClusterProgress,
 	GenerateProgress,
 } from "./pipeline";
-export type { SpotifyCreatePlaylistResponse } from "./spotify";

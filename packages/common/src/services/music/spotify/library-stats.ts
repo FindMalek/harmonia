@@ -1,12 +1,13 @@
+import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { userSpotifyLibraryStats } from "@harmonia/db/schema/spotify";
-import type { SpotifyLibraryStats } from "../../../schemas/spotify/output";
 import { eq } from "drizzle-orm";
 
 import { fetchAllUserPlaylists, getUserSpotifyAccessToken } from "./client";
 
 const STALE_MS = 5 * 60 * 1000; // 5 minutes
 
+/** Per-user lock to avoid concurrent refreshes for the same user. */
 const refreshLocks = new Map<string, Promise<SpotifyLibraryStats>>();
 
 /**

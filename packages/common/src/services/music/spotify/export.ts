@@ -103,8 +103,9 @@ async function createNewPlaylist(
 		const batch = trackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
 		await pRetry(
 			() =>
-				spotifyPost(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-					uris: batch,
+				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+					method: "POST",
+					body: { uris: batch },
 				}),
 			{ retries: 2, minTimeout: 1000 },
 		);

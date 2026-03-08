@@ -21,7 +21,7 @@ export const clusterListItemSchema = z.object({
 	avgValence: z.number().nullable(),
 	avgEnergy: z.number().nullable(),
 	avgTempo: z.number().nullable(),
-	metadata: z.record(z.string(), z.unknown()).nullable(),
+	metadata: clusterMetadataSchema.nullable(),
 	createdAt: z.date(),
 });
 export type ClusterListItem = z.infer<typeof clusterListItemSchema>;
