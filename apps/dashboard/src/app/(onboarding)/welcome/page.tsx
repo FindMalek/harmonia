@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Button } from "@harmonia/ui";
+import { buttonVariants } from "@harmonia/ui";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { cn } from "@/lib/utils";
 import type { Route } from "next";
+
 export default function WelcomePage() {
 	return (
 		<div className="flex flex-col items-start gap-8">
@@ -14,11 +16,12 @@ export default function WelcomePage() {
 				</p>
 			</div>
 
-			<Button asChild size="lg" className="w-full sm:w-auto">
-				<Link href={DASHBOARD_ROUTES.onboarding.introduction.path as Route}>
-					Continue
-				</Link>
-			</Button>
+			<Link
+				href={DASHBOARD_ROUTES.onboarding.introduction.path as Route}
+				className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
+			>
+				Continue
+			</Link>
 		</div>
 	);
 }

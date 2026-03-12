@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { Button } from "@harmonia/ui";
+import { buttonVariants } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { cn } from "@/lib/utils";
+import type { Route } from "next";
 
 export default function IntroductionPage() {
 	return (
@@ -51,9 +54,12 @@ export default function IntroductionPage() {
 				</div>
 			</div>
 
-			<Button asChild size="lg" className="w-full sm:w-auto mt-4">
-				<Link href="/onboarding/sync">Next</Link>
-			</Button>
+			<Link
+				href={DASHBOARD_ROUTES.onboarding.sync.path as Route}
+				className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto mt-4")}
+			>
+				Next
+			</Link>
 		</div>
 	);
 }
