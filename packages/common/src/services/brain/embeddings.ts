@@ -1,3 +1,5 @@
+import type { EmbedProgress } from "@harmonia/common/types";
+import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
@@ -12,12 +14,6 @@ type OpenAIEmbeddingResponse = {
 	data: Array<{
 		embedding: number[];
 	}>;
-};
-
-export type EmbedProgress = {
-	embedded: number;
-	total: number;
-	pending: number;
 };
 
 export async function embedTracksBatch(
@@ -52,7 +48,7 @@ export async function embedTracksBatch(
 
 		const inputs = pendingTracks.map((t) => {
 			const artistNames: string[] = JSON.parse(t.artistNames) ?? [];
-			const tags = (t.llmTags as Record<string, unknown>) ?? {};
+			const tags = getLlmTags(t.llmTags);
 
 			const parts = [`Title: ${t.name}`, `Artists: ${artistNames.join(", ")}`];
 
@@ -64,44 +60,36 @@ export async function embedTracksBatch(
 				parts.push(`Mood: ${t.llmMood}`);
 			}
 
-			const secondaryMoods = tags.secondaryMoods as string[] | undefined;
-			if (secondaryMoods?.length) {
-				parts.push(`Secondary moods: ${secondaryMoods.join(", ")}`);
+			if (tags.secondaryMoods?.length) {
+				parts.push(`Secondary moods: ${tags.secondaryMoods.join(", ")}`);
 			}
 
-			const themes = tags.themes as string[] | undefined;
-			if (themes?.length) {
-				parts.push(`Themes: ${themes.join(", ")}`);
+			if (tags.themes?.length) {
+				parts.push(`Themes: ${tags.themes.join(", ")}`);
 			}
 
-			const topics = tags.topics as string[] | undefined;
-			if (topics?.length) {
-				parts.push(`Topics: ${topics.join(", ")}`);
+			if (tags.topics?.length) {
+				parts.push(`Topics: ${tags.topics.join(", ")}`);
 			}
 
-			const vibe = tags.vibe as string[] | undefined;
-			if (vibe?.length) {
-				parts.push(`Vibe: ${vibe.join(", ")}`);
+			if (tags.vibe?.length) {
+				parts.push(`Vibe: ${tags.vibe.join(", ")}`);
 			}
 
-			const vocalType = tags.vocalType as string | undefined;
-			if (vocalType) {
-				parts.push(`Vocal: ${vocalType}`);
+			if (tags.vocalType) {
+				parts.push(`Vocal: ${tags.vocalType}`);
 			}
 
-			const energyLevel = tags.energyLevel as string | undefined;
-			if (energyLevel) {
-				parts.push(`Energy: ${energyLevel}`);
+			if (tags.energyLevel) {
+				parts.push(`Energy: ${tags.energyLevel}`);
 			}
 
-			const language = tags.language as string | undefined;
-			if (language) {
-				parts.push(`Language: ${language}`);
+			if (tags.language) {
+				parts.push(`Language: ${tags.language}`);
 			}
 
-			const era = tags.era as string | undefined;
-			if (era) {
-				parts.push(`Era: ${era}`);
+			if (tags.era) {
+				parts.push(`Era: ${tags.era}`);
 			}
 
 			const text = parts.join(" | ");

@@ -1,3 +1,8 @@
+import type { ClassifyProgress } from "@harmonia/common/types";
+import type {
+	ClassificationResult,
+	TrackForClassification,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { track } from "@harmonia/db/schema/track";
@@ -5,18 +10,8 @@ import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import { classifyTracksWithLLM } from "./llml";
-import type {
-	ClassificationResult,
-	TrackForClassification,
-} from "@harmonia/common/schemas";
 
 const CLASSIFICATION_BATCH_SIZE = 12;
-
-export type ClassifyProgress = {
-	classified: number;
-	total: number;
-	pending: number;
-};
 
 export async function classifyTracksBatch(
 	userId: string,

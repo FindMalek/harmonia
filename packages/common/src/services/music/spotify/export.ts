@@ -1,3 +1,4 @@
+import type { SpotifyCreatePlaylistResponse } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
@@ -5,61 +6,9 @@ import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
-import { getUserSpotifyAccessToken } from "./client";
+import { getUserSpotifyAccessToken, spotifyRequest } from "./client";
 
-const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const MAX_TRACKS_PER_REQUEST = 100;
-
-type SpotifyCreatePlaylistResponse = {
-	id: string;
-	external_urls: { spotify: string };
-};
-
-async function spotifyPost<T>(
-	path: string,
-	accessToken: string,
-	body: unknown,
-): Promise<T> {
-	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(body),
-	});
-
-	if (!response.ok) {
-		const text = await response.text();
-		throw new Error(
-			`Spotify API ${response.status} for ${path}: ${text.slice(0, 200)}`,
-		);
-	}
-
-	return (await response.json()) as T;
-}
-
-async function spotifyPut(
-	path: string,
-	accessToken: string,
-	body: unknown,
-): Promise<void> {
-	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, {
-		method: "PUT",
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(body),
-	});
-
-	if (!response.ok) {
-		const text = await response.text();
-		throw new Error(
-			`Spotify API ${response.status} for ${path}: ${text.slice(0, 200)}`,
-		);
-	}
-}
 
 export async function exportPlaylistToSpotify(
 	userId: string,
@@ -132,11 +81,18 @@ async function createNewPlaylist(
 ): Promise<{ spotifyPlaylistId: string; spotifyUrl: string }> {
 	const created = await pRetry(
 		() =>
-			spotifyPost<SpotifyCreatePlaylistResponse>("/me/playlists", accessToken, {
-				name: pl.name,
-				description: pl.description ?? "",
-				public: false,
-			}),
+			spotifyRequest<SpotifyCreatePlaylistResponse>(
+				"/me/playlists",
+				accessToken,
+				{
+					method: "POST",
+					body: {
+						name: pl.name,
+						description: pl.description ?? "",
+						public: false,
+					},
+				},
+			),
 		{ retries: 2, minTimeout: 1000 },
 	);
 
@@ -147,8 +103,9 @@ async function createNewPlaylist(
 		const batch = trackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
 		await pRetry(
 			() =>
-				spotifyPost(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-					uris: batch,
+				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+					method: "POST",
+					body: { uris: batch },
 				}),
 			{ retries: 2, minTimeout: 1000 },
 		);
@@ -179,17 +136,21 @@ async function updateExistingPlaylist(
 ): Promise<{ spotifyPlaylistId: string; spotifyUrl: string }> {
 	await pRetry(
 		() =>
-			spotifyPut(`/playlists/${spotifyPlaylistId}`, accessToken, {
-				name: pl.name,
-				description: pl.description ?? "",
+			spotifyRequest(`/playlists/${spotifyPlaylistId}`, accessToken, {
+				method: "PUT",
+				body: {
+					name: pl.name,
+					description: pl.description ?? "",
+				},
 			}),
 		{ retries: 2, minTimeout: 1000 },
 	);
 
 	await pRetry(
 		() =>
-			spotifyPut(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-				uris: trackUris.slice(0, MAX_TRACKS_PER_REQUEST),
+			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+				method: "PUT",
+				body: { uris: trackUris.slice(0, MAX_TRACKS_PER_REQUEST) },
 			}),
 		{ retries: 2, minTimeout: 1000 },
 	);
@@ -202,8 +163,9 @@ async function updateExistingPlaylist(
 		const batch = trackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
 		await pRetry(
 			() =>
-				spotifyPost(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-					uris: batch,
+				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+					method: "POST",
+					body: { uris: batch },
 				}),
 			{ retries: 2, minTimeout: 1000 },
 		);

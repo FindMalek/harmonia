@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { llmTagsSchema } from "../track/output";
 import { suggestedArchetypeEnum } from "./enum";
 
 export const clusterMetadataSchema = z.object({
@@ -20,7 +21,7 @@ export const clusterListItemSchema = z.object({
 	avgValence: z.number().nullable(),
 	avgEnergy: z.number().nullable(),
 	avgTempo: z.number().nullable(),
-	metadata: z.record(z.string(), z.unknown()).nullable(),
+	metadata: clusterMetadataSchema.nullable(),
 	createdAt: z.date(),
 });
 export type ClusterListItem = z.infer<typeof clusterListItemSchema>;
@@ -31,7 +32,7 @@ const clusterTrackItemSchema = z.object({
 	artistNames: z.string(),
 	albumName: z.string().nullable(),
 	llmMood: z.string().nullable(),
-	llmTags: z.record(z.string(), z.unknown()).nullable(),
+	llmTags: llmTagsSchema.nullable(),
 	position: z.number().nullable(),
 });
 

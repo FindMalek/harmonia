@@ -47,3 +47,11 @@ export const spotifyAudioFeaturesResponseSchema = z.object({
 export type SpotifyAudioFeaturesResponse = z.infer<
 	typeof spotifyAudioFeaturesResponseSchema
 >;
+
+export const spotifyLibraryStatsSchema = z.object({
+	totalTracks: z.number(),
+	totalPlaylists: z.number(),
+	uniqueAlbums: z.number(),
+	uniqueArtists: z.number(),
+});
+export type SpotifyLibraryStats = z.infer<typeof spotifyLibraryStatsSchema>;

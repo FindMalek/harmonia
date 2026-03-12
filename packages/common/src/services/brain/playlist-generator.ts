@@ -1,3 +1,5 @@
+import type { GenerateProgress } from "@harmonia/common/types";
+import { getLlmTags } from "@harmonia/common/types";
 import { groq } from "@ai-sdk/groq";
 import { db } from "@harmonia/db";
 import {
@@ -19,10 +21,6 @@ import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
-
-export type GenerateProgress = {
-	playlists: number;
-};
 
 export async function generatePlaylists(
 	userId: string,
@@ -77,9 +75,9 @@ export async function generatePlaylists(
 		const vibes: string[] = [];
 		for (const t of trackRows) {
 			if (t.llmMood) moods.push(t.llmMood);
-			const tags = (t.llmTags as Record<string, unknown>) ?? {};
-			if (Array.isArray(tags.themes)) themes.push(...(tags.themes as string[]));
-			if (Array.isArray(tags.vibe)) vibes.push(...(tags.vibe as string[]));
+			const tags = getLlmTags(t.llmTags);
+			if (tags.themes) themes.push(...tags.themes);
+			if (tags.vibe) vibes.push(...tags.vibe);
 		}
 
 		try {
@@ -212,8 +210,8 @@ function orderTracksByEnergy(
 	};
 
 	const withEnergy = tracks.map((t) => {
-		const tags = (t.llmTags as Record<string, unknown>) ?? {};
-		const level = (tags.energyLevel as string)?.toLowerCase() ?? "medium";
+		const tags = getLlmTags(t.llmTags);
+		const level = tags.energyLevel?.toLowerCase() ?? "medium";
 		return { ...t, energyScore: energyMap[level] ?? 3 };
 	});
 

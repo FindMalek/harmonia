@@ -42,6 +42,7 @@ import {
 	IconSettings,
 	IconChartBar,
 	IconLayoutBoard,
+	IconActivity,
 } from "@tabler/icons-react";
 import type * as React from "react";
 
@@ -70,6 +71,7 @@ export const Icons = {
 	alertTriangle: IconAlertTriangle,
 	alertOctagon: IconAlertOctagon,
 	alertCircle: IconAlertCircle,
+	activity: IconActivity,
 
 	// Content / media
 	music: IconMusic,

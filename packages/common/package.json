@@ -22,6 +22,9 @@
 		"./schemas": {
 			"default": "./src/schemas/index.ts"
 		},
+		"./types": {
+			"default": "./src/types/index.ts"
+		},
 		"./utils/origin": {
 			"default": "./src/utils/origin.ts"
 		},

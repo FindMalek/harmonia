@@ -4,18 +4,24 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import type { SpotifySavedTracksResponse } from "@harmonia/common/schemas";
+import type {
+	SpotifyPlaylistSimplified,
+	SpotifyPlaylistsResponse,
+	SpotifyPlaylistTrackItem,
+	SpotifyPlaylistTracksResponse,
+	SpotifySavedTracksResponse,
+	SpotifyTokenResponse,
+} from "@harmonia/common/schemas";
 
-type SpotifyTokenResponse = {
-	access_token: string;
-	expires_in: number;
-	scope?: string;
-	token_type: string;
-};
+export const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+const RATE_LIMIT_MAX_RETRIES = 3;
+const RATE_LIMIT_MAX_WAIT_SEC = 60;
 
-const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-async function getSpotifyAccount(userId: string) {
+export async function getSpotifyAccount(userId: string) {
 	const rows = await db
 		.select()
 		.from(account)
@@ -108,19 +114,49 @@ export async function getUserSpotifyAccessToken(
 	return json.access_token;
 }
 
-async function spotifyFetch<T>(
+export type SpotifyRequestOptions = {
+	method?: "GET" | "POST" | "PUT" | "DELETE";
+	body?: unknown;
+};
+
+/**
+ * Unified Spotify API request helper. Handles auth, 429 retries, and error formatting.
+ */
+export async function spotifyRequest<T>(
 	path: string,
 	accessToken: string,
-	init?: RequestInit,
+	options: SpotifyRequestOptions = {},
+	retriesLeft = RATE_LIMIT_MAX_RETRIES,
 ): Promise<T> {
-	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, {
-		...init,
+	const { method = "GET", body } = options;
+	const init: RequestInit = {
+		method,
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			"Content-Type": "application/json",
-			...(init?.headers ?? {}),
 		},
-	});
+		...(body !== undefined && { body: JSON.stringify(body) }),
+	};
+
+	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, init);
+
+	if (response.status === 429 && retriesLeft > 0) {
+		const retryAfter = Number(response.headers.get("Retry-After") ?? "0");
+		const waitSec = Math.max(retryAfter, RATE_LIMIT_MAX_WAIT_SEC);
+		logger.warn(
+			{
+				path,
+				waitSec,
+				retriesLeft,
+				error: response.statusText,
+				response,
+				retryAfter,
+			},
+			"Spotify rate limit (429); waiting before retry",
+		);
+		await sleep(waitSec);
+		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
+	}
 
 	if (!response.ok) {
 		const bodyText = await response.text();
@@ -152,6 +188,10 @@ async function spotifyFetch<T>(
 	return (await response.json()) as T;
 }
 
+function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
+	return spotifyRequest<T>(path, accessToken, { method: "GET" });
+}
+
 export async function fetchAllSavedTracks(
 	accessToken: string,
 ): Promise<SpotifySavedTracksResponse["items"]> {
@@ -160,7 +200,66 @@ export async function fetchAllSavedTracks(
 	const allItems: SpotifySavedTracksResponse["items"] = [];
 
 	for (;;) {
-		const page = await spotifyFetch<SpotifySavedTracksResponse>(
+		const page = await spotifyGet<SpotifySavedTracksResponse>(url, accessToken);
+		allItems.push(...page.items);
+
+		if (!page.next) {
+			break;
+		}
+
+		const nextUrl = new URL(page.next);
+		let path = nextUrl.pathname;
+		if (path.startsWith("/v1/")) path = path.slice(3);
+		url = path + nextUrl.search;
+	}
+
+	return allItems;
+}
+
+export async function fetchAllUserPlaylists(
+	accessToken: string,
+	options?: { ownerId?: string },
+): Promise<SpotifyPlaylistSimplified[]> {
+	const limit = 50;
+	let url = `/me/playlists?limit=${limit}`;
+	const allPlaylists: SpotifyPlaylistSimplified[] = [];
+
+	for (;;) {
+		const page = await spotifyGet<SpotifyPlaylistsResponse>(url, accessToken);
+		allPlaylists.push(...page.items);
+
+		if (!page.next) {
+			break;
+		}
+
+		const nextUrl = new URL(page.next);
+		let path = nextUrl.pathname;
+		if (path.startsWith("/v1/")) path = path.slice(3);
+		url = path + nextUrl.search;
+	}
+
+	const ownerId = options?.ownerId;
+	if (ownerId) {
+		return allPlaylists.filter((p) => p.owner?.id === ownerId);
+	}
+	return allPlaylists;
+}
+
+const PLAYLIST_ITEMS_LIMIT = 50;
+const PLAYLIST_ITEMS_FIELDS =
+	"items(track(id,name,uri,album(id,name),artists(id,name),duration_ms))";
+
+export async function fetchPlaylistItems(
+	accessToken: string,
+	playlistId: string,
+	options?: { fields?: string },
+): Promise<SpotifyPlaylistTrackItem[]> {
+	const fields = options?.fields ?? PLAYLIST_ITEMS_FIELDS;
+	let url = `/playlists/${playlistId}/items?limit=${PLAYLIST_ITEMS_LIMIT}&fields=${encodeURIComponent(fields)}`;
+	const allItems: SpotifyPlaylistTrackItem[] = [];
+
+	for (;;) {
+		const page = await spotifyGet<SpotifyPlaylistTracksResponse>(
 			url,
 			accessToken,
 		);
@@ -177,4 +276,11 @@ export async function fetchAllSavedTracks(
 	}
 
 	return allItems;
+}
+
+export async function fetchAllPlaylistTracks(
+	accessToken: string,
+	playlistId: string,
+): Promise<SpotifyPlaylistTrackItem[]> {
+	return fetchPlaylistItems(accessToken, playlistId);
 }

@@ -1,3 +1,12 @@
+import type {
+	ClassifyProgress,
+	ClusterProgress,
+	EmbedProgress,
+	GenerateProgress,
+	LyricsProgress,
+	SyncProgress,
+} from "@harmonia/common/types";
+import type { OrganizeRunResult } from "@harmonia/common/schemas";
 import {
 	classifyTracksBatch,
 	embedTracksBatch,
@@ -6,8 +15,7 @@ import {
 	matchNewTracksToPlaylists,
 	runClustering,
 } from "../brain";
-import { fetchLyricsForPendingTracks, syncLikedTracks } from "../music";
-import type { OrganizeRunResult } from "@harmonia/common/schemas";
+import { fetchLyricsForPendingTracks, syncLibraryTracks } from "../music";
 import { db } from "@harmonia/db";
 import {
 	type PipelineProgress,
@@ -53,9 +61,9 @@ export async function runOrganizeForUser({
 
 	try {
 		await updateRun(runId, { currentStage: "sync" });
-		const syncResult = await syncLikedTracks(
+		const syncResult = await syncLibraryTracks(
 			userId,
-			async (p: Record<string, unknown>) => {
+			async (p: SyncProgress) => {
 				progress.sync = p;
 				await updateRun(runId, { progress });
 			},
@@ -66,7 +74,7 @@ export async function runOrganizeForUser({
 		await updateRun(runId, { currentStage: "lyrics" });
 		const lyricsResult = await fetchLyricsForPendingTracks(
 			userId,
-			async (p: Record<string, unknown>) => {
+			async (p: LyricsProgress) => {
 				progress.lyrics = p;
 				await updateRun(runId, { progress });
 			},
@@ -77,7 +85,7 @@ export async function runOrganizeForUser({
 		await updateRun(runId, { currentStage: "classify" });
 		const classifyResult = await classifyTracksBatch(
 			userId,
-			async (p: Record<string, unknown>) => {
+			async (p: ClassifyProgress) => {
 				progress.classify = p;
 				await updateRun(runId, { progress });
 			},
@@ -88,7 +96,7 @@ export async function runOrganizeForUser({
 		await updateRun(runId, { currentStage: "embed" });
 		const embedResult = await embedTracksBatch(
 			userId,
-			async (p: Record<string, unknown>) => {
+			async (p: EmbedProgress) => {
 				progress.embed = p;
 				await updateRun(runId, { progress });
 			},
@@ -99,7 +107,7 @@ export async function runOrganizeForUser({
 		await updateRun(runId, { currentStage: "cluster" });
 		const clusterResult = await runClustering(
 			userId,
-			async (p: Record<string, unknown>) => {
+			async (p: ClusterProgress) => {
 				progress.cluster = p;
 				await updateRun(runId, { progress });
 			},
@@ -111,7 +119,7 @@ export async function runOrganizeForUser({
 		await generateClusterMetadata(userId);
 		const generateResult = await generatePlaylists(
 			userId,
-			async (p: Record<string, unknown>) => {
+			async (p: GenerateProgress) => {
 				progress.generate = p;
 				await updateRun(runId, { progress });
 			},
