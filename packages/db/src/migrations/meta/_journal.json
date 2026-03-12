@@ -43,6 +43,13 @@
 			"when": 1773003684593,
 			"tag": "0005_narrow_tarot",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1773347993927,
+			"tag": "0006_light_aaron_stack",
+			"breakpoints": true
 		}
 	]
 }

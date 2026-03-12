@@ -17,16 +17,11 @@ export const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const RATE_LIMIT_MAX_RETRIES = 3;
 const RATE_LIMIT_MAX_WAIT_SEC = 60;
 
-function parseRetryAfter(header: string | null): number {
-	const sec = parseInt(header ?? "30", 10);
-	return Number.isFinite(sec) ? Math.max(1, sec) : 30;
-}
-
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getSpotifyAccount(userId: string) {
+export async function getSpotifyAccount(userId: string) {
 	const rows = await db
 		.select()
 		.from(account)
@@ -146,15 +141,20 @@ export async function spotifyRequest<T>(
 	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, init);
 
 	if (response.status === 429 && retriesLeft > 0) {
-		const waitSec = Math.min(
-			parseRetryAfter(response.headers.get("Retry-After")),
-			RATE_LIMIT_MAX_WAIT_SEC,
-		);
+		const retryAfter = Number(response.headers.get("Retry-After") ?? "0");
+		const waitSec = Math.max(retryAfter, RATE_LIMIT_MAX_WAIT_SEC);
 		logger.warn(
-			{ path, waitSec, retriesLeft },
+			{
+				path,
+				waitSec,
+				retriesLeft,
+				error: response.statusText,
+				response,
+				retryAfter,
+			},
 			"Spotify rate limit (429); waiting before retry",
 		);
-		await sleep(waitSec * 1000);
+		await sleep(waitSec);
 		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
 	}
 
@@ -218,6 +218,7 @@ export async function fetchAllSavedTracks(
 
 export async function fetchAllUserPlaylists(
 	accessToken: string,
+	options?: { ownerId?: string },
 ): Promise<SpotifyPlaylistSimplified[]> {
 	const limit = 50;
 	let url = `/me/playlists?limit=${limit}`;
@@ -225,6 +226,7 @@ export async function fetchAllUserPlaylists(
 
 	for (;;) {
 		const page = await spotifyGet<SpotifyPlaylistsResponse>(url, accessToken);
+		logger.info({ page }, "Fetching all user playlists");
 		allPlaylists.push(...page.items);
 
 		if (!page.next) {
@@ -237,12 +239,16 @@ export async function fetchAllUserPlaylists(
 		url = path + nextUrl.search;
 	}
 
+	const ownerId = options?.ownerId;
+	if (ownerId) {
+		return allPlaylists.filter((p) => p.owner?.id === ownerId);
+	}
 	return allPlaylists;
 }
 
 const PLAYLIST_ITEMS_LIMIT = 50;
 const PLAYLIST_ITEMS_FIELDS =
-	"items(track(id,name,uri,album(name),artists(name),duration_ms))";
+	"items(track(id,name,uri,album(id,name),artists(id,name),duration_ms))";
 
 export async function fetchPlaylistItems(
 	accessToken: string,

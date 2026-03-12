@@ -12,6 +12,7 @@ export type SpotifyPlaylistSimplified = {
 	name: string;
 	snapshot_id?: string | null;
 	tracks: { href: string; total: number };
+	owner?: { id: string } | null;
 };
 
 export type SpotifyPlaylistsResponse = {
@@ -26,8 +27,8 @@ export type SpotifyPlaylistTrackItem = {
 		name: string;
 		uri?: string;
 		duration_ms?: number | null;
-		artists: Array<{ name: string }>;
-		album: { name: string } | null;
+		artists: Array<{ id?: string | null; name: string }>;
+		album: { id?: string | null; name: string } | null;
 	} | null;
 };
 

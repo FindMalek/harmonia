@@ -12,7 +12,12 @@ import { user } from "./auth";
 /** Pipeline stage progress. Typed definitions live in @harmonia/common/types. */
 export type PipelineProgress = {
 	sync?: { total: number; done: boolean };
-	lyrics?: { found: number; notFound: number; processed: number; total: number };
+	lyrics?: {
+		found: number;
+		notFound: number;
+		processed: number;
+		total: number;
+	};
 	classify?: { classified: number; total: number; pending: number };
 	embed?: { embedded: number; total: number; pending: number };
 	cluster?: { clusters: number; noise: number; totalTracks: number };

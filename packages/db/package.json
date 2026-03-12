@@ -20,12 +20,14 @@
 	"dependencies": {
 		"@harmonia/env": "workspace:*",
 		"@neondatabase/serverless": "^1.0.2",
+		"ws": "^8.18.0",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
+		"@types/ws": "^8.5.13",
 		"drizzle-kit": "^0.31.8",
 		"typescript": "catalog:"
 	}

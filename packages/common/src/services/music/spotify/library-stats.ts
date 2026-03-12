@@ -1,18 +1,39 @@
 import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
-import { userSpotifyLibraryStats } from "@harmonia/db/schema/spotify";
-import { eq } from "drizzle-orm";
+import {
+	userPlaylistSnapshots,
+	userSpotifyLibraryStats,
+} from "@harmonia/db/schema/spotify";
+import { eq, sql } from "drizzle-orm";
+import pLimit from "p-limit";
 
-import { fetchAllUserPlaylists, getUserSpotifyAccessToken } from "./client";
+import {
+	fetchAllUserPlaylists,
+	fetchPlaylistItems,
+	getSpotifyAccount,
+	getUserSpotifyAccessToken,
+} from "./client";
+import {
+	getCachedPlaylistItems,
+	setCachedPlaylistItems,
+} from "./playlist-cache";
+import { extractTrackInfo, toStats } from "./library-sync";
 
-const STALE_MS = 5 * 60 * 1000; // 5 minutes
+/** Library stats cache TTL. Will be plan-based later (e.g. free=24h, paid=shorter). */
+export const LIBRARY_STATS_CACHE_STALE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/** When true (paid plans), include followed/collaborative playlists. For now: owned only. */
+export const INCLUDE_FOLLOWED_PLAYLISTS = false;
+
+const STATS_FETCH_CONCURRENCY = 4;
 
 /** Per-user lock to avoid concurrent refreshes for the same user. */
 const refreshLocks = new Map<string, Promise<SpotifyLibraryStats>>();
 
 /**
- * Fetches lightweight library stats from Spotify API (playlists only, no track fetching).
- * Used for the dashboard overview. Full track sync happens only when running the Organize pipeline.
+ * Fetches library stats from Spotify API (owned playlists only).
+ * Uses snapshot cache to avoid re-fetching unchanged playlists.
+ * Aggregates tracks, albums, artists from playlist items.
  */
 export async function refreshSpotifyLibraryStats(
 	userId: string,
@@ -40,14 +61,66 @@ export async function refreshSpotifyLibraryStats(
 				};
 	}
 
-	const playlists = await fetchAllUserPlaylists(accessToken);
+	const spotifyAccount = await getSpotifyAccount(userId);
+	const playlists = await fetchAllUserPlaylists(accessToken, {
+		ownerId: INCLUDE_FOLLOWED_PLAYLISTS ? undefined : spotifyAccount?.accountId,
+	});
 	const totalPlaylists = playlists.length;
-	const stats: SpotifyLibraryStats = {
-		totalTracks: 0,
-		totalPlaylists,
-		uniqueAlbums: 0,
-		uniqueArtists: 0,
-	};
+
+	const trackIds = new Set<string>();
+	const albumKeys = new Set<string>();
+	const artistKeys = new Set<string>();
+
+	const limit = pLimit(STATS_FETCH_CONCURRENCY);
+	await Promise.all(
+		playlists.map((playlist, i) =>
+			limit(async () => {
+				const snapshotId = playlist.snapshot_id ?? null;
+				if (!snapshotId) return;
+
+				const cached = await getCachedPlaylistItems(
+					userId,
+					playlist.id,
+					snapshotId,
+				);
+				let items;
+
+				if (cached !== null) {
+					items = cached;
+				} else {
+					await new Promise((r) =>
+						setTimeout(r, (i % STATS_FETCH_CONCURRENCY) * 100),
+					);
+					items = await fetchPlaylistItems(accessToken, playlist.id);
+					await setCachedPlaylistItems(userId, playlist.id, snapshotId, items);
+					await db
+						.insert(userPlaylistSnapshots)
+						.values({
+							userId,
+							playlistId: playlist.id,
+							snapshotId,
+						})
+						.onConflictDoUpdate({
+							target: [
+								userPlaylistSnapshots.userId,
+								userPlaylistSnapshots.playlistId,
+							],
+							set: {
+								snapshotId: sql`excluded.snapshot_id`,
+								updatedAt: new Date(),
+							},
+						});
+				}
+
+				const info = extractTrackInfo(items);
+				for (const id of info.trackIds) trackIds.add(id);
+				for (const key of info.albumKeys) albumKeys.add(key);
+				for (const key of info.artistKeys) artistKeys.add(key);
+			}),
+		),
+	);
+
+	const stats = toStats(trackIds, totalPlaylists, albumKeys, artistKeys);
 
 	await db
 		.insert(userSpotifyLibraryStats)
@@ -73,7 +146,7 @@ export async function refreshSpotifyLibraryStats(
 }
 
 /**
- * Returns cached Spotify library stats. Uses DB cache with 5-minute stale-while-revalidate.
+ * Returns cached Spotify library stats. Uses DB cache with 24-hour stale-while-revalidate.
  * - Fresh cache: returns immediately.
  * - Stale cache: returns cached, triggers background refresh.
  * - No cache: fetches from Spotify (blocking), then returns.
@@ -89,7 +162,7 @@ export async function getSpotifyLibraryStats(
 
 	const now = Date.now();
 	const updatedAt = cached?.updatedAt?.getTime() ?? 0;
-	const isFresh = cached && now - updatedAt < STALE_MS;
+	const isFresh = cached && now - updatedAt < LIBRARY_STATS_CACHE_STALE_MS;
 
 	if (isFresh) {
 		return {

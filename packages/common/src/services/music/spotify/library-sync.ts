@@ -8,7 +8,7 @@ import {
 } from "@harmonia/db/schema/spotify";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import {
@@ -17,6 +17,10 @@ import {
 	fetchAllUserPlaylists,
 	getUserSpotifyAccessToken,
 } from "./client";
+import {
+	getCachedPlaylistItems,
+	setCachedPlaylistItems,
+} from "./playlist-cache";
 
 const PLAYLIST_FETCH_CONCURRENCY = 3;
 const PLAYLIST_FETCH_DELAY_MS = 150;
@@ -50,15 +54,15 @@ function normalizeTrack(t: {
 	};
 }
 
-function extractTrackInfo(items: SpotifyPlaylistTrackItem[]): {
+export function extractTrackInfo(items: SpotifyPlaylistTrackItem[]): {
 	trackIds: Set<string>;
-	albumNames: Set<string>;
-	artistNames: Set<string>;
+	albumKeys: Set<string>;
+	artistKeys: Set<string>;
 	tracks: TrackForUpsert[];
 } {
 	const trackIds = new Set<string>();
-	const albumNames = new Set<string>();
-	const artistNames = new Set<string>();
+	const albumKeys = new Set<string>();
+	const artistKeys = new Set<string>();
 	const tracks: TrackForUpsert[] = [];
 
 	for (const item of items) {
@@ -66,29 +70,31 @@ function extractTrackInfo(items: SpotifyPlaylistTrackItem[]): {
 		if (!t?.id) continue;
 
 		trackIds.add(t.id);
-		if (t.album?.name) albumNames.add(t.album.name);
+		const albumKey = t.album?.id ?? t.album?.name ?? "";
+		if (albumKey) albumKeys.add(albumKey);
 		for (const a of t.artists ?? []) {
-			if (a.name) artistNames.add(a.name);
+			const artistKey = a.id ?? a.name ?? "";
+			if (artistKey) artistKeys.add(artistKey);
 		}
 
 		const normalized = normalizeTrack(t);
 		if (normalized) tracks.push(normalized);
 	}
 
-	return { trackIds, albumNames, artistNames, tracks };
+	return { trackIds, albumKeys, artistKeys, tracks };
 }
 
-function toStats(
+export function toStats(
 	trackIds: Set<string>,
 	totalPlaylists: number,
-	albumNames: Set<string>,
-	artistNames: Set<string>,
+	albumKeys: Set<string>,
+	artistKeys: Set<string>,
 ): SpotifyLibraryStats {
 	return {
 		totalTracks: trackIds.size,
 		totalPlaylists,
-		uniqueAlbums: albumNames.size,
-		uniqueArtists: artistNames.size,
+		uniqueAlbums: albumKeys.size,
+		uniqueArtists: artistKeys.size,
 	};
 }
 
@@ -139,9 +145,13 @@ export async function syncLibraryTracks(
 		const t = item.track;
 		if (!t?.id) continue;
 		trackIds.add(t.id);
-		if (t.album?.name) albumNames.add(t.album.name);
+		const album = t.album as { id?: string; name?: string } | null | undefined;
+		const albumKey = album?.id ?? album?.name ?? "";
+		if (albumKey) albumNames.add(albumKey);
 		for (const a of t.artists ?? []) {
-			if (a.name) artistNames.add(a.name);
+			const artist = a as { id?: string; name: string };
+			const artistKey = artist.id ?? artist.name ?? "";
+			if (artistKey) artistNames.add(artistKey);
 		}
 		const normalized = normalizeTrack(t);
 		if (normalized) tracksMap.set(normalized.id, normalized);
@@ -151,70 +161,72 @@ export async function syncLibraryTracks(
 	const playlists = await fetchAllUserPlaylists(accessToken);
 	const totalPlaylists = playlists.length;
 
-	// 3. Load cached snapshots
-	const cachedRows = await db
-		.select()
-		.from(userPlaylistSnapshots)
-		.where(eq(userPlaylistSnapshots.userId, userId));
-	const snapshotCache = new Map(
-		cachedRows.map((r) => [r.playlistId, r.snapshotId]),
-	);
-
-	// 4. Fetch only playlists whose snapshot_id changed (skip unchanged to reduce API calls)
+	// 3. For each playlist: use cache if snapshot matches, else fetch and cache
 	const limit = pLimit(PLAYLIST_FETCH_CONCURRENCY);
-	const playlistsToFetch = playlists.filter((p) => {
-		const cached = snapshotCache.get(p.id);
-		const current = p.snapshot_id ?? null;
-		return !current || cached !== current;
-	});
-
 	await Promise.all(
-		playlistsToFetch.map((playlist, i) =>
+		playlists.map((playlist, i) =>
 			limit(async () => {
-				await new Promise((r) =>
-					setTimeout(
-						r,
-						(i % PLAYLIST_FETCH_CONCURRENCY) * PLAYLIST_FETCH_DELAY_MS,
-					),
+				const snapshotId = playlist.snapshot_id ?? null;
+				if (!snapshotId) return;
+
+				const cached = await getCachedPlaylistItems(
+					userId,
+					playlist.id,
+					snapshotId,
 				);
-				try {
-					const items = await fetchPlaylistItems(accessToken, playlist.id);
-					const info = extractTrackInfo(items);
-					for (const id of info.trackIds) trackIds.add(id);
-					for (const name of info.albumNames) albumNames.add(name);
-					for (const name of info.artistNames) artistNames.add(name);
-					for (const t of info.tracks) tracksMap.set(t.id, t);
-				} catch (err) {
-					logger.warn(
-						{ userId, playlistId: playlist.id, error: String(err) },
-						"Failed to fetch playlist items; skipping",
+				let items: SpotifyPlaylistTrackItem[];
+
+				if (cached !== null) {
+					items = cached;
+				} else {
+					await new Promise((r) =>
+						setTimeout(
+							r,
+							(i % PLAYLIST_FETCH_CONCURRENCY) * PLAYLIST_FETCH_DELAY_MS,
+						),
 					);
+					try {
+						items = await fetchPlaylistItems(accessToken, playlist.id);
+						await setCachedPlaylistItems(
+							userId,
+							playlist.id,
+							snapshotId,
+							items,
+						);
+						await db
+							.insert(userPlaylistSnapshots)
+							.values({
+								userId,
+								playlistId: playlist.id,
+								snapshotId,
+							})
+							.onConflictDoUpdate({
+								target: [
+									userPlaylistSnapshots.userId,
+									userPlaylistSnapshots.playlistId,
+								],
+								set: {
+									snapshotId: sql`excluded.snapshot_id`,
+									updatedAt: new Date(),
+								},
+							});
+					} catch (err) {
+						logger.warn(
+							{ userId, playlistId: playlist.id, error: String(err) },
+							"Failed to fetch playlist items; skipping",
+						);
+						return;
+					}
 				}
+
+				const info = extractTrackInfo(items);
+				for (const id of info.trackIds) trackIds.add(id);
+				for (const key of info.albumKeys) albumNames.add(key);
+				for (const key of info.artistKeys) artistNames.add(key);
+				for (const t of info.tracks) tracksMap.set(t.id, t);
 			}),
 		),
 	);
-
-	// 5. Update snapshot cache for fetched playlists
-	for (const p of playlistsToFetch) {
-		if (!p.snapshot_id) continue;
-		await db
-			.insert(userPlaylistSnapshots)
-			.values({
-				userId,
-				playlistId: p.id,
-				snapshotId: p.snapshot_id,
-			})
-			.onConflictDoUpdate({
-				target: [
-					userPlaylistSnapshots.userId,
-					userPlaylistSnapshots.playlistId,
-				],
-				set: {
-					snapshotId: sql`excluded.snapshot_id`,
-					updatedAt: new Date(),
-				},
-			});
-	}
 
 	const stats = toStats(trackIds, totalPlaylists, albumNames, artistNames);
 
