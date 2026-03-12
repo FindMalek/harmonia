@@ -67,6 +67,21 @@ export const DASHBOARD_ROUTES = {
 		icon: "settings",
 		isNav: true,
 	},
+	onboarding: {
+		index: {
+			path: "/welcome",
+			label: "Onboarding",
+		},
+		introduction: {
+			path: "/introduction",
+			label: "Introduction",
+		},
+		sync: {
+			path: "/sync",
+			label: "Sync",
+		},
+		isNav: false,
+	},
 } as const;
 
 export type DashboardRoutes = typeof DASHBOARD_ROUTES;

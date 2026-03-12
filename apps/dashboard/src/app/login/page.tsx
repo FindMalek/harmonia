@@ -2,25 +2,26 @@ import { redirect } from "next/navigation";
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { getServerSession } from "@/lib/get-server-session";
+import { Header } from "@/components/shared/header";
 import { SpotifySignInButton } from "@/components/app/spotify-sign-in-button";
 import { Icons } from "@harmonia/ui";
+import type { Route } from "next";
 
 export default async function LoginPage() {
 	const session = await getServerSession();
 
 	if (session?.user) {
-		redirect(DASHBOARD_ROUTES.overview.path);
+		if (!session.user.hasCompletedOnboarding) {
+			redirect(DASHBOARD_ROUTES.onboarding.introduction.path as Route);
+		} else {
+			redirect(DASHBOARD_ROUTES.overview.path);
+		}
 	}
 
 	return (
 		<div className="flex h-full min-h-svh flex-col bg-background font-sans">
 			<div className="flex flex-1 flex-col justify-between p-8 sm:p-12 lg:p-16">
-				<div className="flex items-center gap-3">
-					<Icons.logo className="h-4 w-4 text-foreground" />
-					<span className="text-sm font-bold tracking-widest text-foreground">
-						HARMONIA
-					</span>
-				</div>
+				<Header />
 
 				{/* Hero Text */}
 				<div className="mt-42 mb-16 max-w-2xl border-l-4 border-foreground pl-6 sm:pl-8">

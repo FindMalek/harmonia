@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { getServerSession } from "@/lib/get-server-session";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import type { Route } from "next";
 
 export default async function DashboardLayout({
 	children,
@@ -12,6 +14,10 @@ export default async function DashboardLayout({
 
 	if (!session?.user) {
 		redirect("/login");
+	}
+
+	if (!session.user.hasCompletedOnboarding) {
+		redirect(DASHBOARD_ROUTES.onboarding.index.path as Route);
 	}
 
 	return (
