@@ -226,7 +226,6 @@ export async function fetchAllUserPlaylists(
 
 	for (;;) {
 		const page = await spotifyGet<SpotifyPlaylistsResponse>(url, accessToken);
-		logger.info({ page }, "Fetching all user playlists");
 		allPlaylists.push(...page.items);
 
 		if (!page.next) {
