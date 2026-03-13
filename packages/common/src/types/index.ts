@@ -8,6 +8,7 @@ export { getLlmTags } from "./track";
 export type {
 	PipelineProgress,
 	SyncProgress,
+	SyncPhase,
 	LyricsProgress,
 	ClassifyProgress,
 	EmbedProgress,

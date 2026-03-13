@@ -3,9 +3,14 @@
  * Each stage reports its own shape; PipelineProgress aggregates them.
  */
 
+export type SyncPhase = "liked" | "playlists" | "preparing";
+
 export type SyncProgress = {
 	total: number;
 	done: boolean;
+	phase?: SyncPhase;
+	phasesCompleted?: number; // 0-3
+	percent?: number; // 0-100
 };
 
 export type LyricsProgress = {
