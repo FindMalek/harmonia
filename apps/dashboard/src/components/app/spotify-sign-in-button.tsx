@@ -24,13 +24,13 @@ export function SpotifySignInButton() {
 	return (
 		<Button
 			type="button"
-			size="lg"
+			size="xl"
+			className="uppercase w-full"
 			isLoading={isLoading}
 			disabled={isLoading}
-			className="w-full h-14 font-bold"
 			onClick={handleSpotifySignIn}
 		>
-			{isLoading ? "CONNECTING..." : "CONTINUE WITH SPOTIFY"}
+			{isLoading ? "Connecting..." : "Continue with Spotify"}
 			{!isLoading && <Icons.chevronRight className="h-4 w-4" />}
 		</Button>
 	);
