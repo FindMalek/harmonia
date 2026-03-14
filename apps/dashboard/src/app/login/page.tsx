@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { SpotifySignInButton } from "@/components/app/spotify-sign-in-button";
+import { AuthSpotifySignInButton } from "@/components/app/auth-spotify-sign-in-button";
 import { Header } from "@/components/shared/header";
 import { getServerSession } from "@/lib/get-server-session";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
@@ -50,7 +50,7 @@ export default async function LoginPage() {
 							</p>
 						</div>
 
-						<SpotifySignInButton />
+						<AuthSpotifySignInButton />
 
 						<p className="text-muted-foreground text-xs">
 							Harmonia only reads your playlists and liked songs.

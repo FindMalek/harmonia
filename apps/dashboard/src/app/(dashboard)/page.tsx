@@ -7,9 +7,9 @@ import {
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { DashboardLibraryOverviewSkeleton } from "@/components/dashboard/dashboard-library-overview";
-import { DashboardLibraryStatsWrapper } from "@/components/dashboard/dashboard-library-stats-wrapper";
+import { DashboardShell } from "@/components/app/dashboard-shell";
+import { DashboardLibraryOverviewSkeleton } from "@/components/app/dashboard-library-overview";
+import { DashboardLibraryStatsWrapper } from "@/components/app/dashboard-library-stats-wrapper";
 import { getServerSession } from "@/lib/get-server-session";
 import { orpc } from "@/lib/orpc";
 
