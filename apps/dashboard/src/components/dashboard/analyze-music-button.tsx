@@ -11,12 +11,12 @@ export function AnalyzeMusicButton() {
 		<Button
 			type="button"
 			variant="default"
-			className="flex h-auto w-full flex-col items-start justify-between gap-2 rounded-xl p-6 text-left sm:flex-row sm:items-center"
+			className="flex h-auto w-full items-center justify-between gap-4 p-6 text-left"
 			onClick={() => organizeMutation.mutate({})}
 			disabled={isPending}
 		>
 			<div className="flex flex-1 flex-col gap-0.5">
-				<span className="font-semibold text-xl">Analyze My Music</span>
+				<span className="font-medium text-xl">Analyze My Music</span>
 				<span className="text-primary-foreground/80 text-sm">
 					{isPending ? "Pipeline running..." : "Execute AI analysis pipeline"}
 				</span>

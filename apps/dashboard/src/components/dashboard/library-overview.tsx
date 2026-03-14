@@ -30,7 +30,7 @@ export function LibraryOverview({ stats, isLoading }: LibraryOverviewProps) {
 			<h3 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
 				Library Overview
 			</h3>
-			<div className="space-y-0">
+			<div className="space-y-4">
 				<StatRow
 					label="Playlists"
 					value={stats?.totalPlaylists ?? 0}

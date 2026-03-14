@@ -34,12 +34,12 @@ export function LibraryAnalysis() {
 	const embedPercentage = totalTracks > 0 ? (embedded / totalTracks) * 100 : 0;
 
 	return (
-		<div className="space-y-4">
-			<h3 className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+		<div className="space-y-4 ">
+			<h3 className="text-muted-foreground text-xs font-medium uppercase tracking-wider pb-4">
 				Library Analysis
 			</h3>
 
-			<div className="space-y-6">
+			<div className="space-y-10">
 				<div className="space-y-3">
 					<div className="flex items-center justify-between">
 						<span className="text-sm">Tracks analyzed</span>

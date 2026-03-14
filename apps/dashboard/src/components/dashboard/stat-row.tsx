@@ -11,7 +11,7 @@ type StatRowProps = {
 export function StatRow({ label, value, loading }: StatRowProps) {
 	return (
 		<div className="flex items-center justify-between border-b py-4 last:border-0">
-			<span className="text-sm">{label}</span>
+			<span className="text-sm text-foreground/80">{label}</span>
 			<span className="font-mono text-sm">
 				{loading ? (
 					<Skeleton className="h-4 w-10" />
