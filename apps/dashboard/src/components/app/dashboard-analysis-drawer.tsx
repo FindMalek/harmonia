@@ -16,9 +16,9 @@ import {
 // The pipeline stages in order
 const STAGES = [
 	{ id: "sync", label: "Syncing library" },
-	{ id: "lyrics", label: "Collecting lyrics" },
 	{ id: "classify", label: "AI classification" },
 	{ id: "embed", label: "Generating embeddings" },
+	{ id: "lyrics", label: "Collecting lyrics" },
 	{ id: "cluster", label: "Clustering tracks" },
 	{ id: "generate", label: "Generating playlists" },
 ] as const;
@@ -109,7 +109,7 @@ export function DashboardAnalysisDrawer() {
 
 	const getStageIcon = (stageId: string) => {
 		if (streamState.status === "completed") {
-			return <Icons.checkCircle className="h-5 w-5 text-white" />;
+			return <Icons.check className="h-5 w-5 text-white" />;
 		}
 
 		const stageIndex = STAGES.findIndex((s) => s.id === stageId);
@@ -118,7 +118,7 @@ export function DashboardAnalysisDrawer() {
 		);
 
 		if (stageIndex < currentIndex) {
-			return <Icons.checkCircle className="h-5 w-5 text-white" />;
+			return <Icons.check className="h-5 w-5 text-white" />;
 		}
 		if (stageIndex === currentIndex) {
 			return <Icons.spinner className="h-5 w-5 animate-spin text-primary" />;

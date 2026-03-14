@@ -8,6 +8,8 @@ type LRCLibTrack = {
 	instrumental: boolean;
 };
 
+// LRCLib has no rate limiting and requires no API key
+// Faster retry delays since there are no rate limits to respect
 export async function getLyricsFromLRCLib(params: {
 	trackName: string;
 	artistName: string;
@@ -68,7 +70,7 @@ export async function getLyricsFromLRCLib(params: {
 		},
 		{
 			retries: 3,
-			minTimeout: 1000,
+			minTimeout: 200, // 5x faster (1000ms → 200ms)
 			onFailedAttempt: (error) => {
 				logger.warn(
 					{
