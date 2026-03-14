@@ -65,10 +65,6 @@ export const spotifyRouter = {
 					if (result.done && result.result) {
 						const { stats } = result.result;
 						yield { event: "completed", stats };
-						await db
-							.update(user)
-							.set({ hasCompletedOnboarding: true })
-							.where(eq(user.id, userId));
 						return;
 					}
 				}
@@ -92,12 +88,18 @@ export const spotifyRouter = {
 		.handler(async ({ context }) => {
 			const userId = context.session.user.id;
 			const result = await syncLibraryTracks(userId);
+			return result;
+		}),
 
+	finalizeOnboarding: protectedProcedure
+		.input(emptyInput)
+		.output(z.object({ success: z.literal(true) }))
+		.handler(async ({ context }) => {
+			const userId = context.session.user.id;
 			await db
 				.update(user)
 				.set({ hasCompletedOnboarding: true })
 				.where(eq(user.id, userId));
-
-			return result;
+			return { success: true } as const;
 		}),
 };

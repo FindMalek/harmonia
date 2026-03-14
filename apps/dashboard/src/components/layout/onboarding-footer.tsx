@@ -1,15 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button, buttonVariants, cn } from "@harmonia/ui";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { client } from "@/lib/orpc";
+import { queryKeys } from "@/lib/query-keys";
 import { useOnboardingSync } from "@/stores/onboarding-sync";
 
 export function OnboardingFooter() {
+	const router = useRouter();
 	const pathname = usePathname();
+	const queryClient = useQueryClient();
+	const reset = useOnboardingSync((s) => s.reset);
 	const isSyncing = useOnboardingSync((s) => s.isSyncing);
 	const isComplete = useOnboardingSync((s) => s.isComplete);
+	const requestStart = useOnboardingSync((s) => s.requestStart);
+	const [isFinalizing, setIsFinalizing] = useState(false);
 
 	// Screen 1: Welcome -> Show "Continue"
 	if (pathname === DASHBOARD_ROUTES.onboarding.index.path) {
@@ -37,12 +46,28 @@ export function OnboardingFooter() {
 	if (pathname === DASHBOARD_ROUTES.onboarding.sync.path) {
 		if (isComplete) {
 			return (
-				<Link
-					href={DASHBOARD_ROUTES.overview.path}
-					className={cn(buttonVariants({ size: "xl" }), "w-full uppercase")}
+				<Button
+					size="xl"
+					isLoading={isFinalizing}
+					disabled={isFinalizing}
+					className="w-full uppercase"
+					onClick={async () => {
+						setIsFinalizing(true);
+						try {
+							await client.spotify.finalizeOnboarding({});
+							reset();
+							await queryClient.invalidateQueries({
+								queryKey: queryKeys.spotifyLibraryStats(),
+							});
+							router.refresh();
+							router.replace(DASHBOARD_ROUTES.overview.path);
+						} finally {
+							setIsFinalizing(false);
+						}
+					}}
 				>
 					Continue
-				</Link>
+				</Button>
 			);
 		}
 		return (
@@ -51,6 +76,7 @@ export function OnboardingFooter() {
 				isLoading={isSyncing}
 				disabled={isSyncing}
 				className="w-full uppercase"
+				onClick={() => requestStart()}
 			>
 				{isSyncing ? "IMPORTING..." : "IMPORT"}
 			</Button>

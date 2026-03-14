@@ -1,13 +1,11 @@
 "use client";
 
-import { useOnboardingSync } from "@/stores/onboarding-sync";
-import { client } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
 import type { SyncPhase } from "@harmonia/common/types";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { useEffect, useState } from "react";
+import { client } from "@/lib/orpc";
+import { queryKeys } from "@/lib/query-keys";
+import { useOnboardingSync } from "@/stores/onboarding-sync";
 
 export type OnboardingSyncStream = {
 	progress: number;
@@ -15,43 +13,22 @@ export type OnboardingSyncStream = {
 	phasesCompleted: number;
 	error: string | null;
 	isStreaming: boolean;
-	start: () => void;
 };
 
 export function useOnboardingSyncStream(): OnboardingSyncStream {
-	const router = useRouter();
 	const queryClient = useQueryClient();
-	const { setSyncing, setComplete } = useOnboardingSync();
+	const shouldStart = useOnboardingSync((state) => state.shouldStart);
+	const setSyncing = useOnboardingSync((state) => state.setSyncing);
+	const setComplete = useOnboardingSync((state) => state.setComplete);
+	const clearStartRequest = useOnboardingSync(
+		(state) => state.clearStartRequest,
+	);
 
 	const [progress, setProgress] = useState(0);
 	const [phase, setPhase] = useState<SyncPhase | null>(null);
 	const [phasesCompleted, setPhasesCompleted] = useState(0);
 	const [error, setError] = useState<string | null>(null);
 	const [isStreaming, setIsStreaming] = useState(false);
-	const [shouldStart, setShouldStart] = useState(false);
-
-	const onCompleteRef = useRef(() => {
-		setComplete(true);
-		setSyncing(false);
-		queryClient.invalidateQueries({
-			queryKey: queryKeys.spotifyLibraryStats(),
-		});
-		router.refresh();
-		setTimeout(() => router.push(DASHBOARD_ROUTES.overview.path), 1000);
-	});
-
-	// Keep ref updated
-	useEffect(() => {
-		onCompleteRef.current = () => {
-			setComplete(true);
-			setSyncing(false);
-			queryClient.invalidateQueries({
-				queryKey: queryKeys.spotifyLibraryStats(),
-			});
-			router.refresh();
-			setTimeout(() => router.push(DASHBOARD_ROUTES.overview.path), 1000);
-		};
-	}, [setComplete, setSyncing, queryClient, router]);
 
 	useEffect(() => {
 		if (!shouldStart) return;
@@ -62,6 +39,7 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 		const runStream = async () => {
 			setIsStreaming(true);
 			setSyncing(true);
+			setComplete(false);
 			setError(null);
 
 			try {
@@ -79,12 +57,18 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 						setPhasesCompleted(event.progress.phasesCompleted);
 					} else if (event.event === "completed") {
 						setProgress(100);
-						onCompleteRef.current();
+						setComplete(true);
+						setSyncing(false);
+						clearStartRequest();
+						void queryClient.invalidateQueries({
+							queryKey: queryKeys.spotifyLibraryStats(),
+						});
 						break;
 					} else if (event.event === "failed" || event.event === "error") {
 						const msg = event.event === "failed" ? event.error : event.message;
 						setError(msg ?? "Unknown error");
 						setSyncing(false);
+						clearStartRequest();
 						break;
 					}
 				}
@@ -92,6 +76,7 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 				if (err instanceof Error && err.name !== "AbortError" && !cancelled) {
 					setError(err.message);
 					setSyncing(false);
+					clearStartRequest();
 				}
 			} finally {
 				if (!cancelled) {
@@ -106,7 +91,7 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 			cancelled = true;
 			controller.abort();
 		};
-	}, [shouldStart, setSyncing]);
+	}, [clearStartRequest, queryClient, setComplete, setSyncing, shouldStart]);
 
 	return {
 		progress,
@@ -114,6 +99,5 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 		phasesCompleted,
 		error,
 		isStreaming,
-		start: () => setShouldStart(true),
 	};
 }

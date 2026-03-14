@@ -1,18 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { Icons, Progress } from "@harmonia/ui";
 import { useOnboardingSync } from "@/stores/onboarding-sync";
 import { useOnboardingSyncStream } from "@/hooks/use-onboarding-sync-stream";
 
 export default function SyncPage() {
-	const { isComplete } = useOnboardingSync();
-	const { progress, phasesCompleted, start } = useOnboardingSyncStream();
-
-	useEffect(() => {
-		start();
-		return () => useOnboardingSync.getState().reset();
-	}, [start]);
+	const isComplete = useOnboardingSync((state) => state.isComplete);
+	const { progress, phasesCompleted } = useOnboardingSyncStream();
 
 	return (
 		<div className="flex flex-col w-full max-w-md gap-8">
