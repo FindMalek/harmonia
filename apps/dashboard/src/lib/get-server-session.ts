@@ -7,6 +7,7 @@ export type Session = {
 		name: string;
 		email: string;
 		image?: string | null;
+		hasCompletedOnboarding: boolean;
 	};
 	session: {
 		id: string;

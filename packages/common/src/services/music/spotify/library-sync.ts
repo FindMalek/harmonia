@@ -157,6 +157,16 @@ export async function syncLibraryTracks(
 		if (normalized) tracksMap.set(normalized.id, normalized);
 	}
 
+	if (onProgress) {
+		await onProgress({
+			phase: "liked",
+			phasesCompleted: 1,
+			percent: 25,
+			done: false,
+			total: 0,
+		});
+	}
+
 	// 2. Playlists
 	const playlists = await fetchAllUserPlaylists(accessToken);
 	const totalPlaylists = playlists.length;
@@ -228,6 +238,16 @@ export async function syncLibraryTracks(
 		),
 	);
 
+	if (onProgress) {
+		await onProgress({
+			phase: "playlists",
+			phasesCompleted: 2,
+			percent: 60,
+			done: false,
+			total: 0,
+		});
+	}
+
 	const stats = toStats(trackIds, totalPlaylists, albumNames, artistNames);
 
 	// 6. Upsert library stats
@@ -253,6 +273,17 @@ export async function syncLibraryTracks(
 
 	// 7. Upsert tracks
 	const tracks = Array.from(tracksMap.values());
+
+	if (onProgress) {
+		await onProgress({
+			phase: "preparing",
+			phasesCompleted: 3,
+			percent: 85,
+			done: false,
+			total: tracks.length,
+		});
+	}
+
 	const now = new Date();
 	const values = tracks.map((t) => ({
 		id: t.id,
@@ -291,6 +322,9 @@ export async function syncLibraryTracks(
 		total: tracks.length,
 		done: true,
 		stats,
+		phase: "preparing",
+		phasesCompleted: 3,
+		percent: 100,
 	};
 
 	if (onProgress) {

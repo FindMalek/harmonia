@@ -55,3 +55,29 @@ export const spotifyLibraryStatsSchema = z.object({
 	uniqueArtists: z.number(),
 });
 export type SpotifyLibraryStats = z.infer<typeof spotifyLibraryStatsSchema>;
+
+export const syncProgressEventSchema = z.discriminatedUnion("event", [
+	z.object({
+		event: z.literal("progress"),
+		progress: z.object({
+			phase: z.enum(["liked", "playlists", "preparing"]),
+			phasesCompleted: z.number(),
+			percent: z.number(),
+			done: z.boolean(),
+			total: z.number(),
+		}),
+	}),
+	z.object({
+		event: z.literal("completed"),
+		stats: spotifyLibraryStatsSchema.optional(),
+	}),
+	z.object({
+		event: z.literal("failed"),
+		error: z.string().optional(),
+	}),
+	z.object({
+		event: z.literal("error"),
+		message: z.string(),
+	}),
+]);
+export type SyncProgressEvent = z.infer<typeof syncProgressEventSchema>;
