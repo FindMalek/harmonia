@@ -4,7 +4,6 @@ import { AuthSpotifySignInButton } from "@/components/app/auth-spotify-sign-in-b
 import { Header } from "@/components/shared/header";
 import { getServerSession } from "@/lib/get-server-session";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Icons } from "@harmonia/ui";
 import type { Route } from "next";
 
 export default async function LoginPage() {
