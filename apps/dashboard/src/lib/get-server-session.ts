@@ -25,11 +25,14 @@ export async function getServerSession(): Promise<Session | null> {
 	const headersList = await headers();
 	const cookie = headersList.get("cookie");
 
-	const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/auth/get-session`, {
-		headers: cookie ? { cookie } : undefined,
-		credentials: "include",
-		cache: "no-store",
-	});
+	const res = await fetch(
+		`${env.NEXT_PUBLIC_HARMONIA_API_URL}/api/auth/get-session`,
+		{
+			headers: cookie ? { cookie } : undefined,
+			credentials: "include",
+			cache: "no-store",
+		},
+	);
 
 	if (!res.ok) {
 		return null;

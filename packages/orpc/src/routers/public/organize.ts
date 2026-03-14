@@ -2,9 +2,10 @@ import {
 	organizeRunInput,
 	organizeRunOutputSchema,
 } from "@harmonia/common/schemas";
-import { runOrganizeForUser } from "@harmonia/common/services/organize";
+import { inngest } from "@harmonia/common/inngest/client";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
+import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { logger } from "@harmonia/logger";
 import { ORPCError } from "@orpc/server";
 
@@ -14,7 +15,7 @@ import { cronOrAuthProcedure } from "../../procedures";
  * Organize pipeline: syncs Spotify, fetches lyrics, classifies, embeds, clusters, generates playlists.
  *
  * 3rd party cron: POST {API_URL}/api/rpc/organize/run
- * Headers: Authorization: Bearer <CRON_SECRET> or X-Organize-Secret: <CRON_SECRET>
+ * Headers: Authorization: Bearer <HARMONIA_CRON_SECRET> or X-Organize-Secret: <HARMONIA_CRON_SECRET>
  * Body: {}
  * Cron mode runs the pipeline for all users in the database.
  */
@@ -26,7 +27,7 @@ export const organizeRouter = {
 				path: "/organize/run",
 				summary: "Run full organize pipeline",
 				description:
-					"Syncs Spotify, fetches lyrics, classifies with AI, generates embeddings, clusters tracks, and generates playlists. Requires auth or Authorization: Bearer CRON_SECRET / X-Organize-Secret header. Cron mode runs for all users.",
+					"Syncs Spotify, fetches lyrics, classifies with AI, generates embeddings, clusters tracks, and generates playlists. Requires auth or Authorization: Bearer HARMONIA_CRON_SECRET / X-Organize-Secret header. Cron mode runs for all users.",
 				tags: ["organize"],
 			},
 		})
@@ -42,15 +43,34 @@ export const organizeRouter = {
 					});
 				}
 				try {
-					const result = await runOrganizeForUser({
-						userId: context.userId,
+					const [run] = await db
+						.insert(pipelineRun)
+						.values({
+							userId: context.userId,
+							status: "running",
+							currentStage: "sync",
+							startedAt: new Date(),
+						})
+						.returning({ id: pipelineRun.id });
+
+					if (!run) throw new Error("Failed to create run record");
+
+					await inngest.send({
+						name: "organize/requested",
+						data: { userId: context.userId, runId: run.id },
 					});
-					return { success: true, results: [result] };
+
+					return {
+						success: true,
+						results: [
+							{ userId: context.userId, runId: run.id, status: "completed" },
+						],
+					};
 				} catch (err) {
 					const message =
 						err instanceof Error
 							? err.message
-							: "Failed to run organize pipeline";
+							: "Failed to queue organize pipeline";
 					throw new ORPCError("INTERNAL_SERVER_ERROR", { message });
 				}
 			}
@@ -65,13 +85,29 @@ export const organizeRouter = {
 
 			for (const { id } of users) {
 				try {
-					const result = await runOrganizeForUser({ userId: id });
-					results.push(result);
+					const [run] = await db
+						.insert(pipelineRun)
+						.values({
+							userId: id,
+							status: "running",
+							currentStage: "sync",
+							startedAt: new Date(),
+						})
+						.returning({ id: pipelineRun.id });
+
+					if (!run) throw new Error("Failed to create run record");
+
+					await inngest.send({
+						name: "organize/requested",
+						data: { userId: id, runId: run.id },
+					});
+
+					results.push({ userId: id, runId: run.id, status: "completed" });
 				} catch (err) {
 					const error = err instanceof Error ? err : new Error(String(err));
 					logger.error(
 						{ userId: id, error: error.message },
-						"Organize failed for user",
+						"Failed to queue organize for user",
 					);
 					results.push({
 						userId: id,

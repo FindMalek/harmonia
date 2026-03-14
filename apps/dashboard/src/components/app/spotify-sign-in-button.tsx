@@ -14,7 +14,7 @@ export function SpotifySignInButton() {
 		try {
 			await authClient.signIn.social({
 				provider: "spotify",
-				callbackURL: `${env.NEXT_PUBLIC_DASHBOARD_URL}${DASHBOARD_ROUTES.overview.path}`,
+				callbackURL: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}${DASHBOARD_ROUTES.overview.path}`,
 			});
 		} catch (error) {
 			setIsLoading(false);

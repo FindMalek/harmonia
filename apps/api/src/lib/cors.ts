@@ -10,16 +10,15 @@ export async function getCorsHeaders(
 ): Promise<Record<string, string>> {
 	const allowedOrigins: string[] = [];
 	for (const url of [
-		apiEnv.NEXT_PUBLIC_API_URL,
-		apiEnv.NEXT_PUBLIC_WEB_URL,
-		apiEnv.NEXT_PUBLIC_DASHBOARD_URL,
+		apiEnv.NEXT_PUBLIC_HARMONIA_API_URL,
+		apiEnv.NEXT_PUBLIC_HARMONIA_WEB_URL,
+		apiEnv.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
 	]) {
 		if (url) {
 			try {
 				allowedOrigins.push(new URL(url).origin);
 			} catch {
 				console.error(`Invalid URL: ${url}`);
-				continue;
 			}
 		}
 	}

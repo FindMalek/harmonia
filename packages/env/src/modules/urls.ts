@@ -5,7 +5,7 @@ import { z } from "zod";
  */
 export const urlsModule = {
 	client: {
-		NEXT_PUBLIC_WEB_URL: z.url().optional(),
-		NEXT_PUBLIC_DASHBOARD_URL: z.url().optional(),
+		NEXT_PUBLIC_HARMONIA_WEB_URL: z.url().optional(),
+		NEXT_PUBLIC_HARMONIA_DASHBOARD_URL: z.url().optional(),
 	},
 } as const;

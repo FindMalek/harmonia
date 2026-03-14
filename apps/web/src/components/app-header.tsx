@@ -25,7 +25,7 @@ function SignInLink({
 	);
 }
 
-const dashboardUrl = env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "");
+const dashboardUrl = env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(/\/$/, "");
 
 export default function AppHeader() {
 	const router = useRouter();

@@ -48,10 +48,10 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 export async function classifyTracksWithLLM(
 	tracks: TrackForClassification[],
 ): Promise<ClassificationResult[]> {
-	if (!env.GROQ_API_KEY) {
+	if (!env.HARMONIA_GROQ_API_KEY) {
 		logger.warn(
-			{},
-			"No GROQ_API_KEY configured; skipping LLM classification and returning empty results",
+			{ type: "llml" },
+			"No HARMONIA_GROQ_API_KEY configured; skipping LLM classification and returning empty results",
 		);
 		return [];
 	}

@@ -22,10 +22,10 @@ export async function embedTracksBatch(
 ): Promise<EmbedProgress> {
 	const stats: EmbedProgress = { embedded: 0, total: 0, pending: 0 };
 
-	if (!env.OPENAI_API_KEY) {
+	if (!env.HARMONIA_OPENAI_API_KEY) {
 		logger.warn(
-			{},
-			"No OPENAI_API_KEY configured; skipping embedding generation",
+			{ type: "embeddings" },
+			"No HARMONIA_OPENAI_API_KEY configured; skipping embedding generation",
 		);
 		return stats;
 	}
@@ -105,7 +105,7 @@ export async function embedTracksBatch(
 				const response = await fetch("https://api.openai.com/v1/embeddings", {
 					method: "POST",
 					headers: {
-						Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+						Authorization: `Bearer ${env.HARMONIA_OPENAI_API_KEY}`,
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({

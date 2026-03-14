@@ -5,6 +5,6 @@ import { z } from "zod";
  */
 export const dbModule = {
 	server: {
-		DATABASE_URL: z.url(),
+		HARMONIA_DATABASE_URL: z.url(),
 	},
 } as const;

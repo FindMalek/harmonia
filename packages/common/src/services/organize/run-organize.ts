@@ -31,6 +31,7 @@ async function updateRun(
 		currentStage?: string | null;
 		progress?: PipelineProgress;
 		error?: string;
+		startedAt?: Date;
 		completedAt?: Date;
 	},
 ) {
@@ -39,24 +40,36 @@ async function updateRun(
 
 export async function runOrganizeForUser({
 	userId,
+	runId: existingRunId,
 }: {
 	userId: string;
+	runId?: number;
 }): Promise<OrganizeRunResult> {
-	const [run] = await db
-		.insert(pipelineRun)
-		.values({
-			userId,
+	let runId = existingRunId;
+
+	if (!runId) {
+		const [run] = await db
+			.insert(pipelineRun)
+			.values({
+				userId,
+				status: "running",
+				currentStage: "sync",
+				startedAt: new Date(),
+			})
+			.returning({ id: pipelineRun.id });
+
+		if (!run) {
+			throw new Error("Failed to create pipeline run");
+		}
+		runId = run.id;
+	} else {
+		// Update existing run status to running
+		await updateRun(runId, {
 			status: "running",
 			currentStage: "sync",
 			startedAt: new Date(),
-		})
-		.returning({ id: pipelineRun.id });
-
-	if (!run) {
-		throw new Error("Failed to create pipeline run");
+		});
 	}
-
-	const runId = run.id;
 	const progress: PipelineProgress = {};
 
 	try {

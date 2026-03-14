@@ -18,10 +18,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load root .env (packages/db/scripts -> ../../../.env)
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.HARMONIA_DATABASE_URL;
 if (!DATABASE_URL) {
 	console.error(
-		"DATABASE_URL is not set. Ensure root .env exists with DATABASE_URL.",
+		"HARMONIA_DATABASE_URL is not set. Ensure root .env exists with HARMONIA_DATABASE_URL.",
 	);
 	process.exit(1);
 }

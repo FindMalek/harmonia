@@ -8,12 +8,12 @@ import { nextCookies } from "better-auth/next-js";
  * Environment config required for auth initialization
  */
 export type AuthEnvConfig = {
-	BETTER_AUTH_SECRET: string;
-	NEXT_PUBLIC_API_URL: string;
-	NEXT_PUBLIC_DASHBOARD_URL?: string;
-	NEXT_PUBLIC_ALLOWED_ORIGIN?: string;
-	SPOTIFY_CLIENT_ID?: string;
-	SPOTIFY_CLIENT_SECRET?: string;
+	HARMONIA_BETTER_AUTH_SECRET: string;
+	NEXT_PUBLIC_HARMONIA_API_URL: string;
+	NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?: string;
+	NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN?: string;
+	HARMONIA_SPOTIFY_CLIENT_ID?: string;
+	HARMONIA_SPOTIFY_CLIENT_SECRET?: string;
 	VERCEL?: boolean;
 	VERCEL_BRANCH_URL?: string;
 	VERCEL_PROJECT_PRODUCTION_URL?: string;
@@ -31,13 +31,13 @@ export function createAuth(
 	database: Parameters<typeof drizzleAdapter>[0],
 	envConfig: AuthEnvConfig,
 ) {
-	const spotifyClientId = envConfig.SPOTIFY_CLIENT_ID;
-	const spotifyClientSecret = envConfig.SPOTIFY_CLIENT_SECRET;
+	const spotifyClientId = envConfig.HARMONIA_SPOTIFY_CLIENT_ID;
+	const spotifyClientSecret = envConfig.HARMONIA_SPOTIFY_CLIENT_SECRET;
 	const spotifyEnabled = !!spotifyClientId && !!spotifyClientSecret;
 
 	const originConfig = [
-		envConfig.NEXT_PUBLIC_API_URL,
-		envConfig.NEXT_PUBLIC_DASHBOARD_URL,
+		envConfig.NEXT_PUBLIC_HARMONIA_API_URL,
+		envConfig.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
 		envConfig.VERCEL_BRANCH_URL,
 		envConfig.VERCEL_PROJECT_PRODUCTION_URL,
 	].filter((origin): origin is string => origin !== undefined);
@@ -45,12 +45,12 @@ export function createAuth(
 	const trustedOrigins = buildTrustedOrigins(
 		originConfig,
 		!!envConfig.VERCEL,
-		envConfig.NEXT_PUBLIC_ALLOWED_ORIGIN,
+		envConfig.NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN,
 	);
 
 	return betterAuth({
-		baseURL: envConfig.NEXT_PUBLIC_API_URL,
-		secret: envConfig.BETTER_AUTH_SECRET,
+		baseURL: envConfig.NEXT_PUBLIC_HARMONIA_API_URL,
+		secret: envConfig.HARMONIA_BETTER_AUTH_SECRET,
 		database: drizzleAdapter(database, {
 			provider: "pg",
 			schema,
@@ -75,7 +75,7 @@ export function createAuth(
 						spotify: {
 							clientId: spotifyClientId,
 							clientSecret: spotifyClientSecret,
-							redirectURI: `${envConfig.NEXT_PUBLIC_API_URL}/api/auth/callback/spotify`,
+							redirectURI: `${envConfig.NEXT_PUBLIC_HARMONIA_API_URL}/api/auth/callback/spotify`,
 							scope: [
 								"user-read-email",
 								"user-read-private",

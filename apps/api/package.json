@@ -19,6 +19,7 @@
 		"@orpc/zod": "catalog:",
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
+		"inngest": "^3.52.6",
 		"next": "catalog:",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3",

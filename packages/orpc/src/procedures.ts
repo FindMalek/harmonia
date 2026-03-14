@@ -24,7 +24,8 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 	const cronSecret =
 		context.headers?.get("X-Organize-Secret") ??
 		context.headers?.get("Authorization")?.replace(/^Bearer\s+/i, "");
-	const isCron = env.CRON_SECRET && cronSecret === env.CRON_SECRET;
+	const isCron =
+		env.HARMONIA_CRON_SECRET && cronSecret === env.HARMONIA_CRON_SECRET;
 	const isAuth = !!context.session?.user;
 
 	if (!isCron && !isAuth) {

@@ -28,8 +28,11 @@ export async function generatePlaylists(
 ): Promise<GenerateProgress> {
 	const stats: GenerateProgress = { playlists: 0 };
 
-	if (!env.GROQ_API_KEY) {
-		logger.warn({}, "No GROQ_API_KEY configured; skipping playlist generation");
+	if (!env.HARMONIA_GROQ_API_KEY) {
+		logger.warn(
+			{},
+			"No HARMONIA_GROQ_API_KEY configured; skipping playlist generation",
+		);
 		return stats;
 	}
 

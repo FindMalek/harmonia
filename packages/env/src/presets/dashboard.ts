@@ -10,7 +10,7 @@ import { dbEnv } from "./db";
 export const dashboardEnv = createEnv({
 	extends: [dbEnv],
 	server: {
-		SPOTIFY_CLIENT_ID: z.string().min(1),
+		HARMONIA_SPOTIFY_CLIENT_ID: z.string().min(1),
 		...observabilityModule.server,
 	},
 	client: {

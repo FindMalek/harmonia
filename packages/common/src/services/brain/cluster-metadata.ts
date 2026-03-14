@@ -17,10 +17,10 @@ import pRetry from "p-retry";
 import { clusterMetadataSchema } from "@harmonia/common/schemas";
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
-	if (!env.GROQ_API_KEY) {
+	if (!env.HARMONIA_GROQ_API_KEY) {
 		logger.warn(
-			{},
-			"No GROQ_API_KEY configured; skipping cluster metadata generation",
+			{ type: "cluster-metadata" },
+			"No HARMONIA_GROQ_API_KEY configured; skipping cluster metadata generation",
 		);
 		return 0;
 	}
