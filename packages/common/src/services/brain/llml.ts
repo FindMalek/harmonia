@@ -2,7 +2,7 @@ import { groq } from "@ai-sdk/groq";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml as formatPrompt } from "@zenbase/llml";
-import { generateText, Output, NoObjectGeneratedError } from "ai";
+import { NoObjectGeneratedError, Output, generateText } from "ai";
 import pRetry from "p-retry";
 
 import {
@@ -16,12 +16,14 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 		role: "You are an expert music analyst and curator with deep knowledge of genres, lyrical themes, production styles, and listener psychology. Your job is to analyze tracks and produce consistent, richly descriptive classifications that will power music discovery and playlist generation.",
 		task: "Analyze each track in the input batch and return one classification object per track. Preserve the exact input order—output array index N must correspond to input track index N. Copy each track's id as trackId exactly.",
 		outputFields: {
-			mood: `The primary emotional quality of the track. Choose ONE word or short phrase. Prefer from this vocabulary when applicable: melancholic, euphoric, nostalgic, bittersweet, somber, triumphant, brooding, wistful, hopeful, cynical, anxious, serene, cathartic, vulnerable, defiant, empowered, resigned, yearning, joyful. Energy: aggressive, intense, chaotic, meditative, laid-back, mellow, energetic, subdued, explosive, hypnotic, frenetic, calm, restless. Tone: dreamy, dark, playful, romantic, sensual, haunting, uplifting, gritty, ethereal, earthy, cosmic, raw. Use null only if purely instrumental with no inferable mood.`,
+			mood: "The primary emotional quality of the track. Choose ONE word or short phrase. Prefer from this vocabulary when applicable: melancholic, euphoric, nostalgic, bittersweet, somber, triumphant, brooding, wistful, hopeful, cynical, anxious, serene, cathartic, vulnerable, defiant, empowered, resigned, yearning, joyful. Energy: aggressive, intense, chaotic, meditative, laid-back, mellow, energetic, subdued, explosive, hypnotic, frenetic, calm, restless. Tone: dreamy, dark, playful, romantic, sensual, haunting, uplifting, gritty, ethereal, earthy, cosmic, raw. Use null only if purely instrumental with no inferable mood.",
 			secondaryMoods:
 				"Complementary moods (array, 0-3 items). Pick from same vocabulary. Avoid duplicating primary mood. Can be empty.",
-			themes: `Broad lyrical or conceptual themes (array, 0-5 items). Examples: love, loss, heartbreak, hope, despair, nostalgia, freedom, struggle, longing; self-discovery, identity, coming of age, growth, disillusionment, rebellion, escapism; relationships, friendship, family, community, isolation, belonging, protest, politics; spirituality, mortality, purpose, fate, transcendence, solitude; urban life, nature, travel, home, the road, night, the city.`,
-			topics: `Concrete subject matter (array, 0-5 items). Examples: relationships, breakups, romance, nightlife, partying, mental health, addiction, healing; politics, social commentary, inequality, activism, culture, fame; work, ambition, success, failure, money, lifestyle, sports, cars; introspection, depression, anxiety, empowerment, vulnerability, confidence; summer, winter, rain, ocean, city, countryside, road trip, club, bedroom.`,
-			vibe: `When and where someone would typically listen (array, 0-5 items). Be specific. Examples: night drive, rainy day, workout, gym, running, late night study, cooking, cleaning, morning coffee; beach day, pool party, backyard BBQ, rooftop sunset, cabin in the woods; crying in bed, dancing alone, pre-game, post-breakup, date night; summer road trip, winter cozy, city commute, forest walk, beach bonfire; party, chill hangout, focus work, meditation, getting ready, winding down.`,
+			themes:
+				"Broad lyrical or conceptual themes (array, 0-5 items). Examples: love, loss, heartbreak, hope, despair, nostalgia, freedom, struggle, longing; self-discovery, identity, coming of age, growth, disillusionment, rebellion, escapism; relationships, friendship, family, community, isolation, belonging, protest, politics; spirituality, mortality, purpose, fate, transcendence, solitude; urban life, nature, travel, home, the road, night, the city.",
+			topics:
+				"Concrete subject matter (array, 0-5 items). Examples: relationships, breakups, romance, nightlife, partying, mental health, addiction, healing; politics, social commentary, inequality, activism, culture, fame; work, ambition, success, failure, money, lifestyle, sports, cars; introspection, depression, anxiety, empowerment, vulnerability, confidence; summer, winter, rain, ocean, city, countryside, road trip, club, bedroom.",
+			vibe: "When and where someone would typically listen (array, 0-5 items). Be specific. Examples: night drive, rainy day, workout, gym, running, late night study, cooking, cleaning, morning coffee; beach day, pool party, backyard BBQ, rooftop sunset, cabin in the woods; crying in bed, dancing alone, pre-game, post-breakup, date night; summer road trip, winter cozy, city commute, forest walk, beach bonfire; party, chill hangout, focus work, meditation, getting ready, winding down.",
 			vocalType:
 				'Exactly one of: "instrumental" | "female vocal" | "male vocal" | "mixed" | "unknown". Use instrumental only when no sung or spoken vocals. Use mixed for male + female or featured artists.',
 			energyLevel:

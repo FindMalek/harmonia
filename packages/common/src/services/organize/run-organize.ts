@@ -1,3 +1,4 @@
+import type { OrganizeRunResult } from "@harmonia/common/schemas";
 import type {
 	ClassifyProgress,
 	ClusterProgress,
@@ -6,7 +7,13 @@ import type {
 	LyricsProgress,
 	SyncProgress,
 } from "@harmonia/common/types";
-import type { OrganizeRunResult } from "@harmonia/common/schemas";
+import { db } from "@harmonia/db";
+import {
+	type PipelineProgress,
+	pipelineRun,
+} from "@harmonia/db/schema/pipeline-run";
+import { logger } from "@harmonia/logger";
+import { eq } from "drizzle-orm";
 import {
 	classifyTracksBatch,
 	embedTracksBatch,
@@ -16,13 +23,6 @@ import {
 	runClustering,
 } from "../brain";
 import { fetchLyricsForPendingTracks, syncLibraryTracks } from "../music";
-import { db } from "@harmonia/db";
-import {
-	type PipelineProgress,
-	pipelineRun,
-} from "@harmonia/db/schema/pipeline-run";
-import { logger } from "@harmonia/logger";
-import { eq } from "drizzle-orm";
 
 async function updateRun(
 	runId: number,

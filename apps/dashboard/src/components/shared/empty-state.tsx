@@ -24,9 +24,9 @@ export function EmptyState({
 }: EmptyStateProps) {
 	const content = (
 		<>
-			<Icon className="text-muted-foreground size-10 shrink-0" />
+			<Icon className="size-10 shrink-0 text-muted-foreground" />
 			<div className="flex flex-col gap-1">
-				<p className="font-medium text-sm text-foreground">{title}</p>
+				<p className="font-medium text-foreground text-sm">{title}</p>
 				{description && (
 					<p className="text-muted-foreground text-xs">{description}</p>
 				)}

@@ -1,13 +1,13 @@
 "use client";
 
-import { Progress, Skeleton } from "@harmonia/ui";
 import {
 	usePipelineRuns,
 	usePipelineStats,
 } from "@/hooks/queries/use-pipeline";
 import { useLivePipelineProgress } from "@/hooks/use-live-pipeline-progress";
+import { Progress, Skeleton } from "@harmonia/ui";
 
-export function LibraryAnalysis() {
+export function DashboardLibraryAnalysis() {
 	const { data: runs } = usePipelineRuns();
 	const activeRun = runs?.find((r) => r.status === "running") ?? null;
 	const liveProgress = useLivePipelineProgress(activeRun?.id ?? null);
@@ -35,7 +35,7 @@ export function LibraryAnalysis() {
 
 	return (
 		<div className="space-y-4 ">
-			<h3 className="text-muted-foreground text-xs font-medium uppercase tracking-wider pb-4">
+			<h3 className="pb-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 				Library Analysis
 			</h3>
 

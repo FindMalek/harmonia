@@ -1,5 +1,5 @@
-import * as schema from "@harmonia/db/schema/auth";
 import { buildTrustedOrigins } from "@harmonia/common/utils/origin";
+import * as schema from "@harmonia/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";

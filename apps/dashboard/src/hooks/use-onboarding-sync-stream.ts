@@ -1,11 +1,11 @@
 "use client";
 
-import type { SyncPhase } from "@harmonia/common/types";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 import { client } from "@/lib/orpc";
 import { queryKeys } from "@/lib/query-keys";
 import { useOnboardingSync } from "@/stores/onboarding-sync";
+import type { SyncPhase } from "@harmonia/common/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 export type OnboardingSyncStream = {
 	progress: number;

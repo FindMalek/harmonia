@@ -1,10 +1,20 @@
-import { useEffect, useState } from "react";
 import { client } from "@/lib/orpc";
+import { useEffect, useState } from "react";
+
+export type PipelineProgressStage = {
+	processed?: number;
+	total?: number;
+	found?: number;
+	classified?: number;
+	embedded?: number;
+	clusters?: number;
+	playlists?: number;
+};
 
 export type PipelineStreamState = {
 	status: string | null;
 	currentStage: string | null;
-	progress: Record<string, any>;
+	progress: Record<string, PipelineProgressStage>;
 	startedAt: Date | null;
 	completedAt: Date | null;
 	error: string | null;
@@ -30,7 +40,8 @@ export function usePipelineStream(runId: number | null) {
 					...s,
 					status: run.status,
 					currentStage: run.currentStage,
-					progress: run.progress ?? {},
+					progress:
+						(run.progress as Record<string, PipelineProgressStage>) ?? {},
 					startedAt: run.startedAt ?? null,
 					completedAt: run.completedAt ?? null,
 					error: run.error ?? null,
@@ -43,7 +54,7 @@ export function usePipelineStream(runId: number | null) {
 		async function connectStream() {
 			try {
 				const stream = await client.pipeline.streamStatus(
-					{ id: runId! },
+					{ id: runId },
 					{
 						signal: abortController.signal,
 					},
@@ -57,7 +68,7 @@ export function usePipelineStream(runId: number | null) {
 							...s,
 							status: data.status,
 							currentStage: data.currentStage,
-							progress: data.progress as Record<string, any>,
+							progress: data.progress as Record<string, PipelineProgressStage>,
 							startedAt: data.startedAt,
 						}));
 					} else if (data.event === "completed") {
@@ -65,7 +76,7 @@ export function usePipelineStream(runId: number | null) {
 							...s,
 							status: "completed",
 							currentStage: null,
-							progress: data.progress as Record<string, any>,
+							progress: data.progress as Record<string, PipelineProgressStage>,
 							completedAt: data.completedAt,
 						}));
 						break;
@@ -74,7 +85,7 @@ export function usePipelineStream(runId: number | null) {
 							...s,
 							status: "failed",
 							currentStage: null,
-							progress: data.progress as Record<string, any>,
+							progress: data.progress as Record<string, PipelineProgressStage>,
 							completedAt: data.completedAt,
 							error: data.error ?? "Unknown error",
 						}));

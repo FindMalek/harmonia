@@ -1,5 +1,5 @@
-import { auth } from "@harmonia/core";
 import { getCorsHeaders } from "@/lib/cors";
+import { auth } from "@harmonia/core";
 import { toNextJsHandler } from "better-auth/next-js";
 import type { NextRequest } from "next/server";
 

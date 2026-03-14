@@ -1,8 +1,8 @@
-import type { ClassifyProgress } from "@harmonia/common/types";
 import type {
 	ClassificationResult,
 	TrackForClassification,
 } from "@harmonia/common/schemas";
+import type { ClassifyProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { track } from "@harmonia/db/schema/track";

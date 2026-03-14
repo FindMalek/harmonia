@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { authClient } from "@/lib/auth-client";
-import { Button, Icons } from "@harmonia/ui";
 import { env } from "@/lib/env";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { Button, Icons } from "@harmonia/ui";
+import { useState } from "react";
 
 export function SpotifySignInButton() {
 	const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,7 @@ export function SpotifySignInButton() {
 		<Button
 			type="button"
 			size="xl"
-			className="uppercase w-full"
+			className="w-full uppercase"
 			isLoading={isLoading}
 			disabled={isLoading}
 			onClick={handleSpotifySignIn}

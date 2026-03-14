@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { AuthClientForUI } from "../../types/auth";
+import { Button } from "../ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,7 +12,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 
 type UserMenuProps = {

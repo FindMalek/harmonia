@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import crypto from "node:crypto";
 import fs from "node:fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { neon } from "@neondatabase/serverless";
 /**
  * Inserts all migrations from meta/_journal.json into drizzle.__drizzle_migrations

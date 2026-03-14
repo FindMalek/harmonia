@@ -28,6 +28,7 @@ export {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
+export * from "./components/ui/drawer";
 export { Input } from "./components/ui/input";
 export { Label } from "./components/ui/label";
 export { Progress } from "./components/ui/progress";

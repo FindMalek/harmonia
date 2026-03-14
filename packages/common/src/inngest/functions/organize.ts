@@ -1,5 +1,5 @@
-import { inngest } from "../client";
 import { runOrganizeForUser } from "../../services/organize";
+import { inngest } from "../client";
 
 export const organizePipeline = inngest.createFunction(
 	{ id: "organize-pipeline" },

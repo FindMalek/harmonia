@@ -1,10 +1,10 @@
 "use client";
 
-import { cn, Icons } from "@harmonia/ui";
 import {
 	DASHBOARD_MOBILE_NAV_ITEMS,
 	DASHBOARD_ROUTES,
 } from "@harmonia/common/utils/routes";
+import { Icons, cn } from "@harmonia/ui";
 import Link, { type LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -38,7 +38,7 @@ export function MobileBottomNav() {
 								className={cn(
 									"flex flex-col items-center justify-center gap-1 text-xs transition-colors",
 									isActive
-										? "text-primary font-medium"
+										? "font-medium text-primary"
 										: "text-muted-foreground hover:text-foreground",
 								)}
 							>

@@ -1,7 +1,7 @@
 import {
+	type AuthEnvConfig,
 	auth as authSingleton,
 	initializeAuth,
-	type AuthEnvConfig,
 } from "@harmonia/auth";
 import { db as dbSingleton } from "@harmonia/db";
 import { apiEnv } from "@harmonia/env/presets/api";

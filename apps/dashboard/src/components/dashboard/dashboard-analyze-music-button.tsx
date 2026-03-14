@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, Icons } from "@harmonia/ui";
 import { useOrganize } from "@/hooks/mutations/use-organize";
+import { Button, Icons } from "@harmonia/ui";
 
-export function AnalyzeMusicButton() {
+export function DashboardAnalyzeMusicButton() {
 	const organizeMutation = useOrganize();
 	const isPending = organizeMutation.isPending;
 

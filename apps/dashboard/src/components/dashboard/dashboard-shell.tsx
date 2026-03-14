@@ -1,23 +1,23 @@
-import { AnalyzeMusicButton } from "./analyze-music-button";
-import { LibraryAnalysis } from "./library-analysis";
-import { AnalysisDrawer } from "./analysis-drawer";
-import { PipelineMiniIndicator } from "./pipeline-mini-indicator";
+import { DashboardAnalysisDrawer } from "./dashboard-analysis-drawer";
+import { DashboardAnalyzeMusicButton } from "./dashboard-analyze-music-button";
+import { DashboardLibraryAnalysis } from "./dashboard-library-analysis";
+import { DashboardPipelineMiniIndicator } from "./dashboard-pipeline-mini-indicator";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="mx-auto max-w-3xl space-y-10 pb-20 relative">
+		<div className="relative mx-auto max-w-3xl space-y-10 pb-20">
 			<div className="space-y-2">
 				<h1 className="font-semibold text-3xl">Welcome back</h1>
 			</div>
 
-			<AnalyzeMusicButton />
+			<DashboardAnalyzeMusicButton />
 
 			{children}
 
-			<LibraryAnalysis />
+			<DashboardLibraryAnalysis />
 
-			<AnalysisDrawer />
-			<PipelineMiniIndicator />
+			<DashboardAnalysisDrawer />
+			<DashboardPipelineMiniIndicator />
 		</div>
 	);
 }

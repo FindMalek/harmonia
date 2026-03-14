@@ -1,10 +1,10 @@
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc";
 import { queryKeys } from "@/lib/query-keys";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useDashboardUI } from "@/stores/dashboard-ui";
 
 function toastErrorWithCopy(msg: string) {
 	toast.error(msg, {

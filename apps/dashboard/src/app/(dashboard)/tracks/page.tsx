@@ -1,5 +1,9 @@
 "use client";
 
+import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { useTrackDetail, useTracks } from "@/hooks/queries/use-tracks";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import {
 	Badge,
 	Button,
@@ -19,11 +23,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@harmonia/ui";
-import { EmptyState } from "@/components/shared/empty-state";
-import { ErrorState } from "@/components/shared/error-state";
 import { Icons } from "@harmonia/ui";
-import { useTrackDetail, useTracks } from "@/hooks/queries/use-tracks";
-import { useDashboardUI } from "@/stores/dashboard-ui";
 import { useState } from "react";
 
 export default function TracksPage() {

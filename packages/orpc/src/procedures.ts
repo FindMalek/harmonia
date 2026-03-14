@@ -36,7 +36,7 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 		context: {
 			...context,
 			caller: (isCron ? "cron" : "user") as "cron" | "user",
-			userId: isAuth ? context.session!.user.id : undefined,
+			userId: isAuth ? context.session?.user.id : undefined,
 		},
 	});
 });

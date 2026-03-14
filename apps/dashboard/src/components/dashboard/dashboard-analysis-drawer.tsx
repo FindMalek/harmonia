@@ -1,14 +1,14 @@
 "use client";
 
-import { useDashboardUI } from "@/stores/dashboard-ui";
 import { usePipelineStream } from "@/hooks/use-pipeline-stream";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import {
 	Drawer,
 	DrawerContent,
-	DrawerHeader,
-	DrawerTitle,
 	DrawerDescription,
 	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
 } from "@harmonia/ui";
 import { Button } from "@harmonia/ui";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
@@ -23,7 +23,7 @@ const STAGES = [
 	{ id: "generate", label: "Generating playlists" },
 ] as const;
 
-export function AnalysisDrawer() {
+export function DashboardAnalysisDrawer() {
 	const { isAnalysisDrawerOpen, setIsAnalysisDrawerOpen, activeRunId } =
 		useDashboardUI();
 
@@ -45,11 +45,7 @@ export function AnalysisDrawer() {
 
 			// Add partial progress for current stage if available
 			const currentProgress = streamState.progress?.[streamState.currentStage!];
-			if (
-				currentProgress &&
-				currentProgress.total &&
-				currentProgress.total > 0
-			) {
+			if (currentProgress?.total && currentProgress.total > 0) {
 				const processed =
 					currentProgress.processed ||
 					currentProgress.found ||
@@ -136,13 +132,13 @@ export function AnalysisDrawer() {
 			onOpenChange={setIsAnalysisDrawerOpen}
 			direction="right"
 		>
-			<DrawerContent className="w-[400px] h-full rounded-none border-l bg-[#0a0a0a] text-white">
-				<div className="h-full flex flex-col p-6 overflow-y-auto">
+			<DrawerContent className="h-full w-[400px] rounded-none border-l bg-background text-foreground">
+				<div className="flex h-full flex-col overflow-y-auto p-6">
 					<DrawerHeader className="px-0 pt-0 pb-6 text-left">
-						<DrawerTitle className="text-2xl font-medium text-white mb-2">
+						<DrawerTitle className="mb-2 font-medium text-2xl">
 							Analysis Pipeline
 						</DrawerTitle>
-						<DrawerDescription className="text-gray-400 text-base">
+						<DrawerDescription className="text-base text-muted-foreground">
 							{streamState.status === "completed"
 								? "Analysis complete!"
 								: streamState.status === "failed"
@@ -151,25 +147,27 @@ export function AnalysisDrawer() {
 						</DrawerDescription>
 					</DrawerHeader>
 
-					<div className="space-y-8 flex-1">
+					<div className="flex-1 space-y-8">
 						{/* Overall Progress */}
 						<div className="space-y-4">
-							<div className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+							<div className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 								OVERALL PROGRESS
 							</div>
 
-							<div className="flex items-end justify-between border-b border-white/10 pb-6">
-								<div className="text-5xl font-medium">
+							<div className="flex items-end justify-between border-border border-b pb-6">
+								<div className="font-medium text-5xl">
 									{getProgressPercentage()}%
 								</div>
 								{streamState.status === "running" && (
-									<div className="text-sm text-gray-400 mb-1">Running...</div>
+									<div className="mb-1 text-muted-foreground text-sm">
+										Running...
+									</div>
 								)}
 							</div>
 
-							<div className="relative h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+							<div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
 								<div
-									className="absolute top-0 left-0 h-full bg-purple-500 transition-all duration-500 ease-out rounded-full"
+									className="absolute top-0 left-0 h-full rounded-full bg-primary transition-all duration-500 ease-out"
 									style={{ width: `${getProgressPercentage()}%` }}
 								/>
 							</div>
@@ -177,7 +175,7 @@ export function AnalysisDrawer() {
 
 						{/* Pipeline Status */}
 						<div className="space-y-4 pt-4">
-							<div className="text-xs font-semibold tracking-wider text-gray-500 uppercase border-b border-white/10 pb-4">
+							<div className="border-border border-b pb-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 								PIPELINE STATUS
 							</div>
 
@@ -197,10 +195,10 @@ export function AnalysisDrawer() {
 										>
 											<div className="mt-0.5">{getStageIcon(stage.id)}</div>
 											<div>
-												<div className="font-medium text-base mb-1">
+												<div className="mb-1 font-medium text-base">
 													{stage.label}
 												</div>
-												<div className="text-sm text-gray-400">
+												<div className="text-muted-foreground text-sm">
 													{getStageSubtext(stage.id)}
 												</div>
 											</div>
@@ -211,10 +209,10 @@ export function AnalysisDrawer() {
 						</div>
 					</div>
 
-					<DrawerFooter className="px-0 pb-0 pt-6 mt-auto">
+					<DrawerFooter className="mt-auto px-0 pt-6 pb-0">
 						<Button
 							variant="outline"
-							className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white text-base font-normal rounded-xl"
+							className="h-12 w-full rounded-xl border-border bg-secondary/50 font-normal text-base hover:bg-secondary"
 							onClick={() => setIsAnalysisDrawerOpen(false)}
 						>
 							{streamState.status === "completed" ||

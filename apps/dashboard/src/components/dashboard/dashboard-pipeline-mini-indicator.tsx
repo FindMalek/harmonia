@@ -1,11 +1,11 @@
 "use client";
 
-import { useDashboardUI } from "@/stores/dashboard-ui";
 import { usePipelineStream } from "@/hooks/use-pipeline-stream";
-import { Loader2 } from "lucide-react";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import { Button } from "@harmonia/ui";
+import { Loader2 } from "lucide-react";
 
-export function PipelineMiniIndicator() {
+export function DashboardPipelineMiniIndicator() {
 	const { activeRunId, isAnalysisDrawerOpen, setIsAnalysisDrawerOpen } =
 		useDashboardUI();
 
@@ -22,14 +22,14 @@ export function PipelineMiniIndicator() {
 	}
 
 	return (
-		<div className="fixed bottom-6 right-6 z-40">
+		<div className="fixed right-6 bottom-6 z-40">
 			<Button
 				variant="outline"
-				className="bg-[#0a0a0a] border-white/10 text-white shadow-lg hover:bg-white/5 flex items-center gap-3 rounded-full px-4 h-12"
+				className="flex h-12 items-center gap-3 rounded-full border-border bg-background px-4 text-foreground shadow-lg hover:bg-secondary"
 				onClick={() => setIsAnalysisDrawerOpen(true)}
 			>
-				<Loader2 className="h-4 w-4 animate-spin text-purple-500" />
-				<span className="text-sm font-medium">Analyzing Library...</span>
+				<Loader2 className="h-4 w-4 animate-spin text-primary" />
+				<span className="font-medium text-sm">Analyzing Library...</span>
 			</Button>
 		</div>
 	);

@@ -1,15 +1,15 @@
 import {
-	dehydrate,
 	HydrationBoundary,
 	QueryClient,
 	QueryClientProvider,
+	dehydrate,
 } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { LibraryOverviewSkeleton } from "@/components/dashboard/library-overview";
-import { LibraryStatsWrapper } from "@/components/dashboard/library-stats-wrapper";
+import { DashboardLibraryOverviewSkeleton } from "@/components/dashboard/dashboard-library-overview";
+import { DashboardLibraryStatsWrapper } from "@/components/dashboard/dashboard-library-stats-wrapper";
 import { getServerSession } from "@/lib/get-server-session";
 import { orpc } from "@/lib/orpc";
 
@@ -31,8 +31,8 @@ export default async function DashboardPage() {
 	return (
 		<HydrationBoundary state={dehydrate(queryClient)}>
 			<DashboardShell>
-				<Suspense fallback={<LibraryOverviewSkeleton />}>
-					<LibraryStatsWrapper userId={session.user.id} />
+				<Suspense fallback={<DashboardLibraryOverviewSkeleton />}>
+					<DashboardLibraryStatsWrapper userId={session.user.id} />
 				</Suspense>
 			</DashboardShell>
 		</HydrationBoundary>
