@@ -49,6 +49,29 @@ export const pipelineRouter = {
 			return run ?? null;
 		}),
 
+	cancel: protectedProcedure
+		.input(pipelineGetByIdInput)
+		.output(z.object({ cancelled: z.boolean() }))
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const updated = await db
+				.update(pipelineRun)
+				.set({
+					status: "cancelled",
+					completedAt: new Date(),
+				})
+				.where(
+					and(
+						eq(pipelineRun.id, input.id),
+						eq(pipelineRun.userId, userId),
+						eq(pipelineRun.status, "running"),
+					),
+				)
+				.returning({ id: pipelineRun.id });
+
+			return { cancelled: updated.length > 0 };
+		}),
+
 	streamStatus: protectedProcedure
 		.input(pipelineStreamStatusInput)
 		.output(eventIterator(pipelineStatusEventSchema))
@@ -99,6 +122,16 @@ export const pipelineRouter = {
 							runId: run.id,
 							progress: run.progress ?? {},
 							error: run.error,
+							completedAt: run.completedAt,
+						};
+						return;
+					}
+					if (run.status === "cancelled") {
+						yield {
+							event: "failed" as const,
+							runId: run.id,
+							progress: run.progress ?? {},
+							error: "Cancelled by user",
 							completedAt: run.completedAt,
 						};
 						return;

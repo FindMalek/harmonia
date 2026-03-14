@@ -1,19 +1,20 @@
 "use client";
 
+import { useCancelPipeline } from "@/hooks/mutations/use-cancel-pipeline";
 import { usePipelineStream } from "@/hooks/use-pipeline-stream";
+import { cn } from "@/lib/utils";
 import { useDashboardUI } from "@/stores/dashboard-ui";
 import {
+	Button,
 	Drawer,
 	DrawerContent,
-	DrawerHeader,
-	DrawerTitle,
-	DrawerDescription,
 	DrawerFooter,
+	DrawerHeader,
 	Icons,
-	Button,
+	Progress,
+	ScrollArea,
 } from "@harmonia/ui";
 
-// The pipeline stages in order
 const STAGES = [
 	{ id: "sync", label: "Syncing library" },
 	{ id: "lyrics", label: "Collecting lyrics" },
@@ -28,6 +29,7 @@ export function DashboardAnalysisDrawer() {
 		useDashboardUI();
 
 	const streamState = usePipelineStream(activeRunId);
+	const cancelPipeline = useCancelPipeline();
 
 	// Calculate overall progress percentage
 	const getProgressPercentage = () => {
@@ -44,17 +46,20 @@ export function DashboardAnalysisDrawer() {
 			percentage = (stageIndex / STAGES.length) * 100;
 
 			// Add partial progress for current stage if available
-			const currentProgress = streamState.progress?.[streamState.currentStage!];
-			if (currentProgress?.total && currentProgress.total > 0) {
-				const processed =
-					currentProgress.processed ||
-					currentProgress.found ||
-					currentProgress.classified ||
-					currentProgress.embedded ||
-					currentProgress.clusters ||
-					0;
-				const stageWeight = 100 / STAGES.length;
-				percentage += (processed / currentProgress.total) * stageWeight;
+			if (streamState.currentStage) {
+				const currentProgress =
+					streamState.progress?.[streamState.currentStage];
+				if (currentProgress?.total && currentProgress.total > 0) {
+					const processed =
+						currentProgress.processed ||
+						currentProgress.found ||
+						currentProgress.classified ||
+						currentProgress.embedded ||
+						currentProgress.clusters ||
+						0;
+					const stageWeight = 100 / STAGES.length;
+					percentage += (processed / currentProgress.total) * stageWeight;
+				}
 			}
 		}
 
@@ -128,87 +133,95 @@ export function DashboardAnalysisDrawer() {
 
 	return (
 		<Drawer open={isAnalysisDrawerOpen} onOpenChange={setIsAnalysisDrawerOpen}>
-			<DrawerContent className="h-full w-[400px] rounded-none border-l bg-background text-foreground">
-				<div className="flex h-full flex-col overflow-y-auto p-6">
-					<DrawerHeader className="px-0 pt-0 pb-6 text-left">
-						<DrawerTitle className="mb-2 font-medium text-2xl">
-							Analysis Pipeline
-						</DrawerTitle>
-						<DrawerDescription className="text-base text-muted-foreground">
-							{streamState.status === "completed"
-								? "Analysis complete!"
-								: streamState.status === "failed"
-									? "Analysis failed."
-									: "Processing your Spotify library..."}
-						</DrawerDescription>
-					</DrawerHeader>
+			<DrawerContent className="flex h-full max-h-[80vh] flex-col bg-background text-foreground">
+				<DrawerHeader className="server-only hidden" />
 
-					<div className="flex-1 space-y-8">
-						{/* Overall Progress */}
-						<div className="space-y-4">
-							<div className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-								OVERALL PROGRESS
-							</div>
-
-							<div className="flex items-end justify-between border-border border-b pb-6">
-								<div className="font-medium text-5xl">
-									{getProgressPercentage()}%
+				<div className="flex min-h-0 flex-1 flex-col">
+					<div className="min-h-0 flex-1 overflow-auto px-6 pt-4">
+						<div className="flex flex-col space-y-8">
+							<div className="space-y-4">
+								<div className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+									OVERALL PROGRESS
 								</div>
-								{streamState.status === "running" && (
-									<div className="mb-1 text-muted-foreground text-sm">
-										Running...
-									</div>
-								)}
-							</div>
 
-							<div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-								<div
-									className="absolute top-0 left-0 h-full rounded-full bg-primary transition-all duration-500 ease-out"
-									style={{ width: `${getProgressPercentage()}%` }}
+								<div className="flex items-end justify-between pb-2">
+									<div className="font-medium text-5xl">
+										{getProgressPercentage()}%
+									</div>
+									{streamState.status === "running" && (
+										<div className="mb-1 text-muted-foreground text-sm">
+											Running...
+										</div>
+									)}
+								</div>
+
+								<Progress
+									value={getProgressPercentage()}
+									className="h-1.5 w-full"
 								/>
 							</div>
-						</div>
 
-						{/* Pipeline Status */}
-						<div className="space-y-4 pt-4">
-							<div className="border-border border-b pb-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-								PIPELINE STATUS
-							</div>
+							<div className="space-y-4 pt-4">
+								<div className="border-border border-b pb-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+									PIPELINE STATUS
+								</div>
 
-							<div className="space-y-6 pt-2">
-								{STAGES.map((stage) => {
-									const isCurrent = streamState.currentStage === stage.id;
-									const isPast =
-										STAGES.findIndex((s) => s.id === stage.id) <
-										STAGES.findIndex((s) => s.id === streamState.currentStage);
-									const isCompleted =
-										streamState.status === "completed" || isPast;
+								<ScrollArea className="space-y-6 pt-2">
+									{STAGES.map((stage) => {
+										const isCurrent = streamState.currentStage === stage.id;
+										const isPast =
+											STAGES.findIndex((s) => s.id === stage.id) <
+											STAGES.findIndex(
+												(s) => s.id === streamState.currentStage,
+											);
+										const isCompleted =
+											streamState.status === "completed" || isPast;
 
-									return (
-										<div
-											key={stage.id}
-											className={`flex items-start gap-4 transition-opacity duration-300 ${isCurrent || isCompleted ? "opacity-100" : "opacity-40"}`}
-										>
-											<div className="mt-0.5">{getStageIcon(stage.id)}</div>
-											<div>
-												<div className="mb-1 font-medium text-base">
-													{stage.label}
-												</div>
-												<div className="text-muted-foreground text-sm">
-													{getStageSubtext(stage.id)}
+										return (
+											<div
+												key={stage.id}
+												className={cn(
+													"flex items-start gap-4 pb-4 transition-opacity duration-300",
+													isCurrent || isCompleted
+														? "opacity-100"
+														: "opacity-40",
+												)}
+											>
+												<div className="mt-0.5">{getStageIcon(stage.id)}</div>
+												<div>
+													<div className="mb-1 font-medium text-base">
+														{stage.label}
+													</div>
+													<div className="text-muted-foreground text-sm">
+														{getStageSubtext(stage.id)}
+													</div>
 												</div>
 											</div>
-										</div>
-									);
-								})}
+										);
+									})}
+								</ScrollArea>
 							</div>
 						</div>
 					</div>
 
-					<DrawerFooter className="mt-auto px-0 pt-6 pb-0">
+					<DrawerFooter className="flex shrink-0 flex-col gap-2 border-t bg-background px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+						{streamState.status === "running" && (
+							<Button
+								variant="destructive"
+								size="xl"
+								disabled={cancelPipeline.isPending}
+								onClick={() => {
+									if (activeRunId != null) {
+										cancelPipeline.mutate({ id: activeRunId });
+									}
+								}}
+							>
+								{cancelPipeline.isPending ? "Cancelling…" : "Cancel analysis"}
+							</Button>
+						)}
 						<Button
 							variant="outline"
-							className="h-12 w-full rounded-xl border-border bg-secondary/50 font-normal text-base hover:bg-secondary"
+							size="xl"
 							onClick={() => setIsAnalysisDrawerOpen(false)}
 						>
 							{streamState.status === "completed" ||

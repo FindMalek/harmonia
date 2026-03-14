@@ -13,7 +13,24 @@ import {
 	pipelineRun,
 } from "@harmonia/db/schema/pipeline-run";
 import { logger } from "@harmonia/logger";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+
+export class PipelineCancelledError extends Error {
+	constructor() {
+		super("Pipeline run was cancelled");
+		this.name = "PipelineCancelledError";
+	}
+}
+
+async function checkCancelled(runId: number, userId: string): Promise<void> {
+	const [run] = await db
+		.select({ status: pipelineRun.status })
+		.from(pipelineRun)
+		.where(and(eq(pipelineRun.id, runId), eq(pipelineRun.userId, userId)));
+	if (run?.status === "cancelled") {
+		throw new PipelineCancelledError();
+	}
+}
 import {
 	classifyTracksBatch,
 	embedTracksBatch,
@@ -73,6 +90,7 @@ export async function runOrganizeForUser({
 	const progress: PipelineProgress = {};
 
 	try {
+		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "sync" });
 		const syncResult = await syncLibraryTracks(
 			userId,
@@ -84,6 +102,7 @@ export async function runOrganizeForUser({
 		progress.sync = syncResult;
 		await updateRun(runId, { progress });
 
+		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "lyrics" });
 		const lyricsResult = await fetchLyricsForPendingTracks(
 			userId,
@@ -95,6 +114,7 @@ export async function runOrganizeForUser({
 		progress.lyrics = lyricsResult;
 		await updateRun(runId, { progress });
 
+		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "classify" });
 		const classifyResult = await classifyTracksBatch(
 			userId,
@@ -106,6 +126,7 @@ export async function runOrganizeForUser({
 		progress.classify = classifyResult;
 		await updateRun(runId, { progress });
 
+		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "embed" });
 		const embedResult = await embedTracksBatch(
 			userId,
@@ -117,6 +138,7 @@ export async function runOrganizeForUser({
 		progress.embed = embedResult;
 		await updateRun(runId, { progress });
 
+		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "cluster" });
 		const clusterResult = await runClustering(
 			userId,
@@ -128,6 +150,7 @@ export async function runOrganizeForUser({
 		progress.cluster = clusterResult;
 		await updateRun(runId, { progress });
 
+		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "generate" });
 		await generateClusterMetadata(userId);
 		const generateResult = await generatePlaylists(
@@ -153,6 +176,15 @@ export async function runOrganizeForUser({
 
 		return { userId, runId, status: "completed" };
 	} catch (err: unknown) {
+		if (err instanceof PipelineCancelledError) {
+			await updateRun(runId, {
+				status: "cancelled",
+				completedAt: new Date(),
+			});
+			logger.info({ userId, runId }, "Organize pipeline cancelled by user");
+			return { userId, runId, status: "cancelled" as const };
+		}
+
 		const error = err instanceof Error ? err : new Error(String(err));
 		const cause =
 			error.cause ??

@@ -1,7 +1,6 @@
 import { DashboardAnalysisDrawer } from "./dashboard-analysis-drawer";
 import { DashboardAnalyzeMusicButton } from "./dashboard-analyze-music-button";
 import { DashboardLibraryAnalysis } from "./dashboard-library-analysis";
-import { DashboardPipelineMiniIndicator } from "./dashboard-pipeline-mini-indicator";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
 	return (
@@ -17,7 +16,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 			<DashboardLibraryAnalysis />
 
 			<DashboardAnalysisDrawer />
-			<DashboardPipelineMiniIndicator />
 		</div>
 	);
 }
