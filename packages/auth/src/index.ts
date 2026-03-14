@@ -55,6 +55,16 @@ export function createAuth(
 			provider: "pg",
 			schema,
 		}),
+		user: {
+			additionalFields: {
+				hasCompletedOnboarding: {
+					type: "boolean",
+					required: false,
+					defaultValue: false,
+					input: false,
+				},
+			},
+		},
 		trustedOrigins,
 		emailAndPassword: {
 			enabled: false,
