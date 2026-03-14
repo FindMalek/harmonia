@@ -7,8 +7,8 @@ import pLimit from "p-limit";
 
 import { getLyricsFromLRCLib } from "./lrclib-client";
 
-const LYRICS_BATCH_SIZE = 200; 
-const LYRICS_CONCURRENCY = 20; 
+const LYRICS_BATCH_SIZE = 200;
+const LYRICS_CONCURRENCY = 20;
 
 export async function fetchLyricsForPendingTracks(
 	userId: string,
@@ -30,8 +30,6 @@ export async function fetchLyricsForPendingTracks(
 				and(
 					eq(track.userId, userId),
 					isNotNull(track.genreDomainId),
-					isNotNull(track.llmClassifiedAt),
-					isNotNull(track.embeddingGeneratedAt),
 					or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
 					isNull(track.lyrics),
 				),
@@ -117,9 +115,16 @@ export async function fetchLyricsForPendingTracks(
 
 		// Log batch performance metrics
 		const batchDuration = Date.now() - batchStartTime;
-		const throughput = Math.round(pendingTracks.length / (batchDuration / 1000));
+		const throughput = Math.round(
+			pendingTracks.length / (batchDuration / 1000),
+		);
 		logger.info(
-			{ userId, batchSize: pendingTracks.length, batchDuration: `${batchDuration}ms`, throughput: `${throughput}/s` },
+			{
+				userId,
+				batchSize: pendingTracks.length,
+				batchDuration: `${batchDuration}ms`,
+				throughput: `${throughput}/s`,
+			},
 			"Completed lyrics batch processing",
 		);
 

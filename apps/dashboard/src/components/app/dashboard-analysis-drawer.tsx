@@ -16,9 +16,9 @@ import {
 // The pipeline stages in order
 const STAGES = [
 	{ id: "sync", label: "Syncing library" },
+	{ id: "lyrics", label: "Collecting lyrics" },
 	{ id: "classify", label: "AI classification" },
 	{ id: "embed", label: "Generating embeddings" },
-	{ id: "lyrics", label: "Collecting lyrics" },
 	{ id: "cluster", label: "Clustering tracks" },
 	{ id: "generate", label: "Generating playlists" },
 ] as const;

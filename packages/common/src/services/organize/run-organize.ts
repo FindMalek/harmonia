@@ -84,6 +84,17 @@ export async function runOrganizeForUser({
 		progress.sync = syncResult;
 		await updateRun(runId, { progress });
 
+		await updateRun(runId, { currentStage: "lyrics" });
+		const lyricsResult = await fetchLyricsForPendingTracks(
+			userId,
+			async (p: LyricsProgress) => {
+				progress.lyrics = p;
+				await updateRun(runId, { progress });
+			},
+		);
+		progress.lyrics = lyricsResult;
+		await updateRun(runId, { progress });
+
 		await updateRun(runId, { currentStage: "classify" });
 		const classifyResult = await classifyTracksBatch(
 			userId,
@@ -104,17 +115,6 @@ export async function runOrganizeForUser({
 			},
 		);
 		progress.embed = embedResult;
-		await updateRun(runId, { progress });
-
-		await updateRun(runId, { currentStage: "lyrics" });
-		const lyricsResult = await fetchLyricsForPendingTracks(
-			userId,
-			async (p: LyricsProgress) => {
-				progress.lyrics = p;
-				await updateRun(runId, { progress });
-			},
-		);
-		progress.lyrics = lyricsResult;
 		await updateRun(runId, { progress });
 
 		await updateRun(runId, { currentStage: "cluster" });
