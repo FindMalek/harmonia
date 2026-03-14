@@ -52,6 +52,8 @@ export function usePipelineStream(runId: number | null) {
 		const abortController = new AbortController();
 
 		async function connectStream() {
+			if (!runId) return;
+
 			try {
 				const stream = await client.pipeline.streamStatus(
 					{ id: runId },

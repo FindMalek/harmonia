@@ -5,13 +5,13 @@ import { useDashboardUI } from "@/stores/dashboard-ui";
 import {
 	Drawer,
 	DrawerContent,
-	DrawerDescription,
-	DrawerFooter,
 	DrawerHeader,
 	DrawerTitle,
+	DrawerDescription,
+	DrawerFooter,
+	Icons,
+	Button,
 } from "@harmonia/ui";
-import { Button } from "@harmonia/ui";
-import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 // The pipeline stages in order
 const STAGES = [
@@ -109,7 +109,7 @@ export function DashboardAnalysisDrawer() {
 
 	const getStageIcon = (stageId: string) => {
 		if (streamState.status === "completed") {
-			return <CheckCircle2 className="h-5 w-5 text-white" />;
+			return <Icons.checkCircle className="h-5 w-5 text-white" />;
 		}
 
 		const stageIndex = STAGES.findIndex((s) => s.id === stageId);
@@ -118,20 +118,16 @@ export function DashboardAnalysisDrawer() {
 		);
 
 		if (stageIndex < currentIndex) {
-			return <CheckCircle2 className="h-5 w-5 text-white" />;
+			return <Icons.checkCircle className="h-5 w-5 text-white" />;
 		}
 		if (stageIndex === currentIndex) {
-			return <Loader2 className="h-5 w-5 animate-spin text-purple-500" />;
+			return <Icons.spinner className="h-5 w-5 animate-spin text-primary" />;
 		}
-		return <Circle className="h-5 w-5 text-muted-foreground" />;
+		return <Icons.circle className="h-5 w-5 text-muted-foreground" />;
 	};
 
 	return (
-		<Drawer
-			open={isAnalysisDrawerOpen}
-			onOpenChange={setIsAnalysisDrawerOpen}
-			direction="right"
-		>
+		<Drawer open={isAnalysisDrawerOpen} onOpenChange={setIsAnalysisDrawerOpen}>
 			<DrawerContent className="h-full w-[400px] rounded-none border-l bg-background text-foreground">
 				<div className="flex h-full flex-col overflow-y-auto p-6">
 					<DrawerHeader className="px-0 pt-0 pb-6 text-left">

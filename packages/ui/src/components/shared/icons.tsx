@@ -96,4 +96,8 @@ export const Icons = {
 	settings: IconSettings,
 	chart: IconChartBar,
 	home: IconLayoutBoard,
+
+	// Loading / pipeline states
+	checkCircle: IconCircleCheck,
+	circle: IconDisc, // using disc as circle for now
 } as const;
