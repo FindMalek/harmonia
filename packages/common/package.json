@@ -13,6 +13,27 @@
 		"./trigger/tasks/organize": {
 			"default": "./src/trigger/tasks/organize.ts"
 		},
+		"./trigger/tasks/stages/sync": {
+			"default": "./src/trigger/tasks/stages/sync.ts"
+		},
+		"./trigger/tasks/stages/lyrics": {
+			"default": "./src/trigger/tasks/stages/lyrics.ts"
+		},
+		"./trigger/tasks/stages/classify": {
+			"default": "./src/trigger/tasks/stages/classify.ts"
+		},
+		"./trigger/tasks/stages/embed": {
+			"default": "./src/trigger/tasks/stages/embed.ts"
+		},
+		"./trigger/tasks/stages/cluster": {
+			"default": "./src/trigger/tasks/stages/cluster.ts"
+		},
+		"./trigger/tasks/stages/generate": {
+			"default": "./src/trigger/tasks/stages/generate.ts"
+		},
+		"./trigger/tasks/stages/match": {
+			"default": "./src/trigger/tasks/stages/match.ts"
+		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
 		},
