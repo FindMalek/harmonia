@@ -1,0 +1,63 @@
+---
+description: Trigger.dev v4 task patterns, stage structure, and pipeline orchestration
+globs:
+  - "**/trigger/**"
+  - "apps/api/trigger.config.ts"
+alwaysApply: false
+---
+
+# Trigger.dev Patterns
+
+## Task structure
+
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { checkCancelled, updateRun, updateStageProgress } from "../../../services/organize";
+
+export const myStageTask = task({
+  id: "organize-stage-my-stage",       // must be unique, kebab-case
+  retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
+  run: async ({ userId, runId }: { userId: string; runId: number }) => {
+    await checkCancelled(runId, userId);                    // respect cancellation
+    await updateRun(runId, { currentStage: "my-stage" });  // update DB stage label
+    return await myServiceFunction(userId, async (p) => {
+      await updateStageProgress(runId, "my-stage", p);     // JSONB merge progress
+    });
+  },
+});
+```
+
+## Pipeline orchestration (parent task)
+
+The parent `organize-pipeline` task calls each stage sequentially with `.triggerAndWait()`:
+
+```typescript
+await syncStageTask.triggerAndWait({ userId, runId });
+await lyricsStageTask.triggerAndWait({ userId, runId });
+// ...
+```
+
+Each stage is a separate run in the Trigger.dev dashboard with its own logs and retry state.
+
+## Adding a new stage
+
+1. Create `packages/common/src/trigger/tasks/stages/my-stage.ts`
+2. Export from `apps/api/src/trigger/organize.ts` (CLI discovery)
+3. Add export to `packages/common/package.json` exports map
+4. Add `.triggerAndWait()` call in `packages/common/src/trigger/tasks/organize.ts`
+
+## Progress writes
+
+Use `updateStageProgress` (not `updateRun`) for in-progress updates from within a stage task. This uses the Postgres `||` JSONB merge so concurrent stages never overwrite each other's keys.
+
+## Running locally
+
+```bash
+pnpm trigger:dev   # reads HARMONIA_TRIGGER_* from .env, maps to TRIGGER_* for the CLI
+```
+
+The worker registers 8 tasks: `organize-pipeline` + 7 stage tasks (`organize-stage-sync`, `organize-stage-lyrics`, `organize-stage-classify`, `organize-stage-embed`, `organize-stage-cluster`, `organize-stage-generate`, `organize-stage-match`).
+
+## SDK version
+
+Using `@trigger.dev/sdk@^4.4.4`. Always use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })` inside tasks — the worker process only has `HARMONIA_GROQ_API_KEY`, not `GROQ_API_KEY`.
