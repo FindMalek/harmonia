@@ -138,6 +138,11 @@ export async function generatePlaylists(
 						},
 					);
 
+					const tags = (
+						meta?.topVibes?.slice(0, 3) ??
+						[...new Set(vibes)].slice(0, 3)
+					).map((t) => t.toLowerCase());
+
 					const [inserted] = await db
 						.insert(playlist)
 						.values({
@@ -149,6 +154,7 @@ export async function generatePlaylists(
 							taxonomy: generated.taxonomy,
 							genreDomainId: c.genreDomainId,
 							coverColor: generated.coverColor,
+							tags: tags.length > 0 ? tags : null,
 							trackCount: trackRows.length,
 							isGenerated: true,
 							updatedAt: new Date(),

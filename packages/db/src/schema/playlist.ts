@@ -31,6 +31,7 @@ export const playlist = pgTable(
 		genreDomainId: integer("genre_domain_id").references(() => genreDomain.id),
 		energyCurve: jsonb("energy_curve").$type<number[]>(),
 		coverColor: text("cover_color"),
+		tags: text("tags").array(),
 		trackCount: integer("track_count").default(0).notNull(),
 		isGenerated: boolean("is_generated").default(false).notNull(),
 		spotifyPlaylistId: text("spotify_playlist_id"),
