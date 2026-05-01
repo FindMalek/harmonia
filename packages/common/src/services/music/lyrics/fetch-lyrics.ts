@@ -2,7 +2,7 @@ import type { LyricsProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNotNull, isNull, or } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import { getLyricsFromLRCLib } from "./lrclib-client";
@@ -29,7 +29,6 @@ export async function fetchLyricsForPendingTracks(
 			.where(
 				and(
 					eq(track.userId, userId),
-					isNotNull(track.genreDomainId),
 					or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
 					isNull(track.lyrics),
 				),
