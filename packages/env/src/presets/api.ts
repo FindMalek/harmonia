@@ -1,6 +1,11 @@
 import { createEnv } from "@t3-oss/env-core";
 import { baseEnv } from "../base";
-import { authModule, observabilityModule, urlsModule } from "../modules";
+import {
+	authModule,
+	observabilityModule,
+	triggerModule,
+	urlsModule,
+} from "../modules";
 import { createServerRuntimeEnv } from "../utils/runtime-env";
 import { dbEnv } from "./db";
 
@@ -12,6 +17,7 @@ export const apiEnv = createEnv({
 	server: {
 		...authModule.server,
 		...observabilityModule.server,
+		...triggerModule.server,
 	},
 	client: {
 		...urlsModule.client,

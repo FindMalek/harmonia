@@ -1,4 +1,4 @@
-import { inngest } from "@harmonia/common/inngest/client";
+import { organizePipeline } from "@harmonia/common/trigger/tasks/organize";
 import {
 	organizeRunInput,
 	organizeRunOutputSchema,
@@ -55,9 +55,9 @@ export const organizeRouter = {
 
 					if (!run) throw new Error("Failed to create run record");
 
-					await inngest.send({
-						name: "organize/requested",
-						data: { userId: context.userId, runId: run.id },
+					await organizePipeline.trigger({
+						userId: context.userId,
+						runId: run.id,
 					});
 
 					return {
@@ -97,9 +97,9 @@ export const organizeRouter = {
 
 					if (!run) throw new Error("Failed to create run record");
 
-					await inngest.send({
-						name: "organize/requested",
-						data: { userId: id, runId: run.id },
+					await organizePipeline.trigger({
+						userId: id,
+						runId: run.id,
 					});
 
 					results.push({ userId: id, runId: run.id, status: "completed" });

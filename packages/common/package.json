@@ -10,11 +10,8 @@
 		".": {
 			"default": "./src/index.ts"
 		},
-		"./inngest/client": {
-			"default": "./src/inngest/client.ts"
-		},
-		"./inngest/functions/organize": {
-			"default": "./src/inngest/functions/organize.ts"
+		"./trigger/tasks/organize": {
+			"default": "./src/trigger/tasks/organize.ts"
 		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
@@ -47,7 +44,7 @@
 		"ai": "^6.0.116",
 		"density-clustering": "^1.3.0",
 		"drizzle-orm": "catalog:",
-		"inngest": "^3.52.6",
+		"@trigger.dev/sdk": "catalog:",
 		"p-limit": "^7.3.0",
 		"p-retry": "^7.1.1",
 		"zod": "catalog:"
