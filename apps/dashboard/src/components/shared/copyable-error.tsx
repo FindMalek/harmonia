@@ -35,7 +35,7 @@ export function CopyableError({
 				className,
 			)}
 		>
-			<pre className="min-w-0 flex-1 overflow-auto whitespace-pre-wrap wrap-break-word font-sans text-xs">
+			<pre className="wrap-break-word min-w-0 flex-1 overflow-auto whitespace-pre-wrap font-sans text-xs">
 				{text}
 			</pre>
 			<Button

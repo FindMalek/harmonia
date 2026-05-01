@@ -1,8 +1,8 @@
 "use client";
 
-import { Icons, Progress } from "@harmonia/ui";
-import { useOnboardingSync } from "@/stores/onboarding-sync";
 import { useOnboardingSyncStream } from "@/hooks/use-onboarding-sync-stream";
+import { useOnboardingSync } from "@/stores/onboarding-sync";
+import { Icons, Progress } from "@harmonia/ui";
 
 export default function SyncPage() {
 	const isComplete = useOnboardingSync((state) => state.isComplete);
@@ -47,23 +47,23 @@ export default function SyncPage() {
 	};
 
 	return (
-		<div className="flex flex-col w-full max-w-md gap-8">
+		<div className="flex w-full max-w-md flex-col gap-8">
 			<div className="space-y-2">
-				<h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground">
+				<h1 className="font-semibold text-3xl text-foreground leading-tight tracking-tight">
 					Importing your Spotify library
 				</h1>
-				<p className="text-muted-foreground text-base">
+				<p className="text-base text-muted-foreground">
 					Harmonia is collecting your music so it can begin analyzing your
 					library.
 				</p>
 			</div>
 
 			<div className="space-y-3">
-				<div className="flex justify-between items-end">
-					<span className="text-xs font-semibold tracking-widest uppercase text-foreground">
+				<div className="flex items-end justify-between">
+					<span className="font-semibold text-foreground text-xs uppercase tracking-widest">
 						Overall Progress
 					</span>
-					<span className="text-sm font-medium text-foreground">
+					<span className="font-medium text-foreground text-sm">
 						{isIdle ? "0%" : `${progress}%`}
 					</span>
 				</div>
@@ -71,25 +71,25 @@ export default function SyncPage() {
 			</div>
 
 			<div className="flex flex-col gap-3">
-				<div className="flex items-center gap-4 p-4 rounded-md bg-card border border-border/50">
+				<div className="flex items-center gap-4 rounded-md border border-border/50 bg-card p-4">
 					{renderStepIcon(1)}
-					<span className="text-sm font-medium">Collecting liked songs</span>
+					<span className="font-medium text-sm">Collecting liked songs</span>
 				</div>
 
-				<div className="flex items-center gap-4 p-4 rounded-md bg-card border border-border/50">
+				<div className="flex items-center gap-4 rounded-md border border-border/50 bg-card p-4">
 					{renderStepIcon(2)}
-					<span className="text-sm font-medium">Collecting playlists</span>
+					<span className="font-medium text-sm">Collecting playlists</span>
 				</div>
 
-				<div className="flex items-center gap-4 p-4 rounded-md bg-card border border-border/50">
+				<div className="flex items-center gap-4 rounded-md border border-border/50 bg-card p-4">
 					{renderStepIcon(3)}
-					<span className="text-sm font-medium">
+					<span className="font-medium text-sm">
 						Preparing songs for analysis
 					</span>
 				</div>
 			</div>
 
-			<p className="text-xs text-center text-muted-foreground mt-4">
+			<p className="mt-4 text-center text-muted-foreground text-xs">
 				This may take a moment depending on the size of your library.
 			</p>
 		</div>

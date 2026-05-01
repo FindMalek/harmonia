@@ -2,8 +2,8 @@
 
 import type { ReactNode } from "react";
 
-import { ModeToggle } from "./shared/mode-toggle";
 import type { AuthClientForUI } from "../types/auth";
+import { ModeToggle } from "./shared/mode-toggle";
 import { UserMenu } from "./shared/user-menu";
 
 export type HeaderLink = {

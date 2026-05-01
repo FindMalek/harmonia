@@ -2,13 +2,13 @@ import type { LyricsProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import { getLyricsFromLRCLib } from "./lrclib-client";
 
-const LYRICS_BATCH_SIZE = 50;
-const LYRICS_CONCURRENCY = 5;
+const LYRICS_BATCH_SIZE = 200;
+const LYRICS_CONCURRENCY = 20;
 
 export async function fetchLyricsForPendingTracks(
 	userId: string,
@@ -29,7 +29,9 @@ export async function fetchLyricsForPendingTracks(
 			.where(
 				and(
 					eq(track.userId, userId),
+					isNotNull(track.genreDomainId),
 					or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
+					isNull(track.lyrics),
 				),
 			)
 			.limit(LYRICS_BATCH_SIZE);
@@ -44,6 +46,8 @@ export async function fetchLyricsForPendingTracks(
 			{ userId, batchSize: pendingTracks.length, processed: stats.processed },
 			"Fetching lyrics batch from LRCLib",
 		);
+
+		const batchStartTime = Date.now();
 
 		const tasks = pendingTracks.map((t) =>
 			limit(async () => {
@@ -108,6 +112,21 @@ export async function fetchLyricsForPendingTracks(
 		);
 
 		await Promise.all(tasks);
+
+		// Log batch performance metrics
+		const batchDuration = Date.now() - batchStartTime;
+		const throughput = Math.round(
+			pendingTracks.length / (batchDuration / 1000),
+		);
+		logger.info(
+			{
+				userId,
+				batchSize: pendingTracks.length,
+				batchDuration: `${batchDuration}ms`,
+				throughput: `${throughput}/s`,
+			},
+			"Completed lyrics batch processing",
+		);
 
 		if (onProgress) {
 			await onProgress(stats);

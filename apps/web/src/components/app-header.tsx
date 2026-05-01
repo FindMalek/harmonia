@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Header } from "@harmonia/ui";
-import { env } from "@harmonia/env/web";
 import { authClient } from "@/lib/auth-client";
+import { env } from "@harmonia/env/web";
+import { Header } from "@harmonia/ui";
 
 function NavLink({
 	href,
@@ -25,7 +25,7 @@ function SignInLink({
 	);
 }
 
-const dashboardUrl = env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "");
+const dashboardUrl = env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(/\/$/, "");
 
 export default function AppHeader() {
 	const router = useRouter();

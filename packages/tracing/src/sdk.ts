@@ -17,10 +17,10 @@ import {
 } from "@opentelemetry/semantic-conventions";
 import { getInstrumentations } from "./instrumentations";
 import {
+	type OTLPExporterConfig,
 	createOTLPLogExporter,
 	createOTLPMetricExporter,
 	createOTLPTraceExporter,
-	type OTLPExporterConfig,
 } from "./otlp-exporter";
 
 export interface TracingConfig {
@@ -85,7 +85,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 		{
 			[ATTR_SERVICE_NAME]: config.serviceName,
 			[ATTR_SERVICE_VERSION]: process.env.npm_package_version ?? "0.1.0",
-			["deployment.environment.name"]: environment,
+			"deployment.environment.name": environment,
 		},
 		detectedResource,
 	);

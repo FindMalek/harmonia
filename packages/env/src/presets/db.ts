@@ -6,7 +6,7 @@ import { z } from "zod";
  */
 export const dbEnv = createEnv({
 	server: {
-		DATABASE_URL: z.url(),
+		HARMONIA_DATABASE_URL: z.url(),
 	},
 	client: {},
 	clientPrefix: "NEXT_PUBLIC_",

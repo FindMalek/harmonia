@@ -1,6 +1,6 @@
+import { groq } from "@ai-sdk/groq";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
-import { groq } from "@ai-sdk/groq";
 import { db } from "@harmonia/db";
 import {
 	cluster,
@@ -16,7 +16,7 @@ import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
-import { generateText, Output } from "ai";
+import { Output, generateText } from "ai";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
@@ -28,8 +28,11 @@ export async function generatePlaylists(
 ): Promise<GenerateProgress> {
 	const stats: GenerateProgress = { playlists: 0 };
 
-	if (!env.GROQ_API_KEY) {
-		logger.warn({}, "No GROQ_API_KEY configured; skipping playlist generation");
+	if (!env.HARMONIA_GROQ_API_KEY) {
+		logger.warn(
+			{},
+			"No HARMONIA_GROQ_API_KEY configured; skipping playlist generation",
+		);
 		return stats;
 	}
 

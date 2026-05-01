@@ -19,15 +19,16 @@
 		"build": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@harmonia/common": "workspace:*",
 		"@harmonia/core": "workspace:*",
 		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
-		"@harmonia/common": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
 		"drizzle-orm": "catalog:",
+		"inngest": "^3.52.6",
 		"next": "catalog:",
 		"zod": "catalog:"
 	},

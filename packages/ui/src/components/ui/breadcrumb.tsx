@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Slot } from "radix-ui";
+import type * as React from "react";
 
 import { cn } from "../../lib/utils";
 import { Icons } from "../shared/icons";
@@ -20,7 +20,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
 		<ol
 			data-slot="breadcrumb-list"
 			className={cn(
-				"flex flex-wrap items-center gap-1.5 text-xs wrap-break-word text-muted-foreground",
+				"wrap-break-word flex flex-wrap items-center gap-1.5 text-muted-foreground text-xs",
 				className,
 			)}
 			{...props}

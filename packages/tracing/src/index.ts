@@ -1,9 +1,9 @@
 import {
+	type TracingConfig,
 	flushTelemetry,
 	initializeSDK,
 	isTracingInitialized,
 	shutdownSDK,
-	type TracingConfig,
 } from "./sdk";
 
 /**

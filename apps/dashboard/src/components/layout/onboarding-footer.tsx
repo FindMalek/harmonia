@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { Button, buttonVariants, cn } from "@harmonia/ui";
-import { usePathname, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { client } from "@/lib/orpc";
 import { queryKeys } from "@/lib/query-keys";
 import { useOnboardingSync } from "@/stores/onboarding-sync";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { Button, buttonVariants, cn } from "@harmonia/ui";
+import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function OnboardingFooter() {
 	const router = useRouter();

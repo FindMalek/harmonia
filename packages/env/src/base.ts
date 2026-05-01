@@ -18,15 +18,15 @@ export const baseEnv = createEnv({
 			.transform((val) => val === "1"),
 	},
 	client: {
-		NEXT_PUBLIC_NODE_ENV: z
+		NEXT_PUBLIC_HARMONIA_NODE_ENV: z
 			.enum(["development", "production", "local"])
 			.default("local")
 			.transform((val) => {
 				if (process.env.VERCEL_ENV === "preview") return "development";
 				return val;
 			}),
-		NEXT_PUBLIC_API_URL: z.url(),
-		NEXT_PUBLIC_ALLOWED_ORIGIN: z
+		NEXT_PUBLIC_HARMONIA_API_URL: z.url(),
+		NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN: z
 			.string()
 			.optional()
 			.refine(
@@ -56,11 +56,11 @@ export const baseEnv = createEnv({
 				},
 				{
 					message:
-						"NEXT_PUBLIC_ALLOWED_ORIGIN must be '*', a valid URL, or a wildcard pattern like *.domain.com",
+						"NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN must be '*', a valid URL, or a wildcard pattern like *.domain.com",
 				},
 			),
 	},
-	clientPrefix: "NEXT_PUBLIC_",
+	clientPrefix: "NEXT_PUBLIC_HARMONIA_",
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,
 	skipValidation:

@@ -11,11 +11,19 @@ interface DashboardUIStore {
 	selectedClusterId: number | null;
 	tracksFilters: TracksFilters;
 	expandedRunId: number | null;
+
+	// Analysis Pipeline Drawer State
+	isAnalysisDrawerOpen: boolean;
+	activeRunId: number | null;
+
 	setSelectedTrack: (id: string | null) => void;
 	setSelectedPlaylist: (id: number | null) => void;
 	setSelectedCluster: (id: number | null) => void;
 	setTracksFilters: (filters: Partial<TracksFilters>) => void;
 	setExpandedRun: (id: number | null) => void;
+
+	setIsAnalysisDrawerOpen: (isOpen: boolean) => void;
+	setActiveRunId: (id: number | null) => void;
 }
 
 export const useDashboardUI = create<DashboardUIStore>((set) => ({
@@ -24,10 +32,17 @@ export const useDashboardUI = create<DashboardUIStore>((set) => ({
 	selectedClusterId: null,
 	tracksFilters: { page: 1, search: "" },
 	expandedRunId: null,
+
+	isAnalysisDrawerOpen: false,
+	activeRunId: null,
+
 	setSelectedTrack: (id) => set({ selectedTrackId: id }),
 	setSelectedPlaylist: (id) => set({ selectedPlaylistId: id }),
 	setSelectedCluster: (id) => set({ selectedClusterId: id }),
 	setTracksFilters: (filters) =>
 		set((s) => ({ tracksFilters: { ...s.tracksFilters, ...filters } })),
 	setExpandedRun: (id) => set({ expandedRunId: id }),
+
+	setIsAnalysisDrawerOpen: (isOpen) => set({ isAnalysisDrawerOpen: isOpen }),
+	setActiveRunId: (id) => set({ activeRunId: id }),
 }));

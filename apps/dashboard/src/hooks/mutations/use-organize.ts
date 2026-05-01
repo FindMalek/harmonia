@@ -1,7 +1,7 @@
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc";
 import { queryKeys } from "@/lib/query-keys";
+import { useDashboardUI } from "@/stores/dashboard-ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -25,16 +25,20 @@ function toastErrorWithCopy(msg: string) {
 export function useOrganize() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
+	const { setActiveRunId, setIsAnalysisDrawerOpen } = useDashboardUI();
 
 	return useMutation(
 		orpc.organize.run.mutationOptions({
 			onSuccess: (data) => {
 				const first = data.results[0];
+				if (first?.runId) {
+					setActiveRunId(first.runId);
+					setIsAnalysisDrawerOpen(true);
+				}
 				toast.success(
 					first ? `Pipeline started (run #${first.runId})` : "Pipeline started",
 				);
 				queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
-				router.push(DASHBOARD_ROUTES.pipeline.path);
 			},
 			onError: (error) => {
 				const msg = error.message ?? "Failed to start pipeline";

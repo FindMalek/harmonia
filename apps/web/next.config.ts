@@ -1,7 +1,10 @@
 import "@harmonia/env/presets/web";
 import type { NextConfig } from "next";
 
-const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL?.replace(/\/$/, "");
+const dashboardUrl = process.env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(
+	/\/$/,
+	"",
+);
 
 const nextConfig: NextConfig = {
 	typedRoutes: true,

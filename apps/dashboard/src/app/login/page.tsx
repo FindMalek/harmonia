@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { getServerSession } from "@/lib/get-server-session";
+import { AuthSpotifySignInButton } from "@/components/app/auth-spotify-sign-in-button";
 import { Header } from "@/components/shared/header";
-import { SpotifySignInButton } from "@/components/app/spotify-sign-in-button";
-import { Icons } from "@harmonia/ui";
+import { getServerSession } from "@/lib/get-server-session";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import type { Route } from "next";
 
 export default async function LoginPage() {
@@ -24,8 +23,8 @@ export default async function LoginPage() {
 				<Header />
 
 				{/* Hero Text */}
-				<div className="mt-42 mb-16 max-w-2xl border-l-4 border-foreground pl-6 sm:pl-8">
-					<h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
+				<div className="mt-42 mb-16 max-w-2xl border-foreground border-l-4 pl-6 sm:pl-8">
+					<h1 className="font-semibold text-3xl text-foreground leading-tight tracking-tight sm:text-5xl md:text-6xl">
 						AI-powered
 						<br />
 						organization for your
@@ -37,22 +36,22 @@ export default async function LoginPage() {
 				<div className="flex-1" />
 			</div>
 
-			<div className="border-t border-border bg-card px-8 py-10 sm:px-12 sm:py-12 lg:px-16">
+			<div className="border-border border-t bg-card px-8 py-10 sm:px-12 sm:py-12 lg:px-16">
 				<div className="mx-auto max-w-2xl lg:mx-0">
 					<div className="flex flex-col gap-8">
 						<div className="flex flex-col gap-3">
-							<h2 className="text-lg font-semibold text-foreground">
+							<h2 className="font-semibold text-foreground text-lg">
 								Connect your Spotify account
 							</h2>
-							<p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+							<p className="max-w-md text-muted-foreground text-sm leading-relaxed">
 								Harmonia analyzes your music library and automatically creates
 								intelligent playlists based on your music taste.
 							</p>
 						</div>
 
-						<SpotifySignInButton />
+						<AuthSpotifySignInButton />
 
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Harmonia only reads your playlists and liked songs.
 						</p>
 					</div>

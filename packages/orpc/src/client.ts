@@ -1,6 +1,6 @@
-import type { RouterClient } from "@orpc/server";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import type { RouterClient } from "@orpc/server";
 import type { AppRouter, PublicRouter } from "./routers/index";
 
 export type AppRouterClient = RouterClient<AppRouter>;

@@ -145,7 +145,8 @@ function getLogger(): Logger {
 		return loggerInstance;
 	}
 
-	const nodeEnv = process.env.NEXT_PUBLIC_NODE_ENV ?? process.env.NODE_ENV;
+	const nodeEnv =
+		process.env.NEXT_PUBLIC_HARMONIA_NODE_ENV ?? process.env.NODE_ENV;
 	const isDevelopment = nodeEnv !== "production";
 
 	if (isDevelopment) {

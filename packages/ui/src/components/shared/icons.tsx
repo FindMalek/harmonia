@@ -11,10 +11,13 @@
  */
 
 import {
+	IconActivity,
 	IconAlertCircle,
 	IconAlertOctagon,
 	IconAlertTriangle,
 	IconBrain,
+	IconBrandBandlab,
+	IconChartBar,
 	IconCheck,
 	IconChevronDown,
 	IconChevronLeft,
@@ -26,23 +29,20 @@ import {
 	IconDots,
 	IconFileText,
 	IconInfoCircle,
+	IconLayoutBoard,
 	IconLayoutSidebar,
 	IconLoader,
-	IconMoon,
-	IconSun,
 	IconMinus,
+	IconMoon,
 	IconMusic,
 	IconPlayerPlay,
 	IconSearch,
 	IconSelector,
+	IconSettings,
 	IconStack2,
+	IconSun,
 	IconTrash,
 	IconX,
-	IconBrandBandlab,
-	IconSettings,
-	IconChartBar,
-	IconLayoutBoard,
-	IconActivity,
 } from "@tabler/icons-react";
 import type * as React from "react";
 
@@ -96,4 +96,8 @@ export const Icons = {
 	settings: IconSettings,
 	chart: IconChartBar,
 	home: IconLayoutBoard,
+
+	// Loading / pipeline states
+	checkCircle: IconCircleCheck,
+	circle: IconDisc, // using disc as circle for now
 } as const;

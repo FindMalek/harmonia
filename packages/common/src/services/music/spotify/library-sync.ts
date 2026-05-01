@@ -1,6 +1,6 @@
-import type { SyncProgress } from "@harmonia/common/types";
 import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
 import type { SpotifyPlaylistTrackItem } from "@harmonia/common/schemas";
+import type { SyncProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import {
 	userPlaylistSnapshots,
@@ -13,8 +13,8 @@ import pLimit from "p-limit";
 
 import {
 	fetchAllSavedTracks,
-	fetchPlaylistItems,
 	fetchAllUserPlaylists,
+	fetchPlaylistItems,
 	getUserSpotifyAccessToken,
 } from "./client";
 import {

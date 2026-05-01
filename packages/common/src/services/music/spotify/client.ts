@@ -6,9 +6,9 @@ import { and, eq } from "drizzle-orm";
 
 import type {
 	SpotifyPlaylistSimplified,
-	SpotifyPlaylistsResponse,
 	SpotifyPlaylistTrackItem,
 	SpotifyPlaylistTracksResponse,
+	SpotifyPlaylistsResponse,
 	SpotifySavedTracksResponse,
 	SpotifyTokenResponse,
 } from "@harmonia/common/schemas";
@@ -59,8 +59,8 @@ export async function getUserSpotifyAccessToken(
 		return null;
 	}
 
-	const clientId = env.SPOTIFY_CLIENT_ID;
-	const clientSecret = env.SPOTIFY_CLIENT_SECRET;
+	const clientId = env.HARMONIA_SPOTIFY_CLIENT_ID;
+	const clientSecret = env.HARMONIA_SPOTIFY_CLIENT_SECRET;
 
 	if (!clientId || !clientSecret) {
 		logger.warn(

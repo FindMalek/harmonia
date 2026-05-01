@@ -4,16 +4,16 @@ import {
 	pipelineGetByIdInput,
 	pipelineGetByIdOutputSchema,
 	pipelineRunListItemSchema,
-	pipelineStatusEventSchema,
 	pipelineStatsOutputSchema,
+	pipelineStatusEventSchema,
 	pipelineStreamStatusInput,
 } from "@harmonia/common/schemas";
-import { eventIterator } from "@orpc/server";
 import { db } from "@harmonia/db";
 import { cluster } from "@harmonia/db/schema/cluster";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
+import { eventIterator } from "@orpc/server";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
@@ -47,6 +47,29 @@ export const pipelineRouter = {
 				);
 
 			return run ?? null;
+		}),
+
+	cancel: protectedProcedure
+		.input(pipelineGetByIdInput)
+		.output(z.object({ cancelled: z.boolean() }))
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const updated = await db
+				.update(pipelineRun)
+				.set({
+					status: "cancelled",
+					completedAt: new Date(),
+				})
+				.where(
+					and(
+						eq(pipelineRun.id, input.id),
+						eq(pipelineRun.userId, userId),
+						eq(pipelineRun.status, "running"),
+					),
+				)
+				.returning({ id: pipelineRun.id });
+
+			return { cancelled: updated.length > 0 };
 		}),
 
 	streamStatus: protectedProcedure
@@ -99,6 +122,16 @@ export const pipelineRouter = {
 							runId: run.id,
 							progress: run.progress ?? {},
 							error: run.error,
+							completedAt: run.completedAt,
+						};
+						return;
+					}
+					if (run.status === "cancelled") {
+						yield {
+							event: "failed" as const,
+							runId: run.id,
+							progress: run.progress ?? {},
+							error: "Cancelled by user",
 							completedAt: run.completedAt,
 						};
 						return;

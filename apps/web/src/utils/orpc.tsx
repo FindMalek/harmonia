@@ -42,7 +42,7 @@ export const queryClient = new QueryClient({
 });
 
 const { client, link } = createORPCClientUtils({
-	apiUrl: env.NEXT_PUBLIC_API_URL,
+	apiUrl: env.NEXT_PUBLIC_HARMONIA_API_URL,
 	getHeaders: async () => {
 		if (typeof window !== "undefined") {
 			return {};

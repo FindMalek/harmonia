@@ -25,7 +25,8 @@
 		"db:migrate:direct": "pnpm exec drizzle-kit migrate --config=packages/db/drizzle.config.ts",
 		"db:mark-migrations-applied": "turbo -F @harmonia/db db:mark-migrations-applied",
 		"sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
-		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push"
+		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push",
+		"inngest:dev": "npx inngest-cli@latest dev -u http://127.0.0.1:3002/api/inngest"
 	},
 	"dependencies": {
 		"@harmonia/env": "workspace:*",

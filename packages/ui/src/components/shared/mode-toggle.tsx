@@ -2,7 +2,6 @@
 
 import { useTheme } from "next-themes";
 
-import { Icons } from "./icons";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -10,6 +9,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Icons } from "./icons";
 
 type Theme = "light" | "dark" | "system";
 
