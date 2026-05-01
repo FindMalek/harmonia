@@ -1,4 +1,4 @@
-import { groq } from "@ai-sdk/groq";
+import { createGroq } from "@ai-sdk/groq";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml as formatPrompt } from "@zenbase/llml";
@@ -61,6 +61,7 @@ export async function classifyTracksWithLLM(
 	return pRetry(
 		async () => {
 			try {
+				const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
 				const { output } = await generateText({
 					model: groq("openai/gpt-oss-120b"),
 					prompt: buildClassificationPrompt(tracks),

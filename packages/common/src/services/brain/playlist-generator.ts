@@ -1,4 +1,4 @@
-import { groq } from "@ai-sdk/groq";
+import { createGroq } from "@ai-sdk/groq";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
@@ -107,6 +107,7 @@ export async function generatePlaylists(
 							if (meta?.suggestedArchetype)
 								clusterInfo.archetype = meta.suggestedArchetype;
 
+							const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
 							const { output } = await generateText({
 								model: groq("openai/gpt-oss-120b"),
 								output: Output.object({ schema: playlistMetadataSchema }),
