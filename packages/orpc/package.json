@@ -28,7 +28,6 @@
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
 		"drizzle-orm": "catalog:",
-		"inngest": "^3.52.6",
 		"next": "catalog:",
 		"zod": "catalog:"
 	},

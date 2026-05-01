@@ -1,17 +1,17 @@
 ---
 name: auth-better-auth
-description: Better Auth integration for Next.js 16 with Drizzle adapter. This skill should be used when connecting to a Better Auth instance, configuring OAuth providers, or implementing protected routes with proxy.ts.
+description: Better Auth integration for Next.js (App Router) with Drizzle adapter. Use when connecting to Better Auth, configuring OAuth providers, or implementing protected routes with middleware.
 ---
 
 # Better Auth Skill
 
-Integration patterns for connecting to Better Auth in Next.js 16 projects using the Drizzle adapter.
+Integration patterns for connecting to Better Auth in Next.js App Router projects using the Drizzle adapter.
 
 ## When to Use This Skill
 
 - Connecting a Next.js app to Better Auth
 - Configuring OAuth providers (Google, GitHub, etc.)
-- Implementing protected routes with Next.js 16 proxy.ts
+- Implementing protected routes with Next.js `middleware.ts`
 - Adding auth state to React components
 
 ## Core Concepts
@@ -132,11 +132,11 @@ This handles all auth endpoints:
 - `/api/auth/session` - Session info
 - `/api/auth/callback/*` - OAuth callbacks
 
-## Route Protection with proxy.ts
+## Route Protection with middleware.ts
 
-### Next.js 16 Proxy (replaces middleware.ts)
+### Next.js middleware
 
-Create `proxy.ts` at project root:
+Create `middleware.ts` at the project root (or `src/middleware.ts` if using a `src/` layout):
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -146,7 +146,7 @@ import { headers } from 'next/headers';
 const protectedRoutes = ['/dashboard', '/settings', '/profile'];
 const authRoutes = ['/login', '/signup'];
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   
   const isProtectedRoute = protectedRoutes.some((route) => 
@@ -193,7 +193,7 @@ For performance-critical paths where you only need presence check:
 ```typescript
 import { getSessionCookie } from 'better-auth/next-js';
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Fast path - just check cookie existence
   const sessionCookie = getSessionCookie(request);
   
@@ -483,5 +483,5 @@ npx @better-auth/cli generate
 - [ ] OAuth secrets stored in environment variables
 - [ ] `trustedOrigins` is properly configured
 - [ ] HTTPS in production
-- [ ] Always validate session in API routes (not just proxy)
-- [ ] Protect sensitive routes in proxy.ts
+- [ ] Always validate session in API routes (not just middleware)
+- [ ] Protect sensitive routes in middleware.ts

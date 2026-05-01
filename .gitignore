@@ -50,3 +50,6 @@ coverage
 .cache
 tmp
 temp
+
+# Trigger
+.trigger

@@ -36,11 +36,6 @@
 			"sourceType": "github",
 			"computedHash": "2ce1c081406d5815aa949a1e6b01496e9d2ebd1426d0334e8e5e35d132f7fcac"
 		},
-		"inngest": {
-			"source": "sickn33/antigravity-awesome-skills",
-			"sourceType": "github",
-			"computedHash": "89b0050e83f20ff9c380d5d09ef3df8c0db57c33e04bbaecace98271d965bdb3"
-		},
 		"opentelemetry": {
 			"source": "julianobarbosa/claude-code-skills",
 			"sourceType": "github",

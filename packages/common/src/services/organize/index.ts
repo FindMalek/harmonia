@@ -1,1 +1,7 @@
-export { runOrganizeForUser } from "./run-organize";
+export {
+	runOrganizeForUser,
+	updateRun,
+	checkCancelled,
+	updateStageProgress,
+	PipelineCancelledError,
+} from "./run-organize";

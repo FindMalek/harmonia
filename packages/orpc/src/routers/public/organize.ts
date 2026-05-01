@@ -1,8 +1,9 @@
-import { inngest } from "@harmonia/common/inngest/client";
 import {
 	organizeRunInput,
 	organizeRunOutputSchema,
 } from "@harmonia/common/schemas";
+import { updateRun } from "@harmonia/common/services/organize";
+import { organizePipeline } from "@harmonia/common/trigger/tasks/organize";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
@@ -55,10 +56,23 @@ export const organizeRouter = {
 
 					if (!run) throw new Error("Failed to create run record");
 
-					await inngest.send({
-						name: "organize/requested",
-						data: { userId: context.userId, runId: run.id },
-					});
+					try {
+						await organizePipeline.trigger({
+							userId: context.userId,
+							runId: run.id,
+						});
+					} catch (triggerErr) {
+						const msg =
+							triggerErr instanceof Error
+								? triggerErr.message
+								: String(triggerErr);
+						await updateRun(run.id, {
+							status: "failed",
+							error: msg,
+							completedAt: new Date(),
+						});
+						throw triggerErr;
+					}
 
 					return {
 						success: true,
@@ -97,12 +111,33 @@ export const organizeRouter = {
 
 					if (!run) throw new Error("Failed to create run record");
 
-					await inngest.send({
-						name: "organize/requested",
-						data: { userId: id, runId: run.id },
-					});
-
-					results.push({ userId: id, runId: run.id, status: "completed" });
+					try {
+						await organizePipeline.trigger({
+							userId: id,
+							runId: run.id,
+						});
+						results.push({ userId: id, runId: run.id, status: "completed" });
+					} catch (triggerErr) {
+						const error =
+							triggerErr instanceof Error
+								? triggerErr
+								: new Error(String(triggerErr));
+						await updateRun(run.id, {
+							status: "failed",
+							error: error.message,
+							completedAt: new Date(),
+						});
+						logger.error(
+							{ userId: id, runId: run.id, error: error.message },
+							"Failed to queue organize for user",
+						);
+						results.push({
+							userId: id,
+							runId: run.id,
+							status: "failed",
+							error: error.message,
+						});
+					}
 				} catch (err) {
 					const error = err instanceof Error ? err : new Error(String(err));
 					logger.error(

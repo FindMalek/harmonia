@@ -33,3 +33,4 @@ catalog:
   "@opentelemetry/sdk-node": ^0.209.0
   "@opentelemetry/sdk-trace-base": ^2.3.0
   "@opentelemetry/semantic-conventions": ^1.38.0
+  "@trigger.dev/sdk": ^4.4.4

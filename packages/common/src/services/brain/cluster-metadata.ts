@@ -1,4 +1,4 @@
-import { groq } from "@ai-sdk/groq";
+import { createGroq } from "@ai-sdk/groq";
 import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import {
@@ -12,6 +12,7 @@ import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
 import { Output, generateText } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
+import pLimit from "p-limit";
 import pRetry from "p-retry";
 
 import { clusterMetadataSchema } from "@harmonia/common/schemas";
@@ -36,103 +37,107 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 	}
 
 	let generated = 0;
+	const limit = pLimit(5);
 
-	for (const c of clusters) {
-		const trackRows = await db
-			.select({
-				name: track.name,
-				artistNames: track.artistNames,
-				llmMood: track.llmMood,
-				llmTags: track.llmTags,
-			})
-			.from(clusterTracks)
-			.innerJoin(track, eq(track.id, clusterTracks.trackId))
-			.where(eq(clusterTracks.clusterId, c.id));
+	await Promise.all(
+		clusters.map((c) =>
+			limit(async () => {
+				const trackRows = await db
+					.select({
+						name: track.name,
+						artistNames: track.artistNames,
+						llmMood: track.llmMood,
+						llmTags: track.llmTags,
+					})
+					.from(clusterTracks)
+					.innerJoin(track, eq(track.id, clusterTracks.trackId))
+					.where(eq(clusterTracks.clusterId, c.id));
 
-		if (trackRows.length === 0) continue;
+				if (trackRows.length === 0) return;
 
-		const moods: string[] = [];
-		const themes: string[] = [];
-		const vibes: string[] = [];
-		const energyLevels: string[] = [];
+				const moods: string[] = [];
+				const themes: string[] = [];
+				const vibes: string[] = [];
+				const energyLevels: string[] = [];
 
-		for (const t of trackRows) {
-			if (t.llmMood) moods.push(t.llmMood);
-			const tags = getLlmTags(t.llmTags);
-			if (tags.themes) themes.push(...tags.themes);
-			if (tags.vibe) vibes.push(...tags.vibe);
-			if (tags.energyLevel) energyLevels.push(tags.energyLevel);
-		}
+				for (const t of trackRows) {
+					if (t.llmMood) moods.push(t.llmMood);
+					const tags = getLlmTags(t.llmTags);
+					if (tags.themes) themes.push(...tags.themes);
+					if (tags.vibe) vibes.push(...tags.vibe);
+					if (tags.energyLevel) energyLevels.push(tags.energyLevel);
+				}
 
-		const topMoods = topN(moods, 5);
-		const topThemes = topN(themes, 5);
-		const topVibes = topN(vibes, 5);
-		const dominantEnergy = topN(energyLevels, 1)[0] ?? "medium";
+				const topMoods = topN(moods, 5);
+				const topThemes = topN(themes, 5);
+				const topVibes = topN(vibes, 5);
+				const dominantEnergy = topN(energyLevels, 1)[0] ?? "medium";
 
-		const sampleTracks = trackRows.slice(0, 10).map((t) => {
-			const artists = JSON.parse(t.artistNames) as string[];
-			return `${t.name} by ${artists.join(", ")}`;
-		});
+				const sampleTracks = trackRows.slice(0, 10).map((t) => {
+					const artists = JSON.parse(t.artistNames) as string[];
+					return `${t.name} by ${artists.join(", ")}`;
+				});
 
-		try {
-			const meta = await pRetry(
-				async () => {
-					const { output } = await generateText({
-						model: groq("openai/gpt-oss-120b"),
-						output: Output.object({
-							schema: clusterMetadataSchema,
-						}),
-						temperature: 0,
-						prompt: llml({
-							role: "You are analyzing a cluster of similar music tracks. Based on the aggregate characteristics below, generate metadata for this cluster.",
-							clusterInfo: {
-								size: `${trackRows.length} tracks`,
-								topMoods: topMoods.join(", "),
-								topThemes: topThemes.join(", "),
-								topVibes: topVibes.join(", "),
-								dominantEnergy,
-								sampleTracks: sampleTracks.join("; "),
+				try {
+					const meta = await pRetry(
+						async () => {
+							const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
+							const { output } = await generateText({
+								model: groq("openai/gpt-oss-120b"),
+								output: Output.object({ schema: clusterMetadataSchema }),
+								temperature: 0,
+								prompt: llml({
+									role: "You are analyzing a cluster of similar music tracks. Based on the aggregate characteristics below, generate metadata for this cluster.",
+									clusterInfo: {
+										size: `${trackRows.length} tracks`,
+										topMoods: topMoods.join(", "),
+										topThemes: topThemes.join(", "),
+										topVibes: topVibes.join(", "),
+										dominantEnergy,
+										sampleTracks: sampleTracks.join("; "),
+									},
+									generate: [
+										"themeSummary: a concise 1-sentence description of this cluster's musical identity",
+										"dominantMood: the single most representative mood",
+										"dominantEnergy: very low | low | medium | high | very high",
+										"topThemes: 3-5 key themes",
+										"topVibes: 3-5 situational descriptors",
+										"suggestedArchetype: mood | situation | genre | hybrid",
+									],
+								}),
+							});
+							return output;
+						},
+						{
+							retries: 2,
+							minTimeout: 2000,
+							onFailedAttempt: (error) => {
+								logger.warn(
+									{ clusterId: c.id, attempt: error.attemptNumber },
+									"Cluster metadata generation failed, retrying",
+								);
 							},
-							generate: [
-								"themeSummary: a concise 1-sentence description of this cluster's musical identity",
-								"dominantMood: the single most representative mood",
-								"dominantEnergy: very low | low | medium | high | very high",
-								"topThemes: 3-5 key themes",
-								"topVibes: 3-5 situational descriptors",
-								"suggestedArchetype: mood | situation | genre | hybrid",
-							],
-						}),
-					});
-					return output;
-				},
-				{
-					retries: 2,
-					minTimeout: 2000,
-					onFailedAttempt: (error) => {
-						logger.warn(
-							{ clusterId: c.id, attempt: error.attemptNumber },
-							"Cluster metadata generation failed, retrying",
-						);
-					},
-				},
-			);
+						},
+					);
 
-			await db
-				.update(cluster)
-				.set({ metadata: meta as ClusterMeta })
-				.where(eq(cluster.id, c.id));
+					await db
+						.update(cluster)
+						.set({ metadata: meta as ClusterMeta })
+						.where(eq(cluster.id, c.id));
 
-			generated++;
-		} catch (err) {
-			logger.error(
-				{
-					clusterId: c.id,
-					error: err instanceof Error ? err.message : String(err),
-				},
-				"Failed to generate cluster metadata",
-			);
-		}
-	}
+					generated++;
+				} catch (err) {
+					logger.error(
+						{
+							clusterId: c.id,
+							error: err instanceof Error ? err.message : String(err),
+						},
+						"Failed to generate cluster metadata",
+					);
+				}
+			}),
+		),
+	);
 
 	logger.info({ userId, generated }, "Completed cluster metadata generation");
 	return generated;
