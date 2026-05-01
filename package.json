@@ -26,7 +26,7 @@
 		"db:mark-migrations-applied": "turbo -F @harmonia/db db:mark-migrations-applied",
 		"sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
 		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push",
-		"trigger:dev": "npx trigger.dev@latest dev --config apps/api/trigger.config.ts"
+		"trigger:dev": "node scripts/run-trigger-dev.mjs"
 	},
 	"dependencies": {
 		"@harmonia/env": "workspace:*",

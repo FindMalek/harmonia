@@ -135,7 +135,7 @@ New CI-related Turbo tasks MUST set `"cache": true` in `turbo.json`.
 3. Add a matching step with `id:` to `.github/workflows/ci.yml`
 4. Add the step to the summary in `ci.yml`
 5. Update `.github/AGENTS.md` pipeline step list
-6. Test locally with `bun run ci`
+6. Test locally with `pnpm run ci`
 
 ## Key Files
 

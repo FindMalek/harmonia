@@ -182,6 +182,8 @@ export async function runOrganizeForUser({
 
 		await matchNewTracksToPlaylists(userId);
 
+		await checkCancelled(runId, userId);
+
 		await updateRun(runId, {
 			status: "completed",
 			currentStage: null,
