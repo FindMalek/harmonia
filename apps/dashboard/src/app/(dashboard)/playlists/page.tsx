@@ -111,7 +111,7 @@ function PlaylistCard({
 				<div className="space-y-1 flex-1">
 					<h2 className="font-bold text-lg leading-tight">{playlist.name}</h2>
 					{playlist.description && (
-						<p className="text-muted-foreground text-sm leading-snug">
+						<p className="text-muted-foreground text-sm leading-snug line-clamp-2">
 							{playlist.description}
 						</p>
 					)}
@@ -119,6 +119,7 @@ function PlaylistCard({
 				<div className="flex items-center gap-1 text-muted-foreground text-xs shrink-0 pt-1">
 					<Icons.disc className="size-3.5" />
 					<span>{playlist.trackCount}</span>
+					<span className="text-muted-foreground text-xs">tracks</span>
 				</div>
 			</div>
 
