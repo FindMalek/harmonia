@@ -22,7 +22,10 @@ export class PipelineCancelledError extends Error {
 	}
 }
 
-export async function checkCancelled(runId: number, userId: string): Promise<void> {
+export async function checkCancelled(
+	runId: number,
+	userId: string,
+): Promise<void> {
 	const [run] = await db
 		.select({ status: pipelineRun.status })
 		.from(pipelineRun)
@@ -64,8 +67,7 @@ export async function updateStageProgress<K extends keyof PipelineProgress>(
 	await db
 		.update(pipelineRun)
 		.set({
-			progress:
-				sql<PipelineProgress>`COALESCE(progress, '{}'::jsonb) || ${stageUpdate}::jsonb`,
+			progress: sql<PipelineProgress>`COALESCE(progress, '{}'::jsonb) || ${stageUpdate}::jsonb`,
 		})
 		.where(eq(pipelineRun.id, runId));
 }

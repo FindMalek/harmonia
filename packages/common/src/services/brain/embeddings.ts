@@ -185,7 +185,10 @@ export async function embedTracksBatch(
 		),
 	);
 
-	logger.info({ userId, embedded }, "Completed embedding generation for all pending tracks");
+	logger.info(
+		{ userId, embedded },
+		"Completed embedding generation for all pending tracks",
+	);
 
 	return { embedded, total, pending: 0 };
 }

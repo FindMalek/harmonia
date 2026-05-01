@@ -103,7 +103,8 @@ export async function generatePlaylists(
 								sampleTracks: sampleTracks.join("; "),
 							};
 							if (meta?.themeSummary) clusterInfo.theme = meta.themeSummary;
-							if (meta?.dominantEnergy) clusterInfo.energy = meta.dominantEnergy;
+							if (meta?.dominantEnergy)
+								clusterInfo.energy = meta.dominantEnergy;
 							if (meta?.suggestedArchetype)
 								clusterInfo.archetype = meta.suggestedArchetype;
 

@@ -1,9 +1,6 @@
 import { task } from "@trigger.dev/sdk/v3";
 
-import {
-	PipelineCancelledError,
-	updateRun,
-} from "../../services/organize";
+import { PipelineCancelledError, updateRun } from "../../services/organize";
 import { classifyStageTask } from "./stages/classify";
 import { clusterStageTask } from "./stages/cluster";
 import { embedStageTask } from "./stages/embed";

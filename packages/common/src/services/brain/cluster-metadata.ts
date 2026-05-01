@@ -82,7 +82,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 					const meta = await pRetry(
 						async () => {
 							const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
-						const { output } = await generateText({
+							const { output } = await generateText({
 								model: groq("openai/gpt-oss-120b"),
 								output: Output.object({ schema: clusterMetadataSchema }),
 								temperature: 0,
