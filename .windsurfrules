@@ -1,62 +1,47 @@
-# Harmonia — Windsurf Rules
+# Harmonia Windsurf Rules
 
-## Project
+Follow these rules for all code generation, edits, and reviews in this repository.
 
-pnpm + Turborepo monorepo. Three Next.js 15 App Router apps: `api` (3002), `dashboard` (3003), `web` (3001). Packages: `db` (Drizzle+Postgres), `orpc` (type-safe RPC), `auth` (Better Auth), `common` (services + Trigger.dev tasks), `env` (Zod env validation), `ui` (shadcn/ui), `logger` (Pino).
+## Source of truth
+
+- Domain and package rules are maintained in `.cursor/rules/**/*.mdc`.
+- Treat `.mdc` files as Markdown rule files and apply the rule matching the area you are editing.
+- If a file-level rule conflicts with this file, prefer the more specific rule.
+
+## Stack and workflow constraints
+
+- Monorepo: Turborepo + pnpm workspaces.
+- Apps live in `apps/*`; shared code lives in `packages/*`.
+- Use internal imports via `@harmonia/*` package names.
+- Use typed env values from `@harmonia/env`; avoid direct `process.env` in app code.
+- Run commands from repository root unless a package script requires otherwise.
+
+## Domain routing
+
+- `apps/api/**` → `.cursor/rules/apps/api.mdc`
+- `apps/dashboard/**` → `.cursor/rules/apps/dashboard.mdc`
+- `apps/web/**` → `.cursor/rules/apps/web.mdc`
+- `packages/**` → `.cursor/rules/packages/00-package-index.mdc` plus specific package rule
 
 ## Hard rules
 
-- **Never `process.env` directly.** Use `import { env } from "@harmonia/env/server"`.
-- **Never `groq()` without explicit key.** Use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.
-- **Never Inngest.** Background jobs use `@trigger.dev/sdk/v3` only.
-- **All env vars prefixed `HARMONIA_` or `NEXT_PUBLIC_HARMONIA_`.** No bare names.
-- **JSONB progress writes: use `updateStageProgress(runId, stage, val)`.** Never overwrite the full column in concurrent code.
+- Never `process.env` directly — use `@harmonia/env`.
+- Never `groq()` without explicit key — use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.
+- Never `inngest` — background jobs use `@trigger.dev/sdk/v3` only.
+- All env vars prefixed `HARMONIA_` or `NEXT_PUBLIC_HARMONIA_`.
+- JSONB progress writes: use `updateStageProgress(runId, stage, val)`.
 
-## Dev commands
+## Coding expectations
 
-- `pnpm dev:api` — API + Trigger.dev worker
-- `pnpm dev:ad` — API + dashboard + Trigger.dev
-- `pnpm db:push` — sync Drizzle schema to local Postgres
-- `pnpm check-types` — tsc across all packages
-- `pnpm check` — Biome lint + format
+- Preserve package boundaries and avoid circular dependencies.
+- Prefer shared package utilities instead of app-local duplication.
+- Keep changes scoped to the requested task.
+- No comments unless the WHY is non-obvious.
+- Commits: `feat:` `fix:` `chore:` `perf:` `refactor:` prefixes.
 
-## Code style
+## Windsurf + Cursor parity
 
-- Biome: **tabs**, double quotes, auto-organised imports, sorted Tailwind classes
-- TypeScript strict mode + `noUncheckedIndexedAccess`
-- Commits: `feat:` `fix:` `chore:` `perf:` `refactor:`
-- No comments unless the WHY is non-obvious
-
-## Imports
-
-- Within each app: `@/*` alias for local files
-- Across packages: `@harmonia/db`, `@harmonia/env/server`, `@harmonia/core`, `@harmonia/logger`, `@harmonia/orpc`
-
-## oRPC (API)
-
-- Procedures: `publicProcedure` → `protectedProcedure` → `cronOrAuthProcedure`
-- Routers in `packages/orpc/src/routers/protected/` or `public/`
-- Schema names: `{entity}{Action}Input` / `{entity}{Action}OutputSchema`
-- Client: `useQuery(orpc.{router}.{method}.queryOptions())` with TanStack Query v5
-
-## Database (Drizzle)
-
-- Schema in `packages/db/src/schema/`
-- All user-owned tables need `userId` with `onDelete: "cascade"`
-- Indexes for all foreign keys and common filter columns
-- JSONB merge: `sql\`COALESCE(col, '{}'::jsonb) || ${val}::jsonb\``
-- After schema changes: `pnpm db:push`
-
-## Trigger.dev tasks
-
-- Task files in `packages/common/src/trigger/tasks/stages/`
-- Always call `checkCancelled(runId, userId)` first
-- Use `updateStageProgress` (not `updateRun`) for in-progress updates
-- Export new tasks from `apps/api/src/trigger/organize.ts` for CLI discovery
-
-## Components
-
-- Dashboard components: `dashboard-{feature}-{role}.tsx`, always co-locate a skeleton variant
-- State: TanStack Query for server state, Zustand for client state
-- Toasts: `sonner` — `toast.error()` for failures only (no success toast on pipeline launch)
-- `"use client"` only when needed (browser APIs, event handlers, hooks)
+This project uses an include-based parity approach:
+- Cursor reads `.cursor/rules/*.mdc` directly.
+- Windsurf reads this `.windsurfrules` file, which points to the same canonical `.cursor/rules` content.
+- Update `.cursor/rules` first, then keep this file aligned when domains change.

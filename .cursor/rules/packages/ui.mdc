@@ -1,0 +1,34 @@
+---
+description: shadcn/ui component conventions, Tailwind patterns, and composition rules
+globs:
+  - "packages/ui/**"
+  - "apps/*/src/components/**"
+alwaysApply: false
+---
+
+# `@harmonia/ui`
+
+## Using Components
+
+```typescript
+// Within an app
+import { Button } from "@/components/ui/button";
+import { Icons } from "@harmonia/ui";
+
+// Across packages
+import { Button } from "@harmonia/ui";
+```
+
+## Tailwind
+
+- Sorted automatically by Biome (`cn`, `clsx`, `cva` calls)
+- Use `cn()` from `@/lib/utils` for conditional classes
+- Responsive: mobile-first (`sm:`, `md:`, `lg:`)
+- Dark mode: `dark:` prefix (managed by `next-themes`)
+- **Tabs** for indentation (enforced by Biome)
+
+## Do Not
+
+- Copy-paste shadcn component source into app directories — extend via props instead
+- Use native `<button>`, `<input>`, `<a>` when a shadcn equivalent exists
+- Use inline styles — Tailwind utilities only

@@ -1,0 +1,54 @@
+---
+description: Trigger.dev v4 task patterns, stage structure, and pipeline orchestration
+globs:
+  - "**/trigger/**"
+  - "apps/api/trigger.config.ts"
+alwaysApply: false
+---
+
+# Trigger.dev (`@trigger.dev/sdk/v3`)
+
+## Task Structure
+
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { checkCancelled, updateRun, updateStageProgress } from "../../../services/organize";
+
+export const myStageTask = task({
+  id: "organize-stage-my-stage",
+  retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
+  run: async ({ userId, runId }: { userId: string; runId: number }) => {
+    await checkCancelled(runId, userId);
+    await updateRun(runId, { currentStage: "my-stage" });
+    return await myService(userId, async (p) => {
+      await updateStageProgress(runId, "my-stage", p);
+    });
+  },
+});
+```
+
+## Registered Tasks (8 total)
+
+- `organize-pipeline` — parent orchestrator
+- `organize-stage-sync`, `organize-stage-lyrics`, `organize-stage-classify`, `organize-stage-embed`, `organize-stage-cluster`, `organize-stage-generate`, `organize-stage-match`
+
+## Adding a New Stage
+
+1. Create `packages/common/src/trigger/tasks/stages/my-stage.ts`
+2. Export from `apps/api/src/trigger/organize.ts` (CLI discovery)
+3. Add export to `packages/common/package.json` exports map
+4. Add `.triggerAndWait()` call in `packages/common/src/trigger/tasks/organize.ts`
+
+## Env Key Mapping
+
+`HARMONIA_TRIGGER_SECRET_KEY` → `TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs` (for the worker) and `scripts/with-root-env.mjs` (for the API process).
+
+## Running Locally
+
+```bash
+pnpm trigger:dev   # or pnpm dev:api (includes trigger via concurrently)
+```
+
+## LLM Keys in Tasks
+
+Always use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`. The worker only has `HARMONIA_GROQ_API_KEY`, not `GROQ_API_KEY`.

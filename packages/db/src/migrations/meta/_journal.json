@@ -61,8 +61,15 @@
 		{
 			"idx": 8,
 			"version": "7",
+			"when": 1777714010150,
+			"tag": "0008_playlist_tags",
+			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
 			"when": 1777718468788,
-			"tag": "0008_track_album_image_url",
+			"tag": "0009_track_album_image_url",
 			"breakpoints": true
 		}
 	]

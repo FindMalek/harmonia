@@ -1,0 +1,73 @@
+---
+description: Harmonia monorepo structure, stack, development commands, and hard rules
+alwaysApply: true
+---
+
+# Project Overview
+
+## What is Harmonia
+
+Harmonia is an AI-powered music organization app. It syncs a user's Spotify library, classifies tracks with LLMs, clusters them by embedding similarity, and auto-generates playlists. It is a **pnpm + Turborepo monorepo** with three Next.js 15 (App Router) apps and shared packages.
+
+## Monorepo Structure
+
+### Applications
+
+- `apps/api` (`api`): Next.js API server (port 3002) — oRPC, Better Auth, Trigger.dev webhook
+- `apps/dashboard` (`dashboard`): Next.js merchant dashboard (port 3003) — authenticated user UI
+- `apps/web` (`web`): Next.js web app (port 3001) — public-facing pages
+
+### Packages
+
+- `packages/auth`: Better Auth singleton + Spotify OAuth config
+- `packages/common`: Shared schemas, types, services, Trigger.dev task definitions
+- `packages/config`: Shared `tsconfig.base.json`
+- `packages/core`: Initialises auth; re-exports singleton for the whole monorepo
+- `packages/db`: Drizzle ORM schema + migrations + DB client
+- `packages/env`: Zod-validated env presets (never use `process.env` directly)
+- `packages/logger`: Pino structured logger
+- `packages/orpc`: oRPC routers, procedures, context, and client
+- `packages/tracing`: OpenTelemetry instrumentation
+- `packages/ui`: shadcn/ui component library + shared Tailwind config
+
+## Development Commands
+
+Run all commands from the repository root.
+
+```bash
+pnpm dev:api          # API + Trigger.dev worker
+pnpm dev:ad           # API + dashboard + Trigger.dev
+pnpm dev:all          # all three apps + Trigger.dev
+pnpm dev:web          # web app only
+
+pnpm db:push          # push Drizzle schema to local Postgres
+pnpm db:studio        # open Drizzle Studio UI
+pnpm db:generate      # generate migration files
+pnpm db:migrate       # run migrations (production)
+pnpm db:setup         # start Docker Postgres + push schema
+
+pnpm trigger:dev      # start Trigger.dev worker alone
+pnpm check-types      # tsc --noEmit across all packages
+pnpm check            # Biome check + fix
+pnpm lint             # Biome lint + fix
+pnpm format           # Biome format + fix
+```
+
+## Hard Rules
+
+1. **Never `process.env` directly.** Use `import { env } from "@harmonia/env/server"`.
+2. **Never `groq()` without explicit key.** Use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.
+3. **Never `inngest`.** Background jobs use `@trigger.dev/sdk/v3` only.
+4. **All env vars prefixed `HARMONIA_` or `NEXT_PUBLIC_HARMONIA_`.**
+5. **JSONB progress writes: use `updateStageProgress(runId, stage, val)`.** Never overwrite the full column in concurrent code.
+6. **DB driver is conditional.** `.neon.tech` URL → `@neondatabase/serverless`, otherwise → `pg`. Do not change this logic.
+
+## Tooling
+
+- Package manager: `pnpm`
+- Build/task orchestration: `turbo`
+- Linting/formatting: `biome` (tabs, double quotes, auto-organised imports)
+- API layer: `oRPC`
+- ORM: `drizzle-orm`
+- Background jobs: `@trigger.dev/sdk/v3`
+- Auth: `better-auth` + Spotify OAuth

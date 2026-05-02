@@ -1,0 +1,1 @@
+ALTER TABLE "playlist" ADD COLUMN "tags" text[];

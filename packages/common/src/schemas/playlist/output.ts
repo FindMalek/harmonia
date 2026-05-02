@@ -21,6 +21,7 @@ export const playlistListItemSchema = z.object({
 	genreDomainId: z.number().nullable(),
 	energyCurve: z.array(z.number()).nullable(),
 	coverColor: z.string().nullable(),
+	tags: z.array(z.string()).nullable(),
 	trackCount: z.number(),
 	isGenerated: z.boolean(),
 	spotifyPlaylistId: z.string().nullable(),

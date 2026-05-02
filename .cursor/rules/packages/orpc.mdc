@@ -1,0 +1,53 @@
+---
+description: oRPC routers, procedures, and client patterns
+globs:
+  - "packages/orpc/**"
+alwaysApply: false
+---
+
+# `@harmonia/orpc`
+
+## Procedure Chain
+
+```
+publicProcedure → protectedProcedure → cronOrAuthProcedure
+```
+
+- `protectedProcedure`: requires session → `context.session.user.id`
+- `cronOrAuthProcedure`: accepts session OR `X-Organize-Secret`/`Authorization: Bearer <HARMONIA_CRON_SECRET>` header
+
+## Router Structure
+
+```
+src/routers/
+  public/
+    organize.ts     (run pipeline — cronOrAuthProcedure)
+  protected/
+    playlists.ts
+    tracks.ts
+    pipeline.ts     (streamStatus uses eventIterator for SSE)
+    clusters.ts
+    spotify.ts
+    todo.ts
+```
+
+## Adding a Route
+
+1. Zod schemas in `packages/common/src/schemas/{entity}/`
+2. Handler in `packages/orpc/src/routers/{scope}/{domain}.ts`
+3. Export from the router's `index.ts`
+4. Optionally add `.meta({ openapi: { ... } })` for the OpenAPI spec
+
+## Client Usage
+
+```typescript
+import { orpc } from "@/lib/orpc";
+import { useQuery, useMutation } from "@tanstack/react-query";
+
+const { data } = useQuery(orpc.playlists.list.queryOptions());
+const { mutate } = useMutation(orpc.organize.run.mutationOptions({ onSuccess, onError }));
+```
+
+## CORS
+
+Applied globally in `apps/api/src/app/api/[[...rest]]/route.ts`. Never add per-route CORS.

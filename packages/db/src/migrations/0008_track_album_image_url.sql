@@ -1,1 +1,0 @@
-ALTER TABLE "track" ADD COLUMN "album_image_url" text;

@@ -14,6 +14,10 @@ import {
 } from "../ui/dropdown-menu";
 import { Skeleton } from "../ui/skeleton";
 
+function UserMenuSkeleton() {
+	return <Skeleton className="h-9 w-24" />;
+}
+
 type UserMenuProps = {
 	authClient: AuthClientForUI;
 	signInUrl?: string;
@@ -33,7 +37,7 @@ export function UserMenu({
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <Skeleton className="h-9 w-24" />;
+		return <UserMenuSkeleton />;
 	}
 
 	if (!session) {
