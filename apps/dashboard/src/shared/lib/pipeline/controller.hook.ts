@@ -1,8 +1,7 @@
 "use client";
 
-import { client } from "@/shared/api/orpc";
+import { client, orpc } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
-import { orpc } from "@/shared/api/orpc";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
@@ -59,19 +58,19 @@ export function usePipelineStream(runId: number | null): PipelineStreamState {
 	useEffect(() => {
 		if (!runId) return;
 
-		client.pipeline.getById({ id: runId }).then((run) => {
-			if (run) {
-				setState((s) => ({
-					...s,
-					status: run.status,
-					currentStage: run.currentStage,
-					progress:
-						(run.progress as Record<string, PipelineProgressStage>) ?? {},
-					startedAt: run.startedAt ?? null,
-					completedAt: run.completedAt ?? null,
-					error: run.error ?? null,
-				}));
-			}
+		let active = true;
+
+		void client.pipeline.getById({ id: runId }).then((run) => {
+			if (!active || !run) return;
+			setState((s) => ({
+				...s,
+				status: run.status,
+				currentStage: run.currentStage,
+				progress: (run.progress as Record<string, PipelineProgressStage>) ?? {},
+				startedAt: run.startedAt ?? null,
+				completedAt: run.completedAt ?? null,
+				error: run.error ?? null,
+			}));
 		});
 
 		const abortController = new AbortController();
@@ -84,7 +83,7 @@ export function usePipelineStream(runId: number | null): PipelineStreamState {
 					{ signal: abortController.signal },
 				);
 				for await (const data of stream) {
-					if (abortController.signal.aborted) break;
+					if (abortController.signal.aborted || !active) break;
 					if (data.event === "progress") {
 						setState((s) => ({
 							...s,
@@ -122,14 +121,18 @@ export function usePipelineStream(runId: number | null): PipelineStreamState {
 					}
 				}
 			} catch (err) {
-				if (!abortController.signal.aborted) {
+				if (!abortController.signal.aborted && active) {
 					console.error("Stream connection failed", err);
 				}
 			}
 		}
 
-		connectStream();
-		return () => abortController.abort();
+		void connectStream();
+
+		return () => {
+			active = false;
+			abortController.abort();
+		};
 	}, [runId]);
 
 	return state;
