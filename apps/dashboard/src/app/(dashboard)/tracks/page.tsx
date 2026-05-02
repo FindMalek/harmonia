@@ -2,8 +2,7 @@
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
-import { useTrackDetail, useTracks } from "@/hooks/queries/use-tracks";
-import { useTracksStore } from "@/shared/lib/tracks/store";
+import { useTracksController } from "@/shared/lib/tracks/controller.hook";
 import {
 	Badge,
 	Button,
@@ -59,13 +58,17 @@ function TracksPageTableSkeleton() {
 }
 
 export default function TracksPage() {
-	const tracksFilters = useTracksStore((s) => s.tracksFilters);
-	const setTracksFilters = useTracksStore((s) => s.setTracksFilters);
-	const selectedTrackId = useTracksStore((s) => s.selectedTrackId);
-	const setSelectedTrack = useTracksStore((s) => s.setSelectedTrack);
+	const {
+		tracksFilters,
+		setTracksFilters,
+		selectedTrackId,
+		setSelectedTrack,
+		list,
+		detail,
+	} = useTracksController();
 
-	const { data, isLoading, isError, error, refetch } = useTracks(tracksFilters);
-	const { data: selectedTrack } = useTrackDetail(selectedTrackId);
+	const { data, isLoading, isError, error, refetch } = list;
+	const { data: selectedTrack } = detail;
 
 	const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
 

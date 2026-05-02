@@ -1,13 +1,11 @@
 "use client";
 
-import { useOnboardingStoreStream } from "@/hooks/use-onboarding-sync-stream";
-import { useOnboardingStore } from "@/shared/lib/onboarding/store";
+import { useOnboardingController } from "@/shared/lib/onboarding/controller.hook";
 import { Icons, Progress } from "@harmonia/ui";
 
 export default function SyncPage() {
-	const isComplete = useOnboardingStore((state) => state.isComplete);
-	const isSyncing = useOnboardingStore((state) => state.isSyncing);
-	const { progress, phase, phasesCompleted } = useOnboardingStoreStream();
+	const { isComplete, isSyncing, stream } = useOnboardingController();
+	const { progress, phase, phasesCompleted } = stream;
 
 	const isIdle = !isSyncing && !isComplete && phasesCompleted === 0;
 	const getStepState = (step: 1 | 2 | 3) => {

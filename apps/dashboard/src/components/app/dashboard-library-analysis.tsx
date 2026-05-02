@@ -1,10 +1,9 @@
 "use client";
 
 import {
-	usePipelineRuns,
-	usePipelineStats,
-} from "@/hooks/queries/use-pipeline";
-import { useLivePipelineProgress } from "@/hooks/use-live-pipeline-progress";
+	useLivePipelineProgress,
+	usePipelineController,
+} from "@/shared/lib/pipeline/controller.hook";
 import { Progress, Skeleton } from "@harmonia/ui";
 
 function DashboardLibraryAnalysisProgressSkeleton() {
@@ -12,24 +11,22 @@ function DashboardLibraryAnalysisProgressSkeleton() {
 }
 
 export function DashboardLibraryAnalysis() {
-	const { data: runs } = usePipelineRuns();
-	const activeRun = runs?.find((r) => r.status === "running") ?? null;
+	const { runs } = usePipelineController();
+	const activeRun = runs.data?.find((r) => r.status === "running") ?? null;
 	const liveProgress = useLivePipelineProgress(activeRun?.id ?? null);
+	const { stats } = usePipelineController(activeRun ? 3000 : false);
+	const statsLoading = stats.isLoading;
 
-	const { data: stats, isLoading: statsLoading } = usePipelineStats(
-		activeRun ? 3000 : false,
-	);
-
-	const totalTracks = stats?.tracks.total ?? 0;
+	const totalTracks = stats.data?.tracks.total ?? 0;
 	const lyricsCollected = liveProgress
 		? liveProgress.lyricsCollected
-		: (stats?.tracks.withLyrics ?? 0);
+		: (stats.data?.tracks.withLyrics ?? 0);
 	const tracksAnalyzed = liveProgress
 		? liveProgress.tracksAnalyzed
-		: (stats?.tracks.classified ?? 0);
+		: (stats.data?.tracks.classified ?? 0);
 	const embedded = liveProgress
 		? liveProgress.embedded
-		: (stats?.tracks.embedded ?? 0);
+		: (stats.data?.tracks.embedded ?? 0);
 
 	const lyricsPercentage =
 		totalTracks > 0 ? (lyricsCollected / totalTracks) * 100 : 0;

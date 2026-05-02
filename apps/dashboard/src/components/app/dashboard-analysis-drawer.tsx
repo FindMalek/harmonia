@@ -1,9 +1,8 @@
 "use client";
 
-import { useCancelPipeline } from "@/hooks/mutations/use-cancel-pipeline";
-import { usePipelineStream } from "@/hooks/use-pipeline-stream";
+import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
+import { usePipelineStream } from "@/shared/lib/pipeline/controller.hook";
 import { cn } from "@/lib/utils";
-import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
 	Button,
 	Drawer,
@@ -25,11 +24,15 @@ const STAGES = [
 ] as const;
 
 export function DashboardAnalysisDrawer() {
-	const { isAnalysisDrawerOpen, setIsAnalysisDrawerOpen, activeRunId } =
-		useOrganizeStore();
+	const {
+		isAnalysisDrawerOpen,
+		setIsAnalysisDrawerOpen,
+		activeRunId,
+		cancelMutation,
+	} = useOrganizeController();
 
 	const streamState = usePipelineStream(activeRunId);
-	const cancelPipeline = useCancelPipeline();
+	const cancelPipeline = cancelMutation;
 
 	// Calculate overall progress percentage
 	const getProgressPercentage = () => {

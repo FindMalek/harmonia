@@ -2,7 +2,7 @@
 
 import { client } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
-import { useOnboardingStore } from "@/shared/lib/onboarding/store";
+import { useOnboardingController } from "@/shared/lib/onboarding/controller.hook";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Button, buttonVariants, cn } from "@harmonia/ui";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,10 +14,8 @@ export function OnboardingFooter() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
-	const reset = useOnboardingStore((s) => s.reset);
-	const isSyncing = useOnboardingStore((s) => s.isSyncing);
-	const isComplete = useOnboardingStore((s) => s.isComplete);
-	const requestStart = useOnboardingStore((s) => s.requestStart);
+	const { reset, isSyncing, isComplete, requestStart } =
+		useOnboardingController();
 	const [isFinalizing, setIsFinalizing] = useState(false);
 
 	// Screen 1: Welcome -> Show "Continue"

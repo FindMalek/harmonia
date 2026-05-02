@@ -5,9 +5,8 @@ import {
 	DashboardPlaylistDetailNotFound,
 	DashboardPlaylistDetailSkeleton,
 } from "@/components/app/dashboard-playlist-detail";
-import { useExportPlaylist } from "@/hooks/mutations/use-export-playlist";
-import { usePlaylistDetail } from "@/hooks/queries/use-playlists";
-import { use } from "react";
+import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
+import { use, useEffect } from "react";
 
 export default function PlaylistDetailPage({
 	params,
@@ -17,8 +16,15 @@ export default function PlaylistDetailPage({
 	const { id } = use(params);
 	const playlistId = Number(id);
 
-	const { data: playlist, isLoading, isError } = usePlaylistDetail(playlistId);
-	const exportMutation = useExportPlaylist();
+	const { setSelectedPlaylist, detail, exportMutation } =
+		usePlaylistsController();
+
+	useEffect(() => {
+		setSelectedPlaylist(playlistId);
+		return () => setSelectedPlaylist(null);
+	}, [playlistId, setSelectedPlaylist]);
+
+	const { data: playlist, isLoading, isError } = detail;
 
 	if (isLoading) {
 		return <DashboardPlaylistDetailSkeleton />;

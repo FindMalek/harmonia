@@ -10,9 +10,7 @@ export function usePipelineController(refetchInterval: number | false = false) {
 	const runs = useQuery({
 		...orpc.pipeline.getAll.queryOptions({ input: {} }),
 		refetchInterval: (query) =>
-			query.state.data?.some(
-				(r: { status: string }) => r.status === "running",
-			)
+			query.state.data?.some((r: { status: string }) => r.status === "running")
 				? 2000
 				: false,
 		refetchIntervalInBackground: false,
@@ -149,8 +147,9 @@ export type LivePipelineProgress = {
 export function useLivePipelineProgress(
 	activeRunId: number | null,
 ): LivePipelineProgress | null {
-	const [liveProgress, setLiveProgress] =
-		useState<LivePipelineProgress | null>(null);
+	const [liveProgress, setLiveProgress] = useState<LivePipelineProgress | null>(
+		null,
+	);
 	const queryClient = useQueryClient();
 	const onCompleteRef = useRef(() => {
 		queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });

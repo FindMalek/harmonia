@@ -36,16 +36,15 @@ export function useOnboardingController() {
 		}),
 	);
 
-	const stream = useOnboardingSyncStream(store);
+	const stream = useOnboardingSyncStream();
 
 	return { ...store, syncMutation, stream };
 }
 
-function useOnboardingSyncStream(
-	store: ReturnType<typeof useOnboardingStore>,
-): OnboardingSyncStream {
+function useOnboardingSyncStream(): OnboardingSyncStream {
 	const queryClient = useQueryClient();
-	const { shouldStart, setSyncing, setComplete, clearStartRequest } = store;
+	const { shouldStart, setSyncing, setComplete, clearStartRequest } =
+		useOnboardingStore();
 
 	const [progress, setProgress] = useState(0);
 	const [phase, setPhase] = useState<SyncPhase | null>(null);
@@ -88,8 +87,7 @@ function useOnboardingSyncStream(
 						});
 						break;
 					} else if (event.event === "failed" || event.event === "error") {
-						const msg =
-							event.event === "failed" ? event.error : event.message;
+						const msg = event.event === "failed" ? event.error : event.message;
 						setError(msg ?? "Unknown error");
 						setSyncing(false);
 						clearStartRequest();

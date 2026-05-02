@@ -63,5 +63,12 @@ export function usePlaylistsController(updateOnSuccess?: () => void) {
 		}),
 	);
 
-	return { ...store, list, detail, exportMutation, exportAllMutation, updateMutation };
+	return {
+		...store,
+		list,
+		detail,
+		exportMutation,
+		exportAllMutation,
+		updateMutation,
+	};
 }

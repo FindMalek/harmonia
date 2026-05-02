@@ -18,11 +18,18 @@ apps/dashboard/src/
     app/                  # feature-specific (prefixed dashboard-{feature}-{role})
     layout/               # page wrappers, nav, providers
     shared/               # truly reusable (empty-state, error-state, page-loader)
-  hooks/
-    mutations/            # use-{action}.ts
-    queries/              # use-{resource}.ts
-  stores/                 # Zustand stores
-  lib/                    # orpc client, query-keys, utils, auth-client
+  shared/
+    api/                  # orpc client, auth-client, session.server, query-keys, error-handler
+    lib/
+      organize/           # store.ts + controller.hook.ts (pipeline run state)
+      pipeline/           # controller.hook.ts (stream, live-progress, runs, stats)
+      playlists/          # store.ts + controller.hook.ts
+      tracks/             # store.ts + controller.hook.ts
+      clusters/           # store.ts + controller.hook.ts
+      onboarding/         # store.ts + controller.hook.ts (sync stream)
+  lib/
+    utils.ts              # cn() only
+    env.ts                # env re-export only
 ```
 
 ## Component Conventions
@@ -34,15 +41,16 @@ apps/dashboard/src/
 
 ## Data Fetching
 
-- Server state: TanStack Query v5 via `orpc` client
-- Queries: `useQuery(orpc.{router}.{method}.queryOptions())`
-- Mutations: `useMutation(orpc.{router}.{method}.mutationOptions({ onSuccess, onError }))`
-- Invalidate via `queryKeys.*` from `@/lib/query-keys`
+- Server state: TanStack Query v5 via `orpc` client (`@/shared/api/orpc`)
+- Use controller hooks from `@/shared/lib/{domain}/controller.hook` — they combine queries, mutations, and store access
+- Invalidate via `queryKeys.*` from `@/shared/api/query-keys`
+- Import `toastError` from `@/shared/api/error-handler` for copy-button error toasts
 
 ## Client State
 
-- Global UI state in Zustand (`useDashboardUI`) — selected IDs, drawer open state, active run
-- No `useState` for cross-component state — use the Zustand store
+- Per-domain Zustand stores in `shared/lib/{domain}/store.ts` — one store per domain, no cross-domain monolith
+- Access via controller hooks; do not import domain stores directly in page files
+- No `useState` for cross-component state — use the domain store via its controller
 
 ## Toast Conventions
 

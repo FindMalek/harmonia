@@ -1,7 +1,7 @@
 "use client";
 
-import { usePipelineStream } from "@/hooks/use-pipeline-stream";
 import { useOrganizeStore } from "@/shared/lib/organize/store";
+import { usePipelineStream } from "@/shared/lib/pipeline/controller.hook";
 import {
 	DASHBOARD_MOBILE_NAV_ITEMS,
 	DASHBOARD_ROUTES,

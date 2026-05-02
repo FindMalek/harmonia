@@ -1,7 +1,7 @@
 "use client";
 
-import { useExportAllPlaylists } from "@/hooks/mutations/use-export-all-playlists";
-import { useOrganize } from "@/hooks/mutations/use-organize";
+import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
+import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 import {
 	Button,
 	DropdownMenu,
@@ -16,8 +16,8 @@ export function DashboardPlaylistsPageHeader({
 }: {
 	hasPlaylists: boolean;
 }) {
-	const organizeMutation = useOrganize();
-	const exportMutation = useExportAllPlaylists();
+	const { organizeMutation } = useOrganizeController();
+	const { exportAllMutation: exportMutation } = usePlaylistsController();
 	const isBusy = exportMutation.isPending || organizeMutation.isPending;
 
 	return (
