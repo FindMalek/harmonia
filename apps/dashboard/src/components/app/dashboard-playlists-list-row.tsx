@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { playlistListItemSchema } from "@harmonia/common/schemas";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -9,14 +10,11 @@ import {
 } from "@harmonia/ui";
 import Link from "next/link";
 import { Fragment } from "react";
+import type { z } from "zod";
 
-export type DashboardPlaylistsListRowPlaylist = {
-	id: number;
-	name: string;
-	description: string | null;
-	trackCount: number;
-	tags: string[] | null;
-};
+export type DashboardPlaylistsListRowPlaylist = z.infer<
+	typeof playlistListItemSchema
+>;
 
 export function DashboardPlaylistsListRow({
 	playlist,
@@ -79,6 +77,29 @@ export function DashboardPlaylistsListRow({
 	);
 }
 
+export function DashboardPlaylistsListRowSkeleton({
+	className,
+}: {
+	className?: string;
+}) {
+	return (
+		<div className={cn("block py-6", className)}>
+			<div className="flex items-center justify-between gap-3">
+				<Skeleton className="h-3 w-24" />
+				<span
+					className="flex size-11 shrink-0 items-center justify-end"
+					aria-hidden
+				>
+					<Skeleton className="size-5 shrink-0 rounded-none" />
+				</span>
+			</div>
+			<Skeleton className="mt-3 h-6 w-3/5 max-w-xs" />
+			<Skeleton className="mt-2 h-4 w-full max-w-md" />
+			<Skeleton className="mt-3 h-3 w-4/5 max-w-sm" />
+		</div>
+	);
+}
+
 const PLAYLIST_LIST_SKELETON_ROW_KEYS = [
 	"pl-sk-1",
 	"pl-sk-2",
@@ -90,15 +111,7 @@ export function DashboardPlaylistsListSkeleton() {
 	return (
 		<div className="divide-y divide-border">
 			{PLAYLIST_LIST_SKELETON_ROW_KEYS.map((rowKey) => (
-				<div key={rowKey} className="space-y-3 py-6">
-					<div className="flex items-center justify-between gap-3">
-						<Skeleton className="h-3 w-24" />
-						<Skeleton className="size-5 shrink-0 rounded-none" />
-					</div>
-					<Skeleton className="h-6 w-3/5 max-w-xs" />
-					<Skeleton className="h-4 w-full max-w-md" />
-					<Skeleton className="h-3 w-4/5 max-w-sm" />
-				</div>
+				<DashboardPlaylistsListRowSkeleton key={rowKey} />
 			))}
 		</div>
 	);
