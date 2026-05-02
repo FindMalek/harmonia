@@ -58,6 +58,14 @@ apps/dashboard/src/
 - No `toast.success()` on pipeline launch (drawer opening is feedback enough)
 - Error toasts always provide a "Copy" action for the error message
 
+## Container Patterns
+
+- **`DashboardSettingsSection`** (`components/app/dashboard-settings-section.tsx`) — bordered container with uppercase section label. Use for settings, metadata, or any grouped-rows page section.
+- **`DashboardSettingsRow`** — label left, value right with `border-b`. Use inside `DashboardSettingsSection`.
+- **`DashboardSettingsNavRow`** — tappable row with label, subtitle, and `chevronRight`. Use for preference rows that open a sub-action.
+- **`DashboardPlaylistDetailSectionLabel`** — standalone label + `Separator`. Use when only a section header is needed without a bordered container.
+- Inline row dividers: `border-b py-4 last:border-b-0` directly on each row element.
+
 ## Navigation
 
 - Routes defined in `@harmonia/common/utils/routes` as `DASHBOARD_ROUTES`

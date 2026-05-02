@@ -6,9 +6,6 @@ import { useTracksController } from "@/shared/lib/tracks/controller.hook";
 import {
 	Badge,
 	Button,
-	Card,
-	CardContent,
-	CardHeader,
 	Input,
 	Sheet,
 	SheetContent,
