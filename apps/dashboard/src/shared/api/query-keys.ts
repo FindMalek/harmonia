@@ -1,9 +1,5 @@
 import { orpc } from "./orpc";
 
-/**
- * Centralized query keys for TanStack Query invalidation.
- * Use with queryClient.invalidateQueries({ queryKey: queryKeys.playlists() })
- */
 export const queryKeys = {
 	clusters: () => orpc.clusters.key(),
 	playlists: () => orpc.playlists.key(),

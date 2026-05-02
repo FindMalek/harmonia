@@ -1,11 +1,11 @@
 "use client";
 
-import { client } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
-import { useOnboardingSync } from "@/stores/onboarding-sync";
+import { client, orpc } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
 import type { SyncPhase } from "@harmonia/common/types";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useOnboardingStore } from "./store";
 
 export type OnboardingSyncStream = {
 	progress: number;
@@ -15,14 +15,33 @@ export type OnboardingSyncStream = {
 	isStreaming: boolean;
 };
 
+export function useOnboardingController() {
+	const store = useOnboardingStore();
+	const queryClient = useQueryClient();
+
+	const syncMutation = useMutation(
+		orpc.spotify.syncLibrary.mutationOptions({
+			onSuccess: () => {
+				store.setComplete(true);
+				store.setSyncing(false);
+				void queryClient.invalidateQueries({
+					queryKey: queryKeys.spotifyLibraryStats(),
+				});
+			},
+			onError: (error: Error) => {
+				console.error("Sync failed", error);
+				store.setSyncing(false);
+			},
+		}),
+	);
+
+	return { ...store, syncMutation };
+}
+
 export function useOnboardingSyncStream(): OnboardingSyncStream {
 	const queryClient = useQueryClient();
-	const shouldStart = useOnboardingSync((state) => state.shouldStart);
-	const setSyncing = useOnboardingSync((state) => state.setSyncing);
-	const setComplete = useOnboardingSync((state) => state.setComplete);
-	const clearStartRequest = useOnboardingSync(
-		(state) => state.clearStartRequest,
-	);
+	const { shouldStart, setSyncing, setComplete, clearStartRequest } =
+		useOnboardingStore();
 
 	const [progress, setProgress] = useState(0);
 	const [phase, setPhase] = useState<SyncPhase | null>(null);
@@ -79,9 +98,7 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 					clearStartRequest();
 				}
 			} finally {
-				if (!cancelled) {
-					setIsStreaming(false);
-				}
+				if (!cancelled) setIsStreaming(false);
 			}
 		};
 
@@ -93,11 +110,5 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 		};
 	}, [clearStartRequest, queryClient, setComplete, setSyncing, shouldStart]);
 
-	return {
-		progress,
-		phase,
-		phasesCompleted,
-		error,
-		isStreaming,
-	};
+	return { progress, phase, phasesCompleted, error, isStreaming };
 }

@@ -7,18 +7,13 @@ import {
 import { DashboardPlaylistsPageHeader } from "@/components/app/dashboard-playlists-page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
-import { usePlaylists } from "@/hooks/queries/use-playlists";
+import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Icons } from "@harmonia/ui";
 
 export default function PlaylistsPage() {
-	const {
-		data: playlists,
-		isLoading,
-		isError,
-		error,
-		refetch,
-	} = usePlaylists();
+	const { list } = usePlaylistsController();
+	const { data: playlists, isLoading, isError, error, refetch } = list;
 
 	if (isError) {
 		return (

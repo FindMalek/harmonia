@@ -10,8 +10,8 @@ import { Suspense } from "react";
 import { DashboardLibraryOverviewSkeleton } from "@/components/app/dashboard-library-overview";
 import { DashboardLibraryStatsWrapper } from "@/components/app/dashboard-library-stats-wrapper";
 import { DashboardShell } from "@/components/app/dashboard-shell";
-import { getServerSession } from "@/lib/get-server-session";
-import { orpc } from "@/lib/orpc";
+import { getServerSession } from "@/shared/api/session.server";
+import { orpc } from "@/shared/api/orpc";
 
 export const revalidate = 60;
 
