@@ -16,8 +16,8 @@ export function DashboardPlaylistsPageHeader({
 }: {
 	hasPlaylists: boolean;
 }) {
-	const exportMutation = useExportAllPlaylists();
 	const organizeMutation = useOrganize();
+	const exportMutation = useExportAllPlaylists();
 	const isBusy = exportMutation.isPending || organizeMutation.isPending;
 
 	return (

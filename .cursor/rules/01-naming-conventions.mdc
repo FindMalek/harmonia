@@ -1,0 +1,66 @@
+---
+description: File, variable, component, and schema naming conventions across the monorepo
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# Naming Conventions
+
+## Files
+
+All files use **kebab-case**.
+
+| Type | File pattern | Export pattern |
+|---|---|---|
+| Components | `dashboard-{feature}-{role}.tsx` | `PascalCase` |
+| Hooks (query) | `use-{resource}.ts` | `use{Resource}()` |
+| Hooks (mutation) | `use-{action}.ts` | `use{Action}()` |
+| Stores | `{name}.ts` in `stores/` | `use{Name}()` |
+| Utilities | `{name}.ts` | camelCase functions |
+| Schema files | `{entity}.ts` | see Schema Naming below |
+
+## Components
+
+- File: `dashboard-library-analysis.tsx`
+- Export: `DashboardLibraryAnalysis`
+- Always co-locate a skeleton: `DashboardLibraryAnalysisSkeleton`
+- `"use client"` only when browser APIs, event handlers, or hooks are used
+
+## Schema Naming (Zod)
+
+- Input schemas: `{entity}{Action}Input` — e.g. `playlistGetByIdInput`
+- Output schemas: `{entity}{Action}OutputSchema` — e.g. `playlistGetByIdOutputSchema`
+- Inferred types: `type PlaylistGetById = z.infer<typeof playlistGetByIdOutputSchema>`
+- Enums: `{entity}{Field}Enum` — e.g. `pipelineStatusEnum`
+- Metadata schemas: `{entity}MetadataSchema` — e.g. `playlistMetadataSchema`
+
+## Import Aliases
+
+Within each app (`api`, `dashboard`, `web`), use `@/*` for local imports:
+```typescript
+import { Button } from "@/components/ui/button";
+import { useOrganize } from "@/hooks/mutations/use-organize";
+```
+
+Across packages, use workspace package names:
+```typescript
+import { db } from "@harmonia/db";
+import { track } from "@harmonia/db/schema/track";
+import { env } from "@harmonia/env/server";
+import { auth } from "@harmonia/core";
+import { logger } from "@harmonia/logger";
+```
+
+## Constants
+
+`UPPER_SNAKE_CASE` for module-level constants:
+```typescript
+const MAX_TRACKS_PER_ARTIST = 4;
+const EMBEDDING_BATCH_SIZE = 64;
+```
+
+## Commits
+
+`feat:` `fix:` `chore:` `perf:` `refactor:` prefixes. No scope required.

@@ -1,85 +1,81 @@
-# harmonia
+# Harmonia
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, ORPC, and more.
+> AI-powered music organization — sync your Spotify library, classify every track, and auto-generate playlists by mood, theme, and vibe.
 
-## Features
+## What it does
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **shadcn/ui** - Reusable UI components
-- **oRPC** - End-to-end type-safe APIs with OpenAPI integration
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Turborepo** - Optimized monorepo build system
+1. **Sync** — pulls your full Spotify saved tracks + playlists
+2. **Classify** — runs each track through an LLM to extract mood, themes, vibe, energy, era, and genre
+3. **Embed** — generates semantic vector embeddings from the classification
+4. **Cluster** — groups tracks by similarity using DBSCAN
+5. **Generate** — creates AI-named playlists per cluster, enforcing artist diversity
+6. **Export** — pushes playlists back to Spotify
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Apps | Next.js 15 (App Router), React 19 |
+| API | oRPC (type-safe RPC + OpenAPI) |
+| Auth | Better Auth + Spotify OAuth |
+| Database | PostgreSQL + Drizzle ORM (Neon in production) |
+| Background jobs | Trigger.dev v4 |
+| LLM | Groq (`openai/gpt-oss-120b`) |
+| Embeddings | OpenAI `text-embedding-3-small` |
+| Clustering | DBSCAN (`density-clustering`) |
+| Monorepo | pnpm + Turborepo |
+| Formatting | Biome |
+
+## Repo Structure
+
+```
+apps/
+  api         Next.js API server (port 3002)
+  dashboard   Authenticated user dashboard (port 3003)
+  web         Public-facing pages (port 3001)
+
+packages/
+  auth        Better Auth + Spotify OAuth
+  common      Schemas, services, Trigger.dev tasks
+  config      Shared TypeScript config
+  core        Auth/DB singletons
+  db          Drizzle schema + migrations
+  env         Zod-validated environment variables
+  logger      Pino structured logging
+  orpc        oRPC routers, procedures, context
+  tracing     OpenTelemetry
+  ui          shadcn/ui component library
+```
 
 ## Getting Started
 
-First, install the dependencies:
+**Prerequisites:** Node.js 20+, pnpm 10+, Docker Desktop
 
 ```bash
+git clone https://github.com/FindMalek/harmonia.git
+cd harmonia
 pnpm install
+cp .env.example .env     # fill in values
+pnpm db:setup            # start local Postgres + push schema
+pnpm dev:api             # start API + Trigger.dev worker
 ```
 
-## Database Setup
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full setup guide.
 
-This project uses PostgreSQL with Drizzle ORM.
+## Environment Variables
 
-1. Copy `.env.example` to `.env` at the project root and fill in your values.
-2. Make sure you have a PostgreSQL database set up (e.g. Neon).
-3. Apply the schema to your database:
+All variables are prefixed `HARMONIA_` (server) or `NEXT_PUBLIC_HARMONIA_` (client). Copy `.env.example` and fill in:
 
-```bash
-pnpm run db:push
-```
+- `HARMONIA_DATABASE_URL` — local: `postgresql://postgres:password@localhost:5433/harmonia`
+- `HARMONIA_SPOTIFY_CLIENT_ID` / `HARMONIA_SPOTIFY_CLIENT_SECRET` — from Spotify Developer Dashboard
+- `HARMONIA_OPENAI_API_KEY` — for embeddings
+- `HARMONIA_GROQ_API_KEY` — for LLM classification and playlist generation
+- `HARMONIA_TRIGGER_SECRET_KEY` / `HARMONIA_TRIGGER_PROJECT_REF` — from [cloud.trigger.dev](https://cloud.trigger.dev)
 
-- **db:push** – Syncs schema directly to the database (good for dev, no migration files).
-- **db:migrate** – Runs migration files in `packages/db/src/migrations/` (use for production).
+## Contributing
 
-### CI migrations
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-The `.github/workflows/drizzle-migrate.yml` workflow runs migrations on push to `main` when schema or migration files change. Add the `PRODUCTION_DATABASE_URL` secret in **GitHub repo → Settings → Secrets and variables → Actions**.
+## License
 
-Then, run the development server:
-
-```bash
-pnpm run dev
-```
-
-Open [http://localhost:3001](http://localhost:3001) (or [http://127.0.0.1:3001](http://127.0.0.1:3001) if using Spotify) in your browser to see the fullstack application.
-
-### Spotify (optional)
-
-To sign in with Spotify and run the organize pipeline (sync liked tracks, lyrics, LLM, embeddings, clustering):
-
-1. Create an app at [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard).
-2. In the app settings, set **Redirect URI** to `{BETTER_AUTH_URL}/api/auth/callback/spotify` (e.g. `http://127.0.0.1:3001/api/auth/callback/spotify` for local dev — use `127.0.0.1`, not `localhost`).
-3. Copy **Client ID** and **Client Secret** into `.env` as `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`.
-4. Set `NEXT_PUBLIC_APP_URL` to match `BETTER_AUTH_URL` (e.g. `http://127.0.0.1:3001`) for correct OAuth redirects.
-5. Restart the dev server, then use **Sign in with Spotify** on the login page (or **Link Spotify** on the dashboard if you already have an account).
-6. On the dashboard, click **Run organize pipeline** to sync your liked tracks and run the full pipeline.
-
-**Spotify 403 troubleshooting:** If you get a 403 on sync (e.g. `/me/tracks`), your token may lack `user-library-read`. Sign out and sign in again with Spotify to re-authorize. Or go to [Spotify Account Settings → Apps](https://www.spotify.com/account/apps/), remove Harmonia access, then sign in with Spotify again in the app.
-
-## Project Structure
-
-```
-harmonia/
-├── apps/
-│   └── web/         # Fullstack application (Next.js)
-├── packages/
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `pnpm run dev`: Start all applications in development mode
-- `pnpm run build`: Build all applications
-- `pnpm run check-types`: Check TypeScript types across all apps
-- `pnpm run db:push`: Push schema changes to database
-- `pnpm run db:generate`: Generate database client/types
-- `pnpm run db:migrate`: Run database migrations
-- `pnpm run db:studio`: Open database studio UI
+MIT

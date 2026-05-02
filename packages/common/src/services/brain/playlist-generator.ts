@@ -138,9 +138,11 @@ export async function generatePlaylists(
 						},
 					);
 
-					const tags = (
-						meta?.topVibes?.slice(0, 3) ?? [...new Set(vibes)].slice(0, 3)
-					).map((t) => t.toLowerCase());
+					const tags = [
+						...new Set(meta?.topVibes?.length ? meta.topVibes : vibes),
+					]
+						.slice(0, 3)
+						.map((t) => t.toLowerCase());
 
 					const [inserted] = await db
 						.insert(playlist)

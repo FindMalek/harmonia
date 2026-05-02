@@ -1,0 +1,35 @@
+---
+description: API app conventions — route structure, CORS, error handling, oRPC wiring
+globs:
+  - "apps/api/**"
+alwaysApply: false
+---
+
+# API App (`apps/api`)
+
+## Route Structure
+
+```
+apps/api/src/app/api/
+  [[...rest]]/route.ts   — catch-all for oRPC + OpenAPI
+  auth/[...all]/route.ts — Better Auth handlers
+```
+
+No other route files. All business logic lives in `packages/orpc/src/routers/`.
+
+## Key Patterns
+
+- CORS headers applied globally in `[[...rest]]/route.ts` — never add per-route CORS
+- Errors serialised via `payload.ts` — never expose raw stack traces in production
+- OpenTelemetry flushed before response on Vercel (`tracing.flushTelemetry()`)
+
+## Trigger.dev
+
+- Config: `apps/api/trigger.config.ts` — `maxDuration: 1800`, `dirs: ["./src/trigger"]`
+- Task re-exports for CLI discovery: `apps/api/src/trigger/organize.ts`
+- Dev script: `pnpm trigger:dev` (reads `HARMONIA_TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs`)
+
+## Environment
+
+- Loaded via `scripts/with-root-env.mjs` (maps `HARMONIA_TRIGGER_*` → `TRIGGER_*`)
+- Import env: `import { apiEnv } from "@harmonia/env/presets/api"`

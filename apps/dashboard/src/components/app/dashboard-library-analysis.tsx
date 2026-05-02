@@ -7,6 +7,10 @@ import {
 import { useLivePipelineProgress } from "@/hooks/use-live-pipeline-progress";
 import { Progress, Skeleton } from "@harmonia/ui";
 
+function DashboardLibraryAnalysisProgressSkeleton() {
+	return <Skeleton className="h-1 w-full" />;
+}
+
 export function DashboardLibraryAnalysis() {
 	const { data: runs } = usePipelineRuns();
 	const activeRun = runs?.find((r) => r.status === "running") ?? null;
@@ -48,7 +52,7 @@ export function DashboardLibraryAnalysis() {
 						</span>
 					</div>
 					{statsLoading && !liveProgress ? (
-						<Skeleton className="h-1 w-full" />
+						<DashboardLibraryAnalysisProgressSkeleton />
 					) : (
 						<Progress value={analyzedPercentage} className="h-1" />
 					)}
@@ -62,7 +66,7 @@ export function DashboardLibraryAnalysis() {
 						</span>
 					</div>
 					{statsLoading && !liveProgress ? (
-						<Skeleton className="h-1 w-full" />
+						<DashboardLibraryAnalysisProgressSkeleton />
 					) : (
 						<Progress value={lyricsPercentage} className="h-1" />
 					)}
@@ -76,7 +80,7 @@ export function DashboardLibraryAnalysis() {
 						</span>
 					</div>
 					{statsLoading && !liveProgress ? (
-						<Skeleton className="h-1 w-full" />
+						<DashboardLibraryAnalysisProgressSkeleton />
 					) : (
 						<Progress value={embedPercentage} className="h-1" />
 					)}

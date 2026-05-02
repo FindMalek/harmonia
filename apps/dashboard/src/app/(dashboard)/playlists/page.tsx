@@ -1,7 +1,9 @@
 "use client";
 
-import { DashboardPlaylistsListRow } from "@/components/app/dashboard-playlists-list-row";
-import { DashboardPlaylistsListSkeleton } from "@/components/app/dashboard-playlists-list-skeleton";
+import {
+	DashboardPlaylistsListRow,
+	DashboardPlaylistsListSkeleton,
+} from "@/components/app/dashboard-playlists-list-row";
 import { DashboardPlaylistsPageHeader } from "@/components/app/dashboard-playlists-page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";

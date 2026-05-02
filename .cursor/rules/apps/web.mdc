@@ -1,0 +1,19 @@
+---
+description: Web app conventions — public-facing pages, minimal client state
+globs:
+  - "apps/web/**"
+alwaysApply: false
+---
+
+# Web App (`apps/web`)
+
+## Purpose
+
+Public-facing marketing/landing pages. No authenticated routes. Minimal JavaScript.
+
+## Conventions
+
+- Prefer server components — avoid `"use client"` unless strictly necessary
+- `@/*` alias for local imports
+- No Zustand, no TanStack Query — static or server-fetched data only
+- Port: 3001

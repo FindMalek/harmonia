@@ -1,0 +1,56 @@
+---
+description: Dashboard app conventions — component structure, data fetching, state, naming
+globs:
+  - "apps/dashboard/**"
+alwaysApply: false
+---
+
+# Dashboard App (`apps/dashboard`)
+
+## Directory Structure
+
+```
+apps/dashboard/src/
+  app/(dashboard)/        # authenticated routes
+  app/(onboarding)/       # onboarding flow
+  app/login/
+  components/
+    app/                  # feature-specific (prefixed dashboard-{feature}-{role})
+    layout/               # page wrappers, nav, providers
+    shared/               # truly reusable (empty-state, error-state, page-loader)
+  hooks/
+    mutations/            # use-{action}.ts
+    queries/              # use-{resource}.ts
+  stores/                 # Zustand stores
+  lib/                    # orpc client, query-keys, utils, auth-client
+```
+
+## Component Conventions
+
+- File: `dashboard-{feature}-{role}.tsx` (kebab-case)
+- Export: `PascalCase` matching the filename
+- Always co-locate a skeleton: `export function DashboardXyzSkeleton() { ... }`
+- Extract inline components out of page files into `components/app/`
+
+## Data Fetching
+
+- Server state: TanStack Query v5 via `orpc` client
+- Queries: `useQuery(orpc.{router}.{method}.queryOptions())`
+- Mutations: `useMutation(orpc.{router}.{method}.mutationOptions({ onSuccess, onError }))`
+- Invalidate via `queryKeys.*` from `@/lib/query-keys`
+
+## Client State
+
+- Global UI state in Zustand (`useDashboardUI`) — selected IDs, drawer open state, active run
+- No `useState` for cross-component state — use the Zustand store
+
+## Toast Conventions
+
+- `toast.error()` for failures
+- No `toast.success()` on pipeline launch (drawer opening is feedback enough)
+- Error toasts always provide a "Copy" action for the error message
+
+## Navigation
+
+- Routes defined in `@harmonia/common/utils/routes` as `DASHBOARD_ROUTES`
+- Use `Link` from `next/link` for all navigation — no `window.location.href` except hard redirects
