@@ -1,4 +1,4 @@
-import { orpc } from "@/lib/orpc";
+import { orpc } from "@/shared/api/orpc";
 import { useQuery } from "@tanstack/react-query";
 
 export function usePipelineRuns() {

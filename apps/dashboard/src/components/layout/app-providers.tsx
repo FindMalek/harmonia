@@ -3,7 +3,7 @@
 import { Providers } from "@harmonia/ui";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import { queryClient } from "@/lib/orpc";
+import { queryClient } from "@/shared/api/orpc";
 
 export default function AppProviders({
 	children,

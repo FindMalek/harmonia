@@ -1,7 +1,7 @@
 "use client";
 
 import { usePipelineStream } from "@/hooks/use-pipeline-stream";
-import { useDashboardUI } from "@/stores/dashboard-ui";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
 	DASHBOARD_MOBILE_NAV_ITEMS,
 	DASHBOARD_ROUTES,
@@ -15,7 +15,7 @@ type Href = LinkProps<string>["href"];
 export function MobileBottomNav() {
 	const pathname = usePathname();
 	const { activeRunId, isAnalysisDrawerOpen, setIsAnalysisDrawerOpen } =
-		useDashboardUI();
+		useOrganizeStore();
 	const streamState = usePipelineStream(activeRunId);
 
 	const isPlaylistDetail =

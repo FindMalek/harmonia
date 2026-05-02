@@ -1,12 +1,12 @@
-import { orpc } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
-import { useOnboardingSync } from "@/stores/onboarding-sync";
+import { orpc } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
+import { useOnboardingStore } from "@/shared/lib/onboarding/store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useOnboardingSyncLibrary() {
+export function useOnboardingStoreLibrary() {
 	const queryClient = useQueryClient();
-	const setComplete = useOnboardingSync((state) => state.setComplete);
-	const setSyncing = useOnboardingSync((state) => state.setSyncing);
+	const setComplete = useOnboardingStore((state) => state.setComplete);
+	const setSyncing = useOnboardingStore((state) => state.setSyncing);
 
 	return useMutation(
 		orpc.spotify.syncLibrary.mutationOptions({

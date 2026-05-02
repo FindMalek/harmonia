@@ -1,6 +1,6 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/shared/api/auth-client";
 import { env } from "@/lib/env";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Button, Icons } from "@harmonia/ui";

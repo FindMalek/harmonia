@@ -17,10 +17,6 @@ export type Session = {
 	};
 };
 
-/**
- * Fetch session from API server with forwarded cookies.
- * Dashboard app is standalone and delegates auth to the API.
- */
 export async function getServerSession(): Promise<Session | null> {
 	const headersList = await headers();
 	const cookie = headersList.get("cookie");
@@ -39,7 +35,6 @@ export async function getServerSession(): Promise<Session | null> {
 	}
 
 	const data = (await res.json()) as { data?: Session } | Session | null;
-	// better-auth returns { data: session } or session directly
 	if (data && typeof data === "object" && "data" in data && data.data) {
 		return data.data as Session;
 	}

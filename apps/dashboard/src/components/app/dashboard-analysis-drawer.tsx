@@ -3,7 +3,7 @@
 import { useCancelPipeline } from "@/hooks/mutations/use-cancel-pipeline";
 import { usePipelineStream } from "@/hooks/use-pipeline-stream";
 import { cn } from "@/lib/utils";
-import { useDashboardUI } from "@/stores/dashboard-ui";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
 	Button,
 	Drawer,
@@ -26,7 +26,7 @@ const STAGES = [
 
 export function DashboardAnalysisDrawer() {
 	const { isAnalysisDrawerOpen, setIsAnalysisDrawerOpen, activeRunId } =
-		useDashboardUI();
+		useOrganizeStore();
 
 	const streamState = usePipelineStream(activeRunId);
 	const cancelPipeline = useCancelPipeline();

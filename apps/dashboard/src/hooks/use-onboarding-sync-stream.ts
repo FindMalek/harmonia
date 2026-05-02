@@ -1,8 +1,8 @@
 "use client";
 
-import { client } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
-import { useOnboardingSync } from "@/stores/onboarding-sync";
+import { client } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
+import { useOnboardingStore } from "@/shared/lib/onboarding/store";
 import type { SyncPhase } from "@harmonia/common/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -15,12 +15,12 @@ export type OnboardingSyncStream = {
 	isStreaming: boolean;
 };
 
-export function useOnboardingSyncStream(): OnboardingSyncStream {
+export function useOnboardingStoreStream(): OnboardingSyncStream {
 	const queryClient = useQueryClient();
-	const shouldStart = useOnboardingSync((state) => state.shouldStart);
-	const setSyncing = useOnboardingSync((state) => state.setSyncing);
-	const setComplete = useOnboardingSync((state) => state.setComplete);
-	const clearStartRequest = useOnboardingSync(
+	const shouldStart = useOnboardingStore((state) => state.shouldStart);
+	const setSyncing = useOnboardingStore((state) => state.setSyncing);
+	const setComplete = useOnboardingStore((state) => state.setComplete);
+	const clearStartRequest = useOnboardingStore(
 		(state) => state.clearStartRequest,
 	);
 

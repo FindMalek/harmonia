@@ -1,7 +1,7 @@
-import { authClient } from "@/lib/auth-client";
-import { orpc } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
-import { useDashboardUI } from "@/stores/dashboard-ui";
+import { authClient } from "@/shared/api/auth-client";
+import { orpc } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ function toastErrorWithCopy(msg: string) {
 export function useOrganize() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
-	const { setActiveRunId, setIsAnalysisDrawerOpen } = useDashboardUI();
+	const { setActiveRunId, setIsAnalysisDrawerOpen } = useOrganizeStore();
 
 	return useMutation(
 		orpc.organize.run.mutationOptions({

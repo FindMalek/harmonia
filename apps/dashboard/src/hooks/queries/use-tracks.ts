@@ -1,7 +1,7 @@
-import { orpc } from "@/lib/orpc";
+import { orpc } from "@/shared/api/orpc";
 import { useQuery } from "@tanstack/react-query";
 
-import type { TracksFilters } from "@/stores/dashboard-ui";
+import type { TracksFilters } from "@/shared/lib/tracks/store";
 
 export function useTracks(filters: TracksFilters) {
 	return useQuery(

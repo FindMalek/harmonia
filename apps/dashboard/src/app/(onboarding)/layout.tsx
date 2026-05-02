@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { OnboardingFooter } from "@/components/layout/onboarding-footer";
 import { Header } from "@/components/shared/header";
-import { getServerSession } from "@/lib/get-server-session";
+import { getServerSession } from "@/shared/api/session.server";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 
 export default async function OnboardingLayout({

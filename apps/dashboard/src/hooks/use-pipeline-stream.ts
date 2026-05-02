@@ -1,4 +1,4 @@
-import { client } from "@/lib/orpc";
+import { client } from "@/shared/api/orpc";
 import { useEffect, useState } from "react";
 
 export type PipelineProgressStage = {

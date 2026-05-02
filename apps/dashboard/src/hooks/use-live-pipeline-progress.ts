@@ -1,7 +1,7 @@
 "use client";
 
-import { client } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
+import { client } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 

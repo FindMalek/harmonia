@@ -1,5 +1,5 @@
-import { orpc } from "@/lib/orpc";
-import { queryKeys } from "@/lib/query-keys";
+import { orpc } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

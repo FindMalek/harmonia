@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface OnboardingSyncStore {
+interface OnboardingStore {
 	isSyncing: boolean;
 	isComplete: boolean;
 	shouldStart: boolean;
@@ -11,7 +11,7 @@ interface OnboardingSyncStore {
 	reset: () => void;
 }
 
-export const useOnboardingSync = create<OnboardingSyncStore>((set) => ({
+export const useOnboardingStore = create<OnboardingStore>((set) => ({
 	isSyncing: false,
 	isComplete: false,
 	shouldStart: false,
