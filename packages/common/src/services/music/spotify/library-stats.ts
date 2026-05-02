@@ -52,12 +52,14 @@ export async function refreshSpotifyLibraryStats(
 					totalPlaylists: cached.totalPlaylists,
 					uniqueAlbums: cached.uniqueAlbums,
 					uniqueArtists: cached.uniqueArtists,
+					updatedAt: cached.updatedAt ?? null,
 				}
 			: {
 					totalTracks: 0,
 					totalPlaylists: 0,
 					uniqueAlbums: 0,
 					uniqueArtists: 0,
+					updatedAt: null,
 				};
 	}
 
@@ -121,6 +123,7 @@ export async function refreshSpotifyLibraryStats(
 	);
 
 	const stats = toStats(trackIds, totalPlaylists, albumKeys, artistKeys);
+	const now = new Date();
 
 	await db
 		.insert(userSpotifyLibraryStats)
@@ -138,11 +141,11 @@ export async function refreshSpotifyLibraryStats(
 				totalPlaylists: stats.totalPlaylists,
 				uniqueAlbums: stats.uniqueAlbums,
 				uniqueArtists: stats.uniqueArtists,
-				updatedAt: new Date(),
+				updatedAt: now,
 			},
 		});
 
-	return stats;
+	return { ...stats, updatedAt: now };
 }
 
 /**
@@ -170,6 +173,7 @@ export async function getSpotifyLibraryStats(
 			totalPlaylists: cached.totalPlaylists,
 			uniqueAlbums: cached.uniqueAlbums,
 			uniqueArtists: cached.uniqueArtists,
+			updatedAt: cached.updatedAt ?? null,
 		};
 	}
 
@@ -180,6 +184,7 @@ export async function getSpotifyLibraryStats(
 			totalPlaylists: cached.totalPlaylists,
 			uniqueAlbums: cached.uniqueAlbums,
 			uniqueArtists: cached.uniqueArtists,
+			updatedAt: cached.updatedAt ?? null,
 		};
 
 		const existing = refreshLocks.get(userId);
