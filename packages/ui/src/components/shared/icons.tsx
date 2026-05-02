@@ -15,6 +15,7 @@ import {
 	IconAlertCircle,
 	IconAlertOctagon,
 	IconAlertTriangle,
+	IconArrowLeft,
 	IconArrowUpRight,
 	IconBrain,
 	IconBrandBandlab,
@@ -28,6 +29,7 @@ import {
 	IconCopy,
 	IconDisc,
 	IconDots,
+	IconExternalLink,
 	IconFileText,
 	IconInfoCircle,
 	IconLayoutBoard,
@@ -61,6 +63,8 @@ export const Icons = {
 	selector: IconSelector,
 	copy: IconCopy,
 	trash: IconTrash,
+	externalLink: IconExternalLink,
+	arrowLeft: IconArrowLeft,
 
 	// Chevrons
 	chevronDown: IconChevronDown,
