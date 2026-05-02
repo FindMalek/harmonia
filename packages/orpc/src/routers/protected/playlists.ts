@@ -11,7 +11,9 @@ import {
 	playlistUpdateOutputSchema,
 } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
-import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
+import { cluster } from "@harmonia/db/schema/cluster";
+import type { ClusterMeta } from "@harmonia/db/schema/cluster";
+import { playlist, playlistClusters, playlistTracks } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -52,6 +54,7 @@ export const playlistsRouter = {
 					name: track.name,
 					artistNames: track.artistNames,
 					albumName: track.albumName,
+					albumImageUrl: track.albumImageUrl,
 					durationMs: track.durationMs,
 					llmMood: track.llmMood,
 					llmTags: track.llmTags,
@@ -62,9 +65,21 @@ export const playlistsRouter = {
 				.where(eq(playlistTracks.playlistId, input.id))
 				.orderBy(playlistTracks.position);
 
+			const [clusterRow] = await db
+				.select({ metadata: cluster.metadata })
+				.from(playlistClusters)
+				.innerJoin(cluster, eq(cluster.id, playlistClusters.clusterId))
+				.where(eq(playlistClusters.playlistId, input.id))
+				.limit(1);
+
+			const meta = clusterRow?.metadata as ClusterMeta | null;
+
 			return {
 				...result,
 				tracks,
+				mood: meta?.dominantMood ?? null,
+				energy: meta?.dominantEnergy ?? null,
+				themes: meta?.topThemes ?? null,
 			};
 		}),
 

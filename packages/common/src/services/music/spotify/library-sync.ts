@@ -32,6 +32,7 @@ type TrackForUpsert = {
 	name: string;
 	artistNames: string;
 	albumName: string | null;
+	albumImageUrl: string | null;
 	durationMs: number | null;
 };
 
@@ -41,7 +42,7 @@ function normalizeTrack(t: {
 	uri?: string;
 	duration_ms?: number | null;
 	artists?: Array<{ name: string }>;
-	album?: { name: string } | null;
+	album?: { name: string; images?: Array<{ url: string }> } | null;
 }): TrackForUpsert | null {
 	if (!t?.id) return null;
 	return {
@@ -50,6 +51,8 @@ function normalizeTrack(t: {
 		name: t.name,
 		artistNames: JSON.stringify((t.artists ?? []).map((a) => a.name)),
 		albumName: t.album?.name ?? null,
+		albumImageUrl:
+			t.album?.images?.[2]?.url ?? t.album?.images?.[0]?.url ?? null,
 		durationMs: t.duration_ms ?? null,
 	};
 }
@@ -292,6 +295,7 @@ export async function syncLibraryTracks(
 		name: t.name,
 		artistNames: t.artistNames,
 		albumName: t.albumName,
+		albumImageUrl: t.albumImageUrl,
 		durationMs: t.durationMs,
 		spotifyGenres: null,
 		lyricsStatus: "pending" as const,
@@ -311,6 +315,7 @@ export async function syncLibraryTracks(
 					name: sql`excluded.name`,
 					artistNames: sql`excluded.artist_names`,
 					albumName: sql`excluded.album_name`,
+					albumImageUrl: sql`excluded.album_image_url`,
 					durationMs: sql`excluded.duration_ms`,
 					spotifyGenres: sql`excluded.spotify_genres`,
 					updatedAt: sql`excluded.updated_at`,

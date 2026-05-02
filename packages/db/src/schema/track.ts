@@ -27,6 +27,7 @@ export const track = pgTable(
 		name: text("name").notNull(),
 		artistNames: text("artist_names").notNull(), // JSON array as text string
 		albumName: text("album_name"),
+		albumImageUrl: text("album_image_url"),
 		durationMs: integer("duration_ms"),
 		spotifyGenres: jsonb("spotify_genres").$type<string[]>(), // Raw artist genres
 

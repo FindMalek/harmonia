@@ -35,6 +35,7 @@ const playlistTrackItemSchema = z.object({
 	name: z.string(),
 	artistNames: z.string(),
 	albumName: z.string().nullable(),
+	albumImageUrl: z.string().nullable(),
 	durationMs: z.number().nullable(),
 	llmMood: z.string().nullable(),
 	llmTags: llmTagsSchema.nullable(),
@@ -43,6 +44,9 @@ const playlistTrackItemSchema = z.object({
 
 export const playlistGetByIdOutputSchema = playlistListItemSchema.extend({
 	tracks: z.array(playlistTrackItemSchema),
+	mood: z.string().nullable(),
+	energy: z.string().nullable(),
+	themes: z.array(z.string()).nullable(),
 });
 export type PlaylistGetByIdOutput = z.infer<typeof playlistGetByIdOutputSchema>;
 
