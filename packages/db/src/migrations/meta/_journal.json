@@ -57,6 +57,13 @@
 			"when": 1773351837088,
 			"tag": "0007_funny_morbius",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1777718468788,
+			"tag": "0008_track_album_image_url",
+			"breakpoints": true
 		}
 	]
 }

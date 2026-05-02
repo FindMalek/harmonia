@@ -15,6 +15,14 @@ if (!env.TRIGGER_PROJECT_REF && env.HARMONIA_TRIGGER_PROJECT_REF) {
 	env.TRIGGER_PROJECT_REF = env.HARMONIA_TRIGGER_PROJECT_REF;
 }
 
+const projectRef = (env.TRIGGER_PROJECT_REF ?? "").trim();
+if (!projectRef) {
+	console.error(
+		"Missing Trigger project ref: set HARMONIA_TRIGGER_PROJECT_REF (or TRIGGER_PROJECT_REF) in .env to your Trigger.dev project slug.",
+	);
+	process.exit(1);
+}
+
 const child = spawn(
 	"npx",
 	["trigger.dev@latest", "dev", "--config", "apps/api/trigger.config.ts"],
