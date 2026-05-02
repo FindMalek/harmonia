@@ -1,4 +1,5 @@
 import type { PlaylistGetByIdOutput } from "@harmonia/common/schemas";
+import Image from "next/image";
 
 export type DashboardPlaylistDetailTrackRowTrack =
 	PlaylistGetByIdOutput["tracks"][number];
@@ -23,14 +24,17 @@ export function DashboardPlaylistDetailTrackRow({
 
 	return (
 		<div className="flex items-center gap-4 border-b py-4 last:border-b-0">
-			<span className="w-6 shrink-0 text-right text-muted-foreground text-sm">
+			<span className="w-6 shrink-0 text-right text-muted-foreground text-xs">
 				{String(index + 1).padStart(2, "0")}
 			</span>
 			{track.albumImageUrl ? (
-				<img
+				<Image
 					src={track.albumImageUrl}
 					alt=""
+					width={48}
+					height={48}
 					className="size-12 shrink-0 rounded object-cover"
+					unoptimized
 				/>
 			) : (
 				<div className="size-12 shrink-0 rounded bg-muted" />
