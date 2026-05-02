@@ -4,12 +4,19 @@ import {
 	DashboardSettingsNavRow,
 	DashboardSettingsRow,
 	DashboardSettingsSection,
+	DashboardSettingsSkeleton,
 } from "@/components/app/dashboard-settings-section";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 import { Badge, Button } from "@harmonia/ui";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
 	const {
 		email,
 		spotifyLinked,
@@ -21,10 +28,14 @@ export default function SettingsPage() {
 		signOut,
 	} = useSettingsController();
 
-	const lastSyncText = lastSync
-		? formatDistanceToNow(lastSync, { addSuffix: true })
-		: statsLoading
-			? "..."
+	if (!mounted) {
+		return <DashboardSettingsSkeleton />;
+	}
+
+	const lastSyncText = statsLoading
+		? "..."
+		: lastSync
+			? formatDistanceToNow(lastSync, { addSuffix: true })
 			: "Never";
 
 	const themeLabel =
@@ -71,9 +82,7 @@ export default function SettingsPage() {
 				<DashboardSettingsNavRow
 					label="Theme"
 					subtitle={themeLabel}
-					onClick={() =>
-						setTheme(resolvedTheme === "dark" ? "light" : "dark")
-					}
+					onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
 				/>
 				<DashboardSettingsRow
 					label="Analysis Frequency"

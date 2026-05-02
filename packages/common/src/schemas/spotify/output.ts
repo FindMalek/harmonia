@@ -53,7 +53,7 @@ export const spotifyLibraryStatsSchema = z.object({
 	totalPlaylists: z.number(),
 	uniqueAlbums: z.number(),
 	uniqueArtists: z.number(),
-	updatedAt: z.date().nullable().optional(),
+	updatedAt: z.union([z.null(), z.coerce.date()]).optional(),
 });
 export type SpotifyLibraryStats = z.infer<typeof spotifyLibraryStatsSchema>;
 
