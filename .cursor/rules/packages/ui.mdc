@@ -27,6 +27,13 @@ import { Button } from "@harmonia/ui";
 - Dark mode: `dark:` prefix (managed by `next-themes`)
 - **Tabs** for indentation (enforced by Biome)
 
+## Card vs. Flat Section
+
+- **`<Card>`** — use for elevated interactive surfaces: grids of clickable items, feature highlight blocks. Uses `ring-1 ring-foreground/10` with `rounded-none`. Sizes: `default`, `sm`.
+- **Flat bordered section** (`DashboardSettingsSection` or inline `border` + section label) — use for informational grouped rows: settings, metadata, stats. Uses CSS `border` at full opacity with `border-b py-4 last:border-b-0` on each row.
+
+Do NOT use `<Card>` for settings sections, stat blocks, or metadata rows.
+
 ## Do Not
 
 - Copy-paste shadcn component source into app directories — extend via props instead
