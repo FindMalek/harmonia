@@ -1,10 +1,14 @@
 "use client";
 
-import { useOnboardingController } from "@/shared/lib/onboarding/controller.hook";
+import {
+	useOnboardingController,
+	useOnboardingSyncStream,
+} from "@/shared/lib/onboarding/controller.hook";
 import { Icons, Progress } from "@harmonia/ui";
 
 export default function SyncPage() {
-	const { isComplete, isSyncing, stream } = useOnboardingController();
+	const { isComplete, isSyncing } = useOnboardingController();
+	const stream = useOnboardingSyncStream();
 	const { progress, phase, phasesCompleted } = stream;
 
 	const isIdle = !isSyncing && !isComplete && phasesCompleted === 0;

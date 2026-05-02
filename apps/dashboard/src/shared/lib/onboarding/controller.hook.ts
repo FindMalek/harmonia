@@ -1,8 +1,7 @@
 "use client";
 
-import { client } from "@/shared/api/orpc";
+import { client, orpc } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
-import { orpc } from "@/shared/api/orpc";
 import type { SyncPhase } from "@harmonia/common/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -36,12 +35,10 @@ export function useOnboardingController() {
 		}),
 	);
 
-	const stream = useOnboardingSyncStream();
-
-	return { ...store, syncMutation, stream };
+	return { ...store, syncMutation };
 }
 
-function useOnboardingSyncStream(): OnboardingSyncStream {
+export function useOnboardingSyncStream(): OnboardingSyncStream {
 	const queryClient = useQueryClient();
 	const { shouldStart, setSyncing, setComplete, clearStartRequest } =
 		useOnboardingStore();
