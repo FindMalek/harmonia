@@ -1,0 +1,51 @@
+---
+description: common package — schemas, services, pipeline stages, Trigger.dev tasks
+globs:
+  - "packages/common/**"
+alwaysApply: false
+---
+
+# `@harmonia/common`
+
+## Structure
+
+```
+src/
+  schemas/{entity}/   index.ts, input.ts, output.ts, enum.ts
+  services/
+    brain/            classifier, embeddings, clustering, cluster-metadata, playlist-generator, track-matcher
+    music/            spotify sync, lyrics fetching
+    organize/         runOrganizeForUser, updateRun, checkCancelled, updateStageProgress
+  trigger/tasks/
+    organize.ts       parent orchestrator (calls all stages via .triggerAndWait())
+    stages/           sync, lyrics, classify, embed, cluster, generate, match
+  types/              pipeline progress types
+```
+
+## Service Patterns
+
+- Brain services take `(userId, onProgress?)` and return stage progress
+- Each stage calls `onProgress` frequently so the dashboard progress bar updates live
+- `updateStageProgress` uses JSONB `||` merge — safe for concurrent stages
+
+## LLM Calls
+
+All LLM calls use `@ai-sdk/groq` via `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.
+**Never** use the default `groq()` factory (reads `GROQ_API_KEY` which is not set).
+
+Prompts are structured using `llml` from `@zenbase/llml`.
+
+## Trigger.dev Tasks
+
+```typescript
+// Parent orchestrator
+await syncStageTask.triggerAndWait({ userId, runId });
+await lyricsStageTask.triggerAndWait({ userId, runId });
+// ... etc (sequential, 7 stages total)
+```
+
+Each stage task: calls `checkCancelled` → sets `currentStage` → runs service → updates progress via `updateStageProgress`.
+
+## Exports
+
+All exports go through `packages/common/package.json` `exports` map. Add a new export entry when adding a new path.

@@ -2,6 +2,10 @@
 
 import { Skeleton } from "@harmonia/ui";
 
+function DashboardStatRowValueSkeleton() {
+	return <Skeleton className="h-4 w-10" />;
+}
+
 type StatRowProps = {
 	label: string;
 	value: number;
@@ -14,7 +18,7 @@ export function DashboardStatRow({ label, value, loading }: StatRowProps) {
 			<span className="text-foreground/80 text-sm">{label}</span>
 			<span className="font-mono text-sm">
 				{loading ? (
-					<Skeleton className="h-4 w-10" />
+					<DashboardStatRowValueSkeleton />
 				) : (
 					value.toLocaleString("en-US")
 				)}

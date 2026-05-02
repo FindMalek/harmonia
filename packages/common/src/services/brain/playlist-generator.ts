@@ -118,7 +118,7 @@ export async function generatePlaylists(
 									clusterInfo,
 									generate: [
 										"name: a creative, evocative playlist name (2-4 words, no generic names like 'My Playlist')",
-										"description: 2-3 sentences capturing the feeling and vibe of this playlist",
+										"description: one short sentence (10-15 words max) capturing the vibe — no filler phrases",
 										"taxonomy: mood | situation | genre | hybrid",
 										"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
 									],
@@ -138,6 +138,12 @@ export async function generatePlaylists(
 						},
 					);
 
+					const tags = [
+						...new Set(meta?.topVibes?.length ? meta.topVibes : vibes),
+					]
+						.slice(0, 3)
+						.map((t) => t.toLowerCase());
+
 					const [inserted] = await db
 						.insert(playlist)
 						.values({
@@ -149,6 +155,7 @@ export async function generatePlaylists(
 							taxonomy: generated.taxonomy,
 							genreDomainId: c.genreDomainId,
 							coverColor: generated.coverColor,
+							tags: tags.length > 0 ? tags : null,
 							trackCount: trackRows.length,
 							isGenerated: true,
 							updatedAt: new Date(),

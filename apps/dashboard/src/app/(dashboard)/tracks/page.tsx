@@ -26,6 +26,38 @@ import {
 import { Icons } from "@harmonia/ui";
 import { useState } from "react";
 
+const TRACKS_TABLE_SKELETON_ROW_KEYS = [
+	"tr-sk-1",
+	"tr-sk-2",
+	"tr-sk-3",
+	"tr-sk-4",
+	"tr-sk-5",
+	"tr-sk-6",
+] as const;
+
+function TracksPageTableSkeleton() {
+	return (
+		<>
+			{TRACKS_TABLE_SKELETON_ROW_KEYS.map((rowKey) => (
+				<TableRow key={rowKey}>
+					<TableCell>
+						<Skeleton className="h-4 w-[180px]" />
+					</TableCell>
+					<TableCell>
+						<Skeleton className="h-4 w-[120px]" />
+					</TableCell>
+					<TableCell>
+						<Skeleton className="h-4 w-[80px]" />
+					</TableCell>
+					<TableCell>
+						<Skeleton className="h-4 w-[60px]" />
+					</TableCell>
+				</TableRow>
+			))}
+		</>
+	);
+}
+
 export default function TracksPage() {
 	const tracksFilters = useDashboardUI((s) => s.tracksFilters);
 	const setTracksFilters = useDashboardUI((s) => s.setTracksFilters);
@@ -78,70 +110,51 @@ export default function TracksPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{isLoading
-									? Array.from({ length: 6 }).map((_, i) => (
-											<TableRow key={i}>
-												<TableCell>
-													<Skeleton className="h-4 w-[180px]" />
+								{isLoading ? (
+									<TracksPageTableSkeleton />
+								) : (
+									(data?.tracks.map((t) => {
+										const artists = safeParseArray(t.artistNames);
+										return (
+											<TableRow
+												key={t.id}
+												className="cursor-pointer"
+												onClick={() => setSelectedTrack(t.id)}
+												data-state={
+													selectedTrackId === t.id ? "selected" : undefined
+												}
+											>
+												<TableCell className="max-w-[200px] truncate font-medium text-xs">
+													{t.name}
+												</TableCell>
+												<TableCell className="max-w-[150px] truncate text-muted-foreground text-xs">
+													{artists.join(", ")}
 												</TableCell>
 												<TableCell>
-													<Skeleton className="h-4 w-[120px]" />
+													<div className="flex gap-1">
+														<StatusBadge
+															status={t.lyricsStatus ?? "pending"}
+															type="lyrics"
+														/>
+														{t.llmClassifiedAt && (
+															<Badge variant="outline" className="text-[10px]">
+																AI
+															</Badge>
+														)}
+														{t.embeddingGeneratedAt && (
+															<Badge variant="outline" className="text-[10px]">
+																EMB
+															</Badge>
+														)}
+													</div>
 												</TableCell>
-												<TableCell>
-													<Skeleton className="h-4 w-[80px]" />
-												</TableCell>
-												<TableCell>
-													<Skeleton className="h-4 w-[60px]" />
+												<TableCell className="text-muted-foreground text-xs">
+													{t.llmMood ?? "—"}
 												</TableCell>
 											</TableRow>
-										))
-									: (data?.tracks.map((t) => {
-											const artists = safeParseArray(t.artistNames);
-											return (
-												<TableRow
-													key={t.id}
-													className="cursor-pointer"
-													onClick={() => setSelectedTrack(t.id)}
-													data-state={
-														selectedTrackId === t.id ? "selected" : undefined
-													}
-												>
-													<TableCell className="max-w-[200px] truncate font-medium text-xs">
-														{t.name}
-													</TableCell>
-													<TableCell className="max-w-[150px] truncate text-muted-foreground text-xs">
-														{artists.join(", ")}
-													</TableCell>
-													<TableCell>
-														<div className="flex gap-1">
-															<StatusBadge
-																status={t.lyricsStatus ?? "pending"}
-																type="lyrics"
-															/>
-															{t.llmClassifiedAt && (
-																<Badge
-																	variant="outline"
-																	className="text-[10px]"
-																>
-																	AI
-																</Badge>
-															)}
-															{t.embeddingGeneratedAt && (
-																<Badge
-																	variant="outline"
-																	className="text-[10px]"
-																>
-																	EMB
-																</Badge>
-															)}
-														</div>
-													</TableCell>
-													<TableCell className="text-muted-foreground text-xs">
-														{t.llmMood ?? "—"}
-													</TableCell>
-												</TableRow>
-											);
-										}) ?? null)}
+										);
+									}) ?? null)
+								)}
 							</TableBody>
 						</Table>
 					</div>
