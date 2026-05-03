@@ -198,9 +198,6 @@ export function spotifyRelativePathFromNext(nextUrl: string): string {
 	if (resourcePath.startsWith("/v1/")) {
 		resourcePath = resourcePath.slice("/v1".length);
 	}
-	if (!resourcePath.startsWith("/")) {
-		resourcePath = `/${resourcePath}`;
-	}
 	return `${resourcePath}${parsed.search}`;
 }
 
