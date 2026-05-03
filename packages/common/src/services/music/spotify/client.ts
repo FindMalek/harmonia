@@ -204,12 +204,24 @@ export function spotifyRelativePathFromNext(nextUrl: string): string {
 	return `${resourcePath}${parsed.search}`;
 }
 
+export type FetchSavedTracksOnPageArgs = {
+	items: SpotifySavedTracksResponse["items"];
+	cumulativeTrackCount: number;
+	total: number | undefined;
+	pageIndex: number;
+	hasNext: boolean;
+};
+
 export async function fetchAllSavedTracks(
 	accessToken: string,
+	options?: {
+		onPage?: (args: FetchSavedTracksOnPageArgs) => void | Promise<void>;
+	},
 ): Promise<SpotifySavedTracksResponse["items"]> {
 	const limit = 50;
 	let url = `/me/tracks?limit=${limit}`;
 	const allItems: SpotifySavedTracksResponse["items"] = [];
+	let pageIndex = 0;
 	let reportedTotal: number | undefined;
 
 	for (;;) {
@@ -218,12 +230,23 @@ export async function fetchAllSavedTracks(
 			reportedTotal = page.total;
 		}
 		allItems.push(...page.items);
+		const cumulativeTrackCount = allItems.length;
+		const hasNext = Boolean(page.next);
+
+		await options?.onPage?.({
+			items: page.items,
+			cumulativeTrackCount,
+			total: page.total,
+			pageIndex,
+			hasNext,
+		});
 
 		if (!page.next) {
 			break;
 		}
 
 		url = spotifyRelativePathFromNext(page.next);
+		pageIndex += 1;
 	}
 
 	if (reportedTotal !== undefined && allItems.length !== reportedTotal) {

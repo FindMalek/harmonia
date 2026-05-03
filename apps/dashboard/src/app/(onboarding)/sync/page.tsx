@@ -9,26 +9,25 @@ import { Icons, Progress } from "@harmonia/ui";
 export default function SyncPage() {
 	const { isComplete, isSyncing } = useOnboardingController();
 	const stream = useOnboardingSyncStream();
-	const { progress, phase, phasesCompleted } = stream;
+	const { progress, phasesCompleted } = stream;
 
 	const isIdle = !isSyncing && !isComplete && phasesCompleted === 0;
 	const getStepState = (step: 1 | 2 | 3) => {
 		if (step === 1) {
 			if (phasesCompleted >= 1) return "complete";
-			if (isSyncing && (phase === "liked" || phase === null)) return "active";
+			if (isSyncing && phasesCompleted < 1) return "active";
 			return "idle";
 		}
 
 		if (step === 2) {
 			if (phasesCompleted >= 2) return "complete";
-			if (isSyncing && phasesCompleted < 1) return "idle";
-			if (isSyncing && phase === "playlists") return "active";
+			if (isSyncing && phasesCompleted >= 1 && phasesCompleted < 2)
+				return "active";
 			return "idle";
 		}
 
-		if (isComplete || phasesCompleted >= 3) return "complete";
-		if (isSyncing && phasesCompleted < 2) return "idle";
-		if (isSyncing && phase === "preparing") return "active";
+		if (isComplete) return "complete";
+		if (isSyncing && phasesCompleted >= 2) return "active";
 		return "idle";
 	};
 
