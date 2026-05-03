@@ -21,6 +21,7 @@ export type SpotifySavedTrackItem = z.infer<typeof spotifySavedTrackItemSchema>;
 export const spotifySavedTracksResponseSchema = z.object({
 	items: z.array(spotifySavedTrackItemSchema),
 	next: z.string().nullable(),
+	total: z.number().optional(),
 });
 export type SpotifySavedTracksResponse = z.infer<
 	typeof spotifySavedTracksResponseSchema
