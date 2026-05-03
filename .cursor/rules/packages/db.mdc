@@ -59,6 +59,10 @@ await db.update(pipelineRun).set({
 pnpm db:push      # dev: push schema directly (no migration files)
 pnpm db:generate  # generate migration SQL files
 pnpm db:migrate   # apply migrations (production)
+pnpm db:reset     # dev: truncate user-data tables (keeps auth, genre_domain, drizzle migrations)
+pnpm db:nuke      # dev: Docker volume wipe + db:push (guards: localhost:5433)
 ```
 
 Always run `pnpm db:push` after schema changes in development.
+
+When adding new user-owned tables under `packages/db/src/schema/`, extend `TABLES_TO_TRUNCATE` in `packages/db/scripts/db-reset.ts`.

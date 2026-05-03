@@ -15,15 +15,17 @@
 		"db:generate": "drizzle-kit generate",
 		"db:studio": "drizzle-kit studio",
 		"db:migrate": "drizzle-kit migrate",
-		"db:mark-migrations-applied": "node scripts/mark-migrations-applied.mjs"
+		"db:mark-migrations-applied": "node scripts/mark-migrations-applied.mjs",
+		"db:reset": "tsx scripts/db-reset.ts",
+		"db:nuke": "node scripts/db-nuke.mjs"
 	},
 	"dependencies": {
 		"@harmonia/env": "workspace:*",
 		"@neondatabase/serverless": "^1.0.2",
-		"pg": "^8.14.1",
-		"ws": "^8.18.0",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
+		"pg": "^8.14.1",
+		"ws": "^8.18.0",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
@@ -31,6 +33,7 @@
 		"@types/pg": "^8.11.13",
 		"@types/ws": "^8.5.13",
 		"drizzle-kit": "^0.31.8",
+		"tsx": "^4.21.0",
 		"typescript": "catalog:"
 	}
 }
