@@ -24,3 +24,13 @@ Rules are maintained in `.cursor/rules/` as the single source of truth — all a
 @.cursor/rules/packages/orpc.mdc
 @.cursor/rules/packages/trigger.mdc
 @.cursor/rules/packages/ui.mdc
+
+## Commits
+
+Follow `.cursor/rules` (conventional prefixes). Do not put assistant, IDE, or vendor tool names in commit messages, PR titles, or PR descriptions, and do not add `Co-authored-by:` for tools.
+
+## Database (local dev)
+
+- `pnpm db:studio` — Drizzle Studio against `HARMONIA_DATABASE_URL`.
+- `pnpm db:reset` — truncate user-data tables; keeps auth, `genre_domain`, and Drizzle migration history. Re-sync Spotify / re-run organize afterward.
+- `pnpm db:nuke` — Docker volume wipe + `db:push` (expects `localhost:5433`). See `.env.example` for override flags.
