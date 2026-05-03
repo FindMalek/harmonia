@@ -45,6 +45,8 @@ pnpm db:studio        # open Drizzle Studio UI
 pnpm db:generate      # generate migration files
 pnpm db:migrate       # run migrations (production)
 pnpm db:setup         # start Docker Postgres + push schema
+pnpm db:reset         # truncate user-data tables (auth + genre_domain preserved)
+pnpm db:nuke          # Docker volume wipe + db:push (local Postgres on 5433)
 
 pnpm trigger:dev      # start Trigger.dev worker alone
 pnpm check-types      # tsc --noEmit across all packages
