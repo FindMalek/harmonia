@@ -57,6 +57,7 @@ await db.update(pipelineRun).set({
 
 ```bash
 pnpm db:push      # dev: push schema directly (no migration files)
+pnpm db:studio    # dev: Drizzle Studio UI (inspect/edit rows)
 pnpm db:generate  # generate migration SQL files
 pnpm db:migrate   # apply migrations (production)
 pnpm db:reset     # dev: truncate user-data tables (keeps auth, genre_domain, drizzle migrations)

@@ -31,5 +31,6 @@ Follow `.cursor/rules` (conventional prefixes). Do not put assistant, IDE, or ve
 
 ## Database (local dev)
 
+- `pnpm db:studio` — Drizzle Studio against `HARMONIA_DATABASE_URL`.
 - `pnpm db:reset` — truncate user-data tables; keeps auth, `genre_domain`, and Drizzle migration history. Re-sync Spotify / re-run organize afterward.
 - `pnpm db:nuke` — Docker volume wipe + `db:push` (expects `localhost:5433`). See `.env.example` for override flags.

@@ -16,6 +16,9 @@
 		"db:studio": "turbo -F @harmonia/db db:studio",
 		"db:generate": "turbo -F @harmonia/db db:generate",
 		"db:migrate": "turbo -F @harmonia/db db:migrate",
+		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push",
+		"db:reset": "turbo -F @harmonia/db db:reset",
+		"db:nuke": "turbo -F @harmonia/db db:nuke",
 		"check": "biome check --write .",
 		"lint": "biome lint --write .",
 		"format": "biome format --write .",
@@ -25,9 +28,6 @@
 		"db:migrate:direct": "pnpm exec drizzle-kit migrate --config=packages/db/drizzle.config.ts",
 		"db:mark-migrations-applied": "turbo -F @harmonia/db db:mark-migrations-applied",
 		"sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
-		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push",
-		"db:reset": "turbo -F @harmonia/db db:reset",
-		"db:nuke": "turbo -F @harmonia/db db:nuke",
 		"trigger:dev": "node scripts/run-trigger-dev.mjs"
 	},
 	"dependencies": {
