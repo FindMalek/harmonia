@@ -98,7 +98,10 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 					clearStartRequest();
 				}
 			} finally {
-				if (!cancelled) setIsStreaming(false);
+				if (cancelled) {
+					setSyncing(false);
+				}
+				setIsStreaming(false);
 			}
 		};
 
