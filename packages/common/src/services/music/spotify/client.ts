@@ -192,16 +192,38 @@ function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
 	return spotifyRequest<T>(path, accessToken, { method: "GET" });
 }
 
+export type FetchSavedTracksOnPageArgs = {
+	items: SpotifySavedTracksResponse["items"];
+	cumulativeTrackCount: number;
+	total: number | undefined;
+	pageIndex: number;
+	hasNext: boolean;
+};
+
 export async function fetchAllSavedTracks(
 	accessToken: string,
+	options?: {
+		onPage?: (args: FetchSavedTracksOnPageArgs) => void | Promise<void>;
+	},
 ): Promise<SpotifySavedTracksResponse["items"]> {
 	const limit = 50;
 	let url = `/me/tracks?limit=${limit}`;
 	const allItems: SpotifySavedTracksResponse["items"] = [];
+	let pageIndex = 0;
 
 	for (;;) {
 		const page = await spotifyGet<SpotifySavedTracksResponse>(url, accessToken);
 		allItems.push(...page.items);
+		const cumulativeTrackCount = allItems.length;
+		const hasNext = Boolean(page.next);
+
+		await options?.onPage?.({
+			items: page.items,
+			cumulativeTrackCount,
+			total: page.total,
+			pageIndex,
+			hasNext,
+		});
 
 		if (!page.next) {
 			break;
@@ -211,6 +233,7 @@ export async function fetchAllSavedTracks(
 		let path = nextUrl.pathname;
 		if (path.startsWith("/v1/")) path = path.slice(3);
 		url = path + nextUrl.search;
+		pageIndex += 1;
 	}
 
 	return allItems;
