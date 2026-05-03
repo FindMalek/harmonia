@@ -60,6 +60,16 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 		const isCurrent = () => streamEffectRunIdRef.current === runId;
 
 		const runStream = async () => {
+			const finishSyncSuccess = () => {
+				setProgress(100);
+				setComplete(true);
+				setSyncing(false);
+				clearStartRequest();
+				void queryClient.invalidateQueries({
+					queryKey: queryKeys.spotifyLibraryStats(),
+				});
+			};
+
 			setIsStreaming(true);
 			setSyncing(true);
 			setComplete(false);
@@ -83,14 +93,12 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 						setProgress(event.progress.percent);
 						setPhase(event.progress.phase);
 						setPhasesCompleted(event.progress.phasesCompleted);
+						if (event.progress.done) {
+							finishSyncSuccess();
+							break;
+						}
 					} else if (event.event === "completed") {
-						setProgress(100);
-						setComplete(true);
-						setSyncing(false);
-						clearStartRequest();
-						void queryClient.invalidateQueries({
-							queryKey: queryKeys.spotifyLibraryStats(),
-						});
+						finishSyncSuccess();
 						break;
 					} else if (event.event === "failed" || event.event === "error") {
 						const msg = event.event === "failed" ? event.error : event.message;
