@@ -4,7 +4,7 @@ import { client, orpc } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { SyncPhase } from "@harmonia/common/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOnboardingStore } from "./store";
 
 export type OnboardingSyncStream = {
@@ -48,18 +48,35 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 	const [phasesCompleted, setPhasesCompleted] = useState(0);
 	const [error, setError] = useState<string | null>(null);
 	const [isStreaming, setIsStreaming] = useState(false);
+	const streamEffectRunIdRef = useRef(0);
 
 	useEffect(() => {
 		if (!shouldStart) return;
 
+		const runId = ++streamEffectRunIdRef.current;
 		const controller = new AbortController();
 		let cancelled = false;
 
+		const isCurrent = () => streamEffectRunIdRef.current === runId;
+
 		const runStream = async () => {
+			const finishSyncSuccess = () => {
+				setProgress(100);
+				setComplete(true);
+				setSyncing(false);
+				clearStartRequest();
+				void queryClient.invalidateQueries({
+					queryKey: queryKeys.spotifyLibraryStats(),
+				});
+			};
+
 			setIsStreaming(true);
 			setSyncing(true);
 			setComplete(false);
 			setError(null);
+			setProgress(0);
+			setPhase(null);
+			setPhasesCompleted(0);
 
 			try {
 				const iterator = await client.spotify.streamSyncLibrary(
@@ -67,21 +84,21 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 					{ signal: controller.signal },
 				);
 
+				if (!isCurrent()) return;
+
 				for await (const event of iterator) {
-					if (cancelled) break;
+					if (cancelled || !isCurrent()) break;
 
 					if (event.event === "progress") {
 						setProgress(event.progress.percent);
 						setPhase(event.progress.phase);
 						setPhasesCompleted(event.progress.phasesCompleted);
+						if (event.progress.done) {
+							finishSyncSuccess();
+							break;
+						}
 					} else if (event.event === "completed") {
-						setProgress(100);
-						setComplete(true);
-						setSyncing(false);
-						clearStartRequest();
-						void queryClient.invalidateQueries({
-							queryKey: queryKeys.spotifyLibraryStats(),
-						});
+						finishSyncSuccess();
 						break;
 					} else if (event.event === "failed" || event.event === "error") {
 						const msg = event.event === "failed" ? event.error : event.message;
@@ -92,13 +109,19 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 					}
 				}
 			} catch (err) {
+				if (!isCurrent()) return;
 				if (err instanceof Error && err.name !== "AbortError" && !cancelled) {
 					setError(err.message);
 					setSyncing(false);
 					clearStartRequest();
 				}
 			} finally {
-				if (!cancelled) setIsStreaming(false);
+				if (isCurrent()) {
+					setIsStreaming(false);
+					if (cancelled) {
+						setSyncing(false);
+					}
+				}
 			}
 		};
 

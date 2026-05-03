@@ -11,7 +11,7 @@
 	},
 	"scripts": {
 		"build": "tsc --noEmit",
-		"db:push": "drizzle-kit push",
+		"db:push": "node scripts/ensure-pgvector.mjs && drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:studio": "drizzle-kit studio",
 		"db:migrate": "drizzle-kit migrate",

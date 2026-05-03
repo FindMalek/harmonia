@@ -1,4 +1,7 @@
-import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
+import type {
+	SpotifyLibraryStats,
+	SpotifySavedTracksResponse,
+} from "@harmonia/common/schemas";
 import type { SpotifyPlaylistTrackItem } from "@harmonia/common/schemas";
 import type { SyncProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
@@ -25,6 +28,25 @@ import {
 const PLAYLIST_FETCH_CONCURRENCY = 3;
 const PLAYLIST_FETCH_DELAY_MS = 150;
 const TRACK_UPSERT_BATCH_SIZE = 100;
+const LIKED_PHASE_PERCENT_CAP_BEFORE_MILESTONE = 24;
+
+function likedPhaseSubPercent(args: {
+	cumulativeRows: number;
+	total: number | undefined;
+	pageIndex: number;
+	hasNext: boolean;
+}): number {
+	const cap = LIKED_PHASE_PERCENT_CAP_BEFORE_MILESTONE;
+	const { cumulativeRows, total, pageIndex, hasNext } = args;
+	if (total !== undefined && total > 0) {
+		return Math.min(cap, Math.ceil((cumulativeRows / total) * cap));
+	}
+	if (!hasNext && cumulativeRows === 0) {
+		return 0;
+	}
+	const step = 3;
+	return Math.min(cap, (pageIndex + 1) * step);
+}
 
 type TrackForUpsert = {
 	id: string;
@@ -142,23 +164,58 @@ export async function syncLibraryTracks(
 	const artistNames = new Set<string>();
 	const tracksMap = new Map<string, TrackForUpsert>();
 
-	// 1. Saved tracks
-	const savedItems = await fetchAllSavedTracks(accessToken);
-	for (const item of savedItems) {
-		const t = item.track;
-		if (!t?.id) continue;
-		trackIds.add(t.id);
-		const album = t.album as { id?: string; name?: string } | null | undefined;
-		const albumKey = album?.id ?? album?.name ?? "";
-		if (albumKey) albumNames.add(albumKey);
-		for (const a of t.artists ?? []) {
-			const artist = a as { id?: string; name: string };
-			const artistKey = artist.id ?? artist.name ?? "";
-			if (artistKey) artistNames.add(artistKey);
+	// 1. Saved tracks (progress per Spotify page)
+	let savedTracksTotalFromApi: number | undefined;
+
+	const mergeSavedPage = (items: SpotifySavedTracksResponse["items"]) => {
+		for (const item of items) {
+			const t = item.track;
+			if (!t?.id) continue;
+			trackIds.add(t.id);
+			const album = t.album as
+				| { id?: string; name?: string }
+				| null
+				| undefined;
+			const albumKey = album?.id ?? album?.name ?? "";
+			if (albumKey) albumNames.add(albumKey);
+			for (const a of t.artists ?? []) {
+				const artist = a as { id?: string; name: string };
+				const artistKey = artist.id ?? artist.name ?? "";
+				if (artistKey) artistNames.add(artistKey);
+			}
+			const normalized = normalizeTrack(t);
+			if (normalized) tracksMap.set(normalized.id, normalized);
 		}
-		const normalized = normalizeTrack(t);
-		if (normalized) tracksMap.set(normalized.id, normalized);
-	}
+	};
+
+	await fetchAllSavedTracks(accessToken, {
+		onPage: async ({
+			items,
+			cumulativeTrackCount,
+			total,
+			pageIndex,
+			hasNext,
+		}) => {
+			if (total !== undefined) {
+				savedTracksTotalFromApi = total;
+			}
+			mergeSavedPage(items);
+			if (!onProgress) return;
+			const percent = likedPhaseSubPercent({
+				cumulativeRows: cumulativeTrackCount,
+				total: savedTracksTotalFromApi ?? total,
+				pageIndex,
+				hasNext,
+			});
+			await onProgress({
+				phase: "liked",
+				phasesCompleted: 0,
+				percent,
+				done: false,
+				total: savedTracksTotalFromApi ?? total ?? 0,
+			});
+		},
+	});
 
 	if (onProgress) {
 		await onProgress({
