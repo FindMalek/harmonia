@@ -17,8 +17,17 @@ if (!env.TRIGGER_PROJECT_REF && env.HARMONIA_TRIGGER_PROJECT_REF) {
 
 const projectRef = (env.TRIGGER_PROJECT_REF ?? "").trim();
 if (!projectRef) {
+	if (env.HARMONIA_TRIGGER_DEV_SKIP === "true") {
+		console.warn(
+			"Skipping Trigger.dev worker (HARMONIA_TRIGGER_DEV_SKIP=true). Background jobs will not run locally.",
+		);
+		process.exit(0);
+	}
 	console.error(
 		"Missing Trigger project ref: set HARMONIA_TRIGGER_PROJECT_REF (or TRIGGER_PROJECT_REF) in .env to your Trigger.dev project slug.",
+	);
+	console.error(
+		"Or set HARMONIA_TRIGGER_DEV_SKIP=true to run dev without the Trigger worker.",
 	);
 	process.exit(1);
 }
