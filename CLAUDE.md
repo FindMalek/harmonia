@@ -24,3 +24,7 @@ Rules are maintained in `.cursor/rules/` as the single source of truth — all a
 @.cursor/rules/packages/orpc.mdc
 @.cursor/rules/packages/trigger.mdc
 @.cursor/rules/packages/ui.mdc
+
+## Commits
+
+Follow `.cursor/rules` (conventional prefixes). Do not put assistant, IDE, or vendor tool names in commit messages, PR titles, or PR descriptions, and do not add `Co-authored-by:` for tools.

@@ -64,3 +64,5 @@ const EMBEDDING_BATCH_SIZE = 64;
 ## Commits
 
 `feat:` `fix:` `chore:` `perf:` `refactor:` prefixes. No scope required.
+
+No AI/tool branding in commit messages or PR text; no `Co-authored-by:` for assistants (see project overview).
