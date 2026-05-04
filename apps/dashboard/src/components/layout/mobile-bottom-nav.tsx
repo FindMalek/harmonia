@@ -1,7 +1,7 @@
 "use client";
 
 import { useOrganizeStore } from "@/shared/lib/organize/store";
-import { usePipelineStream } from "@/shared/lib/pipeline/controller.hook";
+import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";
 import {
 	DASHBOARD_MOBILE_NAV_ITEMS,
 	DASHBOARD_ROUTES,
@@ -16,7 +16,7 @@ export function MobileBottomNav() {
 	const pathname = usePathname();
 	const { activeRunId, isAnalysisDrawerOpen, setIsAnalysisDrawerOpen } =
 		useOrganizeStore();
-	const streamState = usePipelineStream(activeRunId);
+	const { snapshot: streamState, connectionState } = usePipelineProgress();
 
 	const isPlaylistDetail =
 		pathname.startsWith(`${DASHBOARD_ROUTES.playlists.path}/`) &&
@@ -25,7 +25,7 @@ export function MobileBottomNav() {
 	const showAnalysisBar =
 		activeRunId != null &&
 		!isAnalysisDrawerOpen &&
-		streamState.status === "running";
+		(streamState.status === "running" || connectionState === "reconnecting");
 
 	if (isPlaylistDetail) {
 		return null;

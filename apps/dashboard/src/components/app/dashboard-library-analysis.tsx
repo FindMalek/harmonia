@@ -1,8 +1,9 @@
 "use client";
 
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
-	useLivePipelineProgress,
 	usePipelineController,
+	usePipelineProgress,
 } from "@/shared/lib/pipeline/controller.hook";
 import { Progress, Skeleton } from "@harmonia/ui";
 
@@ -12,9 +13,15 @@ function DashboardLibraryAnalysisProgressSkeleton() {
 
 export function DashboardLibraryAnalysis() {
 	const { runs } = usePipelineController();
-	const activeRun = runs.data?.find((r) => r.status === "running") ?? null;
-	const liveProgress = useLivePipelineProgress(activeRun?.id ?? null);
-	const { stats } = usePipelineController(activeRun ? 3000 : false);
+	const activeRunId = useOrganizeStore((s) => s.activeRunId);
+	const { liveProgress: ctxLiveProgress } = usePipelineProgress();
+	const activeRun =
+		activeRunId != null
+			? (runs.data?.find((r) => r.id === activeRunId) ?? null)
+			: null;
+	const isStreamingRun = activeRun?.status === "running";
+	const liveProgress = isStreamingRun ? ctxLiveProgress : null;
+	const { stats } = usePipelineController(isStreamingRun ? 3000 : false);
 	const statsLoading = stats.isLoading;
 
 	const totalTracks = stats.data?.tracks.total ?? 0;

@@ -1,8 +1,8 @@
 "use client";
 
-import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
-import { usePipelineStream } from "@/shared/lib/pipeline/controller.hook";
 import { cn } from "@/lib/utils";
+import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
+import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";
 import {
 	Button,
 	Drawer,
@@ -31,13 +31,18 @@ export function DashboardAnalysisDrawer() {
 		cancelMutation,
 	} = useOrganizeController();
 
-	const streamState = usePipelineStream(activeRunId);
+	const { snapshot: streamState, connectionState } = usePipelineProgress();
 	const cancelPipeline = cancelMutation;
 
+	const isConnecting =
+		connectionState === "hydrating" ||
+		(streamState.status === null && activeRunId != null);
+
 	// Calculate overall progress percentage
-	const getProgressPercentage = () => {
+	const getProgressPercentage = (): number | null => {
+		if (isConnecting) return null;
 		if (streamState.status === "completed") return 100;
-		if (streamState.status === "failed") return 100; // or 0?
+		if (streamState.status === "failed") return 100;
 
 		let percentage = 0;
 		const stageIndex = STAGES.findIndex(
@@ -61,7 +66,11 @@ export function DashboardAnalysisDrawer() {
 						currentProgress.clusters ||
 						0;
 					const stageWeight = 100 / STAGES.length;
-					percentage += (processed / currentProgress.total) * stageWeight;
+					const stageProgressRatio = Math.min(
+						1,
+						processed / currentProgress.total,
+					);
+					percentage += stageProgressRatio * stageWeight;
 				}
 			}
 		}
@@ -69,11 +78,15 @@ export function DashboardAnalysisDrawer() {
 		return Math.min(Math.round(percentage), 99);
 	};
 
+	const progressPercent = getProgressPercentage();
+
 	const getStageSubtext = (stageId: string) => {
 		const prog = streamState.progress?.[stageId];
 
 		if (!prog) {
 			if (streamState.status === "completed") return "Completed";
+
+			if (isConnecting) return "Connecting…";
 
 			const stageIndex = STAGES.findIndex((s) => s.id === stageId);
 			const currentIndex = STAGES.findIndex(
@@ -147,9 +160,15 @@ export function DashboardAnalysisDrawer() {
 									OVERALL PROGRESS
 								</div>
 
+								{connectionState === "reconnecting" && (
+									<div className="text-muted-foreground text-xs">
+										Reconnecting…
+									</div>
+								)}
+
 								<div className="flex items-end justify-between pb-2">
 									<div className="font-medium text-5xl">
-										{getProgressPercentage()}%
+										{progressPercent === null ? "…" : `${progressPercent}%`}
 									</div>
 									{streamState.status === "running" && (
 										<div className="mb-1 text-muted-foreground text-sm">
@@ -159,8 +178,11 @@ export function DashboardAnalysisDrawer() {
 								</div>
 
 								<Progress
-									value={getProgressPercentage()}
-									className="h-1.5 w-full"
+									value={progressPercent ?? 0}
+									className={cn(
+										"h-1.5 w-full",
+										progressPercent === null && "animate-pulse opacity-60",
+									)}
 								/>
 							</div>
 
