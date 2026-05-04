@@ -15,12 +15,13 @@ export function DashboardLibraryAnalysis() {
 	const { runs } = usePipelineController();
 	const activeRunId = useOrganizeStore((s) => s.activeRunId);
 	const { liveProgress: ctxLiveProgress } = usePipelineProgress();
-	const activeRun = runs.data?.find((r) => r.status === "running") ?? null;
-	const liveProgress =
-		activeRunId != null && activeRun?.id === activeRunId
-			? ctxLiveProgress
+	const activeRun =
+		activeRunId != null
+			? (runs.data?.find((r) => r.id === activeRunId) ?? null)
 			: null;
-	const { stats } = usePipelineController(activeRun ? 3000 : false);
+	const isStreamingRun = activeRun?.status === "running";
+	const liveProgress = isStreamingRun ? ctxLiveProgress : null;
+	const { stats } = usePipelineController(isStreamingRun ? 3000 : false);
 	const statsLoading = stats.isLoading;
 
 	const totalTracks = stats.data?.tracks.total ?? 0;

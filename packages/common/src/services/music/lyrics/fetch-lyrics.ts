@@ -63,15 +63,25 @@ export async function fetchLyricsForPendingTracks(
 				const primaryArtist = artistNames[0] ?? "";
 
 				if (!t.name || !primaryArtist) {
-					await db
-						.update(track)
-						.set({
-							lyricsStatus: "not_found",
-							lyricsFetchedAt: new Date(),
-						})
-						.where(and(eq(track.userId, userId), eq(track.id, t.id)));
-					stats.notFound++;
-					stats.processed++;
+					try {
+						await db
+							.update(track)
+							.set({
+								lyricsStatus: "not_found",
+								lyricsFetchedAt: new Date(),
+							})
+							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+						stats.notFound++;
+						stats.processed++;
+					} catch (err) {
+						logger.warn(
+							{
+								trackId: t.id,
+								error: err instanceof Error ? err.message : String(err),
+							},
+							"Failed to mark track missing metadata for lyrics skip",
+						);
+					}
 					return;
 				}
 

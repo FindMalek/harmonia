@@ -1,13 +1,16 @@
 "use client";
 
 import { client } from "@/shared/api/orpc";
-import { queryKeys } from "@/shared/api/query-keys";
 import {
 	readPersistedActivePipelineRunId,
 	useOrganizeStore,
 	writePersistedActivePipelineRunId,
 } from "@/shared/lib/organize/store";
 import { usePipelineController } from "@/shared/lib/pipeline/controller.hook";
+import {
+	pipelineGetAllQueryOptions,
+	pipelineStatsQueryOptions,
+} from "@/shared/lib/pipeline/pipeline.util";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -25,7 +28,15 @@ export function useDashboardPipelineBootstrap() {
 	const [persistedRunResolved, setPersistedRunResolved] = useState(false);
 
 	useEffect(() => {
-		void queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
+		void Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: pipelineGetAllQueryOptions().queryKey,
+			}),
+			// Narrow invalidation: refresh SSR-dehydrated list + stats without cascading to every pipeline procedure cache entry.
+			queryClient.invalidateQueries({
+				queryKey: pipelineStatsQueryOptions().queryKey,
+			}),
+		]);
 	}, [queryClient]);
 
 	useEffect(() => {

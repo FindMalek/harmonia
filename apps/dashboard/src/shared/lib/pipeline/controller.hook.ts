@@ -20,6 +20,24 @@ import type {
 	PipelineStreamState,
 } from "./types";
 
+type PipelineRunProbe =
+	| {
+			kind: "ok";
+			row: NonNullable<Awaited<ReturnType<typeof client.pipeline.getById>>>;
+	  }
+	| { kind: "missing" }
+	| { kind: "error"; err: unknown };
+
+async function probePipelineRun(id: number): Promise<PipelineRunProbe> {
+	try {
+		const row = await client.pipeline.getById({ id });
+		if (row === null) return { kind: "missing" };
+		return { kind: "ok", row };
+	} catch (err) {
+		return { kind: "error", err };
+	}
+}
+
 export const PipelineProgressContext =
 	createContext<PipelineProgressContextValue | null>(null);
 
@@ -86,33 +104,53 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 			void queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
 		}
 
+		function failRunNotFound() {
+			setSnapshot({
+				...EMPTY_SNAPSHOT,
+				status: "failed",
+				error: "Pipeline run not found",
+			});
+			setLiveProgress(null);
+			setConnectionState("idle");
+			invalidatePipeline();
+		}
+
 		async function drive() {
 			let backoffMs = 500;
 
 			setConnectionState("hydrating");
-			const row = await client.pipeline.getById({ id: subscribedRunId });
-			if (cancelled) return;
 
-			if (!row) {
-				setSnapshot({
-					...EMPTY_SNAPSHOT,
-					status: "failed",
-					error: "Pipeline run not found",
-				});
-				setLiveProgress(null);
-				setConnectionState("idle");
-				invalidatePipeline();
-				return;
-			}
+			while (!cancelled) {
+				const initialProbe = await probePipelineRun(subscribedRunId);
+				if (cancelled) return;
 
-			const merged = snapshotFromRun(row);
-			setSnapshot(merged);
-			setLiveProgress(deriveLiveProgress(merged.progress));
+				if (initialProbe.kind === "missing") {
+					failRunNotFound();
+					return;
+				}
 
-			if (row.status !== "running") {
-				setConnectionState("idle");
-				invalidatePipeline();
-				return;
+				if (initialProbe.kind === "error") {
+					console.error("Pipeline run probe failed", initialProbe.err);
+					setConnectionState("reconnecting");
+					await sleep(backoffMs);
+					if (cancelled) return;
+					backoffMs = Math.min(backoffMs * 2, 15_000);
+					continue;
+				}
+
+				const row = initialProbe.row;
+				const merged = snapshotFromRun(row);
+				setSnapshot(merged);
+				setLiveProgress(deriveLiveProgress(merged.progress));
+
+				if (row.status !== "running") {
+					setConnectionState("idle");
+					invalidatePipeline();
+					return;
+				}
+
+				backoffMs = 500;
+				break;
 			}
 
 			while (!cancelled) {
@@ -197,17 +235,30 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 					if (cancelled || ac.signal.aborted) return;
 
 					setConnectionState("reconnecting");
-					const latest = await client.pipeline.getById({
-						id: subscribedRunId,
-					});
+					const afterStreamProbe = await probePipelineRun(subscribedRunId);
 					if (cancelled) return;
 
-					if (!latest || latest.status !== "running") {
-						if (latest) {
-							const snap = snapshotFromRun(latest);
-							setSnapshot(snap);
-							setLiveProgress(deriveLiveProgress(snap.progress));
-						}
+					if (afterStreamProbe.kind === "missing") {
+						failRunNotFound();
+						return;
+					}
+
+					if (afterStreamProbe.kind === "error") {
+						console.error(
+							"Pipeline reconnect probe failed",
+							afterStreamProbe.err,
+						);
+						await sleep(backoffMs);
+						if (cancelled) return;
+						backoffMs = Math.min(backoffMs * 2, 15_000);
+						continue;
+					}
+
+					const latest = afterStreamProbe.row;
+					if (latest.status !== "running") {
+						const snap = snapshotFromRun(latest);
+						setSnapshot(snap);
+						setLiveProgress(deriveLiveProgress(snap.progress));
 						setConnectionState("idle");
 						invalidatePipeline();
 						return;
@@ -226,17 +277,30 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 					console.error("Pipeline stream connection failed", err);
 
 					setConnectionState("reconnecting");
-					const latest = await client.pipeline.getById({
-						id: subscribedRunId,
-					});
+					const catchProbe = await probePipelineRun(subscribedRunId);
 					if (cancelled) return;
 
-					if (!latest || latest.status !== "running") {
-						if (latest) {
-							const snap = snapshotFromRun(latest);
-							setSnapshot(snap);
-							setLiveProgress(deriveLiveProgress(snap.progress));
-						}
+					if (catchProbe.kind === "missing") {
+						failRunNotFound();
+						return;
+					}
+
+					if (catchProbe.kind === "error") {
+						console.error(
+							"Pipeline reconnect probe failed after stream error",
+							catchProbe.err,
+						);
+						await sleep(backoffMs);
+						if (cancelled) return;
+						backoffMs = Math.min(backoffMs * 2, 15_000);
+						continue;
+					}
+
+					const latest = catchProbe.row;
+					if (latest.status !== "running") {
+						const snap = snapshotFromRun(latest);
+						setSnapshot(snap);
+						setLiveProgress(deriveLiveProgress(snap.progress));
 						setConnectionState("idle");
 						invalidatePipeline();
 						return;
@@ -253,7 +317,9 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 			}
 		}
 
-		void drive();
+		void drive().catch((err) => {
+			console.error("Pipeline drive terminated", err);
+		});
 
 		return () => {
 			cancelled = true;
