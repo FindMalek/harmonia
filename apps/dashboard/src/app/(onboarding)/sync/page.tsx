@@ -9,7 +9,14 @@ import { Icons, Progress } from "@harmonia/ui";
 export default function SyncPage() {
 	const { isComplete, isSyncing } = useOnboardingController();
 	const stream = useOnboardingSyncStream();
-	const { progress, phasesCompleted } = stream;
+	const {
+		progress,
+		phasesCompleted,
+		error: streamError,
+		isReconnecting,
+		reconnectAttempt,
+		maxStreamAttempts,
+	} = stream;
 
 	const isIdle = !isSyncing && !isComplete && phasesCompleted === 0;
 	const getStepState = (step: 1 | 2 | 3) => {
@@ -69,6 +76,15 @@ export default function SyncPage() {
 					</span>
 				</div>
 				<Progress value={progress} className="h-1" />
+				{isReconnecting && reconnectAttempt > 0 ? (
+					<p className="text-center text-muted-foreground text-xs">
+						Connection dropped — retrying ({reconnectAttempt} of{" "}
+						{maxStreamAttempts})…
+					</p>
+				) : null}
+				{streamError ? (
+					<p className="text-center text-destructive text-xs">{streamError}</p>
+				) : null}
 			</div>
 
 			<div className="flex flex-col gap-3">

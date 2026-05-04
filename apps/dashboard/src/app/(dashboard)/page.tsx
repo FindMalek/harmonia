@@ -15,8 +15,6 @@ import {
 	pipelineStatsQueryOptions,
 } from "@/shared/lib/pipeline/pipeline.util";
 
-export const revalidate = 60;
-
 export default async function DashboardPage() {
 	const session = await getServerSession();
 
