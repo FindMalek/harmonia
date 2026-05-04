@@ -73,3 +73,9 @@ pnpm format           # Biome format + fix
 - ORM: `drizzle-orm`
 - Background jobs: `@trigger.dev/sdk/v3`
 - Auth: `better-auth` + Spotify OAuth
+
+## Git commits
+
+Use conventional prefixes: `feat:` `fix:` `chore:` `perf:` `refactor:` (scope optional).
+
+Do **not** name AI assistants, IDEs, or vendor coding tools in commit messages, PR titles, or PR bodies (e.g. Claude, Cursor, Copilot, ChatGPT, Windsurf). Write commits as a human contributor would. Do **not** add `Co-authored-by:` lines for tools.

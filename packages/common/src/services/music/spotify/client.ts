@@ -192,6 +192,15 @@ function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
 	return spotifyRequest<T>(path, accessToken, { method: "GET" });
 }
 
+export function spotifyRelativePathFromNext(nextUrl: string): string {
+	const parsed = new URL(nextUrl, SPOTIFY_API_BASE);
+	let resourcePath = parsed.pathname;
+	if (resourcePath.startsWith("/v1/")) {
+		resourcePath = resourcePath.slice("/v1".length);
+	}
+	return `${resourcePath}${parsed.search}`;
+}
+
 export type FetchSavedTracksOnPageArgs = {
 	items: SpotifySavedTracksResponse["items"];
 	cumulativeTrackCount: number;
@@ -210,9 +219,13 @@ export async function fetchAllSavedTracks(
 	let url = `/me/tracks?limit=${limit}`;
 	const allItems: SpotifySavedTracksResponse["items"] = [];
 	let pageIndex = 0;
+	let reportedTotal: number | undefined;
 
 	for (;;) {
 		const page = await spotifyGet<SpotifySavedTracksResponse>(url, accessToken);
+		if (typeof page.total === "number") {
+			reportedTotal = page.total;
+		}
 		allItems.push(...page.items);
 		const cumulativeTrackCount = allItems.length;
 		const hasNext = Boolean(page.next);
@@ -229,11 +242,15 @@ export async function fetchAllSavedTracks(
 			break;
 		}
 
-		const nextUrl = new URL(page.next);
-		let path = nextUrl.pathname;
-		if (path.startsWith("/v1/")) path = path.slice(3);
-		url = path + nextUrl.search;
+		url = spotifyRelativePathFromNext(page.next);
 		pageIndex += 1;
+	}
+
+	if (reportedTotal !== undefined && allItems.length !== reportedTotal) {
+		logger.warn(
+			{ collected: allItems.length, total: reportedTotal },
+			"Spotify saved tracks page total does not match collected items after pagination",
+		);
 	}
 
 	return allItems;
@@ -255,10 +272,7 @@ export async function fetchAllUserPlaylists(
 			break;
 		}
 
-		const nextUrl = new URL(page.next);
-		let path = nextUrl.pathname;
-		if (path.startsWith("/v1/")) path = path.slice(3);
-		url = path + nextUrl.search;
+		url = spotifyRelativePathFromNext(page.next);
 	}
 
 	const ownerId = options?.ownerId;
@@ -292,10 +306,7 @@ export async function fetchPlaylistItems(
 			break;
 		}
 
-		const nextUrl = new URL(page.next);
-		let path = nextUrl.pathname;
-		if (path.startsWith("/v1/")) path = path.slice(3);
-		url = path + nextUrl.search;
+		url = spotifyRelativePathFromNext(page.next);
 	}
 
 	return allItems;
