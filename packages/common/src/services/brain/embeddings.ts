@@ -8,9 +8,11 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
-const EMBEDDING_MODEL = "text-embedding-3-small";
-const EMBEDDING_BATCH_SIZE = 64;
-const EMBEDDING_CONCURRENCY = 3;
+import {
+	EMBEDDING_BATCH_SIZE,
+	EMBEDDING_CONCURRENCY,
+	EMBEDDING_MODEL,
+} from "../../constants/brain";
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{

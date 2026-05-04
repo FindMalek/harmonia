@@ -1,4 +1,8 @@
 import {
+	PIPELINE_STREAM_MAX_POLLS,
+	PIPELINE_STREAM_POLL_INTERVAL_MS,
+} from "@harmonia/common/constants";
+import {
 	emptyInput,
 	pipelineClearAnalysisOutputSchema,
 	pipelineGetByIdInput,
@@ -77,8 +81,6 @@ export const pipelineRouter = {
 		.output(eventIterator(pipelineStatusEventSchema))
 		.handler(async function* ({ input, context, signal }) {
 			const userId = context.session.user.id;
-			const POLL_INTERVAL = 2000;
-			const MAX_POLLS = 900;
 			let polls = 0;
 
 			try {
@@ -138,12 +140,14 @@ export const pipelineRouter = {
 					}
 
 					polls++;
-					if (polls >= MAX_POLLS) {
+					if (polls >= PIPELINE_STREAM_MAX_POLLS) {
 						yield { event: "error" as const, message: "Polling timeout" };
 						return;
 					}
 
-					await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+					await new Promise((resolve) =>
+						setTimeout(resolve, PIPELINE_STREAM_POLL_INTERVAL_MS),
+					);
 				}
 			} finally {
 				// Client disconnected or stream ended

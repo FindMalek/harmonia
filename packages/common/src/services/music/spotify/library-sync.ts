@@ -15,6 +15,12 @@ import { sql } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import {
+	LIKED_PHASE_PERCENT_CAP_BEFORE_MILESTONE,
+	PLAYLIST_FETCH_CONCURRENCY,
+	PLAYLIST_FETCH_DELAY_MS,
+	TRACK_UPSERT_BATCH_SIZE,
+} from "../../../constants/spotify";
+import {
 	fetchAllSavedTracks,
 	fetchAllUserPlaylists,
 	fetchPlaylistItems,
@@ -24,11 +30,6 @@ import {
 	getCachedPlaylistItems,
 	setCachedPlaylistItems,
 } from "./playlist-cache";
-
-const PLAYLIST_FETCH_CONCURRENCY = 3;
-const PLAYLIST_FETCH_DELAY_MS = 150;
-const TRACK_UPSERT_BATCH_SIZE = 100;
-const LIKED_PHASE_PERCENT_CAP_BEFORE_MILESTONE = 24;
 
 function likedPhaseSubPercent(args: {
 	cumulativeRows: number;

@@ -9,7 +9,7 @@ import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 
-const SIMILARITY_THRESHOLD = 0.7;
+import { TRACK_MATCH_SIMILARITY_THRESHOLD } from "../../constants/brain";
 
 export async function matchNewTracksToPlaylists(
 	userId: string,
@@ -76,7 +76,10 @@ export async function matchNewTracksToPlaylists(
 			}
 		}
 
-		if (bestPlaylistId !== null && bestSimilarity >= SIMILARITY_THRESHOLD) {
+		if (
+			bestPlaylistId !== null &&
+			bestSimilarity >= TRACK_MATCH_SIMILARITY_THRESHOLD
+		) {
 			const [maxPos] = await db
 				.select({
 					max: sql<number>`COALESCE(MAX(${playlistTracks.position}), -1)`,
