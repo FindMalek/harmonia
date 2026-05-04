@@ -66,7 +66,11 @@ export function DashboardAnalysisDrawer() {
 						currentProgress.clusters ||
 						0;
 					const stageWeight = 100 / STAGES.length;
-					percentage += (processed / currentProgress.total) * stageWeight;
+					const stageProgressRatio = Math.min(
+						1,
+						processed / currentProgress.total,
+					);
+					percentage += stageProgressRatio * stageWeight;
 				}
 			}
 		}

@@ -2,7 +2,7 @@ import type { LyricsProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, count, eq, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import { getLyricsFromLRCLib } from "./lrclib-client";
@@ -22,24 +22,33 @@ export async function fetchLyricsForPendingTracks(
 	};
 	const limit = pLimit(LYRICS_CONCURRENCY);
 
+	const lyricsPendingPredicate = and(
+		eq(track.userId, userId),
+		or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
+		isNull(track.lyrics),
+	);
+
+	const [countRow] = await db
+		.select({ totalPending: count() })
+		.from(track)
+		.where(lyricsPendingPredicate);
+
+	const totalPending = Number(countRow?.totalPending ?? 0);
+	stats.total = totalPending;
+
+	if (totalPending === 0) {
+		logger.info({ userId }, "No tracks pending lyrics fetch");
+		return stats;
+	}
+
 	for (;;) {
 		const pendingTracks = await db
 			.select()
 			.from(track)
-			.where(
-				and(
-					eq(track.userId, userId),
-					or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
-					isNull(track.lyrics),
-				),
-			)
+			.where(lyricsPendingPredicate)
 			.limit(LYRICS_BATCH_SIZE);
 
 		if (pendingTracks.length === 0) break;
-
-		if (stats.total === 0) {
-			stats.total = pendingTracks.length;
-		}
 
 		logger.info(
 			{ userId, batchSize: pendingTracks.length, processed: stats.processed },
@@ -54,6 +63,15 @@ export async function fetchLyricsForPendingTracks(
 				const primaryArtist = artistNames[0] ?? "";
 
 				if (!t.name || !primaryArtist) {
+					await db
+						.update(track)
+						.set({
+							lyricsStatus: "not_found",
+							lyricsFetchedAt: new Date(),
+						})
+						.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+					stats.notFound++;
+					stats.processed++;
 					return;
 				}
 
@@ -112,7 +130,6 @@ export async function fetchLyricsForPendingTracks(
 
 		await Promise.all(tasks);
 
-		// Log batch performance metrics
 		const batchDuration = Date.now() - batchStartTime;
 		const throughput = Math.round(
 			pendingTracks.length / (batchDuration / 1000),

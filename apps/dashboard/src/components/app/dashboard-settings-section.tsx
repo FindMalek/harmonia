@@ -34,7 +34,7 @@ export function DashboardSettingsRow({
 	return (
 		<div className="flex items-center justify-between border-b py-4 last:border-b-0">
 			<span className="text-muted-foreground text-sm">{label}</span>
-			<span className={cn("text-sm font-medium", valueClassName)}>{value}</span>
+			<span className={cn("font-medium text-sm", valueClassName)}>{value}</span>
 		</div>
 	);
 }
@@ -55,7 +55,7 @@ export function DashboardSettingsNavRow({
 			className="flex w-full items-center justify-between border-b py-4 transition-colors last:border-b-0 hover:bg-muted/40"
 		>
 			<div className="text-left">
-				<p className="text-sm font-medium">{label}</p>
+				<p className="font-medium text-sm">{label}</p>
 				{subtitle && (
 					<p className="text-muted-foreground text-xs">{subtitle}</p>
 				)}
