@@ -1,6 +1,7 @@
 "use client";
 
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { useDashboardPipelineBootstrap } from "@/hooks/use-dashboard-pipeline-bootstrap";
 import {
 	PipelineProgressContext,
 	usePipelineProgressDrive,
@@ -8,6 +9,7 @@ import {
 import type { ReactNode } from "react";
 
 export function DashboardLayoutShell({ children }: { children: ReactNode }) {
+	useDashboardPipelineBootstrap();
 	const pipelineProgress = usePipelineProgressDrive();
 
 	return (

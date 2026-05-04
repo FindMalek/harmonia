@@ -37,6 +37,8 @@ export function useOrganizeController() {
 							action: {
 								label: "Reconnect",
 								onClick: async () => {
+									store.setActiveRunId(null);
+									store.setIsAnalysisDrawerOpen(false);
 									await authClient.signOut();
 									router.push("/login");
 								},

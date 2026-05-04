@@ -1,7 +1,6 @@
 import {
 	HydrationBoundary,
 	QueryClient,
-	QueryClientProvider,
 	dehydrate,
 } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
@@ -11,7 +10,10 @@ import { DashboardLibraryOverviewSkeleton } from "@/components/app/dashboard-lib
 import { DashboardLibraryStatsWrapper } from "@/components/app/dashboard-library-stats-wrapper";
 import { DashboardShell } from "@/components/app/dashboard-shell";
 import { getServerSession } from "@/shared/api/session.server";
-import { orpc } from "@/shared/api/orpc";
+import {
+	pipelineGetAllQueryOptions,
+	pipelineStatsQueryOptions,
+} from "@/shared/lib/pipeline/pipeline.util";
 
 export const revalidate = 60;
 
@@ -24,8 +26,8 @@ export default async function DashboardPage() {
 
 	const queryClient = new QueryClient();
 	await Promise.all([
-		queryClient.prefetchQuery(orpc.pipeline.stats.queryOptions({ input: {} })),
-		queryClient.prefetchQuery(orpc.pipeline.getAll.queryOptions({ input: {} })),
+		queryClient.prefetchQuery(pipelineStatsQueryOptions()),
+		queryClient.prefetchQuery(pipelineGetAllQueryOptions()),
 	]);
 
 	return (

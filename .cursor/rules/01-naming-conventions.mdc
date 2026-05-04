@@ -17,7 +17,8 @@ All files use **kebab-case**.
 | Components | `dashboard-{feature}-{role}.tsx` | `PascalCase` |
 | Hooks (query) | `use-{resource}.ts` | `use{Resource}()` |
 | Hooks (mutation) | `use-{action}.ts` | `use{Action}()` |
-| Stores | `{name}.ts` in `stores/` | `use{Name}()` |
+| Hooks (dashboard, cross-cutting) | `use-{scope}-{behavior}.ts` in `apps/dashboard/src/hooks/` | `use{Scope}{Behavior}()` |
+| Stores (dashboard) | `store.ts` in `apps/dashboard/src/shared/lib/{domain}/` | `create()` store + selectors |
 | Utilities | `{name}.ts` | camelCase functions |
 | Schema files | `{entity}.ts` | see Schema Naming below |
 
@@ -41,7 +42,7 @@ All files use **kebab-case**.
 Within each app (`api`, `dashboard`, `web`), use `@/*` for local imports:
 ```typescript
 import { Button } from "@/components/ui/button";
-import { useOrganize } from "@/hooks/mutations/use-organize";
+import { useDashboardPipelineBootstrap } from "@/hooks/use-dashboard-pipeline-bootstrap";
 ```
 
 Across packages, use workspace package names:

@@ -2,6 +2,7 @@
 
 import { authClient } from "@/shared/api/auth-client";
 import { orpc } from "@/shared/api/orpc";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 
@@ -31,6 +32,8 @@ export function useSettingsController() {
 	);
 
 	const signOut = async () => {
+		useOrganizeStore.getState().setActiveRunId(null);
+		useOrganizeStore.getState().setIsAnalysisDrawerOpen(false);
 		await authClient.signOut();
 		window.location.href = "/login";
 	};

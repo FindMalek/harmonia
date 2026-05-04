@@ -1,8 +1,29 @@
+import { orpc } from "@/shared/api/orpc";
 import type {
 	LivePipelineProgress,
 	PipelineProgressStage,
 	PipelineStreamState,
 } from "./types";
+
+export const PIPELINE_HYDRATION_STALE_MS = 60_000;
+
+export function pipelineGetAllQueryOptions() {
+	return {
+		...orpc.pipeline.getAll.queryOptions({ input: {} }),
+		staleTime: PIPELINE_HYDRATION_STALE_MS,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+	};
+}
+
+export function pipelineStatsQueryOptions() {
+	return {
+		...orpc.pipeline.stats.queryOptions({ input: {} }),
+		staleTime: PIPELINE_HYDRATION_STALE_MS,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+	};
+}
 
 export const EMPTY_SNAPSHOT: PipelineStreamState = {
 	status: null,

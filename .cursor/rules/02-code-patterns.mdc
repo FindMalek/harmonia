@@ -94,7 +94,7 @@ export const myStageTask = task({
 ## State Management
 
 - **Server state**: TanStack Query v5 via oRPC client
-- **Client state**: Zustand (see `apps/dashboard/src/stores/`)
+- **Client state**: Zustand in `apps/dashboard/src/shared/lib/{domain}/store.ts` (not a top-level `stores/` folder)
 - **No Redux, no Context API for global state**
 
 ## Client Components

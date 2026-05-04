@@ -14,6 +14,7 @@ apps/dashboard/src/
   app/(dashboard)/        # authenticated routes
   app/(onboarding)/       # onboarding flow
   app/login/
+  hooks/                  # cross-cutting client hooks (prefix use-, co-locate only when owned by one component)
   components/
     app/                  # feature-specific (prefixed dashboard-{feature}-{role})
     layout/               # page wrappers, nav, providers
@@ -21,8 +22,8 @@ apps/dashboard/src/
   shared/
     api/                  # orpc client, auth-client, session.server, query-keys, error-handler
     lib/
-      organize/           # store.ts + controller.hook.ts (pipeline run state)
-      pipeline/           # controller.hook.ts (stream, live-progress, runs, stats)
+      organize/           # store.ts (+ sessionStorage helpers for active run id) + controller.hook.ts
+      pipeline/           # pipeline.util.ts (pure helpers + TanStack/orpc prefetch query presets), controller.hook.ts
       playlists/          # store.ts + controller.hook.ts
       tracks/             # store.ts + controller.hook.ts
       clusters/           # store.ts + controller.hook.ts
@@ -42,6 +43,7 @@ apps/dashboard/src/
 ## Data Fetching
 
 - Server state: TanStack Query v5 via `orpc` client (`@/shared/api/orpc`)
+- Shared prefetch/query alignment for `pipeline.getAll` / `pipeline.stats`: use `pipelineGetAllQueryOptions` / `pipelineStatsQueryOptions` from `@/shared/lib/pipeline/pipeline.util` in RSC prefetch and in `controller.hook` — do not add a separate `*-query-options.ts` file
 - Use controller hooks from `@/shared/lib/{domain}/controller.hook` — they combine queries, mutations, and store access
 - Invalidate via `queryKeys.*` from `@/shared/api/query-keys`
 - Import `toastError` from `@/shared/api/error-handler` for copy-button error toasts
@@ -49,6 +51,7 @@ apps/dashboard/src/
 ## Client State
 
 - Per-domain Zustand stores in `shared/lib/{domain}/store.ts` — one store per domain, no cross-domain monolith
+- Persisted UI selection tied to a domain store (e.g. active pipeline run id in sessionStorage) lives in that domain’s `store.ts` next to `setState` — no separate `*-session.ts` helpers
 - Access via controller hooks; do not import domain stores directly in page files
 - No `useState` for cross-component state — use the domain store via its controller
 
