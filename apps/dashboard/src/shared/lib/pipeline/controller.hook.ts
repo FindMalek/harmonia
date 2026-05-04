@@ -2,8 +2,34 @@
 
 import { client, orpc } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+	EMPTY_SNAPSHOT,
+	deriveLiveProgress,
+	snapshotFromRun,
+} from "./pipeline.util";
+import type {
+	LivePipelineProgress,
+	PipelineConnectionState,
+	PipelineProgressContextValue,
+	PipelineProgressStage,
+	PipelineStreamState,
+} from "./types";
+
+export const PipelineProgressContext =
+	createContext<PipelineProgressContextValue | null>(null);
+
+export function usePipelineProgress(): PipelineProgressContextValue {
+	const ctx = useContext(PipelineProgressContext);
+	if (!ctx) {
+		throw new Error(
+			"usePipelineProgress must be used within DashboardLayoutShell",
+		);
+	}
+	return ctx;
+}
 
 export function usePipelineController(refetchInterval: number | false = false) {
 	const runs = useQuery({
@@ -24,208 +50,222 @@ export function usePipelineController(refetchInterval: number | false = false) {
 	return { runs, stats };
 }
 
-// ─── Pipeline Stream ────────────────────────────────────────────────────────
+function sleep(ms: number) {
+	return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
 
-export type PipelineProgressStage = {
-	processed?: number;
-	total?: number;
-	found?: number;
-	classified?: number;
-	embedded?: number;
-	clusters?: number;
-	playlists?: number;
-};
-
-export type PipelineStreamState = {
-	status: string | null;
-	currentStage: string | null;
-	progress: Record<string, PipelineProgressStage>;
-	startedAt: Date | null;
-	completedAt: Date | null;
-	error: string | null;
-};
-
-export function usePipelineStream(runId: number | null): PipelineStreamState {
-	const [state, setState] = useState<PipelineStreamState>({
-		status: null,
-		currentStage: null,
-		progress: {},
-		startedAt: null,
-		completedAt: null,
-		error: null,
-	});
+export function usePipelineProgressDrive(): PipelineProgressContextValue {
+	const activeRunId = useOrganizeStore((s) => s.activeRunId);
+	const queryClient = useQueryClient();
+	const [snapshot, setSnapshot] = useState<PipelineStreamState>(EMPTY_SNAPSHOT);
+	const [connectionState, setConnectionState] =
+		useState<PipelineConnectionState>("idle");
+	const [liveProgress, setLiveProgress] = useState<LivePipelineProgress | null>(
+		null,
+	);
 
 	useEffect(() => {
-		if (!runId) return;
+		if (activeRunId === null) {
+			setSnapshot(EMPTY_SNAPSHOT);
+			setLiveProgress(null);
+			setConnectionState("idle");
+			return;
+		}
 
-		let active = true;
+		let cancelled = false;
+		const ac = new AbortController();
+		const subscribedRunId = activeRunId;
 
-		void client.pipeline.getById({ id: runId }).then((run) => {
-			if (!active || !run) return;
-			setState((s) => ({
-				...s,
-				status: run.status,
-				currentStage: run.currentStage,
-				progress: (run.progress as Record<string, PipelineProgressStage>) ?? {},
-				startedAt: run.startedAt ?? null,
-				completedAt: run.completedAt ?? null,
-				error: run.error ?? null,
-			}));
-		});
+		setSnapshot(EMPTY_SNAPSHOT);
+		setLiveProgress(null);
+		setConnectionState("hydrating");
 
-		const abortController = new AbortController();
+		function invalidatePipeline() {
+			void queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
+		}
 
-		async function connectStream() {
-			if (!runId) return;
-			try {
-				const stream = await client.pipeline.streamStatus(
-					{ id: runId },
-					{ signal: abortController.signal },
-				);
-				for await (const data of stream) {
-					if (abortController.signal.aborted || !active) break;
-					if (data.event === "progress") {
-						setState((s) => ({
-							...s,
-							status: data.status,
-							currentStage: data.currentStage,
-							progress: data.progress as Record<string, PipelineProgressStage>,
-							startedAt: data.startedAt,
-						}));
-					} else if (data.event === "completed") {
-						setState((s) => ({
-							...s,
-							status: "completed",
-							currentStage: null,
-							progress: data.progress as Record<string, PipelineProgressStage>,
-							completedAt: data.completedAt,
-						}));
-						break;
-					} else if (data.event === "failed") {
-						setState((s) => ({
-							...s,
-							status: "failed",
-							currentStage: null,
-							progress: data.progress as Record<string, PipelineProgressStage>,
-							completedAt: data.completedAt,
-							error: data.error ?? "Unknown error",
-						}));
-						break;
-					} else if (data.event === "error") {
-						setState((s) => ({
-							...s,
-							status: "failed",
-							error: data.message ?? "Stream error",
-						}));
-						break;
+		async function drive() {
+			let backoffMs = 500;
+
+			setConnectionState("hydrating");
+			const row = await client.pipeline.getById({ id: subscribedRunId });
+			if (cancelled) return;
+
+			if (!row) {
+				setSnapshot({
+					...EMPTY_SNAPSHOT,
+					status: "failed",
+					error: "Pipeline run not found",
+				});
+				setLiveProgress(null);
+				setConnectionState("idle");
+				invalidatePipeline();
+				return;
+			}
+
+			const merged = snapshotFromRun(row);
+			setSnapshot(merged);
+			setLiveProgress(deriveLiveProgress(merged.progress));
+
+			if (row.status !== "running") {
+				setConnectionState("idle");
+				invalidatePipeline();
+				return;
+			}
+
+			while (!cancelled) {
+				setConnectionState("streaming");
+				try {
+					const stream = await client.pipeline.streamStatus(
+						{ id: subscribedRunId },
+						{ signal: ac.signal },
+					);
+
+					for await (const data of stream) {
+						if (cancelled) return;
+
+						if (data.event === "progress") {
+							backoffMs = 500;
+							setSnapshot((s) => ({
+								...s,
+								status: data.status,
+								currentStage: data.currentStage,
+								progress: data.progress as Record<
+									string,
+									PipelineProgressStage
+								>,
+								startedAt: data.startedAt,
+							}));
+							setLiveProgress(
+								deriveLiveProgress(
+									data.progress as Record<string, PipelineProgressStage>,
+								),
+							);
+						} else if (data.event === "completed") {
+							setSnapshot((s) => ({
+								...s,
+								status: "completed",
+								currentStage: null,
+								progress: data.progress as Record<
+									string,
+									PipelineProgressStage
+								>,
+								completedAt: data.completedAt,
+							}));
+							setLiveProgress(
+								deriveLiveProgress(
+									data.progress as Record<string, PipelineProgressStage>,
+								),
+							);
+							setConnectionState("idle");
+							invalidatePipeline();
+							return;
+						} else if (data.event === "failed") {
+							setSnapshot((s) => ({
+								...s,
+								status: "failed",
+								currentStage: null,
+								progress: data.progress as Record<
+									string,
+									PipelineProgressStage
+								>,
+								completedAt: data.completedAt,
+								error: data.error ?? "Unknown error",
+							}));
+							setLiveProgress(
+								deriveLiveProgress(
+									data.progress as Record<string, PipelineProgressStage>,
+								),
+							);
+							setConnectionState("idle");
+							invalidatePipeline();
+							return;
+						} else if (data.event === "error") {
+							setSnapshot((s) => ({
+								...s,
+								status: "failed",
+								error: data.message ?? "Stream error",
+							}));
+							setConnectionState("idle");
+							invalidatePipeline();
+							return;
+						}
 					}
-				}
-			} catch (err) {
-				if (!abortController.signal.aborted && active) {
-					console.error("Stream connection failed", err);
+
+					if (cancelled || ac.signal.aborted) return;
+
+					setConnectionState("reconnecting");
+					const latest = await client.pipeline.getById({
+						id: subscribedRunId,
+					});
+					if (cancelled) return;
+
+					if (!latest || latest.status !== "running") {
+						if (latest) {
+							const snap = snapshotFromRun(latest);
+							setSnapshot(snap);
+							setLiveProgress(deriveLiveProgress(snap.progress));
+						}
+						setConnectionState("idle");
+						invalidatePipeline();
+						return;
+					}
+
+					const recovered = snapshotFromRun(latest);
+					setSnapshot(recovered);
+					setLiveProgress(deriveLiveProgress(recovered.progress));
+
+					await sleep(backoffMs);
+					if (cancelled) return;
+					backoffMs = Math.min(backoffMs * 2, 15_000);
+				} catch (err) {
+					if (cancelled || ac.signal.aborted) return;
+
+					console.error("Pipeline stream connection failed", err);
+
+					setConnectionState("reconnecting");
+					const latest = await client.pipeline.getById({
+						id: subscribedRunId,
+					});
+					if (cancelled) return;
+
+					if (!latest || latest.status !== "running") {
+						if (latest) {
+							const snap = snapshotFromRun(latest);
+							setSnapshot(snap);
+							setLiveProgress(deriveLiveProgress(snap.progress));
+						}
+						setConnectionState("idle");
+						invalidatePipeline();
+						return;
+					}
+
+					const recovered = snapshotFromRun(latest);
+					setSnapshot(recovered);
+					setLiveProgress(deriveLiveProgress(recovered.progress));
+
+					await sleep(backoffMs);
+					if (cancelled) return;
+					backoffMs = Math.min(backoffMs * 2, 15_000);
 				}
 			}
 		}
 
-		void connectStream();
-
-		return () => {
-			active = false;
-			abortController.abort();
-		};
-	}, [runId]);
-
-	return state;
-}
-
-// ─── Live Pipeline Progress ─────────────────────────────────────────────────
-
-export type LivePipelineProgress = {
-	tracksTotal: number;
-	lyricsCollected: number;
-	tracksAnalyzed: number;
-	embedded: number;
-};
-
-export function useLivePipelineProgress(
-	activeRunId: number | null,
-): LivePipelineProgress | null {
-	const [liveProgress, setLiveProgress] = useState<LivePipelineProgress | null>(
-		null,
-	);
-	const queryClient = useQueryClient();
-	const onCompleteRef = useRef(() => {
-		queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
-	});
-	onCompleteRef.current = () => {
-		queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
-	};
-
-	useEffect(() => {
-		if (activeRunId === null) return;
-
-		const controller = new AbortController();
-		let cancelled = false;
-
-		(async () => {
-			try {
-				const iterator = await client.pipeline.streamStatus(
-					{ id: activeRunId },
-					{ signal: controller.signal },
-				);
-				for await (const event of iterator) {
-					if (cancelled) break;
-					if (event.event === "progress" && event.progress) {
-						const p = event.progress as Record<
-							string,
-							{
-								processed?: number;
-								total?: number;
-								classified?: number;
-								embedded?: number;
-							}
-						>;
-						const sync = p.sync;
-						const lyrics = p.lyrics;
-						const classify = p.classify;
-						const embed = p.embed;
-
-						const total =
-							typeof sync?.total === "number"
-								? sync.total
-								: typeof lyrics?.total === "number"
-									? lyrics.total
-									: typeof classify?.total === "number"
-										? classify.total
-										: 0;
-
-						setLiveProgress({
-							tracksTotal: total,
-							lyricsCollected: Number(lyrics?.processed ?? 0),
-							tracksAnalyzed: Number(classify?.classified ?? 0),
-							embedded: Number(embed?.embedded ?? 0),
-						});
-					} else if (
-						event.event === "completed" ||
-						event.event === "failed" ||
-						event.event === "error"
-					) {
-						onCompleteRef.current();
-						break;
-					}
-				}
-			} catch (err) {
-				if (err instanceof Error && err.name !== "AbortError" && !cancelled) {
-					onCompleteRef.current();
-				}
-			}
-		})();
+		void drive();
 
 		return () => {
 			cancelled = true;
-			controller.abort();
+			ac.abort();
 		};
 	}, [activeRunId, queryClient]);
 
-	return liveProgress;
+	return useMemo<PipelineProgressContextValue>(
+		() => ({
+			runId: activeRunId,
+			snapshot,
+			connectionState,
+			liveProgress,
+		}),
+		[activeRunId, snapshot, connectionState, liveProgress],
+	);
 }
