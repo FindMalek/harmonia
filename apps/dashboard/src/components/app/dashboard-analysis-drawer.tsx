@@ -244,16 +244,6 @@ export function DashboardAnalysisDrawer() {
 								{cancelPipeline.isPending ? "Cancelling…" : "Cancel analysis"}
 							</Button>
 						)}
-						<Button
-							variant="outline"
-							size="xl"
-							onClick={() => setIsAnalysisDrawerOpen(false)}
-						>
-							{streamState.status === "completed" ||
-							streamState.status === "failed"
-								? "Close"
-								: "Hide Analysis"}
-						</Button>
 					</DrawerFooter>
 				</div>
 			</DrawerContent>
