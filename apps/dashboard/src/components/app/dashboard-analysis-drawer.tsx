@@ -9,6 +9,7 @@ import {
 	DrawerContent,
 	DrawerFooter,
 	DrawerHeader,
+	DrawerTitle,
 	Icons,
 	Progress,
 	ScrollArea,
@@ -150,7 +151,8 @@ export function DashboardAnalysisDrawer() {
 	return (
 		<Drawer open={isAnalysisDrawerOpen} onOpenChange={setIsAnalysisDrawerOpen}>
 			<DrawerContent className="flex h-full max-h-[80vh] flex-col bg-background text-foreground">
-				<DrawerHeader className="server-only hidden" />
+				<DrawerHeader className="hidden" />
+				<DrawerTitle className="sr-only">Music analysis pipeline</DrawerTitle>
 
 				<div className="flex min-h-0 flex-1 flex-col">
 					<div className="min-h-0 flex-1 overflow-auto px-6 pt-4">
