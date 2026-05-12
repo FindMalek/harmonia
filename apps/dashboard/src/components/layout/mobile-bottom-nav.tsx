@@ -6,7 +6,14 @@ import {
 	DASHBOARD_MOBILE_NAV_ITEMS,
 	DASHBOARD_ROUTES,
 } from "@harmonia/common/utils/routes";
-import { Button, Icons, cn } from "@harmonia/ui";
+import {
+	Button,
+	Icons,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+	cn,
+} from "@harmonia/ui";
 import Link, { type LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -34,48 +41,58 @@ export function MobileBottomNav() {
 	return (
 		<div className="fixed bottom-0 left-0 z-50 w-full border-t bg-background/80 backdrop-blur-lg md:hidden">
 			{showAnalysisBar && (
-				<div className="flex items-center justify-between gap-2 border-border border-b px-3 py-2">
-					<div className="flex items-center gap-2 text-muted-foreground text-sm">
+				<div className="flex min-h-11 items-center justify-between gap-2 border-border border-b px-3 py-2">
+					<div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-muted-foreground text-sm">
 						<Icons.spinner className="h-4 w-4 shrink-0 animate-spin text-primary" />
 						<span>Analysis running</span>
 					</div>
 					<Button
 						variant="ghost"
-						size="sm"
-						className="h-8 shrink-0 text-xs"
+						size="icon"
+						className="size-11 shrink-0"
+						aria-label="Expand analysis drawer"
 						onClick={() => setIsAnalysisDrawerOpen(true)}
 					>
-						Expand
+						<Icons.chevronUp className="size-5" aria-hidden />
 					</Button>
 				</div>
 			)}
-			<nav className="grid h-16 grid-cols-4">
+			<nav className="grid min-h-13 grid-cols-4" aria-label="Dashboard">
 				{DASHBOARD_MOBILE_NAV_ITEMS.filter((item) => item.isNav).map(
-					({ key, path, label, icon }) => {
+					({ key, path, icon, ariaLabel }) => {
 						const isActive =
 							path === "/" ? pathname === "/" : pathname.startsWith(path);
 
 						const Icon = icon ? Icons[icon as keyof typeof Icons] : null;
 
 						return (
-							<Link
-								key={key}
-								href={path as Href}
-								className={cn(
-									"flex flex-col items-center justify-center gap-1 text-xs transition-colors",
-									isActive
-										? "font-medium text-primary"
-										: "text-muted-foreground hover:text-foreground",
-								)}
-							>
-								{Icon && <Icon className="size-5" />}
-								<span>{label}</span>
-							</Link>
+							<Tooltip key={key}>
+								<TooltipTrigger asChild>
+									<Link
+										href={path as Href}
+										aria-label={ariaLabel}
+										aria-current={isActive ? "page" : undefined}
+										className={cn(
+											"relative flex min-h-11 min-w-11 flex-col items-center justify-center border-transparent border-b-2 pb-0.5 outline-none transition-colors",
+											"focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+											isActive
+												? "border-b-primary text-primary"
+												: "text-muted-foreground hover:text-foreground",
+										)}
+									>
+										{Icon ? (
+											<Icon className="size-6 shrink-0" aria-hidden />
+										) : null}
+									</Link>
+								</TooltipTrigger>
+								<TooltipContent side="top" sideOffset={6}>
+									{ariaLabel}
+								</TooltipContent>
+							</Tooltip>
 						);
 					},
 				)}
 			</nav>
-			{/* Safe area padding for newer iPhones */}
 			<div className="h-[env(safe-area-inset-bottom)] bg-background/80 backdrop-blur-lg" />
 		</div>
 	);

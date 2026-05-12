@@ -31,8 +31,8 @@ import {
 	IconDots,
 	IconExternalLink,
 	IconFileText,
+	IconHome,
 	IconInfoCircle,
-	IconLayoutBoard,
 	IconLayoutSidebar,
 	IconLoader,
 	IconMinus,
@@ -103,7 +103,7 @@ export const Icons = {
 	// Navigation / App
 	settings: IconSettings,
 	chart: IconChartBar,
-	home: IconLayoutBoard,
+	home: IconHome,
 
 	// Loading / pipeline states
 	checkCircle: IconCircleCheck,

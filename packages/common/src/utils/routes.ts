@@ -92,10 +92,27 @@ export const DASHBOARD_NAV_ITEMS = Object.entries(DASHBOARD_ROUTES)
 	.filter(([, route]) => route.isNav)
 	.map(([key, route]) => ({ key, ...route }));
 
-/** Dashboard routes that appear in the mobile bottom navigation */
+/** Dashboard routes that appear in the mobile bottom navigation (icon-only bar; use ariaLabel for SR / tooltips). */
 export const DASHBOARD_MOBILE_NAV_ITEMS = [
-	{ ...DASHBOARD_ROUTES.overview, key: "overview", label: "Dashboard" },
-	{ ...DASHBOARD_ROUTES.playlists, key: "playlists" },
-	{ ...DASHBOARD_ROUTES.insights, key: "insights" },
-	{ ...DASHBOARD_ROUTES.settings, key: "settings" },
-];
+	{
+		...DASHBOARD_ROUTES.overview,
+		key: "overview",
+		label: "Dashboard",
+		ariaLabel: "Home",
+	},
+	{
+		...DASHBOARD_ROUTES.playlists,
+		key: "playlists",
+		ariaLabel: "Playlists",
+	},
+	{
+		...DASHBOARD_ROUTES.insights,
+		key: "insights",
+		ariaLabel: "Insights",
+	},
+	{
+		...DASHBOARD_ROUTES.settings,
+		key: "settings",
+		ariaLabel: "Settings",
+	},
+] as const;
