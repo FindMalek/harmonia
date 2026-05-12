@@ -22,9 +22,6 @@ export function useOrganizeController() {
 					store.setActiveRunId(first.runId);
 					store.setIsAnalysisDrawerOpen(true);
 				}
-				toast.success(
-					first ? `Pipeline started (run #${first.runId})` : "Pipeline started",
-				);
 				queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
 			},
 			onError: (error) => {
