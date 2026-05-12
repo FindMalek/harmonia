@@ -8,6 +8,7 @@ const dashboardUrl = process.env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(
 
 const nextConfig: NextConfig = {
 	typedRoutes: true,
+	allowedDevOrigins: ["127.0.0.1"],
 	reactCompiler: true,
 	async redirects() {
 		return [
