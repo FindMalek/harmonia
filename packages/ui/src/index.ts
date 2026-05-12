@@ -70,6 +70,12 @@ export {
 	tabsListVariants,
 } from "./components/ui/tabs";
 export { Spinner } from "./components/ui/spinner";
+export {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "./components/ui/tooltip";
 
 // Shared components
 export type { HeaderLink } from "./components/header";
