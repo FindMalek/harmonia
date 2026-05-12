@@ -158,7 +158,7 @@ export async function spotifyRequest<T>(
 			},
 			"Spotify rate limit (429); waiting before retry",
 		);
-		await sleep(waitSec);
+		await sleep(waitSec * 1000);
 		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
 	}
 
