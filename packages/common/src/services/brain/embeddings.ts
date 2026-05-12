@@ -4,7 +4,7 @@ import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
@@ -13,6 +13,7 @@ import {
 	EMBEDDING_CONCURRENCY,
 	EMBEDDING_MODEL,
 } from "../../constants/brain";
+import { chunk } from "../../trigger/utils/chunk";
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{
@@ -20,13 +21,7 @@ type OpenAIEmbeddingResponse = {
 	}>;
 };
 
-function chunk<T>(arr: T[], size: number): T[][] {
-	const chunks: T[][] = [];
-	for (let i = 0; i < arr.length; i += size) {
-		chunks.push(arr.slice(i, i + size));
-	}
-	return chunks;
-}
+type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
 
 export async function embedTracksBatch(
 	userId: string,
@@ -159,27 +154,26 @@ export async function embedTracksBatch(
 
 				const now = new Date();
 
-				for (let index = 0; index < inputs.length; index++) {
-					const input = inputs[index];
-					const embedding = json.data[index]?.embedding;
-
-					if (!input || !embedding) continue;
-
-					await db
-						.update(track)
-						.set({
-							embedding,
-							embeddingGeneratedAt: now,
-							embeddingInput: input.text,
-							analysisSnapshot: {
-								llm: {},
-								domain: null,
-								embeddingDims: embedding.length,
-								modelVersions: { embedding: EMBEDDING_MODEL },
-							},
-						})
-						.where(and(eq(track.userId, userId), eq(track.id, input.id)));
-				}
+				await Promise.all(
+					inputs.map((input, index) => {
+						const embedding = json.data[index]?.embedding;
+						if (!input || !embedding) return Promise.resolve();
+						return db
+							.update(track)
+							.set({
+								embedding,
+								embeddingGeneratedAt: now,
+								embeddingInput: input.text,
+								analysisSnapshot: {
+									llm: {},
+									domain: null,
+									embeddingDims: embedding.length,
+									modelVersions: { embedding: EMBEDDING_MODEL },
+								},
+							})
+							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
+					}),
+				);
 
 				embedded += inputs.length;
 				await onProgress?.({ embedded, total, pending: total - embedded });
@@ -193,4 +187,159 @@ export async function embedTracksBatch(
 	);
 
 	return { embedded, total, pending: 0 };
+}
+
+/**
+ * Generates embeddings for an explicit list of track IDs (fan-out worker entry point).
+ * Re-checks embedding IS NULL AND llmClassifiedAt IS NOT NULL at DB level for idempotency.
+ * Calls onBatchComplete with delta count after each internal OpenAI batch.
+ */
+export async function embedTrackIds(
+	userId: string,
+	trackIds: string[],
+	onBatchComplete?: EmbedDeltaCallback,
+): Promise<EmbedProgress> {
+	const stats: EmbedProgress = {
+		embedded: 0,
+		total: trackIds.length,
+		pending: trackIds.length,
+	};
+
+	if (!env.HARMONIA_OPENAI_API_KEY) {
+		logger.warn(
+			{ type: "embeddings" },
+			"No HARMONIA_OPENAI_API_KEY configured; skipping embedding generation",
+		);
+		return stats;
+	}
+
+	if (trackIds.length === 0) return stats;
+
+	const batches = chunk(trackIds, EMBEDDING_BATCH_SIZE);
+	const limit = pLimit(EMBEDDING_CONCURRENCY);
+
+	await Promise.all(
+		batches.map((batchIds) =>
+			limit(async () => {
+				// Idempotency re-check + dependency guard: only embed classified tracks
+				const pendingTracks = await db
+					.select()
+					.from(track)
+					.where(
+						and(
+							eq(track.userId, userId),
+							inArray(track.id, batchIds),
+							isNull(track.embedding),
+							isNotNull(track.llmClassifiedAt),
+						),
+					);
+
+				if (pendingTracks.length === 0) return;
+
+				const inputs = pendingTracks.map((t) => {
+					const artistNames: string[] = JSON.parse(t.artistNames) ?? [];
+					const tags = getLlmTags(t.llmTags);
+
+					const parts = [
+						`Title: ${t.name}`,
+						`Artists: ${artistNames.join(", ")}`,
+					];
+
+					if (t.albumName) parts.push(`Album: ${t.albumName}`);
+					if (t.llmMood) parts.push(`Mood: ${t.llmMood}`);
+					if (tags.secondaryMoods?.length)
+						parts.push(`Secondary moods: ${tags.secondaryMoods.join(", ")}`);
+					if (tags.themes?.length)
+						parts.push(`Themes: ${tags.themes.join(", ")}`);
+					if (tags.topics?.length)
+						parts.push(`Topics: ${tags.topics.join(", ")}`);
+					if (tags.vibe?.length) parts.push(`Vibe: ${tags.vibe.join(", ")}`);
+					if (tags.vocalType) parts.push(`Vocal: ${tags.vocalType}`);
+					if (tags.energyLevel) parts.push(`Energy: ${tags.energyLevel}`);
+					if (tags.language) parts.push(`Language: ${tags.language}`);
+					if (tags.era) parts.push(`Era: ${tags.era}`);
+
+					return { id: t.id, text: parts.join(" | ") };
+				});
+
+				const json = await pRetry(
+					async () => {
+						const response = await fetch(
+							"https://api.openai.com/v1/embeddings",
+							{
+								method: "POST",
+								headers: {
+									Authorization: `Bearer ${env.HARMONIA_OPENAI_API_KEY}`,
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									model: EMBEDDING_MODEL,
+									input: inputs.map((i) => i.text),
+								}),
+							},
+						);
+
+						if (!response.ok) {
+							const text = await response.text();
+							throw new Error(
+								`OpenAI embeddings ${response.status}: ${text.slice(0, 200)}`,
+							);
+						}
+
+						return (await response.json()) as OpenAIEmbeddingResponse;
+					},
+					{
+						retries: 3,
+						minTimeout: 2000,
+						onFailedAttempt: (error) => {
+							logger.warn(
+								{
+									attempt: error.attemptNumber,
+									retriesLeft: error.retriesLeft,
+								},
+								"OpenAI embeddings request failed, retrying",
+							);
+						},
+					},
+				);
+
+				if (!json.data || json.data.length !== inputs.length) {
+					logger.error(
+						{ expected: inputs.length, actual: json.data?.length },
+						"Embedding response length mismatch",
+					);
+					return;
+				}
+
+				const now = new Date();
+				await Promise.all(
+					inputs.map((input, index) => {
+						const embedding = json.data[index]?.embedding;
+						if (!input || !embedding) return Promise.resolve();
+						return db
+							.update(track)
+							.set({
+								embedding,
+								embeddingGeneratedAt: now,
+								embeddingInput: input.text,
+								analysisSnapshot: {
+									llm: {},
+									domain: null,
+									embeddingDims: embedding.length,
+									modelVersions: { embedding: EMBEDDING_MODEL },
+								},
+							})
+							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
+					}),
+				);
+
+				stats.embedded += inputs.length;
+				stats.pending = stats.total - stats.embedded;
+				await onBatchComplete?.(inputs.length);
+			}),
+		),
+	);
+
+	logger.info({ userId, embedded: stats.embedded }, "embedTrackIds completed");
+	return stats;
 }

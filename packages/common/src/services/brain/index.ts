@@ -1,5 +1,5 @@
-export { classifyTracksBatch } from "./classifier";
-export { embedTracksBatch } from "./embeddings";
+export { classifyTracksBatch, classifyTrackIds } from "./classifier";
+export { embedTracksBatch, embedTrackIds } from "./embeddings";
 export { runClustering } from "./clustering";
 export { generateClusterMetadata } from "./cluster-metadata";
 export { generatePlaylists } from "./playlist-generator";

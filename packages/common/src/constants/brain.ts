@@ -1,5 +1,5 @@
 export const EMBEDDING_MODEL = "text-embedding-3-small";
-export const EMBEDDING_BATCH_SIZE = 64;
+export const EMBEDDING_BATCH_SIZE = 256;
 export const EMBEDDING_CONCURRENCY = 3;
 
 export const CLASSIFICATION_BATCH_SIZE = 12;
