@@ -54,6 +54,9 @@
 		},
 		"./utils/routes": {
 			"default": "./src/utils/routes.ts"
+		},
+		"./constants": {
+			"default": "./src/constants/index.ts"
 		}
 	},
 	"dependencies": {

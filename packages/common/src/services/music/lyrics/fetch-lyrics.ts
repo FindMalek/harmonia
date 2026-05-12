@@ -5,10 +5,11 @@ import { logger } from "@harmonia/logger";
 import { and, count, eq, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
 
+import {
+	LYRICS_BATCH_SIZE,
+	LYRICS_CONCURRENCY,
+} from "../../../constants/lyrics";
 import { getLyricsFromLRCLib } from "./lrclib-client";
-
-const LYRICS_BATCH_SIZE = 200;
-const LYRICS_CONCURRENCY = 20;
 
 export async function fetchLyricsForPendingTracks(
 	userId: string,

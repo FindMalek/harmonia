@@ -1,16 +1,30 @@
 "use client";
 
+import { DashboardAnalysisDrawer } from "@/components/app/dashboard-analysis-drawer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { useDashboardPipelineBootstrap } from "@/hooks/use-dashboard-pipeline-bootstrap";
+import {
+	readPersistedAnalysisDrawerOpen,
+	useOrganizeStore,
+} from "@/shared/lib/organize/store";
 import {
 	PipelineProgressContext,
 	usePipelineProgressDrive,
 } from "@/shared/lib/pipeline/controller.hook";
-import type { ReactNode } from "react";
+import { type ReactNode, useLayoutEffect, useRef } from "react";
 
 export function DashboardLayoutShell({ children }: { children: ReactNode }) {
 	useDashboardPipelineBootstrap();
 	const pipelineProgress = usePipelineProgressDrive();
+	const hydratedDrawerRef = useRef(false);
+
+	useLayoutEffect(() => {
+		if (hydratedDrawerRef.current) return;
+		hydratedDrawerRef.current = true;
+		if (readPersistedAnalysisDrawerOpen()) {
+			useOrganizeStore.getState().setIsAnalysisDrawerOpen(true);
+		}
+	}, []);
 
 	return (
 		<PipelineProgressContext.Provider value={pipelineProgress}>
@@ -21,6 +35,7 @@ export function DashboardLayoutShell({ children }: { children: ReactNode }) {
 					</div>
 				</div>
 				<MobileBottomNav />
+				<DashboardAnalysisDrawer />
 			</div>
 		</PipelineProgressContext.Provider>
 	);

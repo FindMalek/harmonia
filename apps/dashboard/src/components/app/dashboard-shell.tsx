@@ -1,4 +1,3 @@
-import { DashboardAnalysisDrawer } from "./dashboard-analysis-drawer";
 import { DashboardAnalyzeMusicButton } from "./dashboard-analyze-music-button";
 import { DashboardLibraryAnalysis } from "./dashboard-library-analysis";
 
@@ -14,8 +13,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 			{children}
 
 			<DashboardLibraryAnalysis />
-
-			<DashboardAnalysisDrawer />
 		</div>
 	);
 }

@@ -1,11 +1,10 @@
 import { orpc } from "@/shared/api/orpc";
+import { PIPELINE_HYDRATION_STALE_MS } from "@/shared/lib/constants";
 import type {
 	LivePipelineProgress,
 	PipelineProgressStage,
 	PipelineStreamState,
 } from "./types";
-
-export const PIPELINE_HYDRATION_STALE_MS = 60_000;
 
 export function pipelineGetAllQueryOptions() {
 	return {

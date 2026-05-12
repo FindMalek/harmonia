@@ -2,9 +2,11 @@
 
 import { client, orpc } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
+import { ONBOARDING_SYNC_MAX_ATTEMPTS } from "@/shared/lib/constants";
 import type { SyncPhase } from "@harmonia/common/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { runOnboardingSyncLibraryLoop } from "./onboarding.util";
 import { useOnboardingStore } from "./store";
 
 export type OnboardingSyncStream = {
@@ -13,6 +15,9 @@ export type OnboardingSyncStream = {
 	phasesCompleted: number;
 	error: string | null;
 	isStreaming: boolean;
+	isReconnecting: boolean;
+	reconnectAttempt: number;
+	maxStreamAttempts: number;
 };
 
 export function useOnboardingController() {
@@ -48,6 +53,8 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 	const [phasesCompleted, setPhasesCompleted] = useState(0);
 	const [error, setError] = useState<string | null>(null);
 	const [isStreaming, setIsStreaming] = useState(false);
+	const [isReconnecting, setIsReconnecting] = useState(false);
+	const [reconnectAttempt, setReconnectAttempt] = useState(0);
 	const streamEffectRunIdRef = useRef(0);
 
 	useEffect(() => {
@@ -59,73 +66,23 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 
 		const isCurrent = () => streamEffectRunIdRef.current === runId;
 
-		const runStream = async () => {
-			const finishSyncSuccess = () => {
-				setProgress(100);
-				setComplete(true);
-				setSyncing(false);
-				clearStartRequest();
-				void queryClient.invalidateQueries({
-					queryKey: queryKeys.spotifyLibraryStats(),
-				});
-			};
-
-			setIsStreaming(true);
-			setSyncing(true);
-			setComplete(false);
-			setError(null);
-			setProgress(0);
-			setPhase(null);
-			setPhasesCompleted(0);
-
-			try {
-				const iterator = await client.spotify.streamSyncLibrary(
-					{},
-					{ signal: controller.signal },
-				);
-
-				if (!isCurrent()) return;
-
-				for await (const event of iterator) {
-					if (cancelled || !isCurrent()) break;
-
-					if (event.event === "progress") {
-						setProgress(event.progress.percent);
-						setPhase(event.progress.phase);
-						setPhasesCompleted(event.progress.phasesCompleted);
-						if (event.progress.done) {
-							finishSyncSuccess();
-							break;
-						}
-					} else if (event.event === "completed") {
-						finishSyncSuccess();
-						break;
-					} else if (event.event === "failed" || event.event === "error") {
-						const msg = event.event === "failed" ? event.error : event.message;
-						setError(msg ?? "Unknown error");
-						setSyncing(false);
-						clearStartRequest();
-						break;
-					}
-				}
-			} catch (err) {
-				if (!isCurrent()) return;
-				if (err instanceof Error && err.name !== "AbortError" && !cancelled) {
-					setError(err.message);
-					setSyncing(false);
-					clearStartRequest();
-				}
-			} finally {
-				if (isCurrent()) {
-					setIsStreaming(false);
-					if (cancelled) {
-						setSyncing(false);
-					}
-				}
-			}
-		};
-
-		runStream();
+		void runOnboardingSyncLibraryLoop({
+			signal: controller.signal,
+			isCurrent,
+			getCancelled: () => cancelled,
+			queryClient,
+			streamSyncLibrary: client.spotify.streamSyncLibrary,
+			setProgress,
+			setPhase,
+			setPhasesCompleted,
+			setError,
+			setIsStreaming,
+			setIsReconnecting,
+			setReconnectAttempt,
+			setSyncing,
+			setComplete,
+			clearStartRequest,
+		});
 
 		return () => {
 			cancelled = true;
@@ -133,5 +90,14 @@ export function useOnboardingSyncStream(): OnboardingSyncStream {
 		};
 	}, [clearStartRequest, queryClient, setComplete, setSyncing, shouldStart]);
 
-	return { progress, phase, phasesCompleted, error, isStreaming };
+	return {
+		progress,
+		phase,
+		phasesCompleted,
+		error,
+		isStreaming,
+		isReconnecting,
+		reconnectAttempt,
+		maxStreamAttempts: ONBOARDING_SYNC_MAX_ATTEMPTS,
+	};
 }

@@ -27,7 +27,7 @@ apps/dashboard/src/
       playlists/          # store.ts + controller.hook.ts
       tracks/             # store.ts + controller.hook.ts
       clusters/           # store.ts + controller.hook.ts
-      onboarding/         # store.ts + controller.hook.ts (sync stream)
+      onboarding/         # store.ts + onboarding.util.ts + controller.hook.ts
   lib/
     utils.ts              # cn() only
     env.ts                # env re-export only

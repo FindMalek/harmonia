@@ -8,11 +8,12 @@ import { and, eq, isNotNull } from "drizzle-orm";
 
 import Clustering from "density-clustering";
 
-/** DBSCAN params: minPts, eps. Tuned for ~1500-dim embeddings, cosine distance. */
-const CLUSTER_MIN_POINTS = 5;
-const CLUSTER_EPSILON = 0.5;
-const CLUSTER_MIN_SIZE = 20;
-const CLUSTER_MAX_SIZE = 80;
+import {
+	CLUSTER_EPSILON,
+	CLUSTER_MAX_SIZE,
+	CLUSTER_MIN_POINTS,
+	CLUSTER_MIN_SIZE,
+} from "../../constants/brain";
 
 export async function runClustering(
 	userId: string,

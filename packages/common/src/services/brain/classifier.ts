@@ -10,10 +10,11 @@ import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
 
+import {
+	CLASSIFICATION_BATCH_SIZE,
+	CLASSIFICATION_CONCURRENCY,
+} from "../../constants/brain";
 import { classifyTracksWithLLM } from "./llml";
-
-const CLASSIFICATION_BATCH_SIZE = 12;
-const CLASSIFICATION_CONCURRENCY = 2;
 
 function chunk<T>(arr: T[], size: number): T[][] {
 	const chunks: T[][] = [];

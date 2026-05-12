@@ -1,4 +1,7 @@
-import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
+import type {
+	SpotifyLibraryStats,
+	SpotifyPlaylistTrackItem,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import {
 	userPlaylistSnapshots,
@@ -7,6 +10,11 @@ import {
 import { eq, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 
+import {
+	INCLUDE_FOLLOWED_PLAYLISTS,
+	LIBRARY_STATS_CACHE_STALE_MS,
+	STATS_FETCH_CONCURRENCY,
+} from "../../../constants/spotify";
 import {
 	fetchAllUserPlaylists,
 	fetchPlaylistItems,
@@ -19,15 +27,6 @@ import {
 	setCachedPlaylistItems,
 } from "./playlist-cache";
 
-/** Library stats cache TTL. Will be plan-based later (e.g. free=24h, paid=shorter). */
-export const LIBRARY_STATS_CACHE_STALE_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-/** When true (paid plans), include followed/collaborative playlists. For now: owned only. */
-export const INCLUDE_FOLLOWED_PLAYLISTS = false;
-
-const STATS_FETCH_CONCURRENCY = 4;
-
-/** Per-user lock to avoid concurrent refreshes for the same user. */
 const refreshLocks = new Map<string, Promise<SpotifyLibraryStats>>();
 
 /**
@@ -85,7 +84,7 @@ export async function refreshSpotifyLibraryStats(
 					playlist.id,
 					snapshotId,
 				);
-				let items;
+				let items: SpotifyPlaylistTrackItem[];
 
 				if (cached !== null) {
 					items = cached;

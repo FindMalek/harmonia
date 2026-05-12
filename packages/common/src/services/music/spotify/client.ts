@@ -13,9 +13,13 @@ import type {
 	SpotifyTokenResponse,
 } from "@harmonia/common/schemas";
 
-export const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
-const RATE_LIMIT_MAX_RETRIES = 3;
-const RATE_LIMIT_MAX_WAIT_SEC = 60;
+import {
+	SPOTIFY_API_BASE,
+	SPOTIFY_PLAYLIST_ITEMS_FIELDS,
+	SPOTIFY_PLAYLIST_ITEMS_LIMIT,
+	SPOTIFY_RATE_LIMIT_MAX_RETRIES,
+	SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC,
+} from "../../../constants/spotify";
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -126,7 +130,7 @@ export async function spotifyRequest<T>(
 	path: string,
 	accessToken: string,
 	options: SpotifyRequestOptions = {},
-	retriesLeft = RATE_LIMIT_MAX_RETRIES,
+	retriesLeft = SPOTIFY_RATE_LIMIT_MAX_RETRIES,
 ): Promise<T> {
 	const { method = "GET", body } = options;
 	const init: RequestInit = {
@@ -142,7 +146,7 @@ export async function spotifyRequest<T>(
 
 	if (response.status === 429 && retriesLeft > 0) {
 		const retryAfter = Number(response.headers.get("Retry-After") ?? "0");
-		const waitSec = Math.max(retryAfter, RATE_LIMIT_MAX_WAIT_SEC);
+		const waitSec = Math.max(retryAfter, SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC);
 		logger.warn(
 			{
 				path,
@@ -154,7 +158,7 @@ export async function spotifyRequest<T>(
 			},
 			"Spotify rate limit (429); waiting before retry",
 		);
-		await sleep(waitSec);
+		await sleep(waitSec * 1000);
 		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
 	}
 
@@ -282,17 +286,13 @@ export async function fetchAllUserPlaylists(
 	return allPlaylists;
 }
 
-const PLAYLIST_ITEMS_LIMIT = 50;
-const PLAYLIST_ITEMS_FIELDS =
-	"items(track(id,name,uri,album(id,name),artists(id,name),duration_ms))";
-
 export async function fetchPlaylistItems(
 	accessToken: string,
 	playlistId: string,
 	options?: { fields?: string },
 ): Promise<SpotifyPlaylistTrackItem[]> {
-	const fields = options?.fields ?? PLAYLIST_ITEMS_FIELDS;
-	let url = `/playlists/${playlistId}/items?limit=${PLAYLIST_ITEMS_LIMIT}&fields=${encodeURIComponent(fields)}`;
+	const fields = options?.fields ?? SPOTIFY_PLAYLIST_ITEMS_FIELDS;
+	let url = `/playlists/${playlistId}/items?limit=${SPOTIFY_PLAYLIST_ITEMS_LIMIT}&fields=${encodeURIComponent(fields)}`;
 	const allItems: SpotifyPlaylistTrackItem[] = [];
 
 	for (;;) {

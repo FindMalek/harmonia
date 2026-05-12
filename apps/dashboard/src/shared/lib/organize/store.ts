@@ -1,11 +1,11 @@
+import { DASHBOARD_SESSION_STORAGE_KEYS } from "@/shared/lib/constants";
 import { create } from "zustand";
-
-const ACTIVE_PIPELINE_RUN_SESSION_KEY =
-	"harmonia.dashboard.activePipelineRunId";
 
 export function readPersistedActivePipelineRunId(): number | null {
 	if (typeof window === "undefined") return null;
-	const raw = sessionStorage.getItem(ACTIVE_PIPELINE_RUN_SESSION_KEY);
+	const raw = sessionStorage.getItem(
+		DASHBOARD_SESSION_STORAGE_KEYS.ACTIVE_PIPELINE_RUN_ID,
+	);
 	if (raw == null || raw === "") return null;
 	const id = Number.parseInt(raw, 10);
 	return Number.isFinite(id) ? id : null;
@@ -13,8 +13,39 @@ export function readPersistedActivePipelineRunId(): number | null {
 
 export function writePersistedActivePipelineRunId(id: number | null): void {
 	if (typeof window === "undefined") return;
-	if (id === null) sessionStorage.removeItem(ACTIVE_PIPELINE_RUN_SESSION_KEY);
-	else sessionStorage.setItem(ACTIVE_PIPELINE_RUN_SESSION_KEY, String(id));
+	if (id === null) {
+		sessionStorage.removeItem(
+			DASHBOARD_SESSION_STORAGE_KEYS.ACTIVE_PIPELINE_RUN_ID,
+		);
+	} else {
+		sessionStorage.setItem(
+			DASHBOARD_SESSION_STORAGE_KEYS.ACTIVE_PIPELINE_RUN_ID,
+			String(id),
+		);
+	}
+}
+
+export function readPersistedAnalysisDrawerOpen(): boolean {
+	if (typeof window === "undefined") return false;
+	return (
+		sessionStorage.getItem(
+			DASHBOARD_SESSION_STORAGE_KEYS.ANALYSIS_DRAWER_OPEN,
+		) === "1"
+	);
+}
+
+export function writePersistedAnalysisDrawerOpen(open: boolean): void {
+	if (typeof window === "undefined") return;
+	if (open) {
+		sessionStorage.setItem(
+			DASHBOARD_SESSION_STORAGE_KEYS.ANALYSIS_DRAWER_OPEN,
+			"1",
+		);
+	} else {
+		sessionStorage.removeItem(
+			DASHBOARD_SESSION_STORAGE_KEYS.ANALYSIS_DRAWER_OPEN,
+		);
+	}
 }
 
 interface OrganizeStore {
@@ -34,6 +65,9 @@ export const useOrganizeStore = create<OrganizeStore>((set) => ({
 		set({ activeRunId: id });
 		writePersistedActivePipelineRunId(id);
 	},
-	setIsAnalysisDrawerOpen: (open) => set({ isAnalysisDrawerOpen: open }),
+	setIsAnalysisDrawerOpen: (open) => {
+		writePersistedAnalysisDrawerOpen(open);
+		set({ isAnalysisDrawerOpen: open });
+	},
 	setExpandedRun: (id) => set({ expandedRunId: id }),
 }));

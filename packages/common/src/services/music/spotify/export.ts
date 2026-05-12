@@ -6,9 +6,8 @@ import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 import pRetry from "p-retry";
 
+import { SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST } from "../../../constants/spotify";
 import { getUserSpotifyAccessToken, spotifyRequest } from "./client";
-
-const MAX_TRACKS_PER_REQUEST = 100;
 
 export async function exportPlaylistToSpotify(
 	userId: string,
@@ -99,8 +98,12 @@ async function createNewPlaylist(
 	const spotifyPlaylistId = created.id;
 	const spotifyUrl = created.external_urls.spotify;
 
-	for (let i = 0; i < trackUris.length; i += MAX_TRACKS_PER_REQUEST) {
-		const batch = trackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
+	for (
+		let i = 0;
+		i < trackUris.length;
+		i += SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST
+	) {
+		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
 		await pRetry(
 			() =>
 				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
@@ -150,17 +153,19 @@ async function updateExistingPlaylist(
 		() =>
 			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
 				method: "PUT",
-				body: { uris: trackUris.slice(0, MAX_TRACKS_PER_REQUEST) },
+				body: {
+					uris: trackUris.slice(0, SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST),
+				},
 			}),
 		{ retries: 2, minTimeout: 1000 },
 	);
 
 	for (
-		let i = MAX_TRACKS_PER_REQUEST;
+		let i = SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST;
 		i < trackUris.length;
-		i += MAX_TRACKS_PER_REQUEST
+		i += SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST
 	) {
-		const batch = trackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
+		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
 		await pRetry(
 			() =>
 				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
