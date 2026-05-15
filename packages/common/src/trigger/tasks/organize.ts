@@ -9,6 +9,9 @@ import { lyricsStageTask } from "./stages/lyrics";
 import { matchStageTask } from "./stages/match";
 import { syncStageTask } from "./stages/sync";
 
+/** Minimum fraction of tracks that must be classified for the pipeline to be considered healthy. */
+const MIN_CLASSIFY_RATIO = 0.1;
+
 export const organizePipeline = task({
 	id: "organize-pipeline",
 	retry: { maxAttempts: 1 },
@@ -18,7 +21,29 @@ export const organizePipeline = task({
 
 			await syncStageTask.triggerAndWait({ userId, runId });
 			await lyricsStageTask.triggerAndWait({ userId, runId });
-			await classifyStageTask.triggerAndWait({ userId, runId });
+			const classifyResult = await classifyStageTask.triggerAndWait({ userId, runId });
+
+			// Gate: if classification coverage is critically low, mark as degraded
+			if (
+				classifyResult &&
+				typeof classifyResult.total === "number" &&
+				typeof classifyResult.classified === "number" &&
+				classifyResult.total > 0 &&
+				classifyResult.classified / classifyResult.total < MIN_CLASSIFY_RATIO
+			) {
+				const coverage = ((classifyResult.classified / classifyResult.total) * 100).toFixed(1);
+				const warning = `Classify stage coverage critically low: ${classifyResult.classified}/${classifyResult.total} tracks (${coverage}%). Pipeline result is degraded — re-run recommended.`;
+
+				await updateRun(runId, {
+					status: "partial",
+					currentStage: null,
+					error: warning,
+					completedAt: new Date(),
+				});
+
+				return { userId, runId, status: "partial" as const, warning };
+			}
+
 			await embedStageTask.triggerAndWait({ userId, runId });
 			await clusterStageTask.triggerAndWait({ userId, runId });
 			await generateStageTask.triggerAndWait({ userId, runId });
