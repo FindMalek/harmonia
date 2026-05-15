@@ -34,7 +34,7 @@ export const pipelineClearAnalysisOutputSchema = z.object({
 	tracksUpdated: z.number(),
 });
 export type PipelineClearAnalysisOutput = z.infer<
-	typeof pipelineClearAnalysisOutputSchema
+  typeof pipelineClearAnalysisOutputSchema
 >;
 
 export const pipelineStatusEventSchema = z.discriminatedUnion("event", [
@@ -50,6 +50,13 @@ export const pipelineStatusEventSchema = z.discriminatedUnion("event", [
 		event: z.literal("completed"),
 		runId: z.number(),
 		progress: z.unknown(),
+		completedAt: z.date().nullable(),
+	}),
+	z.object({
+		event: z.literal("partial"),
+		runId: z.number(),
+		progress: z.unknown(),
+		warning: z.string().nullable(),
 		completedAt: z.date().nullable(),
 	}),
 	z.object({
