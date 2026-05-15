@@ -162,6 +162,19 @@ export async function spotifyRequest<T>(
 		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
 	}
 
+	// Retry transient Spotify server errors (5xx) with exponential backoff.
+	// 503 Service Unavailable is the most common; 500/502/504 behave the same way.
+	if (response.status >= 500 && retriesLeft > 0) {
+		const attempt = SPOTIFY_RATE_LIMIT_MAX_RETRIES - retriesLeft + 1;
+		const waitMs = Math.min(1000 * 2 ** attempt, 16000);
+		logger.warn(
+			{ path, status: response.status, retriesLeft, waitMs },
+			"Spotify server error (5xx); retrying with backoff",
+		);
+		await sleep(waitMs);
+		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
+	}
+
 	if (!response.ok) {
 		const bodyText = await response.text();
 		let bodyJson: { error?: unknown; error_description?: unknown } = {};

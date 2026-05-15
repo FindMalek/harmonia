@@ -1,5 +1,5 @@
 import { logger } from "@harmonia/logger";
-import pRetry from "p-retry";
+import pRetry, { AbortError } from "p-retry";
 
 type LRCLibTrack = {
 	id: number;
@@ -47,11 +47,12 @@ export async function getLyricsFromLRCLib(params: {
 			}
 
 			if (!response.ok) {
-				const err = new Error(
-					`LRCLib ${response.status}: ${response.statusText}`,
-				);
-				(err as NodeJS.ErrnoException).code = "ABORT_RETRY";
-				throw err;
+				const message = `LRCLib ${response.status}: ${response.statusText}`;
+				// 4xx are permanent client errors — abort retries. 5xx are transient — let p-retry backoff.
+				if (response.status >= 400 && response.status < 500) {
+					throw new AbortError(message);
+				}
+				throw new Error(message);
 			}
 
 			const json = (await response.json()) as {
@@ -72,7 +73,7 @@ export async function getLyricsFromLRCLib(params: {
 			retries: 3,
 			minTimeout: 200, // 5x faster (1000ms → 200ms)
 			onFailedAttempt: (error) => {
-				logger.warn(
+				logger.debug(
 					{
 						attempt: error.attemptNumber,
 						retriesLeft: error.retriesLeft,
