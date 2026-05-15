@@ -4,7 +4,7 @@ import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
@@ -78,7 +78,9 @@ export async function embedTracksBatch(
 				);
 
 				const inputs = pendingTracks.map((t) => {
-					const artistNames: string[] = JSON.parse(t.artistNames) ?? [];
+					const artistNames: string[] = t.artistNames
+						? JSON.parse(t.artistNames)
+						: [];
 					const tags = getLlmTags(t.llmTags);
 
 					const parts = [
@@ -164,14 +166,25 @@ export async function embedTracksBatch(
 								embedding,
 								embeddingGeneratedAt: now,
 								embeddingInput: input.text,
-								analysisSnapshot: {
-									llm: {},
-									domain: null,
-									embeddingDims: embedding.length,
-									modelVersions: { embedding: EMBEDDING_MODEL },
-								},
+								analysisSnapshot: sql`jsonb_set(
+									jsonb_set(
+										COALESCE(analysis_snapshot, '{}'::jsonb),
+										ARRAY['embeddingDims']::text[],
+										to_jsonb(${embedding.length}::int),
+										true
+									),
+									ARRAY['modelVersions', 'embedding']::text[],
+									to_jsonb(${EMBEDDING_MODEL}),
+									true
+								)`,
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
+							.where(
+								and(
+									eq(track.userId, userId),
+									eq(track.id, input.id),
+									isNull(track.embedding),
+								),
+							);
 					}),
 				);
 
@@ -237,7 +250,9 @@ export async function embedTrackIds(
 				if (pendingTracks.length === 0) return;
 
 				const inputs = pendingTracks.map((t) => {
-					const artistNames: string[] = JSON.parse(t.artistNames) ?? [];
+					const artistNames: string[] = t.artistNames
+						? JSON.parse(t.artistNames)
+						: [];
 					const tags = getLlmTags(t.llmTags);
 
 					const parts = [
@@ -322,14 +337,25 @@ export async function embedTrackIds(
 								embedding,
 								embeddingGeneratedAt: now,
 								embeddingInput: input.text,
-								analysisSnapshot: {
-									llm: {},
-									domain: null,
-									embeddingDims: embedding.length,
-									modelVersions: { embedding: EMBEDDING_MODEL },
-								},
+								analysisSnapshot: sql`jsonb_set(
+									jsonb_set(
+										COALESCE(analysis_snapshot, '{}'::jsonb),
+										ARRAY['embeddingDims']::text[],
+										to_jsonb(${embedding.length}::int),
+										true
+									),
+									ARRAY['modelVersions', 'embedding']::text[],
+									to_jsonb(${EMBEDDING_MODEL}),
+									true
+								)`,
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
+							.where(
+								and(
+									eq(track.userId, userId),
+									eq(track.id, input.id),
+									isNull(track.embedding),
+								),
+							);
 					}),
 				);
 

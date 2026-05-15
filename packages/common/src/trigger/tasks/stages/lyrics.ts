@@ -15,7 +15,7 @@ import {
 	LYRICS_FANOUT_CHUNK_SIZE,
 	LYRICS_WORKER_QUEUE_CONCURRENCY,
 } from "../../constants";
-import { chunk } from "../../utils/chunk";
+import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const lyricsWorkerQueue = queue({
 	name: "organize-lyrics-worker",
@@ -27,7 +27,7 @@ const lyricsWorkerQueue = queue({
 export const lyricsWorkerTask = task({
 	id: "organize-worker-lyrics",
 	queue: lyricsWorkerQueue,
-	retry: { maxAttempts: 2, minTimeoutInMs: 3000, factor: 2 },
+	retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
 	maxDuration: 600,
 	run: async ({
 		userId,
@@ -99,10 +99,14 @@ export const lyricsStageTask = task({
 		);
 
 		const batchResult = await lyricsWorkerTask.batchTriggerAndWait(
-			chunks.map((trackIds, i) => ({
+			chunks.map((trackIds) => ({
 				payload: { userId, runId, trackIds },
 				options: {
-					idempotencyKey: `lyrics-worker-${runId}-chunk-${i}`,
+					idempotencyKey: workerIdempotencyKey(
+						"lyrics-worker",
+						runId,
+						trackIds,
+					),
 					idempotencyKeyTTL: "24h",
 				},
 			})),
@@ -134,15 +138,18 @@ export const lyricsStageTask = task({
 				},
 				"Some lyrics workers failed; affected tracks remain pending for next run",
 			);
+			// Workers atomically incremented progress as they ran; overwriting with the
+			// partial in-memory tally would erase progress from failed-mid-way workers.
+			// Leave DB state from atomic increments as authoritative.
+		} else {
+			// All workers succeeded — authoritative final write after fan-in
+			await updateStageProgress(runId, "lyrics", {
+				found,
+				notFound,
+				processed,
+				total,
+			});
 		}
-
-		// Authoritative final write after fan-in
-		await updateStageProgress(runId, "lyrics", {
-			found,
-			notFound,
-			processed,
-			total,
-		});
 
 		return { found, notFound, processed, total };
 	},

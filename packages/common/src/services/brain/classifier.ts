@@ -78,7 +78,7 @@ export async function classifyTracksBatch(
 					(t) => ({
 						id: t.id,
 						name: t.name,
-						artistNames: JSON.parse(t.artistNames) ?? [],
+						artistNames: t.artistNames ? JSON.parse(t.artistNames) : [],
 						albumName: t.albumName,
 						durationMs: t.durationMs,
 						spotifyGenres: t.spotifyGenres ?? null,
@@ -176,7 +176,13 @@ export async function classifyTracksBatch(
 									},
 								},
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, trackId))),
+							.where(
+								and(
+									eq(track.userId, userId),
+									eq(track.id, trackId),
+									isNull(track.llmClassifiedAt),
+								),
+							),
 					),
 				);
 
@@ -240,7 +246,7 @@ export async function classifyTrackIds(
 					(t) => ({
 						id: t.id,
 						name: t.name,
-						artistNames: JSON.parse(t.artistNames) ?? [],
+						artistNames: t.artistNames ? JSON.parse(t.artistNames) : [],
 						albumName: t.albumName,
 						durationMs: t.durationMs,
 						spotifyGenres: t.spotifyGenres ?? null,
@@ -335,7 +341,13 @@ export async function classifyTrackIds(
 									modelVersions: { llm: "openai/gpt-oss-120b" },
 								},
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, trackId))),
+							.where(
+								and(
+									eq(track.userId, userId),
+									eq(track.id, trackId),
+									isNull(track.llmClassifiedAt),
+								),
+							),
 					),
 				);
 

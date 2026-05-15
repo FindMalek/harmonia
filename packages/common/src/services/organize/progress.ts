@@ -20,10 +20,15 @@ const STAGE_DEFAULTS: Record<string, string> = {
  * stage/field/defaultJson are hardcoded string literals — never user input.
  * delta is a parameterized value ($1 in the generated SQL).
  */
+type LyricsField = "found" | "notFound" | "processed" | "total";
+type ClassifyField = "classified" | "total" | "pending";
+type EmbedField = "embedded" | "total" | "pending";
+type StageField = LyricsField | ClassifyField | EmbedField;
+
 export async function incrementStageProgress(
 	runId: number,
 	stage: "lyrics" | "classify" | "embed",
-	field: string,
+	field: StageField,
 	delta: number,
 ): Promise<void> {
 	const defaultJson = STAGE_DEFAULTS[stage]!;
@@ -35,14 +40,14 @@ export async function incrementStageProgress(
 				jsonb_set(
 					jsonb_set(
 						COALESCE(progress, '{}'::jsonb),
-						${sql.raw(`'{${stage}}'`)},
-						COALESCE(progress->${sql.raw(`'${stage}'`)}, ${sql.raw(`'${defaultJson}'`)}::jsonb),
+						ARRAY[${stage}]::text[],
+						COALESCE(progress->${stage}, ${defaultJson}::jsonb),
 						true
 					),
-					${sql.raw(`'{${stage},${field}}'`)},
+					ARRAY[${stage}, ${field}]::text[],
 					to_jsonb(
 						COALESCE(
-							(COALESCE(progress, '{}')->${sql.raw(`'${stage}'`)}->>${sql.raw(`'${field}'`)})::int,
+							(COALESCE(progress, '{}'::jsonb)->${stage}->>${field})::int,
 							0
 						) + ${delta}
 					),

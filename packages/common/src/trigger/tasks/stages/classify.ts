@@ -15,7 +15,7 @@ import {
 	CLASSIFY_FANOUT_CHUNK_SIZE,
 	CLASSIFY_WORKER_QUEUE_CONCURRENCY,
 } from "../../constants";
-import { chunk } from "../../utils/chunk";
+import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const classifyWorkerQueue = queue({
 	name: "organize-classify-worker",
@@ -27,7 +27,7 @@ const classifyWorkerQueue = queue({
 export const classifyWorkerTask = task({
 	id: "organize-worker-classify",
 	queue: classifyWorkerQueue,
-	retry: { maxAttempts: 2, minTimeoutInMs: 5000, factor: 2 },
+	retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
 	maxDuration: 600,
 	run: async ({
 		userId,
@@ -55,7 +55,7 @@ export const classifyWorkerTask = task({
 
 export const classifyStageTask = task({
 	id: "organize-stage-classify",
-	retry: { maxAttempts: 2, minTimeoutInMs: 3000, factor: 2 },
+	retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
 	run: async ({ userId, runId }: { userId: string; runId: number }) => {
 		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "classify" });
@@ -87,10 +87,14 @@ export const classifyStageTask = task({
 		);
 
 		const batchResult = await classifyWorkerTask.batchTriggerAndWait(
-			chunks.map((trackIds, i) => ({
+			chunks.map((trackIds) => ({
 				payload: { userId, runId, trackIds },
 				options: {
-					idempotencyKey: `classify-worker-${runId}-chunk-${i}`,
+					idempotencyKey: workerIdempotencyKey(
+						"classify-worker",
+						runId,
+						trackIds,
+					),
 					idempotencyKeyTTL: "24h",
 				},
 			})),
@@ -117,13 +121,13 @@ export const classifyStageTask = task({
 				},
 				"Some classify workers failed; affected tracks remain pending for next run",
 			);
+		} else {
+			await updateStageProgress(runId, "classify", {
+				classified,
+				total,
+				pending: total - classified,
+			});
 		}
-
-		await updateStageProgress(runId, "classify", {
-			classified,
-			total,
-			pending: total - classified,
-		});
 
 		return { classified, total, pending: total - classified };
 	},

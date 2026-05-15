@@ -15,7 +15,7 @@ import {
 	EMBED_FANOUT_CHUNK_SIZE,
 	EMBED_WORKER_QUEUE_CONCURRENCY,
 } from "../../constants";
-import { chunk } from "../../utils/chunk";
+import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const embedWorkerQueue = queue({
 	name: "organize-embed-worker",
@@ -27,7 +27,7 @@ const embedWorkerQueue = queue({
 export const embedWorkerTask = task({
 	id: "organize-worker-embed",
 	queue: embedWorkerQueue,
-	retry: { maxAttempts: 2, minTimeoutInMs: 3000, factor: 2 },
+	retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
 	maxDuration: 600,
 	run: async ({
 		userId,
@@ -83,10 +83,10 @@ export const embedStageTask = task({
 		);
 
 		const batchResult = await embedWorkerTask.batchTriggerAndWait(
-			chunks.map((trackIds, i) => ({
+			chunks.map((trackIds) => ({
 				payload: { userId, runId, trackIds },
 				options: {
-					idempotencyKey: `embed-worker-${runId}-chunk-${i}`,
+					idempotencyKey: workerIdempotencyKey("embed-worker", runId, trackIds),
 					idempotencyKeyTTL: "24h",
 				},
 			})),
@@ -113,13 +113,13 @@ export const embedStageTask = task({
 				},
 				"Some embed workers failed; affected tracks remain pending for next run",
 			);
+		} else {
+			await updateStageProgress(runId, "embed", {
+				embedded,
+				total,
+				pending: total - embedded,
+			});
 		}
-
-		await updateStageProgress(runId, "embed", {
-			embedded,
-			total,
-			pending: total - embedded,
-		});
 
 		return { embedded, total, pending: total - embedded };
 	},

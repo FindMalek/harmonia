@@ -47,9 +47,12 @@ export async function getLyricsFromLRCLib(params: {
 			}
 
 			if (!response.ok) {
-				throw new AbortError(
-					`LRCLib ${response.status}: ${response.statusText}`,
-				);
+				const message = `LRCLib ${response.status}: ${response.statusText}`;
+				// 4xx are permanent client errors — abort retries. 5xx are transient — let p-retry backoff.
+				if (response.status >= 400 && response.status < 500) {
+					throw new AbortError(message);
+				}
+				throw new Error(message);
 			}
 
 			const json = (await response.json()) as {

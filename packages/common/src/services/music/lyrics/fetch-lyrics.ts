@@ -67,7 +67,9 @@ export async function fetchLyricsForPendingTracks(
 
 		const tasks = pendingTracks.map((t) =>
 			limit(async () => {
-				const artistNames: string[] = JSON.parse(t.artistNames) ?? [];
+				const artistNames: string[] = t.artistNames
+					? JSON.parse(t.artistNames)
+					: [];
 				const primaryArtist = artistNames[0] ?? "";
 
 				if (!t.name || !primaryArtist) {
@@ -222,7 +224,9 @@ export async function fetchLyricsForTrackIds(
 
 		const tasks = pendingTracks.map((t) =>
 			limit(async () => {
-				const artistNames: string[] = JSON.parse(t.artistNames) ?? [];
+				const artistNames: string[] = t.artistNames
+					? JSON.parse(t.artistNames)
+					: [];
 				const primaryArtist = artistNames[0] ?? "";
 
 				if (!t.name || !primaryArtist) {
