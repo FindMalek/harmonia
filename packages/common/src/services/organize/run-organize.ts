@@ -44,6 +44,9 @@ import {
 } from "../brain";
 import { fetchLyricsForPendingTracks, syncLibraryTracks } from "../music";
 
+/** Minimum fraction of tracks that must be classified for the pipeline to be considered healthy. */
+const MIN_CLASSIFY_RATIO = 0.1;
+
 export async function updateRun(
 	runId: number,
 	data: {
@@ -142,6 +145,26 @@ export async function runOrganizeForUser({
 		);
 		progress.classify = classifyResult;
 		await updateRun(runId, { progress });
+
+		// Gate: if classification coverage is critically low, mark as degraded
+		if (
+			classifyResult.total > 0 &&
+			classifyResult.classified / classifyResult.total < MIN_CLASSIFY_RATIO
+		) {
+			const coverage = ((classifyResult.classified / classifyResult.total) * 100).toFixed(1);
+			const warning = `Classify stage coverage critically low: ${classifyResult.classified}/${classifyResult.total} tracks (${coverage}%). Pipeline result is degraded — re-run recommended.`;
+
+			await updateRun(runId, {
+				status: "partial",
+				currentStage: null,
+				progress,
+				error: warning,
+				completedAt: new Date(),
+			});
+
+			logger.warn({ userId, runId, coverage }, "Organize pipeline completed with degraded classify coverage");
+			return { userId, runId, status: "partial" as const, warning };
+		}
 
 		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "embed" });
