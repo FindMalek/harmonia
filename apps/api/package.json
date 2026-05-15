@@ -17,18 +17,18 @@
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
+		"@trigger.dev/sdk": "catalog:",
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
-		"@trigger.dev/sdk": "catalog:",
 		"next": "catalog:",
-		"react": "^19.2.3",
-		"react-dom": "^19.2.3",
+		"react": "^19.2.6",
+		"react-dom": "^19.2.6",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
-		"@types/node": "^20",
-		"@types/react": "^19.2.7",
+		"@types/node": "^25.8.0",
+		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"typescript": "catalog:"
 	}

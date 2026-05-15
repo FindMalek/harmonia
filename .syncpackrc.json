@@ -1,0 +1,43 @@
+{
+	"versionGroups": [
+		{
+			"label": "pnpm catalog (see pnpm-workspace.yaml)",
+			"dependencies": [
+				"@biomejs/biome",
+				"@opentelemetry/api",
+				"@opentelemetry/api-logs",
+				"@opentelemetry/core",
+				"@opentelemetry/exporter-logs-otlp-http",
+				"@opentelemetry/exporter-metrics-otlp-http",
+				"@opentelemetry/exporter-trace-otlp-http",
+				"@opentelemetry/instrumentation",
+				"@opentelemetry/instrumentation-http",
+				"@opentelemetry/instrumentation-pino",
+				"@opentelemetry/otlp-exporter-base",
+				"@opentelemetry/resources",
+				"@opentelemetry/sdk-logs",
+				"@opentelemetry/sdk-metrics",
+				"@opentelemetry/sdk-node",
+				"@opentelemetry/sdk-trace-base",
+				"@opentelemetry/semantic-conventions",
+				"@orpc/client",
+				"@orpc/openapi",
+				"@orpc/otel",
+				"@orpc/server",
+				"@orpc/zod",
+				"@t3-oss/env-core",
+				"@t3-oss/env-nextjs",
+				"@trigger.dev/sdk",
+				"better-auth",
+				"dotenv",
+				"drizzle-orm",
+				"next",
+				"tsdown",
+				"typescript",
+				"zod"
+			],
+			"dependencyTypes": ["prod", "dev", "peer"],
+			"policy": "catalog"
+		}
+	]
+}

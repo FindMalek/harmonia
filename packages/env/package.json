@@ -19,14 +19,14 @@
 		"./presets/db": "./src/presets/db.ts"
 	},
 	"dependencies": {
-		"@t3-oss/env-core": "^0.13.1",
-		"@t3-oss/env-nextjs": "^0.13.1",
+		"@t3-oss/env-core": "catalog:",
+		"@t3-oss/env-nextjs": "catalog:",
 		"dotenv": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
-		"@types/node": "^22.13.14",
+		"@types/node": "^25.8.0",
 		"typescript": "catalog:"
 	}
 }
