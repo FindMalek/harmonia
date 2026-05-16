@@ -30,7 +30,7 @@
 		"input-otp": "^1.4.2",
 		"next-themes": "^0.4.6",
 		"radix-ui": "^1.4.3",
-		"react": "^19.2.6",
+		"react": "catalog:",
 		"react-day-picker": "^10.0.1",
 		"react-resizable-panels": "^4.11.1",
 		"recharts": "3.8.1",
@@ -42,14 +42,14 @@
 		"zod": "catalog:"
 	},
 	"peerDependencies": {
-		"@tanstack/react-query": "^5.100.10",
+		"@tanstack/react-query": "catalog:",
 		"next": "catalog:"
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
 		"@tailwindcss/postcss": "^4.3.0",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
+		"@types/react": "catalog:",
+		"@types/react-dom": "catalog:",
 		"next": "catalog:",
 		"tailwindcss": "^4.3.0",
 		"typescript": "catalog:"

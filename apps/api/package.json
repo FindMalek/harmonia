@@ -21,15 +21,15 @@
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
 		"next": "catalog:",
-		"react": "^19.2.6",
-		"react-dom": "^19.2.6",
+		"react": "catalog:",
+		"react-dom": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
 		"@types/node": "^25.8.0",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
+		"@types/react": "catalog:",
+		"@types/react-dom": "catalog:",
 		"typescript": "catalog:"
 	}
 }
