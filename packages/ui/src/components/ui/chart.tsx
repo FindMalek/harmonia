@@ -125,6 +125,9 @@ function ChartTooltipContent({
 		indicator?: "line" | "dot" | "dashed";
 		nameKey?: string;
 		labelKey?: string;
+		active?: boolean;
+		payload?: RechartsPrimitive.TooltipPayload;
+		label?: string | number;
 	}) {
 	const { config } = useChart();
 
@@ -188,7 +191,7 @@ function ChartTooltipContent({
 
 						return (
 							<div
-								key={item.dataKey}
+								key={`${item.dataKey}`}
 								className={cn(
 									"flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
 									indicator === "dot" && "items-center",
@@ -258,11 +261,12 @@ function ChartLegendContent({
 	payload,
 	verticalAlign = "bottom",
 	nameKey,
-}: React.ComponentProps<"div"> &
-	Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-		hideIcon?: boolean;
-		nameKey?: string;
-	}) {
+}: React.ComponentProps<"div"> & {
+	hideIcon?: boolean;
+	nameKey?: string;
+	payload?: ReadonlyArray<RechartsPrimitive.LegendPayload>;
+	verticalAlign?: "top" | "bottom" | "middle";
+}) {
 	const { config } = useChart();
 
 	if (!payload?.length) {

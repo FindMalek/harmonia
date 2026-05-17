@@ -1,7 +1,10 @@
 {
 	"name": "harmonia",
 	"private": true,
-	"workspaces": ["apps/*", "packages/*"],
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
 	"type": "module",
 	"scripts": {
 		"dev": "turbo dev",
@@ -28,6 +31,7 @@
 		"db:migrate:direct": "pnpm exec drizzle-kit migrate --config=packages/db/drizzle.config.ts",
 		"db:mark-migrations-applied": "turbo -F @harmonia/db db:mark-migrations-applied",
 		"sync-repo": "chmod +x scripts/sync-repo.sh && scripts/sync-repo.sh",
+		"deps:sync": "(pnpm outdated -r || true) && pnpm update -r --latest && syncpack fix && pnpm install && (syncpack lint || true)",
 		"trigger:dev": "node scripts/run-trigger-dev.mjs"
 	},
 	"dependencies": {
@@ -38,9 +42,10 @@
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",
 		"@harmonia/config": "workspace:*",
-		"@types/node": "^22.13.14",
-		"concurrently": "^9.1.2",
-		"turbo": "^2.8.12",
+		"@types/node": "^25.8.0",
+		"concurrently": "^9.2.1",
+		"syncpack": "^15.1.2",
+		"turbo": "^2.9.14",
 		"typescript": "catalog:"
 	},
 	"packageManager": "pnpm@10.26.1"

@@ -55,6 +55,16 @@ pnpm lint           # Biome lint + fix
 pnpm format         # Biome format + fix
 ```
 
+### Dependency sync
+
+Run monthly or before a release to bump workspace packages, refresh the lockfile, and align versions across `package.json` files (catalog entries stay in `pnpm-workspace.yaml`):
+
+```bash
+pnpm deps:sync
+```
+
+`pnpm update -r --latest` can pull breaking majors — review the lockfile diff before merging. Commit dependency bumps in a dedicated PR separate from feature work.
+
 ### Database
 
 ```bash

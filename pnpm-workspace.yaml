@@ -1,36 +1,42 @@
 packages:
   - apps/*
   - packages/*
+
 catalog:
-  "@biomejs/biome": "^1.9.0"
-  dotenv: ^17.2.2
-  zod: ^4.1.13
-  typescript: ^5
-  next: ^16.1.1
-  "@orpc/server": ^1.12.2
-  "@orpc/client": ^1.12.2
-  "@orpc/openapi": ^1.12.2
-  "@orpc/zod": ^1.12.2
-  "@orpc/otel": ^1.13.0
-  "@t3-oss/env-core": ^0.13.1
-  "@t3-oss/env-nextjs": ^0.13.1
+  '@biomejs/biome': ^2.4.15
+  '@opentelemetry/api': ^1.9.1
+  '@opentelemetry/api-logs': ^0.218.0
+  '@opentelemetry/core': ^2.7.1
+  '@opentelemetry/exporter-logs-otlp-http': ^0.218.0
+  '@opentelemetry/exporter-metrics-otlp-http': ^0.218.0
+  '@opentelemetry/exporter-trace-otlp-http': ^0.218.0
+  '@opentelemetry/instrumentation': ^0.218.0
+  '@opentelemetry/instrumentation-http': ^0.218.0
+  '@opentelemetry/instrumentation-pino': ^0.64.0
+  '@opentelemetry/otlp-exporter-base': ^0.218.0
+  '@opentelemetry/resources': ^2.7.1
+  '@opentelemetry/sdk-logs': ^0.218.0
+  '@opentelemetry/sdk-metrics': ^2.7.1
+  '@opentelemetry/sdk-node': ^0.218.0
+  '@opentelemetry/sdk-trace-base': ^2.7.1
+  '@opentelemetry/semantic-conventions': ^1.41.1
+  '@orpc/client': ^1.14.3
+  '@orpc/openapi': ^1.14.3
+  '@orpc/otel': ^1.14.3
+  '@orpc/server': ^1.14.3
+  '@orpc/zod': ^1.14.3
+  '@t3-oss/env-core': ^0.13.11
+  '@t3-oss/env-nextjs': ^0.13.11
+  '@tanstack/react-query': ^5.100.10
+  '@trigger.dev/sdk': ^4.4.6
+  '@types/react': ^19.2.14
+  '@types/react-dom': ^19.2.3
+  better-auth: 1.6.11
+  dotenv: ^17.4.2
+  drizzle-orm: ^0.45.2
+  next: ^16.2.6
+  react: ^19.2.6
+  react-dom: ^19.2.6
   tsdown: ^0.11.0
-  better-auth: 1.5.2
-  drizzle-orm: ^0.45.1
-  "@opentelemetry/api": ^1.9.0
-  "@opentelemetry/api-logs": ^0.209.0
-  "@opentelemetry/core": ^2.3.0
-  "@opentelemetry/exporter-logs-otlp-http": ^0.209.0
-  "@opentelemetry/exporter-metrics-otlp-http": ^0.209.0
-  "@opentelemetry/exporter-trace-otlp-http": ^0.209.0
-  "@opentelemetry/instrumentation": ^0.209.0
-  "@opentelemetry/instrumentation-http": ^0.209.0
-  "@opentelemetry/instrumentation-pino": ^0.55.1
-  "@opentelemetry/otlp-exporter-base": ^0.209.0
-  "@opentelemetry/resources": ^2.3.0
-  "@opentelemetry/sdk-logs": ^0.209.0
-  "@opentelemetry/sdk-metrics": ^2.3.0
-  "@opentelemetry/sdk-node": ^0.209.0
-  "@opentelemetry/sdk-trace-base": ^2.3.0
-  "@opentelemetry/semantic-conventions": ^1.38.0
-  "@trigger.dev/sdk": ^4.4.4
+  typescript: 5.9.3
+  zod: ^4.4.3
