@@ -13,6 +13,10 @@ function DashboardLibraryAnalysisProgressSkeleton() {
 
 export function DashboardLibraryAnalysis() {
 	const { runs } = usePipelineController();
+	const hasCompletedRun =
+		runs.data?.some(
+			(r) => r.status === "completed" || r.status === "running"
+		) ?? false;
 	const activeRunId = useOrganizeStore((s) => s.activeRunId);
 	const { liveProgress: ctxLiveProgress } = usePipelineProgress();
 	const activeRun =
@@ -40,6 +44,8 @@ export function DashboardLibraryAnalysis() {
 	const analyzedPercentage =
 		totalTracks > 0 ? (tracksAnalyzed / totalTracks) * 100 : 0;
 	const embedPercentage = totalTracks > 0 ? (embedded / totalTracks) * 100 : 0;
+
+	if (runs.isLoading || !hasCompletedRun) return null;
 
 	return (
 		<div className="space-y-4 ">
