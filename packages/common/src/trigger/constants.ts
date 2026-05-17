@@ -1,6 +1,6 @@
-/** Lyrics: 500 tracks/worker → ~3 min at pLimit(10). Queue cap guards LRCLib free API. */
+/** Lyrics: 500 tracks/worker, pLimit(3), 2 concurrent workers → 6 peak LRCLib requests. */
 export const LYRICS_FANOUT_CHUNK_SIZE = 500;
-export const LYRICS_WORKER_QUEUE_CONCURRENCY = 4;
+export const LYRICS_WORKER_QUEUE_CONCURRENCY = 2;
 
 /** Classify: 60 tracks/worker → 10 LLM batches of 6, pLimit(2). */
 export const CLASSIFY_FANOUT_CHUNK_SIZE = 60;
