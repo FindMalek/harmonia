@@ -15,16 +15,12 @@ type LRCLibRawTrack = {
 	instrumental?: boolean;
 };
 
-const RETRY_OPTIONS = {
+// Base retry config — no onFailedAttempt here so each call site can close over its url.
+const RETRY_BASE = {
 	retries: 3,
 	minTimeout: 2000,
 	factor: 2,
-	onFailedAttempt: (error: { attemptNumber: number; retriesLeft: number }) => {
-		logger.debug(
-			{ attempt: error.attemptNumber, retriesLeft: error.retriesLeft },
-			"LRCLib request failed, retrying",
-		);
-	},
+	randomize: true, // jitter prevents synchronised retry waves across concurrent workers
 } as const;
 
 function toTrack(raw: LRCLibRawTrack): LRCLibTrack {
@@ -36,23 +32,37 @@ function toTrack(raw: LRCLibRawTrack): LRCLibTrack {
 	};
 }
 
-async function fetchLRCLib(url: string): Promise<LRCLibRawTrack | null> {
-	return pRetry(async () => {
-		const response = await fetch(url);
+// Generic helper used by both /api/get (T = LRCLibRawTrack) and /api/search (T = LRCLibRawTrack[]).
+// url is closed over so the retry log always carries request context.
+async function fetchLRCLib<T = LRCLibRawTrack>(url: string): Promise<T | null> {
+	return pRetry(
+		async () => {
+			const response = await fetch(url);
 
-		if (response.status === 404) return null;
+			if (response.status === 404) return null;
 
-		if (!response.ok) {
-			const message = `LRCLib ${response.status}: ${response.statusText}`;
-			if (response.status >= 400 && response.status < 500) {
-				throw new AbortError(message);
+			if (!response.ok) {
+				const message = `LRCLib ${response.status}: ${response.statusText}`;
+				// 429 is rate-limited but transient — must NOT abort, let backoff handle it
+				if (response.status !== 429 && response.status >= 400 && response.status < 500) {
+					throw new AbortError(message);
+				}
+				// 429 and 5xx — retried with exponential back-off + jitter
+				throw new Error(message);
 			}
-			// 503 and other 5xx — let p-retry back off (2 s → 4 s → 8 s)
-			throw new Error(message);
-		}
 
-		return (await response.json()) as LRCLibRawTrack;
-	}, RETRY_OPTIONS);
+			return (await response.json()) as T;
+		},
+		{
+			...RETRY_BASE,
+			onFailedAttempt: (error) => {
+				logger.debug(
+					{ attempt: error.attemptNumber, retriesLeft: error.retriesLeft, url },
+					"LRCLib request failed, retrying",
+				);
+			},
+		},
+	);
 }
 
 export async function getLyricsFromLRCLib(params: {
@@ -71,31 +81,23 @@ export async function getLyricsFromLRCLib(params: {
 		getParams.set("duration", Math.round(params.durationMs / 1000).toString());
 	}
 
-	const exact = await fetchLRCLib(
+	const exact = await fetchLRCLib<LRCLibRawTrack>(
 		`https://lrclib.net/api/get?${getParams.toString()}`,
 	);
 	if (exact) return toTrack(exact);
 
 	// ── 2. Fuzzy fallback via /api/search ────────────────────────────────────
-	// /api/get returns 404 for variant spellings, missing duration, etc.
-	// /api/search only needs track_name + artist_name and returns the best match.
+	// /api/get 404s on variant spellings or missing duration; /api/search is lenient.
 	const searchParams = new URLSearchParams({
 		track_name: params.trackName,
 		artist_name: params.artistName,
 	});
 
-	const results = await pRetry(async () => {
-		const response = await fetch(
-			`https://lrclib.net/api/search?${searchParams.toString()}`,
-		);
-		if (!response.ok) {
-			if (response.status >= 400 && response.status < 500)
-				throw new AbortError(`LRCLib search ${response.status}`);
-			throw new Error(`LRCLib search ${response.status}`);
-		}
-		return (await response.json()) as LRCLibRawTrack[];
-	}, RETRY_OPTIONS);
+	const results = await fetchLRCLib<LRCLibRawTrack[]>(
+		`https://lrclib.net/api/search?${searchParams.toString()}`,
+	);
 
-	const first = results[0];
+	// results is null (404) or LRCLibRawTrack[]; optional-chain handles both
+	const first = results?.[0];
 	return first ? toTrack(first) : null;
 }
