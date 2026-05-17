@@ -14,7 +14,9 @@ function DashboardLibraryAnalysisProgressSkeleton() {
 export function DashboardLibraryAnalysis() {
 	const { runs } = usePipelineController();
 	const hasCompletedRun =
-		runs.data?.some((r) => r.status === "completed") ?? false;
+		runs.data?.some(
+			(r) => r.status === "completed" || r.status === "running"
+		) ?? false;
 	const activeRunId = useOrganizeStore((s) => s.activeRunId);
 	const { liveProgress: ctxLiveProgress } = usePipelineProgress();
 	const activeRun =
