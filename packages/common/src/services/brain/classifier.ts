@@ -13,6 +13,7 @@ import pLimit from "p-limit";
 import {
 	CLASSIFICATION_BATCH_SIZE,
 	CLASSIFICATION_CONCURRENCY,
+	CLASSIFICATION_LLM_MODEL,
 } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
 import { classifyTracksWithLLM } from "./llml";
@@ -172,7 +173,7 @@ export async function classifyTracksBatch(
 									domain: result.domainName ?? null,
 									embeddingDims: undefined,
 									modelVersions: {
-										llm: "openai/gpt-oss-120b",
+										llm: CLASSIFICATION_LLM_MODEL,
 									},
 								},
 							})
@@ -338,7 +339,7 @@ export async function classifyTrackIds(
 									},
 									domain: result.domainName ?? null,
 									embeddingDims: undefined,
-									modelVersions: { llm: "openai/gpt-oss-120b" },
+									modelVersions: { llm: CLASSIFICATION_LLM_MODEL },
 								},
 							})
 							.where(

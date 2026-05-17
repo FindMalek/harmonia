@@ -11,6 +11,11 @@ import {
 	classificationResultListSchema,
 } from "@harmonia/common/schemas";
 
+import {
+	CLASSIFICATION_LLM_MODEL,
+	CLASSIFICATION_MAX_OUTPUT_TOKENS,
+} from "../../constants/brain";
+
 function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	return formatPrompt({
 		role: "You are an expert music analyst and curator with deep knowledge of genres, lyrical themes, production styles, and listener psychology. Your job is to analyze tracks and produce consistent, richly descriptive classifications that will power music discovery and playlist generation.",
@@ -47,6 +52,116 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	});
 }
 
+function isRetryableJsonError(err: unknown): boolean {
+	if (NoObjectGeneratedError.isInstance(err)) return true;
+	const message = err instanceof Error ? err.message : String(err);
+	return (
+		message.includes("Failed to validate JSON") ||
+		message.includes("No output generated")
+	);
+}
+
+function logInvalidJsonError(err: unknown): void {
+	if (!NoObjectGeneratedError.isInstance(err)) return;
+	const e = err as { text?: string; cause?: unknown };
+	const failedText =
+		e.text ??
+		(typeof e.cause === "object" &&
+		e.cause !== null &&
+		"failed_generation" in e.cause
+			? String((e.cause as { failed_generation?: string }).failed_generation)
+			: undefined);
+	logger.warn(
+		{
+			errorMessage: err.message,
+			rawOutput: failedText,
+			cause: e.cause,
+		},
+		"LLM returned invalid JSON; see rawOutput for model output",
+	);
+}
+
+async function classifyTracksBatchOnce(
+	tracks: TrackForClassification[],
+): Promise<ClassificationResult[]> {
+	try {
+		const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
+		const { output } = await generateText({
+			model: groq(CLASSIFICATION_LLM_MODEL),
+			prompt: buildClassificationPrompt(tracks),
+			temperature: 0,
+			maxOutputTokens: CLASSIFICATION_MAX_OUTPUT_TOKENS,
+			output: Output.object({
+				schema: classificationResultListSchema,
+			}),
+		});
+
+		logger.info(
+			{
+				model: CLASSIFICATION_LLM_MODEL,
+				batchSize: tracks.length,
+				trackIds: tracks.map((t) => t.id),
+			},
+			"LLM classification batch succeeded",
+		);
+
+		for (const item of output.results) {
+			if (!item.trackId) {
+				logger.warn(
+					{ item },
+					"LLM classification result missing trackId; this item will be ignored",
+				);
+			}
+		}
+
+		return output.results;
+	} catch (err) {
+		logInvalidJsonError(err);
+		throw err;
+	}
+}
+
+async function classifyTracksAdaptive(
+	tracks: TrackForClassification[],
+): Promise<ClassificationResult[]> {
+	try {
+		return await pRetry(() => classifyTracksBatchOnce(tracks), {
+			retries: 3,
+			minTimeout: 2000,
+			onFailedAttempt: (error) => {
+				logger.warn(
+					{
+						attempt: error.attemptNumber,
+						retriesLeft: error.retriesLeft,
+						batchSize: tracks.length,
+						error: String(error),
+					},
+					"LLM classification failed, retrying",
+				);
+			},
+		});
+	} catch (err) {
+		if (tracks.length <= 1 || !isRetryableJsonError(err)) {
+			throw err;
+		}
+
+		const mid = Math.ceil(tracks.length / 2);
+		logger.warn(
+			{
+				originalSize: tracks.length,
+				splitInto: [mid, tracks.length - mid],
+			},
+			"LLM classification batch failed after retries; splitting batch",
+		);
+
+		const [left, right] = await Promise.all([
+			classifyTracksAdaptive(tracks.slice(0, mid)),
+			classifyTracksAdaptive(tracks.slice(mid)),
+		]);
+		return [...left, ...right];
+	}
+}
+
 export async function classifyTracksWithLLM(
 	tracks: TrackForClassification[],
 ): Promise<ClassificationResult[]> {
@@ -58,66 +173,5 @@ export async function classifyTracksWithLLM(
 		return [];
 	}
 
-	return pRetry(
-		async () => {
-			try {
-				const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
-				const { output } = await generateText({
-					model: groq("openai/gpt-oss-120b"),
-					prompt: buildClassificationPrompt(tracks),
-					temperature: 0,
-					output: Output.object({
-						schema: classificationResultListSchema,
-					}),
-				});
-
-				for (const item of output.results) {
-					if (!item.trackId) {
-						logger.warn(
-							{ item },
-							"LLM classification result missing trackId; this item will be ignored",
-						);
-					}
-				}
-
-				return output.results;
-			} catch (err) {
-				if (NoObjectGeneratedError.isInstance(err)) {
-					const e = err as { text?: string; cause?: unknown };
-					const failedText =
-						e.text ??
-						(typeof e.cause === "object" &&
-						e.cause !== null &&
-						"failed_generation" in e.cause
-							? String(
-									(e.cause as { failed_generation?: string }).failed_generation,
-								)
-							: undefined);
-					logger.warn(
-						{
-							errorMessage: err.message,
-							rawOutput: failedText,
-							cause: e.cause,
-						},
-						"LLM returned invalid JSON; see rawOutput for model output",
-					);
-				}
-				throw err;
-			}
-		},
-		{
-			retries: 3,
-			minTimeout: 2000,
-			onFailedAttempt: (error) => {
-				logger.warn(
-					{
-						attempt: error.attemptNumber,
-						retriesLeft: error.retriesLeft,
-						error: String(error),
-					},
-					"LLM classification failed, retrying",
-				);
-			},
-		},
-	);
+	return classifyTracksAdaptive(tracks);
 }
