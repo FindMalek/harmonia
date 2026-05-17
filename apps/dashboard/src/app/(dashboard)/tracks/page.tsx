@@ -369,13 +369,7 @@ function Section({
 	);
 }
 
-function StatusBadge({
-	status,
-	type,
-}: {
-	status: string;
-	type: "lyrics";
-}) {
+function StatusBadge({ status, type }: { status: string; type: "lyrics" }) {
 	const variants: Record<
 		string,
 		"default" | "secondary" | "outline" | "destructive"
