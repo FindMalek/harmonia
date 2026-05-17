@@ -165,36 +165,31 @@ export async function embedTracksBatch(
 						const embedding = json.data[index]?.embedding;
 						if (!input || !embedding) return;
 						const vecStr = `[${(embedding as number[]).join(",")}]`;
-						// Vector update in raw SQL — Drizzle's buildUpdateSet skips mapToDriverValue
-						// for vector columns, causing node-postgres to serialize as PG array syntax.
+						// Single atomic update: raw SQL for ::vector cast (Drizzle skips
+						// mapToDriverValue for vector columns) + JSON.stringify snapshot
+						// (avoids jsonb_set prepared-statement error 42804). The AND embedding
+						// IS NULL guard makes both fields idempotent in concurrent workers.
+						const snapshotJson = JSON.stringify({
+							llm: input.analysisSnapshot?.llm ?? {},
+							domain: input.analysisSnapshot?.domain ?? null,
+							embeddingDims: embedding.length,
+							modelVersions: {
+								...(input.analysisSnapshot?.modelVersions ?? {}),
+								embedding: EMBEDDING_MODEL,
+							},
+						});
 						await db.execute(sql`
 							UPDATE track
 							SET
 								embedding = ${vecStr}::vector,
 								embedding_generated_at = ${now},
 								embedding_input = ${input.text},
+								analysis_snapshot = ${snapshotJson}::jsonb,
 								updated_at = NOW()
 							WHERE user_id = ${userId}
 							  AND id = ${input.id}
 							  AND embedding IS NULL
 						`);
-						// Merge analysisSnapshot in TypeScript — avoids jsonb_set in a prepared
-						// statement which triggers PG error 42804 (enforce_generic_type_consistency).
-						const existing = input.analysisSnapshot;
-						await db
-							.update(track)
-							.set({
-								analysisSnapshot: {
-									llm: existing?.llm ?? {},
-									domain: existing?.domain ?? null,
-									embeddingDims: embedding.length,
-									modelVersions: {
-										...(existing?.modelVersions ?? {}),
-										embedding: EMBEDDING_MODEL,
-									},
-								},
-							})
-							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
 					}),
 				);
 
@@ -346,36 +341,31 @@ export async function embedTrackIds(
 						const embedding = json.data[index]?.embedding;
 						if (!input || !embedding) return;
 						const vecStr = `[${(embedding as number[]).join(",")}]`;
-						// Vector update in raw SQL — Drizzle's buildUpdateSet skips mapToDriverValue
-						// for vector columns, causing node-postgres to serialize as PG array syntax.
+						// Single atomic update: raw SQL for ::vector cast (Drizzle skips
+						// mapToDriverValue for vector columns) + JSON.stringify snapshot
+						// (avoids jsonb_set prepared-statement error 42804). The AND embedding
+						// IS NULL guard makes both fields idempotent in concurrent workers.
+						const snapshotJson = JSON.stringify({
+							llm: input.analysisSnapshot?.llm ?? {},
+							domain: input.analysisSnapshot?.domain ?? null,
+							embeddingDims: embedding.length,
+							modelVersions: {
+								...(input.analysisSnapshot?.modelVersions ?? {}),
+								embedding: EMBEDDING_MODEL,
+							},
+						});
 						await db.execute(sql`
 							UPDATE track
 							SET
 								embedding = ${vecStr}::vector,
 								embedding_generated_at = ${now},
 								embedding_input = ${input.text},
+								analysis_snapshot = ${snapshotJson}::jsonb,
 								updated_at = NOW()
 							WHERE user_id = ${userId}
 							  AND id = ${input.id}
 							  AND embedding IS NULL
 						`);
-						// Merge analysisSnapshot in TypeScript — avoids jsonb_set in a prepared
-						// statement which triggers PG error 42804 (enforce_generic_type_consistency).
-						const existing = input.analysisSnapshot;
-						await db
-							.update(track)
-							.set({
-								analysisSnapshot: {
-									llm: existing?.llm ?? {},
-									domain: existing?.domain ?? null,
-									embeddingDims: embedding.length,
-									modelVersions: {
-										...(existing?.modelVersions ?? {}),
-										embedding: EMBEDDING_MODEL,
-									},
-								},
-							})
-							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
 					}),
 				);
 
