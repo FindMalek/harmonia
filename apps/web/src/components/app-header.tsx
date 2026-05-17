@@ -10,7 +10,10 @@ import { Header } from "@harmonia/ui";
 function NavLink({
 	href,
 	children,
-}: { href: string; children: React.ReactNode }) {
+}: {
+	href: string;
+	children: React.ReactNode;
+}) {
 	return (
 		<Link href={href as Parameters<typeof Link>[0]["href"]}>{children}</Link>
 	);
@@ -19,7 +22,10 @@ function NavLink({
 function SignInLink({
 	href,
 	children,
-}: { href: string; children: React.ReactNode }) {
+}: {
+	href: string;
+	children: React.ReactNode;
+}) {
 	return (
 		<Link href={href as Parameters<typeof Link>[0]["href"]}>{children}</Link>
 	);

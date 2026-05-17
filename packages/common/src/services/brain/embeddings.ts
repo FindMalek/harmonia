@@ -102,7 +102,11 @@ export async function embedTracksBatch(
 					if (tags.language) parts.push(`Language: ${tags.language}`);
 					if (tags.era) parts.push(`Era: ${tags.era}`);
 
-					return { id: t.id, text: parts.join(" | ") };
+					return {
+						id: t.id,
+						text: parts.join(" | "),
+						analysisSnapshot: t.analysisSnapshot,
+					};
 				});
 
 				const json = await pRetry(
@@ -157,34 +161,35 @@ export async function embedTracksBatch(
 				const now = new Date();
 
 				await Promise.all(
-					inputs.map((input, index) => {
+					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
-						if (!input || !embedding) return Promise.resolve();
-						return db
-							.update(track)
-							.set({
-								embedding,
-								embeddingGeneratedAt: now,
-								embeddingInput: input.text,
-								analysisSnapshot: sql`jsonb_set(
-									jsonb_set(
-										COALESCE(analysis_snapshot, '{}'::jsonb),
-										ARRAY['embeddingDims']::text[],
-										to_jsonb(${embedding.length}::int),
-										true
-									),
-									ARRAY['modelVersions', 'embedding']::text[],
-									to_jsonb(${EMBEDDING_MODEL}),
-									true
-								)`,
-							})
-							.where(
-								and(
-									eq(track.userId, userId),
-									eq(track.id, input.id),
-									isNull(track.embedding),
-								),
-							);
+						if (!input || !embedding) return;
+						const vecStr = `[${(embedding as number[]).join(",")}]`;
+						// Single atomic update: raw SQL for ::vector cast (Drizzle skips
+						// mapToDriverValue for vector columns) + JSON.stringify snapshot
+						// (avoids jsonb_set prepared-statement error 42804). The AND embedding
+						// IS NULL guard makes both fields idempotent in concurrent workers.
+						const snapshotJson = JSON.stringify({
+							llm: input.analysisSnapshot?.llm ?? {},
+							domain: input.analysisSnapshot?.domain ?? null,
+							embeddingDims: embedding.length,
+							modelVersions: {
+								...(input.analysisSnapshot?.modelVersions ?? {}),
+								embedding: EMBEDDING_MODEL,
+							},
+						});
+						await db.execute(sql`
+							UPDATE track
+							SET
+								embedding = ${vecStr}::vector,
+								embedding_generated_at = ${now},
+								embedding_input = ${input.text},
+								analysis_snapshot = ${snapshotJson}::jsonb,
+								updated_at = NOW()
+							WHERE user_id = ${userId}
+							  AND id = ${input.id}
+							  AND embedding IS NULL
+						`);
 					}),
 				);
 
@@ -274,7 +279,11 @@ export async function embedTrackIds(
 					if (tags.language) parts.push(`Language: ${tags.language}`);
 					if (tags.era) parts.push(`Era: ${tags.era}`);
 
-					return { id: t.id, text: parts.join(" | ") };
+					return {
+						id: t.id,
+						text: parts.join(" | "),
+						analysisSnapshot: t.analysisSnapshot,
+					};
 				});
 
 				const json = await pRetry(
@@ -328,34 +337,35 @@ export async function embedTrackIds(
 
 				const now = new Date();
 				await Promise.all(
-					inputs.map((input, index) => {
+					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
-						if (!input || !embedding) return Promise.resolve();
-						return db
-							.update(track)
-							.set({
-								embedding,
-								embeddingGeneratedAt: now,
-								embeddingInput: input.text,
-								analysisSnapshot: sql`jsonb_set(
-									jsonb_set(
-										COALESCE(analysis_snapshot, '{}'::jsonb),
-										ARRAY['embeddingDims']::text[],
-										to_jsonb(${embedding.length}::int),
-										true
-									),
-									ARRAY['modelVersions', 'embedding']::text[],
-									to_jsonb(${EMBEDDING_MODEL}),
-									true
-								)`,
-							})
-							.where(
-								and(
-									eq(track.userId, userId),
-									eq(track.id, input.id),
-									isNull(track.embedding),
-								),
-							);
+						if (!input || !embedding) return;
+						const vecStr = `[${(embedding as number[]).join(",")}]`;
+						// Single atomic update: raw SQL for ::vector cast (Drizzle skips
+						// mapToDriverValue for vector columns) + JSON.stringify snapshot
+						// (avoids jsonb_set prepared-statement error 42804). The AND embedding
+						// IS NULL guard makes both fields idempotent in concurrent workers.
+						const snapshotJson = JSON.stringify({
+							llm: input.analysisSnapshot?.llm ?? {},
+							domain: input.analysisSnapshot?.domain ?? null,
+							embeddingDims: embedding.length,
+							modelVersions: {
+								...(input.analysisSnapshot?.modelVersions ?? {}),
+								embedding: EMBEDDING_MODEL,
+							},
+						});
+						await db.execute(sql`
+							UPDATE track
+							SET
+								embedding = ${vecStr}::vector,
+								embedding_generated_at = ${now},
+								embedding_input = ${input.text},
+								analysis_snapshot = ${snapshotJson}::jsonb,
+								updated_at = NOW()
+							WHERE user_id = ${userId}
+							  AND id = ${input.id}
+							  AND embedding IS NULL
+						`);
 					}),
 				);
 

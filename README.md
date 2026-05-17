@@ -20,7 +20,7 @@
 | Auth | Better Auth + Spotify OAuth |
 | Database | PostgreSQL + Drizzle ORM (Neon in production) |
 | Background jobs | Trigger.dev v4 |
-| LLM | Groq (`openai/gpt-oss-120b`) |
+| LLM | Groq (`llama-3.3-70b-versatile` classify; `gpt-oss-120b` playlist/cluster) |
 | Embeddings | OpenAI `text-embedding-3-small` |
 | Clustering | DBSCAN (`density-clustering`) |
 | Monorepo | pnpm + Turborepo |

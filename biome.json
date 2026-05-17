@@ -7,32 +7,39 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"include": ["**"],
-		"ignore": [
-			"**/.next",
-			"**/dist",
-			"**/.turbo",
-			"**/dev-dist",
-			"**/.zed",
-			"**/.vscode",
-			"**/routeTree.gen.ts",
-			"**/src-tauri",
-			"**/.nuxt",
-			"bts.jsonc",
-			"**/.expo",
-			"**/.wrangler",
-			"**/.alchemy",
-			"**/.svelte-kit",
-			"**/wrangler.jsonc",
-			"**/.source",
-			"**/.trigger"
+		"includes": [
+			"**",
+			"!**/.next",
+			"!**/dist",
+			"!**/.turbo",
+			"!**/dev-dist",
+			"!**/.zed",
+			"!**/.vscode",
+			"!**/routeTree.gen.ts",
+			"!**/src-tauri",
+			"!**/.nuxt",
+			"!bts.jsonc",
+			"!**/.expo",
+			"!**/.wrangler",
+			"!**/.alchemy",
+			"!**/.svelte-kit",
+			"!**/wrangler.jsonc",
+			"!**/.source",
+			"!**/.trigger"
 		]
 	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab"
 	},
-	"organizeImports": { "enabled": true },
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
@@ -71,5 +78,10 @@
 			"quoteStyle": "double"
 		}
 	},
-	"css": {}
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"tailwindDirectives": true
+		}
+	}
 }

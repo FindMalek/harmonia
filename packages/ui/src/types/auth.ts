@@ -17,10 +17,7 @@ export interface AuthClientForUI {
 				}) => void;
 			},
 		) => Promise<unknown>;
-		social: (params: {
-			provider: string;
-			callbackURL?: string;
-		}) => void;
+		social: (params: { provider: string; callbackURL?: string }) => void;
 	};
 	signUp: {
 		email: (
@@ -33,7 +30,5 @@ export interface AuthClientForUI {
 			},
 		) => Promise<unknown>;
 	};
-	signOut: (opts?: {
-		fetchOptions?: { onSuccess?: () => void };
-	}) => void;
+	signOut: (opts?: { fetchOptions?: { onSuccess?: () => void } }) => void;
 }
