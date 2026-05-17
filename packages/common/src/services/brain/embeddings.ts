@@ -102,7 +102,11 @@ export async function embedTracksBatch(
 					if (tags.language) parts.push(`Language: ${tags.language}`);
 					if (tags.era) parts.push(`Era: ${tags.era}`);
 
-					return { id: t.id, text: parts.join(" | ") };
+					return {
+						id: t.id,
+						text: parts.join(" | "),
+						analysisSnapshot: t.analysisSnapshot,
+					};
 				});
 
 				const json = await pRetry(
@@ -157,34 +161,40 @@ export async function embedTracksBatch(
 				const now = new Date();
 
 				await Promise.all(
-					inputs.map((input, index) => {
+					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
-						if (!input || !embedding) return Promise.resolve();
-						return db
+						if (!input || !embedding) return;
+						const vecStr = `[${(embedding as number[]).join(",")}]`;
+						// Vector update in raw SQL — Drizzle's buildUpdateSet skips mapToDriverValue
+						// for vector columns, causing node-postgres to serialize as PG array syntax.
+						await db.execute(sql`
+							UPDATE track
+							SET
+								embedding = ${vecStr}::vector,
+								embedding_generated_at = ${now},
+								embedding_input = ${input.text},
+								updated_at = NOW()
+							WHERE user_id = ${userId}
+							  AND id = ${input.id}
+							  AND embedding IS NULL
+						`);
+						// Merge analysisSnapshot in TypeScript — avoids jsonb_set in a prepared
+						// statement which triggers PG error 42804 (enforce_generic_type_consistency).
+						const existing = input.analysisSnapshot;
+						await db
 							.update(track)
 							.set({
-								embedding,
-								embeddingGeneratedAt: now,
-								embeddingInput: input.text,
-								analysisSnapshot: sql`jsonb_set(
-									jsonb_set(
-										COALESCE(analysis_snapshot, '{}'::jsonb),
-										ARRAY['embeddingDims']::text[],
-										to_jsonb(${embedding.length}::int),
-										true
-									),
-									ARRAY['modelVersions', 'embedding']::text[],
-									to_jsonb(${EMBEDDING_MODEL}),
-									true
-								)`,
+								analysisSnapshot: {
+									llm: existing?.llm ?? {},
+									domain: existing?.domain ?? null,
+									embeddingDims: embedding.length,
+									modelVersions: {
+										...(existing?.modelVersions ?? {}),
+										embedding: EMBEDDING_MODEL,
+									},
+								},
 							})
-							.where(
-								and(
-									eq(track.userId, userId),
-									eq(track.id, input.id),
-									isNull(track.embedding),
-								),
-							);
+							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
 					}),
 				);
 
@@ -274,7 +284,11 @@ export async function embedTrackIds(
 					if (tags.language) parts.push(`Language: ${tags.language}`);
 					if (tags.era) parts.push(`Era: ${tags.era}`);
 
-					return { id: t.id, text: parts.join(" | ") };
+					return {
+						id: t.id,
+						text: parts.join(" | "),
+						analysisSnapshot: t.analysisSnapshot,
+					};
 				});
 
 				const json = await pRetry(
@@ -328,34 +342,40 @@ export async function embedTrackIds(
 
 				const now = new Date();
 				await Promise.all(
-					inputs.map((input, index) => {
+					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
-						if (!input || !embedding) return Promise.resolve();
-						return db
+						if (!input || !embedding) return;
+						const vecStr = `[${(embedding as number[]).join(",")}]`;
+						// Vector update in raw SQL — Drizzle's buildUpdateSet skips mapToDriverValue
+						// for vector columns, causing node-postgres to serialize as PG array syntax.
+						await db.execute(sql`
+							UPDATE track
+							SET
+								embedding = ${vecStr}::vector,
+								embedding_generated_at = ${now},
+								embedding_input = ${input.text},
+								updated_at = NOW()
+							WHERE user_id = ${userId}
+							  AND id = ${input.id}
+							  AND embedding IS NULL
+						`);
+						// Merge analysisSnapshot in TypeScript — avoids jsonb_set in a prepared
+						// statement which triggers PG error 42804 (enforce_generic_type_consistency).
+						const existing = input.analysisSnapshot;
+						await db
 							.update(track)
 							.set({
-								embedding,
-								embeddingGeneratedAt: now,
-								embeddingInput: input.text,
-								analysisSnapshot: sql`jsonb_set(
-									jsonb_set(
-										COALESCE(analysis_snapshot, '{}'::jsonb),
-										ARRAY['embeddingDims']::text[],
-										to_jsonb(${embedding.length}::int),
-										true
-									),
-									ARRAY['modelVersions', 'embedding']::text[],
-									to_jsonb(${EMBEDDING_MODEL}),
-									true
-								)`,
+								analysisSnapshot: {
+									llm: existing?.llm ?? {},
+									domain: existing?.domain ?? null,
+									embeddingDims: embedding.length,
+									modelVersions: {
+										...(existing?.modelVersions ?? {}),
+										embedding: EMBEDDING_MODEL,
+									},
+								},
 							})
-							.where(
-								and(
-									eq(track.userId, userId),
-									eq(track.id, input.id),
-									isNull(track.embedding),
-								),
-							);
+							.where(and(eq(track.userId, userId), eq(track.id, input.id)));
 					}),
 				);
 
