@@ -5,7 +5,7 @@ export const EMBEDDING_CONCURRENCY = 3;
 export const CLASSIFICATION_LLM_MODEL =
 	"meta-llama/llama-4-scout-17b-16e-instruct";
 export const CLASSIFICATION_BATCH_SIZE = 6;
-export const CLASSIFICATION_CONCURRENCY = 2;
+export const CLASSIFICATION_CONCURRENCY = 1;
 export const CLASSIFICATION_MAX_OUTPUT_TOKENS = 8192;
 
 /** DBSCAN params: minPts, eps. Tuned for ~1500-dim embeddings, cosine distance. */

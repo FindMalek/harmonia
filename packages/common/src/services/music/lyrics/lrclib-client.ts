@@ -44,7 +44,11 @@ async function fetchLRCLib<T = LRCLibRawTrack>(url: string): Promise<T | null> {
 			if (!response.ok) {
 				const message = `LRCLib ${response.status}: ${response.statusText}`;
 				// 429 is rate-limited but transient — must NOT abort, let backoff handle it
-				if (response.status !== 429 && response.status >= 400 && response.status < 500) {
+				if (
+					response.status !== 429 &&
+					response.status >= 400 &&
+					response.status < 500
+				) {
 					throw new AbortError(message);
 				}
 				// 429 and 5xx — retried with exponential back-off + jitter

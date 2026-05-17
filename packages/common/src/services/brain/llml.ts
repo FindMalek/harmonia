@@ -2,8 +2,14 @@ import { createGroq } from "@ai-sdk/groq";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml as formatPrompt } from "@zenbase/llml";
-import { NoObjectGeneratedError, Output, generateText } from "ai";
-import pRetry from "p-retry";
+import {
+	APICallError,
+	NoObjectGeneratedError,
+	Output,
+	RetryError,
+	generateText,
+} from "ai";
+import pRetry, { AbortError } from "p-retry";
 
 import {
 	type ClassificationResult,
@@ -50,6 +56,15 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 		],
 		inputTracks: tracks,
 	});
+}
+
+function isRateLimitRetryError(err: unknown): boolean {
+	return (
+		RetryError.isInstance(err) &&
+		err.reason === "maxRetriesExceeded" &&
+		APICallError.isInstance(err.lastError) &&
+		err.lastError.statusCode === 429
+	);
 }
 
 function isRetryableJsonError(err: unknown): boolean {
@@ -128,13 +143,16 @@ async function classifyTracksAdaptive(
 		return await pRetry(() => classifyTracksBatchOnce(tracks), {
 			retries: 3,
 			minTimeout: 2000,
-			onFailedAttempt: (error) => {
+			onFailedAttempt: (ctx) => {
+				if (isRateLimitRetryError(ctx.error)) {
+					throw new AbortError(ctx.error);
+				}
 				logger.warn(
 					{
-						attempt: error.attemptNumber,
-						retriesLeft: error.retriesLeft,
+						attempt: ctx.attemptNumber,
+						retriesLeft: ctx.retriesLeft,
 						batchSize: tracks.length,
-						error: String(error),
+						error: String(ctx.error),
 					},
 					"LLM classification failed, retrying",
 				);
