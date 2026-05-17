@@ -84,17 +84,16 @@ export function DashboardAnalysisDrawer() {
 	const getStageSubtext = (stageId: string) => {
 		const prog = streamState.progress?.[stageId];
 
+		const stageIndex = STAGES.findIndex((s) => s.id === stageId);
+		const currentIndex = STAGES.findIndex(
+			(s) => s.id === streamState.currentStage,
+		);
+		const isStageDone =
+			streamState.status === "completed" || stageIndex < currentIndex;
+
 		if (!prog) {
-			if (streamState.status === "completed") return "Completed";
-
+			if (isStageDone) return "Completed";
 			if (isConnecting) return "Connecting…";
-
-			const stageIndex = STAGES.findIndex((s) => s.id === stageId);
-			const currentIndex = STAGES.findIndex(
-				(s) => s.id === streamState.currentStage,
-			);
-
-			if (stageIndex < currentIndex) return "Completed";
 			if (stageIndex === currentIndex) return "Processing...";
 			return "Waiting...";
 		}
@@ -107,23 +106,33 @@ export function DashboardAnalysisDrawer() {
 			case "lyrics":
 				return prog.processed
 					? `${prog.processed.toLocaleString()} lyrics collected`
-					: "Collecting...";
+					: isStageDone
+						? "Completed"
+						: "Collecting...";
 			case "classify":
 				return prog.classified
 					? `Analyzed ${prog.classified.toLocaleString()} / ${prog.total?.toLocaleString() ?? "?"} tracks`
-					: "Analyzing emotional tone and themes...";
+					: isStageDone
+						? "Completed"
+						: "Analyzing emotional tone and themes...";
 			case "embed":
 				return prog.embedded
 					? `Embedded ${prog.embedded.toLocaleString()} / ${prog.total?.toLocaleString() ?? "?"} tracks`
-					: "Generating semantic embeddings...";
+					: isStageDone
+						? "Completed"
+						: "Generating semantic embeddings...";
 			case "cluster":
 				return prog.clusters
 					? `Created ${prog.clusters} clusters`
-					: "Grouping similar tracks...";
+					: isStageDone
+						? "Completed"
+						: "Grouping similar tracks...";
 			case "generate":
 				return prog.playlists
 					? `Generated ${prog.playlists} playlists`
-					: "Curating your new library...";
+					: isStageDone
+						? "Completed"
+						: "Curating your new library...";
 			default:
 				return "Processing...";
 		}
