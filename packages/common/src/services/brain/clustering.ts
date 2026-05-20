@@ -2,9 +2,9 @@ import type { ClusterProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 
 import Clustering from "density-clustering";
 
@@ -21,10 +21,15 @@ export async function runClustering(
 ): Promise<ClusterProgress> {
 	const stats: ClusterProgress = { clusters: 0, noise: 0, totalTracks: 0 };
 
+	const userTrackIds = db
+		.select({ trackId: userTracks.trackId })
+		.from(userTracks)
+		.where(eq(userTracks.userId, userId));
+
 	const tracks = await db
 		.select()
 		.from(track)
-		.where(and(eq(track.userId, userId), isNotNull(track.embedding)));
+		.where(and(inArray(track.id, userTrackIds), isNotNull(track.embedding)));
 
 	if (tracks.length === 0) {
 		logger.info({ userId }, "No tracks with embeddings; skipping clustering");

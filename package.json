@@ -21,6 +21,7 @@
 		"db:migrate": "turbo -F @harmonia/db db:migrate",
 		"db:setup": "docker compose -f ./docker/docker-compose.yml up -d && pnpm db:push",
 		"db:reset": "turbo -F @harmonia/db db:reset",
+		"db:reset:all": "turbo -F @harmonia/db db:reset:all",
 		"db:nuke": "turbo -F @harmonia/db db:nuke",
 		"check": "biome check --write .",
 		"lint": "biome lint --write .",

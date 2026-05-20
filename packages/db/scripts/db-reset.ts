@@ -24,9 +24,12 @@ const TABLES_TO_TRUNCATE = [
 	"character_clusters",
 	"character",
 	"pipeline_run",
-	"track",
+	"user_tracks",
 	"todo",
 ] as const;
+
+// Include track only with --all (tracks hold expensive computed data)
+const EXTRA_ALL_TABLES = ["track"] as const;
 
 function assertSafeResetHost(databaseUrl: string): void {
 	const parsed = new URL(databaseUrl);
@@ -50,12 +53,17 @@ function assertSafeResetHost(databaseUrl: string): void {
 async function main(): Promise<void> {
 	assertSafeResetHost(dbEnv.HARMONIA_DATABASE_URL);
 
+	const includeAll = process.argv.includes("--all");
+	const tables = includeAll
+		? ([...TABLES_TO_TRUNCATE, ...EXTRA_ALL_TABLES] as const)
+		: TABLES_TO_TRUNCATE;
+
 	const pool = new Pool({ connectionString: dbEnv.HARMONIA_DATABASE_URL });
-	const quotedTables = TABLES_TO_TRUNCATE.map((t) => `"${t}"`).join(", ");
+	const quotedTables = tables.map((t) => `"${t}"`).join(", ");
 	const sql = `TRUNCATE TABLE ${quotedTables} RESTART IDENTITY CASCADE`;
 
 	console.info(
-		`db:reset: truncating ${String(TABLES_TO_TRUNCATE.length)} tables`,
+		`db:reset: truncating ${String(tables.length)} tables${includeAll ? " (--all: includes track)" : ""}`,
 	);
 
 	try {
@@ -65,7 +73,9 @@ async function main(): Promise<void> {
 			await client.query(sql);
 			await client.query("COMMIT");
 			console.info(
-				"db:reset: done (auth, genre_domain, drizzle migrations unchanged)",
+				includeAll
+					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged)"
+					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged)",
 			);
 		} catch (err) {
 			await client.query("ROLLBACK");
