@@ -123,7 +123,7 @@ export function DashboardAnalysisDrawer() {
 						: "Comparing tracks...";
 			case "cluster":
 				return prog.clusters
-? `Created ${prog.clusters} ${prog.clusters === 1 ? "group" : "groups"}`
+					? `Created ${prog.clusters} ${prog.clusters === 1 ? "group" : "groups"}`
 					: isStageDone
 						? "Completed"
 						: "Grouping similar tracks...";
