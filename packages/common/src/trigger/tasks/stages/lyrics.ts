@@ -1,8 +1,8 @@
 import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { queue, task } from "@trigger.dev/sdk/v3";
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 
 import { fetchLyricsForTrackIds } from "../../../services/music";
 import {
@@ -70,12 +70,17 @@ export const lyricsStageTask = task({
 		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "lyrics" });
 
+		const userTrackIds = db
+			.select({ trackId: userTracks.trackId })
+			.from(userTracks)
+			.where(eq(userTracks.userId, userId));
+
 		const allPending = await db
 			.select({ id: track.id })
 			.from(track)
 			.where(
 				and(
-					eq(track.userId, userId),
+					inArray(track.id, userTrackIds),
 					or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
 					isNull(track.lyrics),
 				),

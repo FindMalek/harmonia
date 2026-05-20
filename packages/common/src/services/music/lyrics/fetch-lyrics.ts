@@ -1,6 +1,6 @@
 import type { LyricsProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, count, eq, inArray, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
@@ -30,8 +30,13 @@ export async function fetchLyricsForPendingTracks(
 	};
 	const limit = pLimit(LYRICS_CONCURRENCY);
 
+	const userTrackIds = db
+		.select({ trackId: userTracks.trackId })
+		.from(userTracks)
+		.where(eq(userTracks.userId, userId));
+
 	const lyricsPendingPredicate = and(
-		eq(track.userId, userId),
+		inArray(track.id, userTrackIds),
 		or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
 		isNull(track.lyrics),
 	);
@@ -80,7 +85,7 @@ export async function fetchLyricsForPendingTracks(
 								lyricsStatus: "not_found",
 								lyricsFetchedAt: new Date(),
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+							.where(eq(track.id, t.id));
 						stats.notFound++;
 						stats.processed++;
 					} catch (err) {
@@ -110,7 +115,7 @@ export async function fetchLyricsForPendingTracks(
 								lyricsStatus: "not_found",
 								lyricsFetchedAt: new Date(),
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+							.where(eq(track.id, t.id));
 						stats.notFound++;
 					} else {
 						await db
@@ -123,7 +128,7 @@ export async function fetchLyricsForPendingTracks(
 								lyricsStatus: "found",
 								lyricsFetchedAt: new Date(),
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+							.where(eq(track.id, t.id));
 						stats.found++;
 					}
 				} catch (err) {
@@ -140,7 +145,7 @@ export async function fetchLyricsForPendingTracks(
 							lyricsStatus: "not_found",
 							lyricsFetchedAt: new Date(),
 						})
-						.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+						.where(eq(track.id, t.id));
 					stats.notFound++;
 				}
 
@@ -208,7 +213,6 @@ export async function fetchLyricsForTrackIds(
 			.from(track)
 			.where(
 				and(
-					eq(track.userId, userId),
 					inArray(track.id, batchIds),
 					or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
 					isNull(track.lyrics),
@@ -234,7 +238,7 @@ export async function fetchLyricsForTrackIds(
 						await db
 							.update(track)
 							.set({ lyricsStatus: "not_found", lyricsFetchedAt: new Date() })
-							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+							.where(eq(track.id, t.id));
 						stats.notFound++;
 						stats.processed++;
 					} catch (err) {
@@ -261,7 +265,7 @@ export async function fetchLyricsForTrackIds(
 						await db
 							.update(track)
 							.set({ lyricsStatus: "not_found", lyricsFetchedAt: new Date() })
-							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+							.where(eq(track.id, t.id));
 						stats.notFound++;
 					} else {
 						await db
@@ -274,7 +278,7 @@ export async function fetchLyricsForTrackIds(
 								lyricsStatus: "found",
 								lyricsFetchedAt: new Date(),
 							})
-							.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+							.where(eq(track.id, t.id));
 						stats.found++;
 					}
 				} catch (err) {
@@ -288,7 +292,7 @@ export async function fetchLyricsForTrackIds(
 					await db
 						.update(track)
 						.set({ lyricsStatus: "not_found", lyricsFetchedAt: new Date() })
-						.where(and(eq(track.userId, userId), eq(track.id, t.id)));
+						.where(eq(track.id, t.id));
 					stats.notFound++;
 				}
 

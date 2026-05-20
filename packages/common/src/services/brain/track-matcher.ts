@@ -5,9 +5,9 @@ import {
 	playlistClusters,
 	playlistTracks,
 } from "@harmonia/db/schema/playlist";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
 import { TRACK_MATCH_SIMILARITY_THRESHOLD } from "../../constants/brain";
 
@@ -41,13 +41,18 @@ export async function matchNewTracksToPlaylists(
 
 	const assignedTrackIds = new Set(existingAssignments.map((r) => r.trackId));
 
+	const userTrackIds = db
+		.select({ trackId: userTracks.trackId })
+		.from(userTracks)
+		.where(eq(userTracks.userId, userId));
+
 	const unassignedTracks = await db
 		.select({
 			id: track.id,
 			embedding: track.embedding,
 		})
 		.from(track)
-		.where(and(eq(track.userId, userId), isNotNull(track.embedding)));
+		.where(and(inArray(track.id, userTrackIds), isNotNull(track.embedding)));
 
 	const tracksToMatch = unassignedTracks.filter(
 		(t) => !assignedTrackIds.has(t.id),

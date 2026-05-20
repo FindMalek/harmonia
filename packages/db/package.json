@@ -17,6 +17,7 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:mark-migrations-applied": "node scripts/mark-migrations-applied.mjs",
 		"db:reset": "tsx scripts/db-reset.ts",
+		"db:reset:all": "tsx scripts/db-reset.ts --all",
 		"db:nuke": "node scripts/db-nuke.mjs"
 	},
 	"dependencies": {

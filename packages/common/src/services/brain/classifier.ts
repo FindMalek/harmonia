@@ -5,7 +5,7 @@ import type {
 import type { ClassifyProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
@@ -24,12 +24,17 @@ export async function classifyTracksBatch(
 	userId: string,
 	onProgress?: (progress: ClassifyProgress) => Promise<void>,
 ): Promise<ClassifyProgress> {
+	const userTrackIds = db
+		.select({ trackId: userTracks.trackId })
+		.from(userTracks)
+		.where(eq(userTracks.userId, userId));
+
 	const allPending = await db
 		.select({ id: track.id })
 		.from(track)
 		.where(
 			and(
-				eq(track.userId, userId),
+				inArray(track.id, userTrackIds),
 				isNull(track.llmClassifiedAt),
 				inArray(track.lyricsStatus, ["found", "not_found"]),
 			),
@@ -58,7 +63,6 @@ export async function classifyTracksBatch(
 					.from(track)
 					.where(
 						and(
-							eq(track.userId, userId),
 							inArray(track.id, batchIds),
 							isNull(track.llmClassifiedAt),
 						),
@@ -178,12 +182,11 @@ export async function classifyTracksBatch(
 								},
 							})
 							.where(
-								and(
-									eq(track.userId, userId),
-									eq(track.id, trackId),
-									isNull(track.llmClassifiedAt),
-								),
-							),
+										and(
+											eq(track.id, trackId),
+											isNull(track.llmClassifiedAt),
+										),
+									),
 					),
 				);
 
@@ -235,7 +238,6 @@ export async function classifyTrackIds(
 					.from(track)
 					.where(
 						and(
-							eq(track.userId, userId),
 							inArray(track.id, batchIds),
 							isNull(track.llmClassifiedAt),
 						),
@@ -343,12 +345,11 @@ export async function classifyTrackIds(
 								},
 							})
 							.where(
-								and(
-									eq(track.userId, userId),
-									eq(track.id, trackId),
-									isNull(track.llmClassifiedAt),
-								),
-							),
+										and(
+											eq(track.id, trackId),
+											isNull(track.llmClassifiedAt),
+										),
+									),
 					),
 				);
 
