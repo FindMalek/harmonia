@@ -67,9 +67,16 @@ function isRateLimitRetryError(err: unknown): boolean {
 	);
 }
 
-function isRetryableJsonError(err: unknown): boolean {
-	if (NoObjectGeneratedError.isInstance(err)) return true;
-	const message = err instanceof Error ? err.message : String(err);
+function isSplitRetryableError(err: unknown): boolean {
+	const cause =
+		err instanceof AbortError && err.originalError != null
+			? err.originalError
+			: err;
+
+	if (isRateLimitRetryError(cause)) return true;
+
+	if (NoObjectGeneratedError.isInstance(cause)) return true;
+	const message = cause instanceof Error ? cause.message : String(cause);
 	return (
 		message.includes("Failed to validate JSON") ||
 		message.includes("No output generated")
@@ -159,7 +166,7 @@ async function classifyTracksAdaptive(
 			},
 		});
 	} catch (err) {
-		if (tracks.length <= 1 || !isRetryableJsonError(err)) {
+		if (tracks.length <= 1 || !isSplitRetryableError(err)) {
 			throw err;
 		}
 
