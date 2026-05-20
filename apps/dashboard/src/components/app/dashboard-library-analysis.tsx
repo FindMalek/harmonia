@@ -84,7 +84,7 @@ export function DashboardLibraryAnalysis() {
 
 				<div className="space-y-3">
 					<div className="flex items-center justify-between">
-						<span className="text-sm">AI classification progress</span>
+						<span className="text-sm">Tracks compared</span>
 						<span className="font-mono text-muted-foreground text-sm">
 							{embedded.toLocaleString()} / {totalTracks.toLocaleString()}
 						</span>
