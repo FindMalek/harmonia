@@ -18,9 +18,9 @@ import {
 const STAGES = [
 	{ id: "sync", label: "Syncing library" },
 	{ id: "lyrics", label: "Collecting lyrics" },
-	{ id: "classify", label: "AI classification" },
-	{ id: "embed", label: "Generating embeddings" },
-	{ id: "cluster", label: "Clustering tracks" },
+	{ id: "classify", label: "Tagging tracks" },
+	{ id: "embed", label: "Comparing tracks" },
+	{ id: "cluster", label: "Grouping tracks" },
 	{ id: "generate", label: "Generating playlists" },
 ] as const;
 
@@ -111,19 +111,19 @@ export function DashboardAnalysisDrawer() {
 						: "Collecting...";
 			case "classify":
 				return prog.classified
-					? `Analyzed ${prog.classified.toLocaleString()} / ${prog.total?.toLocaleString() ?? "?"} tracks`
+					? `Tagged ${prog.classified.toLocaleString()} / ${prog.total?.toLocaleString() ?? "?"} tracks`
 					: isStageDone
 						? "Completed"
 						: "Analyzing emotional tone and themes...";
 			case "embed":
 				return prog.embedded
-					? `Embedded ${prog.embedded.toLocaleString()} / ${prog.total?.toLocaleString() ?? "?"} tracks`
+					? `Compared ${prog.embedded.toLocaleString()} / ${prog.total?.toLocaleString() ?? "?"} tracks`
 					: isStageDone
 						? "Completed"
-						: "Generating semantic embeddings...";
+						: "Comparing tracks...";
 			case "cluster":
 				return prog.clusters
-					? `Created ${prog.clusters} clusters`
+? `Created ${prog.clusters} ${prog.clusters === 1 ? "group" : "groups"}`
 					: isStageDone
 						? "Completed"
 						: "Grouping similar tracks...";

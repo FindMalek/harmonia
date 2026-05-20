@@ -138,12 +138,7 @@ export default function TracksPage() {
 														/>
 														{t.llmClassifiedAt && (
 															<Badge variant="outline" className="text-[10px]">
-																AI
-															</Badge>
-														)}
-														{t.embeddingGeneratedAt && (
-															<Badge variant="outline" className="text-[10px]">
-																EMB
+																Tagged
 															</Badge>
 														)}
 													</div>
@@ -257,20 +252,15 @@ function TrackDetail({
 							status={track.lyricsStatus ?? "pending"}
 							type="lyrics"
 						/>
-						{track.llmClassifiedAt && (
-							<Badge variant="outline">Classified</Badge>
-						)}
-						{track.embeddingGeneratedAt && (
-							<Badge variant="outline">Embedded</Badge>
-						)}
+						{track.llmClassifiedAt && <Badge variant="outline">Tagged</Badge>}
 						{track.clusterId && (
-							<Badge variant="secondary">Cluster #{track.clusterId}</Badge>
+							<Badge variant="secondary">Group #{track.clusterId}</Badge>
 						)}
 					</div>
 				</Section>
 
 				{track.llmMood && (
-					<Section title="AI Analysis">
+					<Section title="Analysis">
 						<p>
 							<strong>Mood:</strong> {track.llmMood}
 						</p>
