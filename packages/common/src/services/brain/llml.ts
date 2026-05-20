@@ -2,13 +2,7 @@ import { createGroq } from "@ai-sdk/groq";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml as formatPrompt } from "@zenbase/llml";
-import {
-	APICallError,
-	NoObjectGeneratedError,
-	Output,
-	RetryError,
-	generateText,
-} from "ai";
+import { APICallError, NoObjectGeneratedError, Output, generateText } from "ai";
 import pRetry, { AbortError } from "p-retry";
 
 import {
@@ -20,6 +14,7 @@ import {
 import {
 	CLASSIFICATION_LLM_MODEL,
 	CLASSIFICATION_MAX_OUTPUT_TOKENS,
+	GROQ_RATE_LIMIT_FALLBACK_DELAY_MS,
 } from "../../constants/brain";
 
 function buildClassificationPrompt(tracks: TrackForClassification[]): string {
@@ -58,22 +53,11 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	});
 }
 
-function isRateLimitRetryError(err: unknown): boolean {
-	return (
-		RetryError.isInstance(err) &&
-		err.reason === "maxRetriesExceeded" &&
-		APICallError.isInstance(err.lastError) &&
-		err.lastError.statusCode === 429
-	);
-}
-
 function isSplitRetryableError(err: unknown): boolean {
 	const cause =
 		err instanceof AbortError && err.originalError != null
 			? err.originalError
 			: err;
-
-	if (isRateLimitRetryError(cause)) return true;
 
 	if (NoObjectGeneratedError.isInstance(cause)) return true;
 	const message = cause instanceof Error ? cause.message : String(cause);
@@ -143,28 +127,76 @@ async function classifyTracksBatchOnce(
 	}
 }
 
+function isRateLimit(err: unknown): err is APICallError {
+	return APICallError.isInstance(err) && err.statusCode === 429;
+}
+
+function getRateLimitDelayMs(err: APICallError): number {
+	const retryAfter = err.responseHeaders?.["retry-after"];
+	if (retryAfter) {
+		const seconds = Number(retryAfter);
+		if (Number.isFinite(seconds) && seconds > 0) return seconds * 1000;
+	}
+	return GROQ_RATE_LIMIT_FALLBACK_DELAY_MS;
+}
+
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function classifyTracksAdaptive(
 	tracks: TrackForClassification[],
 ): Promise<ClassificationResult[]> {
 	try {
-		return await pRetry(() => classifyTracksBatchOnce(tracks), {
-			retries: 3,
-			minTimeout: 2000,
-			onFailedAttempt: (ctx) => {
-				if (isRateLimitRetryError(ctx.error)) {
-					throw new AbortError(ctx.error);
+		return await pRetry(
+			async () => {
+				try {
+					return await classifyTracksBatchOnce(tracks);
+				} catch (err) {
+					if (isRateLimit(err)) {
+						const delayMs = getRateLimitDelayMs(err);
+						logger.warn(
+							{
+								batchSize: tracks.length,
+								delayMs,
+								retryAfterHeader: err.responseHeaders?.["retry-after"],
+							},
+							"Groq rate limit (429); sleeping before retry",
+						);
+						await sleep(delayMs);
+						throw err;
+					}
+					// Hard 4xx (not 429) — abort immediately, don't waste retries
+					if (
+						APICallError.isInstance(err) &&
+						err.statusCode !== undefined &&
+						err.statusCode >= 400 &&
+						err.statusCode < 500
+					) {
+						throw new AbortError(
+							err instanceof Error ? err.message : String(err),
+						);
+					}
+					throw err;
 				}
-				logger.warn(
-					{
-						attempt: ctx.attemptNumber,
-						retriesLeft: ctx.retriesLeft,
-						batchSize: tracks.length,
-						error: String(ctx.error),
-					},
-					"LLM classification failed, retrying",
-				);
 			},
-		});
+			{
+				retries: 5,
+				minTimeout: 1000,
+				randomize: true,
+				onFailedAttempt: (error) => {
+					logger.warn(
+						{
+							attempt: error.attemptNumber,
+							retriesLeft: error.retriesLeft,
+							batchSize: tracks.length,
+							error: String(error),
+						},
+						"LLM classification failed, retrying",
+					);
+				},
+			},
+		);
 	} catch (err) {
 		if (tracks.length <= 1 || !isSplitRetryableError(err)) {
 			throw err;

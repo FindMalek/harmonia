@@ -14,7 +14,7 @@ import {
 import {
 	CLASSIFY_FANOUT_CHUNK_SIZE,
 	CLASSIFY_WORKER_QUEUE_CONCURRENCY,
-} from "../../constants";
+} from "../../../constants";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const classifyWorkerQueue = queue({
@@ -27,7 +27,7 @@ const classifyWorkerQueue = queue({
 export const classifyWorkerTask = task({
 	id: "organize-worker-classify",
 	queue: classifyWorkerQueue,
-	retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
+	retry: { maxAttempts: 1 },
 	maxDuration: 600,
 	run: async ({
 		userId,
@@ -87,7 +87,7 @@ export const classifyStageTask = task({
 		);
 
 		const batchResult = await classifyWorkerTask.batchTriggerAndWait(
-			chunks.map((trackIds) => ({
+			chunks.map((trackIds, index) => ({
 				payload: { userId, runId, trackIds },
 				options: {
 					idempotencyKey: workerIdempotencyKey(
@@ -96,6 +96,9 @@ export const classifyStageTask = task({
 						trackIds,
 					),
 					idempotencyKeyTTL: "24h",
+					// Stagger the first two slots so workers don't all hit Groq at t=0.
+					// Workers beyond index 2 are queue-gated by concurrencyLimit anyway.
+					...(index > 0 && index <= 2 && { delay: `${index * 10}s` }),
 				},
 			})),
 		);

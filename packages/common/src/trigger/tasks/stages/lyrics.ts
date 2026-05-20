@@ -14,7 +14,7 @@ import {
 import {
 	LYRICS_FANOUT_CHUNK_SIZE,
 	LYRICS_WORKER_QUEUE_CONCURRENCY,
-} from "../../constants";
+} from "../../../constants";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const lyricsWorkerQueue = queue({
