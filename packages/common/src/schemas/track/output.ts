@@ -36,7 +36,6 @@ export type TracksListOutput = z.infer<typeof tracksListOutputSchema>;
 
 export const trackGetByIdOutputSchema = z.object({
 	id: z.string(),
-	userId: z.string(),
 	spotifyUri: z.string(),
 	name: z.string(),
 	artistNames: z.string(),
