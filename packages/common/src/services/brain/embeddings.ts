@@ -67,12 +67,7 @@ export async function embedTracksBatch(
 				const pendingTracks = await db
 					.select()
 					.from(track)
-					.where(
-						and(
-							inArray(track.id, batchIds),
-							isNull(track.embedding),
-						),
-					);
+					.where(and(inArray(track.id, batchIds), isNull(track.embedding)));
 
 				if (pendingTracks.length === 0) return;
 

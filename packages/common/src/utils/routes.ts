@@ -49,12 +49,6 @@ export const DASHBOARD_ROUTES = {
 			},
 		},
 	},
-	todos: {
-		path: "/todos",
-		label: "Todos",
-		icon: "fileText",
-		isNav: true,
-	},
 	insights: {
 		path: "/insights",
 		label: "Insights",

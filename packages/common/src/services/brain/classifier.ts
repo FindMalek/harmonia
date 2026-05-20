@@ -62,10 +62,7 @@ export async function classifyTracksBatch(
 					.select()
 					.from(track)
 					.where(
-						and(
-							inArray(track.id, batchIds),
-							isNull(track.llmClassifiedAt),
-						),
+						and(inArray(track.id, batchIds), isNull(track.llmClassifiedAt)),
 					);
 
 				if (pendingTracks.length === 0) return;
@@ -181,12 +178,7 @@ export async function classifyTracksBatch(
 									},
 								},
 							})
-							.where(
-										and(
-											eq(track.id, trackId),
-											isNull(track.llmClassifiedAt),
-										),
-									),
+							.where(and(eq(track.id, trackId), isNull(track.llmClassifiedAt))),
 					),
 				);
 
@@ -237,10 +229,7 @@ export async function classifyTrackIds(
 					.select()
 					.from(track)
 					.where(
-						and(
-							inArray(track.id, batchIds),
-							isNull(track.llmClassifiedAt),
-						),
+						and(inArray(track.id, batchIds), isNull(track.llmClassifiedAt)),
 					);
 
 				if (pendingTracks.length === 0) return;
@@ -344,12 +333,7 @@ export async function classifyTrackIds(
 									modelVersions: { llm: CLASSIFICATION_LLM_MODEL },
 								},
 							})
-							.where(
-										and(
-											eq(track.id, trackId),
-											isNull(track.llmClassifiedAt),
-										),
-									),
+							.where(and(eq(track.id, trackId), isNull(track.llmClassifiedAt))),
 					),
 				);
 
