@@ -1,7 +1,7 @@
 import type { EmbedProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
@@ -37,10 +37,15 @@ export async function embedTracksBatch(
 		return stats;
 	}
 
+	const userTrackIds = db
+		.select({ trackId: userTracks.trackId })
+		.from(userTracks)
+		.where(eq(userTracks.userId, userId));
+
 	const allPending = await db
 		.select({ id: track.id })
 		.from(track)
-		.where(and(eq(track.userId, userId), isNull(track.embedding)));
+		.where(and(inArray(track.id, userTrackIds), isNull(track.embedding)));
 
 	const total = allPending.length;
 
@@ -64,7 +69,6 @@ export async function embedTracksBatch(
 					.from(track)
 					.where(
 						and(
-							eq(track.userId, userId),
 							inArray(track.id, batchIds),
 							isNull(track.embedding),
 						),
@@ -245,7 +249,6 @@ export async function embedTrackIds(
 					.from(track)
 					.where(
 						and(
-							eq(track.userId, userId),
 							inArray(track.id, batchIds),
 							isNull(track.embedding),
 							isNotNull(track.llmClassifiedAt),

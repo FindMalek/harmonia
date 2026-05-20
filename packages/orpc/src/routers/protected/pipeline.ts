@@ -16,9 +16,9 @@ import { db } from "@harmonia/db";
 import { cluster } from "@harmonia/db/schema/cluster";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { eventIterator } from "@orpc/server";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
@@ -160,6 +160,11 @@ export const pipelineRouter = {
 		.handler(async ({ context }) => {
 			const userId = context.session.user.id;
 
+			const userTrackIds = db
+				.select({ trackId: userTracks.trackId })
+				.from(userTracks)
+				.where(eq(userTracks.userId, userId));
+
 			const [trackStats] = await db
 				.select({
 					total: count(),
@@ -168,7 +173,7 @@ export const pipelineRouter = {
 					embedded: count(track.embeddingGeneratedAt),
 				})
 				.from(track)
-				.where(eq(track.userId, userId));
+				.where(inArray(track.id, userTrackIds));
 
 			const [clusterStats] = await db
 				.select({ total: count() })
@@ -180,7 +185,7 @@ export const pipelineRouter = {
 				.from(track)
 				.where(
 					and(
-						eq(track.userId, userId),
+						inArray(track.id, userTrackIds),
 						sql`(${track.lyricsStatus} = 'pending' OR ${track.lyricsStatus} IS NULL)`,
 					),
 				);
@@ -211,6 +216,11 @@ export const pipelineRouter = {
 
 			await db.delete(cluster).where(eq(cluster.userId, userId));
 
+			const userTrackIds = db
+				.select({ trackId: userTracks.trackId })
+				.from(userTracks)
+				.where(eq(userTracks.userId, userId));
+
 			const result = await db
 				.update(track)
 				.set({
@@ -224,7 +234,7 @@ export const pipelineRouter = {
 					embeddingInput: null,
 					analysisSnapshot: null,
 				})
-				.where(eq(track.userId, userId));
+				.where(inArray(track.id, userTrackIds));
 
 			return {
 				cleared: true,

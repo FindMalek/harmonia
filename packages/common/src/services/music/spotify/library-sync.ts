@@ -9,7 +9,7 @@ import {
 	userPlaylistSnapshots,
 	userSpotifyLibraryStats,
 } from "@harmonia/db/schema/spotify";
-import { track } from "@harmonia/db/schema/track";
+import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { sql } from "drizzle-orm";
 import pLimit from "p-limit";
@@ -348,7 +348,6 @@ export async function syncLibraryTracks(
 	const now = new Date();
 	const values = tracks.map((t) => ({
 		id: t.id,
-		userId,
 		spotifyUri: t.uri,
 		name: t.name,
 		artistNames: t.artistNames,
@@ -368,7 +367,6 @@ export async function syncLibraryTracks(
 			.onConflictDoUpdate({
 				target: track.id,
 				set: {
-					userId: sql`excluded.user_id`,
 					spotifyUri: sql`excluded.spotify_uri`,
 					name: sql`excluded.name`,
 					artistNames: sql`excluded.artist_names`,
@@ -379,6 +377,14 @@ export async function syncLibraryTracks(
 					updatedAt: sql`excluded.updated_at`,
 				},
 			});
+	}
+
+	for (let i = 0; i < tracks.length; i += TRACK_UPSERT_BATCH_SIZE) {
+		const batch = tracks.slice(i, i + TRACK_UPSERT_BATCH_SIZE);
+		await db
+			.insert(userTracks)
+			.values(batch.map((t) => ({ userId, trackId: t.id })))
+			.onConflictDoNothing();
 	}
 
 	const result: SyncProgress & { stats?: SpotifyLibraryStats } = {

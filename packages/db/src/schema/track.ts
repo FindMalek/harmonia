@@ -4,6 +4,7 @@ import {
 	integer,
 	jsonb,
 	pgTable,
+	primaryKey,
 	real,
 	text,
 	timestamp,
@@ -18,9 +19,6 @@ export const track = pgTable(
 	{
 		// Identity
 		id: text("id").primaryKey(), // Spotify track ID
-		userId: text("user_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "cascade" }),
 		spotifyUri: text("spotify_uri").notNull(),
 
 		// Core metadata (Spotify)
@@ -90,12 +88,29 @@ export const track = pgTable(
 			.notNull(),
 	},
 	(table) => [
-		index("track_user_id_idx").on(table.userId),
 		index("track_genre_domain_id_idx").on(table.genreDomainId),
 		index("track_lyrics_status_idx").on(table.lyricsStatus),
 		index("track_embedding_idx").using(
 			"hnsw",
 			table.embedding.op("vector_cosine_ops"),
 		),
+	],
+);
+
+export const userTracks = pgTable(
+	"user_tracks",
+	{
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		trackId: text("track_id")
+			.notNull()
+			.references(() => track.id, { onDelete: "cascade" }),
+		addedAt: timestamp("added_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.userId, table.trackId] }),
+		index("user_tracks_user_id_idx").on(table.userId),
+		index("user_tracks_track_id_idx").on(table.trackId),
 	],
 );

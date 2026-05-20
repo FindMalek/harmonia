@@ -6,8 +6,8 @@ import {
 } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
-import { track } from "@harmonia/db/schema/track";
-import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { track, userTracks } from "@harmonia/db/schema/track";
+import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
@@ -19,7 +19,12 @@ export const tracksRouter = {
 			const userId = context.session.user.id;
 			const offset = (input.page - 1) * input.pageSize;
 
-			const conditions = [eq(track.userId, userId)];
+			const userTrackIds = db
+				.select({ trackId: userTracks.trackId })
+				.from(userTracks)
+				.where(eq(userTracks.userId, userId));
+
+			const conditions = [inArray(track.id, userTrackIds)];
 
 			if (input.search) {
 				const searchCondition = or(
@@ -86,10 +91,15 @@ export const tracksRouter = {
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
+			const userTrackIds = db
+				.select({ trackId: userTracks.trackId })
+				.from(userTracks)
+				.where(eq(userTracks.userId, userId));
+
 			const [result] = await db
 				.select()
 				.from(track)
-				.where(and(eq(track.id, input.id), eq(track.userId, userId)));
+				.where(and(eq(track.id, input.id), inArray(track.id, userTrackIds)));
 
 			if (!result) return null;
 
