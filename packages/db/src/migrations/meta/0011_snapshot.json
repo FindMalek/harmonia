@@ -1,6 +1,6 @@
 {
-	"id": "abe63d35-b61f-4246-a504-94b717f4e5f9",
-	"prevId": "8037dfe8-24a5-4425-b50e-42f370e04f59",
+	"id": "1a707765-54be-4fe4-8f31-6a299484051c",
+	"prevId": "abe63d35-b61f-4246-a504-94b717f4e5f9",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -761,54 +761,6 @@
 					"columns": ["name"]
 				}
 			},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.todo": {
-			"name": "todo",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "serial",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"user_id": {
-					"name": "user_id",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"text": {
-					"name": "text",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"completed": {
-					"name": "completed",
-					"type": "boolean",
-					"primaryKey": false,
-					"notNull": true,
-					"default": false
-				}
-			},
-			"indexes": {},
-			"foreignKeys": {
-				"todo_user_id_user_id_fk": {
-					"name": "todo_user_id_user_id_fk",
-					"tableFrom": "todo",
-					"tableTo": "user",
-					"columnsFrom": ["user_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
 			"policies": {},
 			"checkConstraints": {},
 			"isRLSEnabled": false

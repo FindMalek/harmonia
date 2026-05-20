@@ -25,7 +25,6 @@ const TABLES_TO_TRUNCATE = [
 	"character",
 	"pipeline_run",
 	"user_tracks",
-	"todo",
 ] as const;
 
 // Include track only with --all (tracks hold expensive computed data)

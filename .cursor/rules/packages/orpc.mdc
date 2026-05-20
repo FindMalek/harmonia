@@ -28,7 +28,6 @@ src/routers/
     pipeline.ts     (streamStatus uses eventIterator for SSE)
     clusters.ts
     spotify.ts
-    todo.ts
 ```
 
 ## Adding a Route
