@@ -111,5 +111,6 @@ export const userTracks = pgTable(
 	(table) => [
 		primaryKey({ columns: [table.userId, table.trackId] }),
 		index("user_tracks_user_id_idx").on(table.userId),
+		index("user_tracks_track_id_idx").on(table.trackId),
 	],
 );

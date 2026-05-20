@@ -67,7 +67,12 @@ export async function embedTracksBatch(
 				const pendingTracks = await db
 					.select()
 					.from(track)
-					.where(and(inArray(track.id, batchIds), isNull(track.embedding)));
+					.where(
+						and(
+							inArray(track.id, batchIds),
+							isNull(track.embedding),
+						),
+					);
 
 				if (pendingTracks.length === 0) return;
 
@@ -185,7 +190,8 @@ export async function embedTracksBatch(
 								embedding_input = ${input.text},
 								analysis_snapshot = ${snapshotJson}::jsonb,
 								updated_at = NOW()
-							WHERE id = ${input.id}
+							WHERE user_id = ${userId}
+							  AND id = ${input.id}
 							  AND embedding IS NULL
 						`);
 					}),
@@ -359,7 +365,8 @@ export async function embedTrackIds(
 								embedding_input = ${input.text},
 								analysis_snapshot = ${snapshotJson}::jsonb,
 								updated_at = NOW()
-							WHERE id = ${input.id}
+							WHERE user_id = ${userId}
+							  AND id = ${input.id}
 							  AND embedding IS NULL
 						`);
 					}),
