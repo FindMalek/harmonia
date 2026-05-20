@@ -49,6 +49,7 @@ pnpm db:reset         # truncate user-data tables (auth + genre_domain preserved
 pnpm db:nuke          # Docker volume wipe + db:push (local Postgres on 5433)
 
 pnpm trigger:dev      # start Trigger.dev worker alone
+pnpm deps:sync        # update all deps to latest + syncpack fix
 pnpm check-types      # tsc --noEmit across all packages
 pnpm check            # Biome check + fix
 pnpm lint             # Biome lint + fix

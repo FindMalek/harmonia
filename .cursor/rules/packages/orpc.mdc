@@ -40,7 +40,7 @@ src/routers/
 ## Client Usage
 
 ```typescript
-import { orpc } from "@/lib/orpc";
+import { orpc } from "@/shared/api/orpc";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 const { data } = useQuery(orpc.playlists.list.queryOptions());

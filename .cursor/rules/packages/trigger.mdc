@@ -1,5 +1,5 @@
 ---
-description: Trigger.dev v4 task patterns, stage structure, and pipeline orchestration
+description: Trigger.dev v3 task patterns, stage structure, and pipeline orchestration
 globs:
   - "**/trigger/**"
   - "apps/api/trigger.config.ts"
