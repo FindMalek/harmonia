@@ -15,3 +15,5 @@ export const CLUSTER_MIN_SIZE = 20;
 export const CLUSTER_MAX_SIZE = 80;
 
 export const TRACK_MATCH_SIMILARITY_THRESHOLD = 0.7;
+
+export const GROQ_RATE_LIMIT_FALLBACK_DELAY_MS = 45_000;

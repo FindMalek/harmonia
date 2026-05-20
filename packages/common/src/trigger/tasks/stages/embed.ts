@@ -14,7 +14,7 @@ import {
 import {
 	EMBED_FANOUT_CHUNK_SIZE,
 	EMBED_WORKER_QUEUE_CONCURRENCY,
-} from "../../constants";
+} from "../../../constants";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const embedWorkerQueue = queue({
