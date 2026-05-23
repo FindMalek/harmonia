@@ -21,25 +21,21 @@ const MARKETING_TEMPLATES = new Set<EmailTemplateKey>([
 const FEEDBACK_TEMPLATES = new Set<EmailTemplateKey>(["feedback_3day"]);
 
 export async function ensureUserEmailPreferences(userId: string) {
-	const [existing] = await db
+	await db
+		.insert(userEmailPreferences)
+		.values({ userId })
+		.onConflictDoNothing({ target: userEmailPreferences.userId });
+
+	const [prefs] = await db
 		.select()
 		.from(userEmailPreferences)
 		.where(eq(userEmailPreferences.userId, userId));
 
-	if (existing) {
-		return existing;
+	if (!prefs) {
+		throw new Error("Failed to load or initialize user email preferences");
 	}
 
-	const [created] = await db
-		.insert(userEmailPreferences)
-		.values({ userId })
-		.returning();
-
-	if (!created) {
-		throw new Error("Failed to initialize user email preferences");
-	}
-
-	return created;
+	return prefs;
 }
 
 export async function evaluateEmailPolicy({
@@ -87,22 +83,20 @@ export async function upsertEmailSuppression({
 	source?: string;
 }) {
 	const normalizedEmail = email.toLowerCase();
-	const [existing] = await db
-		.select({ id: emailSuppression.id })
-		.from(emailSuppression)
-		.where(eq(emailSuppression.email, normalizedEmail));
-
-	if (existing) {
-		await db
-			.update(emailSuppression)
-			.set({ reason, source, suppressedAt: new Date() })
-			.where(eq(emailSuppression.id, existing.id));
-		return;
-	}
-
-	await db.insert(emailSuppression).values({
-		email: normalizedEmail,
-		reason,
-		source,
-	});
+	await db
+		.insert(emailSuppression)
+		.values({
+			email: normalizedEmail,
+			reason,
+			source,
+			suppressedAt: new Date(),
+		})
+		.onConflictDoUpdate({
+			target: emailSuppression.email,
+			set: {
+				reason,
+				source,
+				suppressedAt: new Date(),
+			},
+		});
 }

@@ -46,7 +46,11 @@ export const emailPreferencesRouter = {
 				...(input.feedbackEnabled !== undefined && {
 					feedbackEnabled: input.feedbackEnabled,
 				}),
-				...(input.marketingEnabled === false && { unsubscribedAt: new Date() }),
+				...(input.marketingEnabled === false
+					? { unsubscribedAt: new Date() }
+					: input.marketingEnabled === true
+						? { unsubscribedAt: null }
+						: {}),
 			};
 
 			const [updated] = await db
