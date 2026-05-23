@@ -28,6 +28,14 @@ src/
 - Each stage calls `onProgress` frequently so the dashboard progress bar updates live
 - `updateStageProgress` uses JSONB `||` merge — safe for concurrent stages
 
+## Service Safety Rules
+
+- No inline raw SQL snippets in `@harmonia/common` services.
+- Use typed Drizzle predicates/helpers exclusively for queries and mutations.
+- If a DB operation seems to require raw SQL, redesign the implementation so it stays typed and schema-aware.
+- For serialized DB string fields (for example `artistNames`), use a shared safe parser utility instead of inline `JSON.parse` calls.
+- After schema changes, audit service queries for stale column references before merging.
+
 ## LLM Calls
 
 All LLM calls use `@ai-sdk/groq` via `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.

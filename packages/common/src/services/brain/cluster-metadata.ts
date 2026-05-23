@@ -16,6 +16,7 @@ import pLimit from "p-limit";
 import pRetry from "p-retry";
 
 import { clusterMetadataSchema } from "@harmonia/common/schemas";
+import { parseJsonStringArray } from "../shared/parse-json-string-array";
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
 	if (!env.HARMONIA_GROQ_API_KEY) {
@@ -74,7 +75,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 				const dominantEnergy = topN(energyLevels, 1)[0] ?? "medium";
 
 				const sampleTracks = trackRows.slice(0, 10).map((t) => {
-					const artists = JSON.parse(t.artistNames) as string[];
+					const artists = parseJsonStringArray(t.artistNames);
 					return `${t.name} by ${artists.join(", ")}`;
 				});
 

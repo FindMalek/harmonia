@@ -47,12 +47,17 @@ const tracks = await db.select().from(track).where(eq(track.userId, userId));
 // Insert + return
 const [row] = await db.insert(myTable).values({ ... }).returning({ id: myTable.id });
 
-// JSONB merge (concurrent-safe progress updates)
-import { sql } from "drizzle-orm";
-await db.update(pipelineRun).set({
-  progress: sql`COALESCE(progress, '{}'::jsonb) || ${JSON.stringify({ embed: p })}::jsonb`,
-}).where(eq(pipelineRun.id, runId));
+// Progress updates: use existing typed service helpers, do not inline SQL snippets
+await updateStageProgress(runId, "embed", { embedded: 10, total: 100, pending: 90 });
 ```
+
+## Raw SQL and Parsing Safety
+
+- No inline raw SQL snippets in app/service/router code.
+- Use Drizzle query builder and typed helpers only (`eq`, `and`, `or`, `isNull`, `isNotNull`, `count`, `inArray`, `ilike`, etc).
+- If a required DB operation is not representable through typed Drizzle APIs, stop and refactor the approach so the final implementation remains typed and schema-aware.
+- Never `JSON.parse` DB string columns inline in service code. Use a shared safe parser utility that validates shape and falls back safely.
+- After schema refactors (renamed/dropped columns), run a repository audit for stale column references before merge.
 
 ## Adding a DB Table
 

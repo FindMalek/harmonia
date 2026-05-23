@@ -14,6 +14,7 @@ import {
 	EMBEDDING_MODEL,
 } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
+import { parseJsonStringArray } from "../shared/parse-json-string-array";
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{
@@ -77,9 +78,7 @@ export async function embedTracksBatch(
 				);
 
 				const inputs = pendingTracks.map((t) => {
-					const artistNames: string[] = t.artistNames
-						? JSON.parse(t.artistNames)
-						: [];
+					const artistNames = parseJsonStringArray(t.artistNames);
 					const tags = getLlmTags(t.llmTags);
 
 					const parts = [
@@ -185,8 +184,7 @@ export async function embedTracksBatch(
 								embedding_input = ${input.text},
 								analysis_snapshot = ${snapshotJson}::jsonb,
 								updated_at = NOW()
-							WHERE user_id = ${userId}
-							  AND id = ${input.id}
+							WHERE id = ${input.id}
 							  AND embedding IS NULL
 						`);
 					}),
@@ -253,9 +251,7 @@ export async function embedTrackIds(
 				if (pendingTracks.length === 0) return;
 
 				const inputs = pendingTracks.map((t) => {
-					const artistNames: string[] = t.artistNames
-						? JSON.parse(t.artistNames)
-						: [];
+					const artistNames = parseJsonStringArray(t.artistNames);
 					const tags = getLlmTags(t.llmTags);
 
 					const parts = [
@@ -360,8 +356,7 @@ export async function embedTrackIds(
 								embedding_input = ${input.text},
 								analysis_snapshot = ${snapshotJson}::jsonb,
 								updated_at = NOW()
-							WHERE user_id = ${userId}
-							  AND id = ${input.id}
+							WHERE id = ${input.id}
 							  AND embedding IS NULL
 						`);
 					}),
