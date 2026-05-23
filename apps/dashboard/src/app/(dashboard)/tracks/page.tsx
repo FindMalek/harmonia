@@ -270,25 +270,21 @@ function TrackDetail({
 								<strong>Energy:</strong> {String(tags.energyLevel)}
 							</p>
 						)}
-						{Array.isArray(tags.themes) &&
-							tags.themes.length > 0 && (
-								<p>
-									<strong>Themes:</strong>{" "}
-									{tags.themes?.join(", ")}
-								</p>
-							)}
+						{Array.isArray(tags.themes) && tags.themes.length > 0 && (
+							<p>
+								<strong>Themes:</strong> {tags.themes?.join(", ")}
+							</p>
+						)}
 						{Array.isArray(tags.vibe) && tags.vibe.length > 0 && (
 							<p>
 								<strong>Vibe:</strong> {tags.vibe?.join(", ")}
 							</p>
 						)}
-						{Array.isArray(tags.topics) &&
-							tags.topics.length > 0 && (
-								<p>
-									<strong>Topics:</strong>{" "}
-									{tags.topics?.join(", ")}
-								</p>
-							)}
+						{Array.isArray(tags.topics) && tags.topics.length > 0 && (
+							<p>
+								<strong>Topics:</strong> {tags.topics?.join(", ")}
+							</p>
+						)}
 						{tags.vocalType != null && (
 							<p>
 								<strong>Vocal:</strong> {String(tags.vocalType)}
@@ -376,4 +372,3 @@ function StatusBadge({ status, type }: { status: string; type: "lyrics" }) {
 		</Badge>
 	);
 }
-
