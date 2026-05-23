@@ -1,3 +1,4 @@
+import { baseEnv } from "@harmonia/env/base";
 import { trace } from "@opentelemetry/api";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import {
@@ -74,6 +75,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 	}
 
 	const samplingRate = config.samplingRate ?? 1.0;
+	// standard Node.js var, not in @harmonia/env
 	const environment =
 		config.environment ?? process.env.NODE_ENV ?? "development";
 
@@ -84,6 +86,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 	const resource = resourceFromAttributes(
 		{
 			[ATTR_SERVICE_NAME]: config.serviceName,
+			// standard Node.js var, not in @harmonia/env
 			[ATTR_SERVICE_VERSION]: process.env.npm_package_version ?? "0.1.0",
 			"deployment.environment.name": environment,
 		},
@@ -104,6 +107,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 	// Choose span processor based on config
 	// SimpleSpanProcessor: immediate export (good for serverless/debugging)
 	// BatchSpanProcessor: batched export (better performance, default)
+	// standard OTEL var, not in @harmonia/env
 	const useSimpleProcessor =
 		config.useSimpleSpanProcessor ??
 		process.env.OTEL_USE_SIMPLE_PROCESSOR === "true";
@@ -149,7 +153,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 // For Vercel/serverless: Ensure spans are flushed before function termination
 if (
 	typeof process !== "undefined" &&
-	process.env.VERCEL &&
+	baseEnv.VERCEL &&
 	typeof process.on === "function"
 ) {
 	const flushOnExit = async () => {

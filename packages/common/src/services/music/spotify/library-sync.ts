@@ -4,14 +4,13 @@ import type {
 } from "@harmonia/common/schemas";
 import type { SpotifyPlaylistTrackItem } from "@harmonia/common/schemas";
 import type { SyncProgress } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
+import { conflictValue, db } from "@harmonia/db";
 import {
 	userPlaylistSnapshots,
 	userSpotifyLibraryStats,
 } from "@harmonia/db/schema/spotify";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { sql } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import {
@@ -277,7 +276,7 @@ export async function syncLibraryTracks(
 									userPlaylistSnapshots.playlistId,
 								],
 								set: {
-									snapshotId: sql`excluded.snapshot_id`,
+									snapshotId: conflictValue(userPlaylistSnapshots.snapshotId),
 									updatedAt: new Date(),
 								},
 							});
@@ -367,14 +366,14 @@ export async function syncLibraryTracks(
 			.onConflictDoUpdate({
 				target: track.id,
 				set: {
-					spotifyUri: sql`excluded.spotify_uri`,
-					name: sql`excluded.name`,
-					artistNames: sql`excluded.artist_names`,
-					albumName: sql`excluded.album_name`,
-					albumImageUrl: sql`excluded.album_image_url`,
-					durationMs: sql`excluded.duration_ms`,
-					spotifyGenres: sql`excluded.spotify_genres`,
-					updatedAt: sql`excluded.updated_at`,
+					spotifyUri: conflictValue(track.spotifyUri),
+					name: conflictValue(track.name),
+					artistNames: conflictValue(track.artistNames),
+					albumName: conflictValue(track.albumName),
+					albumImageUrl: conflictValue(track.albumImageUrl),
+					durationMs: conflictValue(track.durationMs),
+					spotifyGenres: conflictValue(track.spotifyGenres),
+					updatedAt: conflictValue(track.updatedAt),
 				},
 			});
 	}

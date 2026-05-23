@@ -1,32 +1,26 @@
+import { dashboardEnv } from "@harmonia/env/presets/dashboard";
 import { registerTracing } from "@harmonia/tracing";
 
 export function register() {
-	if (process.env.HARMONIA_OTEL_SERVICE_NAME) {
+	if (dashboardEnv.HARMONIA_OTEL_SERVICE_NAME) {
 		registerTracing({
 			serviceName:
-				process.env.HARMONIA_OTEL_SERVICE_NAME ?? "harmonia-dashboard",
-			samplingRate: process.env.HARMONIA_OTEL_SAMPLING_RATE
-				? Number.parseFloat(process.env.HARMONIA_OTEL_SAMPLING_RATE)
-				: undefined,
-			enabled:
-				process.env.HARMONIA_OTEL_ENABLED === "true" ||
-				process.env.HARMONIA_OTEL_ENABLED === "1",
+				dashboardEnv.HARMONIA_OTEL_SERVICE_NAME ?? "harmonia-dashboard",
+			samplingRate: dashboardEnv.HARMONIA_OTEL_SAMPLING_RATE,
+			enabled: dashboardEnv.HARMONIA_OTEL_ENABLED,
 			otlp:
-				process.env.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT ||
-				process.env.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+				dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT ||
+				dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
 					? {
-							endpoint: process.env.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT,
+							endpoint: dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT,
 							tracesEndpoint:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+								dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
 							metricsEndpoint:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
+								dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
 							logsEndpoint:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
-							headers: process.env.HARMONIA_OTEL_EXPORTER_OTLP_HEADERS,
-							compression:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_COMPRESSION === "gzip"
-									? "gzip"
-									: undefined,
+								dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
+							headers: dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_HEADERS,
+							compression: dashboardEnv.HARMONIA_OTEL_EXPORTER_OTLP_COMPRESSION,
 						}
 					: undefined,
 		});

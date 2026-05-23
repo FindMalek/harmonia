@@ -52,6 +52,9 @@
 		"./utils/origin": {
 			"default": "./src/utils/origin.ts"
 		},
+		"./utils/parse-json-string-array": {
+			"default": "./src/utils/parse-json-string-array.ts"
+		},
 		"./utils/routes": {
 			"default": "./src/utils/routes.ts"
 		},

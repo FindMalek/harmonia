@@ -3,6 +3,8 @@
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { useTracksController } from "@/shared/lib/tracks/controller.hook";
+import { getLlmTags } from "@harmonia/common/types";
+import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
 import {
 	Badge,
 	Button,
@@ -114,7 +116,7 @@ export default function TracksPage() {
 									<TracksPageTableSkeleton />
 								) : (
 									(data?.tracks.map((t) => {
-										const artists = safeParseArray(t.artistNames);
+										const artists = parseJsonStringArray(t.artistNames);
 										return (
 											<TableRow
 												key={t.id}
@@ -232,8 +234,8 @@ function TrackDetail({
 		clusterId: number | null;
 	};
 }) {
-	const artists = safeParseArray(track.artistNames);
-	const tags = (track.llmTags as Record<string, unknown>) ?? {};
+	const artists = parseJsonStringArray(track.artistNames);
+	const tags = getLlmTags(track.llmTags);
 	const [showLyrics, setShowLyrics] = useState(false);
 
 	return (
@@ -269,25 +271,21 @@ function TrackDetail({
 								<strong>Energy:</strong> {String(tags.energyLevel)}
 							</p>
 						)}
-						{Array.isArray(tags.themes) &&
-							(tags.themes as string[]).length > 0 && (
-								<p>
-									<strong>Themes:</strong>{" "}
-									{(tags.themes as string[]).join(", ")}
-								</p>
-							)}
-						{Array.isArray(tags.vibe) && (tags.vibe as string[]).length > 0 && (
+						{Array.isArray(tags.themes) && tags.themes.length > 0 && (
 							<p>
-								<strong>Vibe:</strong> {(tags.vibe as string[]).join(", ")}
+								<strong>Themes:</strong> {tags.themes?.join(", ")}
 							</p>
 						)}
-						{Array.isArray(tags.topics) &&
-							(tags.topics as string[]).length > 0 && (
-								<p>
-									<strong>Topics:</strong>{" "}
-									{(tags.topics as string[]).join(", ")}
-								</p>
-							)}
+						{Array.isArray(tags.vibe) && tags.vibe.length > 0 && (
+							<p>
+								<strong>Vibe:</strong> {tags.vibe?.join(", ")}
+							</p>
+						)}
+						{Array.isArray(tags.topics) && tags.topics.length > 0 && (
+							<p>
+								<strong>Topics:</strong> {tags.topics?.join(", ")}
+							</p>
+						)}
 						{tags.vocalType != null && (
 							<p>
 								<strong>Vocal:</strong> {String(tags.vocalType)}
@@ -374,13 +372,4 @@ function StatusBadge({ status, type }: { status: string; type: "lyrics" }) {
 			{type === "lyrics" ? `Lyrics: ${status}` : status}
 		</Badge>
 	);
-}
-
-function safeParseArray(json: string): string[] {
-	try {
-		const parsed = JSON.parse(json);
-		return Array.isArray(parsed) ? parsed : [];
-	} catch {
-		return [];
-	}
 }

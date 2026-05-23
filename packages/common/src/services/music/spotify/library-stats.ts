@@ -2,12 +2,12 @@ import type {
 	SpotifyLibraryStats,
 	SpotifyPlaylistTrackItem,
 } from "@harmonia/common/schemas";
-import { db } from "@harmonia/db";
+import { conflictValue, db } from "@harmonia/db";
 import {
 	userPlaylistSnapshots,
 	userSpotifyLibraryStats,
 } from "@harmonia/db/schema/spotify";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import {
@@ -107,7 +107,7 @@ export async function refreshSpotifyLibraryStats(
 								userPlaylistSnapshots.playlistId,
 							],
 							set: {
-								snapshotId: sql`excluded.snapshot_id`,
+								snapshotId: conflictValue(userPlaylistSnapshots.snapshotId),
 								updatedAt: new Date(),
 							},
 						});
