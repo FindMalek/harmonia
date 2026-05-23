@@ -49,5 +49,10 @@
 		"turbo": "^2.9.14",
 		"typescript": "catalog:"
 	},
-	"packageManager": "pnpm@10.26.1"
+	"packageManager": "pnpm@10.26.1",
+	"pnpm": {
+		"overrides": {
+			"@opentelemetry/api": "^1.9.1"
+		}
+	}
 }

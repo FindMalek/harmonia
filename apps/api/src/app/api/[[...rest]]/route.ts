@@ -65,7 +65,8 @@ function maybeDevErrorResponse(
 	corsHeaders: Record<string, string>,
 ): Response {
 	if (
-		apiEnv.NEXT_PUBLIC_HARMONIA_NODE_ENV !== "development" ||
+		// standard Node.js runtime var, not in @harmonia/env — Next.js sets this to "development"
+		process.env.NODE_ENV !== "development" ||
 		response.status !== 500 ||
 		!lastError
 	) {
