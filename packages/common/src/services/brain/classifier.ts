@@ -16,6 +16,7 @@ import {
 	CLASSIFICATION_LLM_MODEL,
 } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
+import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 import { classifyTracksWithLLM } from "./llml";
 
 type ClassifyDeltaCallback = (deltaClassified: number) => Promise<void>;
@@ -80,7 +81,7 @@ export async function classifyTracksBatch(
 					(t) => ({
 						id: t.id,
 						name: t.name,
-						artistNames: t.artistNames ? JSON.parse(t.artistNames) : [],
+						artistNames: parseJsonStringArray(t.artistNames),
 						albumName: t.albumName,
 						durationMs: t.durationMs,
 						spotifyGenres: t.spotifyGenres ?? null,
@@ -238,7 +239,7 @@ export async function classifyTrackIds(
 					(t) => ({
 						id: t.id,
 						name: t.name,
-						artistNames: t.artistNames ? JSON.parse(t.artistNames) : [],
+						artistNames: parseJsonStringArray(t.artistNames),
 						albumName: t.albumName,
 						durationMs: t.durationMs,
 						spotifyGenres: t.spotifyGenres ?? null,

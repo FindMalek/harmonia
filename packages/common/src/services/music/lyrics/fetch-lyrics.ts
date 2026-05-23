@@ -10,6 +10,7 @@ import {
 	LYRICS_CONCURRENCY,
 } from "../../../constants/lyrics";
 import { chunk } from "../../../trigger/utils/chunk";
+import { parseJsonStringArray } from "../../../utils/parse-json-string-array";
 import { getLyricsFromLRCLib } from "./lrclib-client";
 
 type LyricsDeltaCallback = (delta: {
@@ -72,9 +73,7 @@ export async function fetchLyricsForPendingTracks(
 
 		const tasks = pendingTracks.map((t) =>
 			limit(async () => {
-				const artistNames: string[] = t.artistNames
-					? JSON.parse(t.artistNames)
-					: [];
+				const artistNames = parseJsonStringArray(t.artistNames);
 				const primaryArtist = artistNames[0] ?? "";
 
 				if (!t.name || !primaryArtist) {
@@ -228,9 +227,7 @@ export async function fetchLyricsForTrackIds(
 
 		const tasks = pendingTracks.map((t) =>
 			limit(async () => {
-				const artistNames: string[] = t.artistNames
-					? JSON.parse(t.artistNames)
-					: [];
+				const artistNames = parseJsonStringArray(t.artistNames);
 				const primaryArtist = artistNames[0] ?? "";
 
 				if (!t.name || !primaryArtist) {

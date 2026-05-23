@@ -22,6 +22,7 @@ import pLimit from "p-limit";
 import pRetry from "p-retry";
 
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
+import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 
 export async function generatePlaylists(
 	userId: string,
@@ -74,7 +75,7 @@ export async function generatePlaylists(
 				const meta = c.metadata as ClusterMeta | null;
 
 				const sampleTracks = trackRows.slice(0, 8).map((t) => {
-					const artists = JSON.parse(t.artistNames) as string[];
+					const artists = parseJsonStringArray(t.artistNames);
 					return `${t.name} by ${artists.join(", ")}`;
 				});
 

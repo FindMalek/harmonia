@@ -18,7 +18,7 @@ import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { eventIterator } from "@orpc/server";
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
@@ -186,7 +186,7 @@ export const pipelineRouter = {
 				.where(
 					and(
 						inArray(track.id, userTrackIds),
-						sql`(${track.lyricsStatus} = 'pending' OR ${track.lyricsStatus} IS NULL)`,
+						or(eq(track.lyricsStatus, "pending"), isNull(track.lyricsStatus)),
 					),
 				);
 

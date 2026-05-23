@@ -48,7 +48,7 @@ export function DashboardLibraryAnalysis() {
 	if (runs.isLoading || !hasCompletedRun) return null;
 
 	return (
-		<div className="space-y-4 ">
+		<div className="space-y-4">
 			<h3 className="pb-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 				Library Analysis
 			</h3>

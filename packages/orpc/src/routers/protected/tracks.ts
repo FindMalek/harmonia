@@ -7,7 +7,17 @@ import {
 import { db } from "@harmonia/db";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
 import { track, userTracks } from "@harmonia/db/schema/track";
-import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import {
+	and,
+	count,
+	desc,
+	eq,
+	ilike,
+	inArray,
+	isNotNull,
+	isNull,
+	or,
+} from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../procedures";
 
@@ -39,15 +49,15 @@ export const tracksRouter = {
 			}
 
 			if (input.classified === true) {
-				conditions.push(sql`${track.llmClassifiedAt} IS NOT NULL`);
+				conditions.push(isNotNull(track.llmClassifiedAt));
 			} else if (input.classified === false) {
-				conditions.push(sql`${track.llmClassifiedAt} IS NULL`);
+				conditions.push(isNull(track.llmClassifiedAt));
 			}
 
 			if (input.embedded === true) {
-				conditions.push(sql`${track.embeddingGeneratedAt} IS NOT NULL`);
+				conditions.push(isNotNull(track.embeddingGeneratedAt));
 			} else if (input.embedded === false) {
-				conditions.push(sql`${track.embeddingGeneratedAt} IS NULL`);
+				conditions.push(isNull(track.embeddingGeneratedAt));
 			}
 
 			const where = and(...conditions);
