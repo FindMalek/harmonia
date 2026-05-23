@@ -1,6 +1,7 @@
 import { getCorsHeaders } from "@/lib/cors";
 import { getErrorMessage, safeErrorPayload } from "@/lib/payload";
 import { applyCors, jsonResponse } from "@/lib/response";
+import { apiEnv } from "@harmonia/env/presets/api";
 import { logger } from "@harmonia/logger";
 import { type Context, appRouter, createContext } from "@harmonia/orpc";
 import { flushTelemetry } from "@harmonia/tracing";
@@ -64,7 +65,7 @@ function maybeDevErrorResponse(
 	corsHeaders: Record<string, string>,
 ): Response {
 	if (
-		process.env.NODE_ENV !== "development" ||
+		apiEnv.NEXT_PUBLIC_HARMONIA_NODE_ENV !== "development" ||
 		response.status !== 500 ||
 		!lastError
 	) {
@@ -112,7 +113,7 @@ async function handleRequest(req: NextRequest) {
 			headers: corsHeaders,
 		});
 	} finally {
-		if (process.env.VERCEL) {
+		if (apiEnv.VERCEL) {
 			try {
 				await flushTelemetry();
 			} catch {

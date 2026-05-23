@@ -4,6 +4,7 @@ import { drizzle as neonDrizzle } from "drizzle-orm/neon-serverless";
 import { drizzle as pgDrizzle } from "drizzle-orm/node-postgres";
 import { Pool as PgPool } from "pg";
 import ws from "ws";
+import { type Column, type SQL, sql } from "drizzle-orm";
 
 import * as schema from "./schema";
 
@@ -22,3 +23,8 @@ function createDb() {
 }
 
 export const db = createDb();
+
+// Use in onConflictDoUpdate set blocks instead of inline sql`excluded.<col>` snippets.
+export function conflictValue<T>(col: Column): SQL<T> {
+	return sql<T>`excluded.${sql.identifier(col.name)}`;
+}

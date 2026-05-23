@@ -30,8 +30,8 @@ export const myTable = pgTable("my_table", {
 ## Query Patterns
 
 ```typescript
-import { db } from "@harmonia/db";
-import { eq, and, isNull, inArray, sql } from "drizzle-orm";
+import { conflictValue, db } from "@harmonia/db";
+import { eq, and, isNull, inArray } from "drizzle-orm";
 
 // Select
 const rows = await db.select().from(track).where(eq(track.userId, userId));
@@ -39,11 +39,27 @@ const rows = await db.select().from(track).where(eq(track.userId, userId));
 // Insert + return
 const [row] = await db.insert(myTable).values({...}).returning({ id: myTable.id });
 
+// Upsert — use conflictValue instead of inline sql`excluded.<col>` snippets
+await db.insert(track).values(batch).onConflictDoUpdate({
+  target: track.id,
+  set: {
+    name: conflictValue(track.name),
+    updatedAt: conflictValue(track.updatedAt),
+  },
+});
+
 // JSONB merge (concurrent-safe, never overwrites sibling keys)
+import { sql } from "drizzle-orm";
 await db.update(pipelineRun).set({
   progress: sql`COALESCE(progress, '{}'::jsonb) || ${JSON.stringify({ stage: val })}::jsonb`,
 }).where(eq(pipelineRun.id, runId));
 ```
+
+### `conflictValue(col)` helper
+
+`conflictValue<T>(col: Column): SQL<T>` — exported from `@harmonia/db`.
+
+Wraps the PostgreSQL `excluded.<col>` expression used in `ON CONFLICT DO UPDATE` set blocks. Use it instead of `sql\`excluded.<snake_col>\`` to keep conflict resolution typed and refactor-safe.
 
 ## DB Client
 

@@ -56,8 +56,8 @@ export function createORPCClientUtils(
 		},
 	});
 
-	const client = createORPCClient(link) as AppRouterClient;
-	const publicClient = client as unknown as PublicRouterClient;
+	const client = createORPCClient<AppRouterClient>(link);
+	const publicClient = createORPCClient<PublicRouterClient>(link);
 
 	return {
 		link,

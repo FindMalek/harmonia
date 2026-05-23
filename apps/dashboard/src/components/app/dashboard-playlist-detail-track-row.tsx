@@ -1,17 +1,9 @@
 import type { PlaylistGetByIdOutput } from "@harmonia/common/schemas";
+import { parseJsonStringArray } from "@harmonia/common";
 import Image from "next/image";
 
 export type DashboardPlaylistDetailTrackRowTrack =
 	PlaylistGetByIdOutput["tracks"][number];
-
-function safeParseArtistNames(json: string): string[] {
-	try {
-		const parsed = JSON.parse(json);
-		return Array.isArray(parsed) ? parsed : [];
-	} catch {
-		return [];
-	}
-}
 
 export function DashboardPlaylistDetailTrackRow({
 	track,
@@ -20,7 +12,7 @@ export function DashboardPlaylistDetailTrackRow({
 	track: DashboardPlaylistDetailTrackRowTrack;
 	index: number;
 }) {
-	const artists = safeParseArtistNames(track.artistNames);
+	const artists = parseJsonStringArray(track.artistNames);
 
 	return (
 		<div className="flex items-center gap-4 border-b py-4 last:border-b-0">

@@ -1,31 +1,24 @@
+import { apiEnv } from "@harmonia/env/presets/api";
 import { registerTracing } from "@harmonia/tracing";
 
 export function register() {
-	if (process.env.HARMONIA_OTEL_SERVICE_NAME) {
+	if (apiEnv.HARMONIA_OTEL_SERVICE_NAME) {
 		registerTracing({
-			serviceName: process.env.HARMONIA_OTEL_SERVICE_NAME ?? "harmonia-api",
-			samplingRate: process.env.HARMONIA_OTEL_SAMPLING_RATE
-				? Number.parseFloat(process.env.HARMONIA_OTEL_SAMPLING_RATE)
-				: undefined,
-			enabled:
-				process.env.HARMONIA_OTEL_ENABLED === "true" ||
-				process.env.HARMONIA_OTEL_ENABLED === "1",
+			serviceName: apiEnv.HARMONIA_OTEL_SERVICE_NAME ?? "harmonia-api",
+			samplingRate: apiEnv.HARMONIA_OTEL_SAMPLING_RATE,
+			enabled: apiEnv.HARMONIA_OTEL_ENABLED,
 			otlp:
-				process.env.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT ||
-				process.env.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+				apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT ||
+				apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
 					? {
-							endpoint: process.env.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT,
+							endpoint: apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_ENDPOINT,
 							tracesEndpoint:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+								apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
 							metricsEndpoint:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
-							logsEndpoint:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
-							headers: process.env.HARMONIA_OTEL_EXPORTER_OTLP_HEADERS,
-							compression:
-								process.env.HARMONIA_OTEL_EXPORTER_OTLP_COMPRESSION === "gzip"
-									? "gzip"
-									: undefined,
+								apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
+							logsEndpoint: apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
+							headers: apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_HEADERS,
+							compression: apiEnv.HARMONIA_OTEL_EXPORTER_OTLP_COMPRESSION,
 						}
 					: undefined,
 		});
