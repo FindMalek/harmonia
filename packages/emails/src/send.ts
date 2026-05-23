@@ -1,0 +1,213 @@
+import { render } from "@react-email/render";
+import { Resend } from "resend";
+import { z } from "zod";
+import {
+	Feedback3DayEmail,
+	type Feedback3DayEmailProps,
+} from "../emails/feedback-3day";
+import {
+	LoginAlertEmail,
+	type LoginAlertEmailProps,
+} from "../emails/login-alert";
+import {
+	MarketingFeatureUpdateEmail,
+	type MarketingFeatureUpdateEmailProps,
+} from "../emails/marketing-feature-update";
+import {
+	OrganizeCompleteEmail,
+	type OrganizeCompleteEmailProps,
+} from "../emails/organize-complete";
+import { WelcomeEmail, type WelcomeEmailProps } from "../emails/welcome";
+
+const sendEmailConfigSchema = z.object({
+	apiKey: z.string().min(1),
+	from: z.string().min(1),
+	replyTo: z.string().min(1).optional(),
+});
+
+type SendEmailConfig = z.infer<typeof sendEmailConfigSchema>;
+
+type SendOrganizeCompleteInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: OrganizeCompleteEmailProps;
+	idempotencyKey: string;
+};
+
+type SendWelcomeInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: WelcomeEmailProps;
+	idempotencyKey: string;
+};
+
+type SendLoginAlertInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: LoginAlertEmailProps;
+	idempotencyKey: string;
+};
+
+type SendFeedbackInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: Feedback3DayEmailProps;
+	idempotencyKey: string;
+};
+
+type SendMarketingInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: MarketingFeatureUpdateEmailProps;
+	idempotencyKey: string;
+	listUnsubscribeUrl?: string;
+};
+
+type SendResult = { ok: true; emailId: string } | { ok: false; error: string };
+
+function resolveConfig(config: SendEmailConfig): SendEmailConfig {
+	return sendEmailConfigSchema.parse(config);
+}
+
+function createResend(config: SendEmailConfig) {
+	return new Resend(config.apiKey);
+}
+
+export async function sendOrganizeCompleteEmail(
+	input: SendOrganizeCompleteInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(OrganizeCompleteEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Your playlists are ready",
+			html,
+			tags: [{ name: "category", value: "organize_complete" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendWelcomeEmail(
+	input: SendWelcomeInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(WelcomeEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Welcome to Harmonia",
+			html,
+			tags: [{ name: "category", value: "welcome" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendLoginAlertEmail(
+	input: SendLoginAlertInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(LoginAlertEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "New Harmonia login",
+			html,
+			tags: [{ name: "category", value: "login_alert" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendFeedback3DayEmail(
+	input: SendFeedbackInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(Feedback3DayEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "How is Harmonia working for you?",
+			html,
+			tags: [{ name: "category", value: "feedback_3day" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendMarketingFeatureUpdateEmail(
+	input: SendMarketingInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(MarketingFeatureUpdateEmail(input.props));
+
+	const headers =
+		input.listUnsubscribeUrl === undefined
+			? undefined
+			: {
+					"List-Unsubscribe": `<${input.listUnsubscribeUrl}>`,
+					"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+				};
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: `New in Harmonia: ${input.props.featureTitle}`,
+			html,
+			headers,
+			tags: [{ name: "category", value: "marketing_feature_update" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}

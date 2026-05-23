@@ -5,6 +5,7 @@ export const queryKeys = {
 	playlists: () => orpc.playlists.key(),
 	tracks: () => orpc.tracks.key(),
 	pipeline: () => orpc.pipeline.key(),
+	emailPreferences: () => orpc.emailPreferences.key(),
 	hasSpotifyLinked: () => orpc.hasSpotifyLinked.key(),
 	spotifyLibraryStats: () => orpc.spotify.libraryStats.key(),
 } as const;

@@ -11,10 +11,12 @@
 		"./server": "./src/server.ts",
 		"./web": "./src/web.ts",
 		"./dashboard": "./src/dashboard.ts",
+		"./email": "./src/email.ts",
 		"./base": "./src/base.ts",
 		"./presets": "./src/presets/index.ts",
 		"./presets/api": "./src/presets/api.ts",
 		"./presets/dashboard": "./src/presets/dashboard.ts",
+		"./presets/email": "./src/presets/email.ts",
 		"./presets/web": "./src/presets/web.ts",
 		"./presets/db": "./src/presets/db.ts"
 	},

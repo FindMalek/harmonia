@@ -16,6 +16,7 @@
 		"@harmonia/common": "workspace:*",
 		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
+		"@harmonia/logger": "workspace:*",
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
 		"zod": "catalog:"

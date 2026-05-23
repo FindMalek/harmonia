@@ -1,0 +1,20 @@
+{
+	"name": "email",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "node ../../scripts/with-root-env.mjs email dev --dir ../../packages/emails/emails --port 3004",
+		"build": "node ../../scripts/with-root-env.mjs email build --dir ../../packages/emails/emails",
+		"start": "node ../../scripts/with-root-env.mjs email start --dir ../../packages/emails/emails --port 3004"
+	},
+	"dependencies": {
+		"@harmonia/emails": "workspace:*",
+		"react-email": "catalog:"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"@react-email/preview-server": "4.3.2",
+		"typescript": "catalog:"
+	}
+}

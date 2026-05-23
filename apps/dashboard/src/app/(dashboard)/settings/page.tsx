@@ -1,5 +1,8 @@
 "use client";
 
+import { Badge, Button } from "@harmonia/ui";
+import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from "react";
 import {
 	DashboardSettingsNavRow,
 	DashboardSettingsRow,
@@ -7,9 +10,6 @@ import {
 	DashboardSettingsSkeleton,
 } from "@/components/app/dashboard-settings-section";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
-import { Badge, Button } from "@harmonia/ui";
-import { formatDistanceToNow } from "date-fns";
-import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
 	const [mounted, setMounted] = useState(false);
@@ -19,6 +19,8 @@ export default function SettingsPage() {
 
 	const {
 		email,
+		emailPreferences,
+		emailPreferencesLoading,
 		spotifyLinked,
 		spotifyLoading,
 		lastSync,
@@ -26,6 +28,7 @@ export default function SettingsPage() {
 		resolvedTheme,
 		setTheme,
 		signOut,
+		updateEmailPreferences,
 	} = useSettingsController();
 
 	if (!mounted) {
@@ -92,6 +95,70 @@ export default function SettingsPage() {
 						</Badge>
 					}
 				/>
+				<DashboardSettingsRow
+					label="Transactional emails"
+					value={
+						<PreferenceButton
+							loading={emailPreferencesLoading}
+							enabled={emailPreferences?.transactionalEnabled ?? true}
+							onToggle={() =>
+								updateEmailPreferences.mutate({
+									transactionalEnabled: !(
+										emailPreferences?.transactionalEnabled ?? true
+									),
+								})
+							}
+						/>
+					}
+				/>
+				<DashboardSettingsRow
+					label="Product updates"
+					value={
+						<PreferenceButton
+							loading={emailPreferencesLoading}
+							enabled={emailPreferences?.productUpdatesEnabled ?? false}
+							onToggle={() =>
+								updateEmailPreferences.mutate({
+									productUpdatesEnabled: !(
+										emailPreferences?.productUpdatesEnabled ?? false
+									),
+								})
+							}
+						/>
+					}
+				/>
+				<DashboardSettingsRow
+					label="Feedback requests"
+					value={
+						<PreferenceButton
+							loading={emailPreferencesLoading}
+							enabled={emailPreferences?.feedbackEnabled ?? false}
+							onToggle={() =>
+								updateEmailPreferences.mutate({
+									feedbackEnabled: !(
+										emailPreferences?.feedbackEnabled ?? false
+									),
+								})
+							}
+						/>
+					}
+				/>
+				<DashboardSettingsRow
+					label="Marketing emails"
+					value={
+						<PreferenceButton
+							loading={emailPreferencesLoading}
+							enabled={emailPreferences?.marketingEnabled ?? false}
+							onToggle={() =>
+								updateEmailPreferences.mutate({
+									marketingEnabled: !(
+										emailPreferences?.marketingEnabled ?? false
+									),
+								})
+							}
+						/>
+					}
+				/>
 			</DashboardSettingsSection>
 
 			<Button
@@ -102,5 +169,27 @@ export default function SettingsPage() {
 				Sign out
 			</Button>
 		</div>
+	);
+}
+
+function PreferenceButton({
+	enabled,
+	loading,
+	onToggle,
+}: {
+	enabled: boolean;
+	loading: boolean;
+	onToggle: () => void;
+}) {
+	if (loading) return "...";
+
+	return (
+		<Button
+			variant={enabled ? "default" : "outline"}
+			size="sm"
+			onClick={onToggle}
+		>
+			{enabled ? "Enabled" : "Disabled"}
+		</Button>
 	);
 }
