@@ -119,6 +119,14 @@ export function MyComponent() {
 - No `toast.success()` on pipeline launch — the drawer opening is sufficient feedback
 - Always provide `onRetry` to `ErrorState` components
 
+## No Type Assertions
+
+Never use `as SomeType` or `as unknown as SomeType` casts. Rely on TypeScript's type narrowing (`if`, `instanceof`, type guards) or correct type annotations at the source.
+
+- If a third-party return type is wrong, fix the generic parameter or write a narrow type guard — never `as`.
+- If two types don't align structurally, fix the type definition rather than casting around it.
+- The only accepted `as` uses are temporary escape hatches for genuine pgvector / jsonb raw-SQL constraints, documented with an explicit comment explaining why narrowing is impossible.
+
 ## No Comments Rule
 
 No comments unless the WHY is non-obvious: a hidden constraint, a workaround for a specific bug, behaviour that would surprise a reader.
