@@ -10,6 +10,8 @@
 	},
 	"dependencies": {
 		"@harmonia/emails": "workspace:*",
+		"react": "catalog:",
+		"react-dom": "catalog:",
 		"react-email": "catalog:"
 	},
 	"devDependencies": {

@@ -7,7 +7,5 @@ export const emailsModule = {
 		HARMONIA_EMAIL_REPLY_TO: z.string().min(1).optional(),
 		HARMONIA_RESEND_WEBHOOK_SECRET: z.string().min(1).optional(),
 	},
-	client: {
-		NEXT_PUBLIC_HARMONIA_EMAIL_PREFERENCES_URL: z.url().optional(),
-	},
+	client: {},
 } as const;

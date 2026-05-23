@@ -1,3 +1,4 @@
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
 import { sendMarketingFeatureUpdateEmail } from "@harmonia/emails/send";
@@ -88,9 +89,7 @@ export async function sendMarketingFeatureUpdate({
 	if (!reservation.created)
 		return { ok: true, reason: "already_sent" as const };
 
-	const preferencesUrl =
-		env.NEXT_PUBLIC_HARMONIA_EMAIL_PREFERENCES_URL ??
-		`${getDashboardUrl()}/settings`;
+	const preferencesUrl = `${getDashboardUrl()}${DASHBOARD_ROUTES.settings.children.notifications.path}`;
 	const unsubscribeUrl = `${preferencesUrl}?unsubscribe=all`;
 
 	const result = await sendMarketingFeatureUpdateEmail({
@@ -102,7 +101,7 @@ export async function sendMarketingFeatureUpdate({
 			featureTitle,
 			featureSummary,
 			recipientName: userRow.name,
-			ctaUrl: `${getDashboardUrl()}/playlists`,
+			ctaUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
 			preferencesUrl,
 			unsubscribeUrl,
 		},

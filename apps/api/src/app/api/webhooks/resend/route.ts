@@ -5,6 +5,7 @@ import { apiEnv } from "@harmonia/env/presets/api";
 import { logger } from "@harmonia/logger";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 import { z } from "zod";
 
 const resendWebhookSchema = z.object({
@@ -21,16 +22,51 @@ const resendWebhookSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-	const secret = apiEnv.HARMONIA_RESEND_WEBHOOK_SECRET;
-	if (secret) {
-		const receivedSecret = req.headers.get("x-resend-signature");
-		if (!receivedSecret || receivedSecret !== secret) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+	const webhookSecret = apiEnv.HARMONIA_RESEND_WEBHOOK_SECRET;
+	if (!webhookSecret) {
+		logger.error(
+			"Missing HARMONIA_RESEND_WEBHOOK_SECRET for webhook verification",
+		);
+		return NextResponse.json(
+			{ error: "Webhook secret is not configured" },
+			{ status: 500 },
+		);
 	}
 
-	const json = await req.json();
-	const parsed = resendWebhookSchema.safeParse(json);
+	const payload = await req.text();
+	const id = req.headers.get("svix-id");
+	const timestamp = req.headers.get("svix-timestamp");
+	const signature = req.headers.get("svix-signature");
+
+	if (!id || !timestamp || !signature) {
+		return NextResponse.json(
+			{ error: "Missing svix headers" },
+			{ status: 400 },
+		);
+	}
+
+	const resend = new Resend(apiEnv.HARMONIA_RESEND_API_KEY ?? "");
+
+	let verifiedPayload: unknown;
+	try {
+		verifiedPayload = resend.webhooks.verify({
+			payload,
+			headers: {
+				id,
+				timestamp,
+				signature,
+			},
+			webhookSecret,
+		});
+	} catch (error) {
+		logger.warn({ error }, "Invalid Resend webhook signature");
+		return NextResponse.json(
+			{ error: "Invalid webhook signature" },
+			{ status: 401 },
+		);
+	}
+
+	const parsed = resendWebhookSchema.safeParse(verifiedPayload);
 	if (!parsed.success) {
 		return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 	}

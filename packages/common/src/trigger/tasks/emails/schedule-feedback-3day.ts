@@ -1,4 +1,4 @@
-import { task, wait } from "@trigger.dev/sdk/v3";
+import { task, wait } from "@trigger.dev/sdk";
 
 import { sendFeedback3DayEmailTask } from "./send-feedback-3day";
 

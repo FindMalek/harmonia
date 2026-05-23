@@ -1,3 +1,4 @@
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
 import {
@@ -116,7 +117,7 @@ export async function sendOrganizeCompleteNotification({
 		to: userRow.email,
 		idempotencyKey,
 		props: {
-				dashboardPlaylistsUrl: `${getDashboardUrl()}/playlists`,
+			dashboardPlaylistsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
 			recipientName: userRow.name,
 			playlistsCreated,
 			tracksOrganized,
@@ -301,7 +302,7 @@ export async function sendLoginAlertNotification({
 			loginAtIso,
 			ipAddress,
 			userAgent,
-			settingsUrl: `${getDashboardUrl()}/settings`,
+			settingsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.settings.children.notifications.path}`,
 		},
 	});
 
@@ -394,7 +395,7 @@ export async function sendFeedback3DayNotification({
 		idempotencyKey,
 		props: {
 			recipientName: userRow.name,
-			feedbackUrl: `${getDashboardUrl()}/settings`,
+			feedbackUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.settings.children.notifications.path}`,
 			dashboardUrl: getDashboardUrl(),
 		},
 	});

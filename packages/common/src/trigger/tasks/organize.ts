@@ -1,5 +1,5 @@
 import { logger } from "@harmonia/logger";
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 
 import { PipelineCancelledError, updateRun } from "../../services/organize";
 import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
