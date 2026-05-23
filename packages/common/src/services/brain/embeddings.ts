@@ -34,8 +34,7 @@ async function persistEmbedding(
 ): Promise<void> {
 	const vecStr = `[${rawEmbedding.join(",")}]`;
 	const snapshotJson = JSON.stringify({
-		llm: analysisSnapshot?.llm ?? {},
-		domain: analysisSnapshot?.domain ?? null,
+		...(analysisSnapshot ?? {}),
 		embeddingDims: rawEmbedding.length,
 		modelVersions: {
 			...(analysisSnapshot?.modelVersions ?? {}),
