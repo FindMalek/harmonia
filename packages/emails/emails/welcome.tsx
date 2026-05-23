@@ -1,13 +1,9 @@
+import { Section, Text } from "@react-email/components";
 import {
-	Body,
-	Button,
-	Container,
-	Head,
-	Heading,
-	Html,
-	Preview,
-	Text,
-} from "@react-email/components";
+	emailTheme,
+	HarmoniaEmailShell,
+	PrimaryButton,
+} from "./_components/layout";
 
 export type WelcomeEmailProps = {
 	dashboardUrl: string;
@@ -15,28 +11,31 @@ export type WelcomeEmailProps = {
 };
 
 export function WelcomeEmail({
-	dashboardUrl,
+	dashboardUrl = "http://127.0.0.1:3003",
 	recipientName,
 }: WelcomeEmailProps) {
-	const safeName = recipientName?.trim().length ? recipientName : "there";
+	const safeName =
+		typeof recipientName === "string" && recipientName.trim().length > 0
+			? recipientName
+			: "there";
 
 	return (
-		<Html>
-			<Head />
-			<Preview>Welcome to Harmonia</Preview>
-			<Body style={body}>
-				<Container style={container}>
-					<Heading style={heading}>Welcome to Harmonia, {safeName}</Heading>
-					<Text style={text}>
-						You are all set. Connect your Spotify library and start organizing
-						your music into smart playlists.
-					</Text>
-					<Button href={dashboardUrl} style={button}>
-						Open dashboard
-					</Button>
-				</Container>
-			</Body>
-		</Html>
+		<HarmoniaEmailShell
+			previewText="Welcome to Harmonia"
+			title={`Welcome to Harmonia, ${safeName}`}
+			subtitle="Your account is ready. In just a few clicks, Harmonia will organize your Spotify library into focused, high-signal playlists."
+			complianceText="You are receiving this transactional email because a Harmonia account was created with this address."
+		>
+			<Section style={checklistSection}>
+				<Text style={checklistTitle}>What to do next</Text>
+				<Text style={checklistItem}>1. Connect Spotify in onboarding.</Text>
+				<Text style={checklistItem}>2. Run your first organize flow.</Text>
+				<Text style={checklistItem}>
+					3. Open playlists and start listening.
+				</Text>
+			</Section>
+			<PrimaryButton href={dashboardUrl} label="Open dashboard" />
+		</HarmoniaEmailShell>
 	);
 }
 
@@ -47,43 +46,25 @@ WelcomeEmail.PreviewProps = {
 
 export default WelcomeEmail;
 
-const body = {
-	backgroundColor: "#f5f7fb",
-	color: "#111827",
-	fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-	margin: "0",
-	padding: "24px 0",
-};
-
-const container = {
-	backgroundColor: "#ffffff",
-	border: "1px solid #e5e7eb",
+const checklistSection = {
+	backgroundColor: emailTheme.colors.softBackground,
+	border: `1px solid ${emailTheme.colors.border}`,
 	borderRadius: "12px",
-	margin: "0 auto",
-	maxWidth: "560px",
-	padding: "24px",
+	margin: "0 0 16px",
+	padding: "14px 16px 10px",
 };
 
-const heading = {
-	fontSize: "24px",
+const checklistTitle = {
+	color: emailTheme.colors.text,
+	fontSize: "14px",
 	fontWeight: "700",
-	lineHeight: "1.3",
-	margin: "0 0 12px",
+	lineHeight: "1.4",
+	margin: "0 0 6px",
 };
 
-const text = {
-	color: "#374151",
+const checklistItem = {
+	color: emailTheme.colors.mutedText,
 	fontSize: "14px",
 	lineHeight: "1.6",
-	margin: "0 0 16px",
-};
-
-const button = {
-	backgroundColor: "#111827",
-	borderRadius: "8px",
-	color: "#ffffff",
-	fontSize: "14px",
-	fontWeight: "600",
-	padding: "12px 18px",
-	textDecoration: "none",
+	margin: "0 0 4px",
 };

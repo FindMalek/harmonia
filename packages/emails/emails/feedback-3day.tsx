@@ -1,13 +1,9 @@
+import { Section, Text } from "@react-email/components";
 import {
-	Body,
-	Button,
-	Container,
-	Head,
-	Heading,
-	Html,
-	Preview,
-	Text,
-} from "@react-email/components";
+	emailTheme,
+	HarmoniaEmailShell,
+	PrimaryButton,
+} from "./_components/layout";
 
 export type Feedback3DayEmailProps = {
 	recipientName?: string | null;
@@ -17,35 +13,41 @@ export type Feedback3DayEmailProps = {
 
 export function Feedback3DayEmail({
 	recipientName,
-	feedbackUrl,
-	dashboardUrl,
+	feedbackUrl = "http://127.0.0.1:3003/settings/notifications",
+	dashboardUrl = "http://127.0.0.1:3003",
 }: Feedback3DayEmailProps) {
-	const safeName = recipientName?.trim().length ? recipientName : "there";
+	const safeName =
+		typeof recipientName === "string" && recipientName.trim().length > 0
+			? recipientName
+			: "there";
 
 	return (
-		<Html>
-			<Head />
-			<Preview>How is Harmonia working for you?</Preview>
-			<Body style={body}>
-				<Container style={container}>
-					<Heading style={heading}>How is Harmonia going, {safeName}?</Heading>
-					<Text style={text}>
-						You have been using Harmonia for a few days. A quick feedback note
-						from you helps us improve recommendations and playlist quality.
-					</Text>
-					<Button href={feedbackUrl} style={button}>
-						Share feedback
-					</Button>
-					<Text style={text}>
-						Or continue organizing your library in{" "}
-						<a href={dashboardUrl} style={link}>
-							the dashboard
-						</a>
-						.
-					</Text>
-				</Container>
-			</Body>
-		</Html>
+		<HarmoniaEmailShell
+			previewText="How is Harmonia working for you?"
+			title={`How is Harmonia going, ${safeName}?`}
+			subtitle="Your feedback directly shapes playlist quality, naming, and recommendation accuracy."
+			complianceText="You are receiving this transactional product-feedback request related to your active Harmonia usage."
+		>
+			<Section style={promptCard}>
+				<Text style={promptTitle}>2-minute feedback</Text>
+				<Text style={promptBody}>
+					Tell us what felt great and what needs work. We review this feedback
+					daily and prioritize product improvements from real usage signals.
+				</Text>
+			</Section>
+
+			<Section style={{ margin: "0 0 12px" }}>
+				<PrimaryButton href={feedbackUrl} label="Share feedback" />
+			</Section>
+
+			<Text style={subtleText}>
+				Prefer to keep organizing first? Open{" "}
+				<a href={dashboardUrl} style={inlineLink}>
+					your dashboard
+				</a>
+				.
+			</Text>
+		</HarmoniaEmailShell>
 	);
 }
 
@@ -57,47 +59,37 @@ Feedback3DayEmail.PreviewProps = {
 
 export default Feedback3DayEmail;
 
-const body = {
-	backgroundColor: "#f5f7fb",
-	color: "#111827",
-	fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-	margin: "0",
-	padding: "24px 0",
-};
-
-const container = {
-	backgroundColor: "#ffffff",
-	border: "1px solid #e5e7eb",
+const promptCard = {
+	backgroundColor: emailTheme.colors.softBackground,
+	border: `1px solid ${emailTheme.colors.border}`,
 	borderRadius: "12px",
-	margin: "0 auto",
-	maxWidth: "560px",
-	padding: "24px",
+	margin: "0 0 14px",
+	padding: "14px 16px",
 };
 
-const heading = {
-	fontSize: "24px",
+const promptTitle = {
+	color: emailTheme.colors.text,
+	fontSize: "14px",
 	fontWeight: "700",
-	lineHeight: "1.3",
-	margin: "0 0 12px",
+	lineHeight: "1.4",
+	margin: "0 0 6px",
 };
 
-const text = {
-	color: "#374151",
+const promptBody = {
+	color: emailTheme.colors.mutedText,
 	fontSize: "14px",
 	lineHeight: "1.6",
-	margin: "0 0 16px",
+	margin: "0",
 };
 
-const button = {
-	backgroundColor: "#111827",
-	borderRadius: "8px",
-	color: "#ffffff",
-	fontSize: "14px",
-	fontWeight: "600",
-	padding: "12px 18px",
-	textDecoration: "none",
+const subtleText = {
+	color: emailTheme.colors.softText,
+	fontSize: "13px",
+	lineHeight: "1.6",
+	margin: "0",
 };
 
-const link = {
-	color: "#0f62fe",
+const inlineLink = {
+	color: emailTheme.colors.primary,
+	textDecoration: "underline",
 };

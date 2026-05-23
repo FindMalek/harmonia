@@ -1,6 +1,7 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
+import { playlist } from "@harmonia/db/schema/playlist";
 import {
 	sendFeedback3DayEmail,
 	sendLoginAlertEmail,
@@ -9,7 +10,7 @@ import {
 } from "@harmonia/emails/send";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import { markEmailDelivery, reserveEmailDelivery } from "./dedupe";
 import { evaluateEmailPolicy } from "./policy";
@@ -121,6 +122,7 @@ export async function sendOrganizeCompleteNotification({
 			recipientName: userRow.name,
 			playlistsCreated,
 			tracksOrganized,
+			topPlaylists: await getRecentGeneratedPlaylists(userId),
 		},
 	});
 
@@ -158,6 +160,18 @@ export async function sendOrganizeCompleteNotification({
 	);
 
 	return { ok: true, reason: "sent" as const };
+}
+
+async function getRecentGeneratedPlaylists(userId: string) {
+	return db
+		.select({
+			name: playlist.name,
+			trackCount: playlist.trackCount,
+		})
+		.from(playlist)
+		.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)))
+		.orderBy(desc(playlist.createdAt))
+		.limit(3);
 }
 
 export async function sendWelcomeNotification({ userId }: { userId: string }) {

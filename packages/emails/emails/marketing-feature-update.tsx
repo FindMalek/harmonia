@@ -1,13 +1,9 @@
+import { Section, Text } from "@react-email/components";
 import {
-	Body,
-	Button,
-	Container,
-	Head,
-	Heading,
-	Html,
-	Preview,
-	Text,
-} from "@react-email/components";
+	emailTheme,
+	HarmoniaEmailShell,
+	PrimaryButton,
+} from "./_components/layout";
 
 export type MarketingFeatureUpdateEmailProps = {
 	featureTitle: string;
@@ -19,44 +15,47 @@ export type MarketingFeatureUpdateEmailProps = {
 };
 
 export function MarketingFeatureUpdateEmail({
-	featureTitle,
-	featureSummary,
-	ctaUrl,
-	preferencesUrl,
-	unsubscribeUrl,
+	featureTitle = "New feature",
+	featureSummary = "Explore the latest improvements in Harmonia.",
+	ctaUrl = "http://127.0.0.1:3003/playlists",
+	preferencesUrl = "http://127.0.0.1:3003/settings/notifications",
+	unsubscribeUrl = "http://127.0.0.1:3003/settings/notifications?unsubscribe=all",
 	recipientName,
 }: MarketingFeatureUpdateEmailProps) {
-	const safeName = recipientName?.trim().length ? recipientName : "there";
+	const safeName =
+		typeof recipientName === "string" && recipientName.trim().length > 0
+			? recipientName
+			: "there";
 
 	return (
-		<Html>
-			<Head />
-			<Preview>New in Harmonia: {featureTitle}</Preview>
-			<Body style={body}>
-				<Container style={container}>
-					<Heading style={heading}>New in Harmonia, {safeName}</Heading>
-					<Text style={text}>
-						<strong>{featureTitle}</strong>
-					</Text>
-					<Text style={text}>{featureSummary}</Text>
-					<Button href={ctaUrl} style={button}>
-						Try it now
-					</Button>
-					<Text style={footer}>
-						You are receiving this marketing email because you opted in to
-						product updates. Manage{" "}
-						<a href={preferencesUrl} style={link}>
-							email preferences
-						</a>{" "}
-						or{" "}
-						<a href={unsubscribeUrl} style={link}>
-							unsubscribe
-						</a>
-						.
-					</Text>
-				</Container>
-			</Body>
-		</Html>
+		<HarmoniaEmailShell
+			previewText={`New in Harmonia: ${featureTitle}`}
+			title={`New in Harmonia, ${safeName}`}
+			subtitle="We shipped an improvement designed to make your listening workflow faster and more consistent."
+			complianceText="You are receiving this marketing email because you opted in to product updates."
+			footerLinks={[
+				{ label: "Manage preferences", href: preferencesUrl },
+				{ label: "Unsubscribe", href: unsubscribeUrl },
+			]}
+		>
+			<Section style={featureCard}>
+				<Text style={featureEyebrow}>FEATURE UPDATE</Text>
+				<Text style={featureTitleText}>{featureTitle}</Text>
+				<Text style={featureSummaryText}>{featureSummary}</Text>
+			</Section>
+
+			<Section style={{ margin: "0 0 12px" }}>
+				<PrimaryButton href={ctaUrl} label="Try it now" />
+			</Section>
+
+			<Text style={secondaryCopy}>
+				Want full control over what lands in your inbox? Update your{" "}
+				<a href={preferencesUrl} style={inlineLink}>
+					email preferences
+				</a>
+				.
+			</Text>
+		</HarmoniaEmailShell>
 	);
 }
 
@@ -65,61 +64,53 @@ MarketingFeatureUpdateEmail.PreviewProps = {
 	featureSummary:
 		"Harmonia now creates clearer playlist names using your listening patterns.",
 	ctaUrl: "http://127.0.0.1:3003/playlists",
-	preferencesUrl: "http://127.0.0.1:3003/settings",
+	preferencesUrl: "http://127.0.0.1:3003/settings/notifications",
 	unsubscribeUrl: "http://127.0.0.1:3002/api/unsubscribe/example",
 	recipientName: "Malek",
 } satisfies MarketingFeatureUpdateEmailProps;
 
 export default MarketingFeatureUpdateEmail;
-
-const body = {
-	backgroundColor: "#f5f7fb",
-	color: "#111827",
-	fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-	margin: "0",
-	padding: "24px 0",
-};
-
-const container = {
-	backgroundColor: "#ffffff",
-	border: "1px solid #e5e7eb",
+const featureCard = {
+	backgroundColor: emailTheme.colors.softBackground,
+	border: `1px solid ${emailTheme.colors.border}`,
 	borderRadius: "12px",
-	margin: "0 auto",
-	maxWidth: "560px",
-	padding: "24px",
+	margin: "0 0 16px",
+	padding: "14px 16px",
 };
 
-const heading = {
-	fontSize: "24px",
+const featureEyebrow = {
+	color: emailTheme.colors.primary,
+	fontSize: "11px",
 	fontWeight: "700",
-	lineHeight: "1.3",
-	margin: "0 0 12px",
+	letterSpacing: "0.08em",
+	lineHeight: "1.5",
+	margin: "0 0 4px",
+	textTransform: "uppercase" as const,
 };
 
-const text = {
-	color: "#374151",
+const featureTitleText = {
+	color: emailTheme.colors.text,
+	fontSize: "18px",
+	fontWeight: "700",
+	lineHeight: "1.4",
+	margin: "0 0 6px",
+};
+
+const featureSummaryText = {
+	color: emailTheme.colors.mutedText,
 	fontSize: "14px",
 	lineHeight: "1.6",
-	margin: "0 0 16px",
+	margin: "0",
 };
 
-const button = {
-	backgroundColor: "#111827",
-	borderRadius: "8px",
-	color: "#ffffff",
-	fontSize: "14px",
-	fontWeight: "600",
-	padding: "12px 18px",
-	textDecoration: "none",
+const secondaryCopy = {
+	color: emailTheme.colors.softText,
+	fontSize: "13px",
+	lineHeight: "1.6",
+	margin: "0",
 };
 
-const footer = {
-	color: "#6b7280",
-	fontSize: "12px",
-	lineHeight: "1.5",
-	marginTop: "16px",
-};
-
-const link = {
-	color: "#0f62fe",
+const inlineLink = {
+	color: emailTheme.colors.primary,
+	textDecoration: "underline",
 };

@@ -1,13 +1,9 @@
+import { Section, Text } from "@react-email/components";
 import {
-	Body,
-	Container,
-	Head,
-	Heading,
-	Html,
-	Preview,
-	Section,
-	Text,
-} from "@react-email/components";
+	emailTheme,
+	HarmoniaEmailShell,
+	PrimaryButton,
+} from "./_components/layout";
 
 export type LoginAlertEmailProps = {
 	recipientName?: string | null;
@@ -19,44 +15,57 @@ export type LoginAlertEmailProps = {
 
 export function LoginAlertEmail({
 	recipientName,
-	loginAtIso,
+	loginAtIso = new Date().toISOString(),
 	ipAddress,
 	userAgent,
-	settingsUrl,
+	settingsUrl = "http://127.0.0.1:3003/settings/notifications",
 }: LoginAlertEmailProps) {
-	const safeName = recipientName?.trim().length ? recipientName : "there";
+	const safeName =
+		typeof recipientName === "string" && recipientName.trim().length > 0
+			? recipientName
+			: "there";
 	const loginAt = new Date(loginAtIso).toLocaleString("en-US", {
 		dateStyle: "medium",
 		timeStyle: "short",
 	});
 
 	return (
-		<Html>
-			<Head />
-			<Preview>New Harmonia login</Preview>
-			<Body style={body}>
-				<Container style={container}>
-					<Heading style={heading}>New login detected, {safeName}</Heading>
-					<Text style={text}>
-						A new login was detected on your Harmonia account.
+		<HarmoniaEmailShell
+			previewText="New Harmonia login"
+			title={`New login detected, ${safeName}`}
+			subtitle="We noticed a new sign-in on your account. If this was you, no action is needed."
+			complianceText="You are receiving this transactional security email to protect your account."
+		>
+			<Section style={details}>
+				<Text style={detailLine}>
+					<span style={detailLabel}>Time:</span> {loginAt}
+				</Text>
+				{ipAddress ? (
+					<Text style={detailLine}>
+						<span style={detailLabel}>IP address:</span> {ipAddress}
 					</Text>
-					<Section style={details}>
-						<Text style={detailLine}>Time: {loginAt}</Text>
-						{ipAddress ? <Text style={detailLine}>IP: {ipAddress}</Text> : null}
-						{userAgent ? (
-							<Text style={detailLine}>Device: {userAgent}</Text>
-						) : null}
-					</Section>
-					<Text style={text}>
-						If this was not you, review your account immediately in{" "}
-						<a href={settingsUrl} style={link}>
-							settings
-						</a>
-						.
+				) : null}
+				{userAgent ? (
+					<Text style={detailLine}>
+						<span style={detailLabel}>Device:</span> {userAgent}
 					</Text>
-				</Container>
-			</Body>
-		</Html>
+				) : null}
+			</Section>
+			<Text style={text}>
+				Wasn&apos;t you? Review your access and update security settings
+				immediately.
+			</Text>
+			<Section style={{ margin: "0 0 10px" }}>
+				<PrimaryButton href={settingsUrl} label="Review account security" />
+			</Section>
+			<Text style={subtleText}>
+				You can also open{" "}
+				<a href={settingsUrl} style={inlineLink}>
+					settings
+				</a>{" "}
+				directly.
+			</Text>
+		</HarmoniaEmailShell>
 	);
 }
 
@@ -65,56 +74,46 @@ LoginAlertEmail.PreviewProps = {
 	loginAtIso: new Date().toISOString(),
 	ipAddress: "203.0.113.4",
 	userAgent: "Mozilla/5.0",
-	settingsUrl: "http://127.0.0.1:3003/settings",
+	settingsUrl: "http://127.0.0.1:3003/settings/notifications",
 } satisfies LoginAlertEmailProps;
 
 export default LoginAlertEmail;
 
-const body = {
-	backgroundColor: "#f5f7fb",
-	color: "#111827",
-	fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-	margin: "0",
-	padding: "24px 0",
-};
-
-const container = {
-	backgroundColor: "#ffffff",
-	border: "1px solid #e5e7eb",
-	borderRadius: "12px",
-	margin: "0 auto",
-	maxWidth: "560px",
-	padding: "24px",
-};
-
-const heading = {
-	fontSize: "22px",
-	fontWeight: "700",
-	lineHeight: "1.3",
-	margin: "0 0 12px",
-};
-
 const text = {
-	color: "#374151",
-	fontSize: "14px",
+	color: emailTheme.colors.mutedText,
+	fontSize: "15px",
 	lineHeight: "1.6",
-	margin: "0 0 12px",
+	margin: "0 0 14px",
 };
 
 const details = {
-	backgroundColor: "#f9fafb",
-	border: "1px solid #e5e7eb",
-	borderRadius: "8px",
-	marginBottom: "12px",
-	padding: "12px",
+	backgroundColor: emailTheme.colors.softBackground,
+	border: `1px solid ${emailTheme.colors.border}`,
+	borderRadius: "12px",
+	marginBottom: "14px",
+	padding: "14px",
 };
 
 const detailLine = {
-	color: "#111827",
-	fontSize: "13px",
-	margin: "0 0 4px",
+	color: emailTheme.colors.text,
+	fontSize: "14px",
+	lineHeight: "1.6",
+	margin: "0 0 6px",
 };
 
-const link = {
-	color: "#0f62fe",
+const detailLabel = {
+	color: emailTheme.colors.softText,
+	fontWeight: "600",
+};
+
+const subtleText = {
+	color: emailTheme.colors.softText,
+	fontSize: "13px",
+	lineHeight: "1.6",
+	margin: "0",
+};
+
+const inlineLink = {
+	color: emailTheme.colors.primary,
+	textDecoration: "underline",
 };

@@ -1,62 +1,82 @@
+import { Section, Text } from "@react-email/components";
 import {
-	Body,
-	Button,
-	Container,
-	Head,
-	Heading,
-	Html,
-	Preview,
-	Section,
-	Text,
-} from "@react-email/components";
+	emailTheme,
+	HarmoniaEmailShell,
+	PrimaryButton,
+} from "./_components/layout";
 
 export type OrganizeCompleteEmailProps = {
 	dashboardPlaylistsUrl: string;
 	recipientName?: string | null;
 	playlistsCreated: number;
 	tracksOrganized: number;
+	topPlaylists?: Array<{
+		name: string;
+		trackCount?: number | null;
+	}>;
 };
 
 export function OrganizeCompleteEmail({
-	dashboardPlaylistsUrl,
+	dashboardPlaylistsUrl = "http://127.0.0.1:3003/playlists",
 	recipientName,
-	playlistsCreated,
-	tracksOrganized,
+	playlistsCreated = 0,
+	tracksOrganized = 0,
+	topPlaylists = [],
 }: OrganizeCompleteEmailProps) {
-	const safeName = recipientName?.trim().length ? recipientName : "there";
+	const safeName =
+		typeof recipientName === "string" && recipientName.trim().length > 0
+			? recipientName
+			: "there";
+	const playlistItems = Array.isArray(topPlaylists) ? topPlaylists : [];
 
 	return (
-		<Html>
-			<Head />
-			<Preview>Your playlists are ready</Preview>
-			<Body style={body}>
-				<Container style={container}>
-					<Heading style={heading}>
-						Your playlists are ready, {safeName}
-					</Heading>
-					<Text style={text}>
-						Your latest organize run has finished and your playlists are now
-						available in Harmonia.
+		<HarmoniaEmailShell
+			previewText="Your playlists are ready"
+			title={`Your playlists are ready, ${safeName}`}
+			subtitle="Your latest organize run has completed. Everything is synced and ready to listen in your dashboard."
+			complianceText="You are receiving this transactional email because your organize run completed successfully."
+		>
+			<Section style={statsGrid}>
+				<Section style={statCard}>
+					<Text style={statLabel}>Playlists created</Text>
+					<Text style={statValue}>{playlistsCreated}</Text>
+				</Section>
+				<Section style={statCard}>
+					<Text style={statLabel}>Tracks organized</Text>
+					<Text style={statValue}>{tracksOrganized}</Text>
+				</Section>
+			</Section>
+
+			<Section style={listSection}>
+				<Text style={sectionTitle}>Top playlists from this run</Text>
+				{playlistItems.length > 0 ? (
+					playlistItems.slice(0, 3).map((playlist, index) => (
+						<Section key={`${playlist.name}-${index}`} style={playlistRow}>
+							<Text style={playlistIndex}>{index + 1}</Text>
+							<Section style={playlistMeta}>
+								<Text style={playlistName}>{playlist.name}</Text>
+								<Text style={playlistSubtext}>
+									{playlist.trackCount && playlist.trackCount > 0
+										? `${playlist.trackCount} tracks`
+										: "Ready to play"}
+								</Text>
+							</Section>
+						</Section>
+					))
+				) : (
+					<Text style={emptyStateText}>
+						We created your playlists and they are ready in your dashboard.
 					</Text>
+				)}
+			</Section>
 
-					<Section style={statsSection}>
-						<Text style={statLabel}>Playlists created</Text>
-						<Text style={statValue}>{playlistsCreated}</Text>
-						<Text style={statLabel}>Tracks organized</Text>
-						<Text style={statValue}>{tracksOrganized}</Text>
-					</Section>
-
-					<Button href={dashboardPlaylistsUrl} style={button}>
-						Open playlists
-					</Button>
-
-					<Text style={footer}>
-						You are receiving this transactional email because your organize run
-						completed successfully.
-					</Text>
-				</Container>
-			</Body>
-		</Html>
+			<Section style={ctaWrap}>
+				<PrimaryButton
+					href={dashboardPlaylistsUrl}
+					label="See more playlists"
+				/>
+			</Section>
+		</HarmoniaEmailShell>
 	);
 }
 
@@ -65,78 +85,105 @@ OrganizeCompleteEmail.PreviewProps = {
 	recipientName: "Malek",
 	playlistsCreated: 7,
 	tracksOrganized: 143,
+	topPlaylists: [
+		{ name: "Neon Night Drive", trackCount: 24 },
+		{ name: "Focused Flow", trackCount: 18 },
+		{ name: "Sunday Slow Burn", trackCount: 16 },
+	],
 } satisfies OrganizeCompleteEmailProps;
 
 export default OrganizeCompleteEmail;
 
-const body = {
-	backgroundColor: "#f5f7fb",
-	color: "#111827",
-	fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-	margin: "0",
-	padding: "24px 0",
+const statsGrid = {
+	margin: "0 0 18px",
 };
 
-const container = {
-	backgroundColor: "#ffffff",
-	border: "1px solid #e5e7eb",
+const statCard = {
+	backgroundColor: emailTheme.colors.softBackground,
+	border: `1px solid ${emailTheme.colors.border}`,
 	borderRadius: "12px",
-	margin: "0 auto",
-	maxWidth: "560px",
-	padding: "24px",
-};
-
-const heading = {
-	fontSize: "24px",
-	fontWeight: "700",
-	lineHeight: "1.3",
-	margin: "0 0 12px",
-};
-
-const text = {
-	color: "#374151",
-	fontSize: "14px",
-	lineHeight: "1.6",
-	margin: "0 0 16px",
-};
-
-const statsSection = {
-	backgroundColor: "#f9fafb",
-	border: "1px solid #e5e7eb",
-	borderRadius: "10px",
-	margin: "0 0 24px",
-	padding: "16px",
+	marginBottom: "10px",
+	padding: "14px 14px 12px",
 };
 
 const statLabel = {
-	color: "#6b7280",
+	color: emailTheme.colors.softText,
 	fontSize: "12px",
-	letterSpacing: "0.02em",
+	letterSpacing: "0.08em",
 	margin: "0 0 4px",
 	textTransform: "uppercase" as const,
 };
 
 const statValue = {
-	color: "#111827",
-	fontSize: "24px",
-	fontWeight: "700",
+	color: emailTheme.colors.text,
+	fontSize: "26px",
+	fontWeight: "800",
 	lineHeight: "1.2",
-	margin: "0 0 10px",
+	margin: "0",
 };
 
-const button = {
-	backgroundColor: "#111827",
-	borderRadius: "8px",
-	color: "#ffffff",
+const listSection = {
+	backgroundColor: emailTheme.colors.surface,
+	border: `1px solid ${emailTheme.colors.border}`,
+	borderRadius: "12px",
+	margin: "0 0 18px",
+	padding: "12px",
+};
+
+const sectionTitle = {
+	color: emailTheme.colors.text,
+	fontSize: "14px",
+	fontWeight: "700",
+	lineHeight: "1.5",
+	margin: "0 0 8px",
+};
+
+const playlistRow = {
+	borderTop: `1px solid ${emailTheme.colors.border}`,
+	padding: "10px 4px",
+};
+
+const playlistIndex = {
+	backgroundColor: emailTheme.colors.softBackground,
+	borderRadius: "999px",
+	color: emailTheme.colors.primary,
+	fontSize: "12px",
+	fontWeight: "700",
+	display: "inline-block",
+	lineHeight: "1",
+	margin: "0 10px 0 0",
+	padding: "8px 10px",
+	verticalAlign: "top" as const,
+};
+
+const playlistMeta = {
+	display: "inline-block",
+	maxWidth: "470px",
+	verticalAlign: "top" as const,
+};
+
+const playlistName = {
+	color: emailTheme.colors.text,
 	fontSize: "14px",
 	fontWeight: "600",
-	padding: "12px 18px",
-	textDecoration: "none",
+	lineHeight: "1.4",
+	margin: "0",
 };
 
-const footer = {
-	color: "#6b7280",
+const playlistSubtext = {
+	color: emailTheme.colors.softText,
 	fontSize: "12px",
 	lineHeight: "1.5",
-	marginTop: "16px",
+	margin: "2px 0 0",
+};
+
+const emptyStateText = {
+	color: emailTheme.colors.softText,
+	fontSize: "13px",
+	lineHeight: "1.6",
+	margin: "0",
+};
+
+const ctaWrap = {
+	margin: "0",
 };

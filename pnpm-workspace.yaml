@@ -38,7 +38,7 @@ catalog:
   react: ^19.2.6
   react-dom: ^19.2.6
   react-email: ^4.3.2
-  resend: ^4.8.0
+  resend: ^6.12.3
   tsdown: ^0.11.0
   typescript: 5.9.3
   zod: ^4.4.3
