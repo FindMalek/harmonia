@@ -1,5 +1,5 @@
 import type { PlaylistGetByIdOutput } from "@harmonia/common/schemas";
-import { parseJsonStringArray } from "@harmonia/common";
+import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
 import Image from "next/image";
 
 export type DashboardPlaylistDetailTrackRowTrack =

@@ -3,7 +3,8 @@
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { useTracksController } from "@/shared/lib/tracks/controller.hook";
-import { getLlmTags, parseJsonStringArray } from "@harmonia/common";
+import { getLlmTags } from "@harmonia/common/types";
+import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
 import {
 	Badge,
 	Button,
