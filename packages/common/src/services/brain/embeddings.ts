@@ -22,6 +22,39 @@ type OpenAIEmbeddingResponse = {
 	}>;
 };
 
+// pgvector requires raw SQL: Drizzle's update builder bypasses mapToDriverValue for
+// vector columns, so ::vector and ::jsonb casts must be explicit. The AND embedding
+// IS NULL guard makes the write idempotent across concurrent workers.
+async function persistEmbedding(
+	trackId: string,
+	embeddingInput: string,
+	analysisSnapshot: (typeof track.$inferSelect)["analysisSnapshot"],
+	rawEmbedding: number[],
+	now: Date,
+): Promise<void> {
+	const vecStr = `[${rawEmbedding.join(",")}]`;
+	const snapshotJson = JSON.stringify({
+		llm: analysisSnapshot?.llm ?? {},
+		domain: analysisSnapshot?.domain ?? null,
+		embeddingDims: rawEmbedding.length,
+		modelVersions: {
+			...(analysisSnapshot?.modelVersions ?? {}),
+			embedding: EMBEDDING_MODEL,
+		},
+	});
+	await db.execute(sql`
+		UPDATE track
+		SET
+			embedding              = ${vecStr}::vector,
+			embedding_generated_at = ${now},
+			embedding_input        = ${embeddingInput},
+			analysis_snapshot      = ${snapshotJson}::jsonb,
+			updated_at             = NOW()
+		WHERE id = ${trackId}
+		  AND embedding IS NULL
+	`);
+}
+
 type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
 
 export async function embedTracksBatch(
@@ -162,31 +195,13 @@ export async function embedTracksBatch(
 					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
 						if (!input || !embedding) return;
-						const vecStr = `[${(embedding as number[]).join(",")}]`;
-						// Single atomic update: raw SQL for ::vector cast (Drizzle skips
-						// mapToDriverValue for vector columns) + JSON.stringify snapshot
-						// (avoids jsonb_set prepared-statement error 42804). The AND embedding
-						// IS NULL guard makes both fields idempotent in concurrent workers.
-						const snapshotJson = JSON.stringify({
-							llm: input.analysisSnapshot?.llm ?? {},
-							domain: input.analysisSnapshot?.domain ?? null,
-							embeddingDims: embedding.length,
-							modelVersions: {
-								...(input.analysisSnapshot?.modelVersions ?? {}),
-								embedding: EMBEDDING_MODEL,
-							},
-						});
-						await db.execute(sql`
-							UPDATE track
-							SET
-								embedding = ${vecStr}::vector,
-								embedding_generated_at = ${now},
-								embedding_input = ${input.text},
-								analysis_snapshot = ${snapshotJson}::jsonb,
-								updated_at = NOW()
-							WHERE id = ${input.id}
-							  AND embedding IS NULL
-						`);
+						await persistEmbedding(
+							input.id,
+							input.text,
+							input.analysisSnapshot,
+							embedding,
+							now,
+						);
 					}),
 				);
 
@@ -334,31 +349,13 @@ export async function embedTrackIds(
 					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
 						if (!input || !embedding) return;
-						const vecStr = `[${(embedding as number[]).join(",")}]`;
-						// Single atomic update: raw SQL for ::vector cast (Drizzle skips
-						// mapToDriverValue for vector columns) + JSON.stringify snapshot
-						// (avoids jsonb_set prepared-statement error 42804). The AND embedding
-						// IS NULL guard makes both fields idempotent in concurrent workers.
-						const snapshotJson = JSON.stringify({
-							llm: input.analysisSnapshot?.llm ?? {},
-							domain: input.analysisSnapshot?.domain ?? null,
-							embeddingDims: embedding.length,
-							modelVersions: {
-								...(input.analysisSnapshot?.modelVersions ?? {}),
-								embedding: EMBEDDING_MODEL,
-							},
-						});
-						await db.execute(sql`
-							UPDATE track
-							SET
-								embedding = ${vecStr}::vector,
-								embedding_generated_at = ${now},
-								embedding_input = ${input.text},
-								analysis_snapshot = ${snapshotJson}::jsonb,
-								updated_at = NOW()
-							WHERE id = ${input.id}
-							  AND embedding IS NULL
-						`);
+						await persistEmbedding(
+							input.id,
+							input.text,
+							input.analysisSnapshot,
+							embedding,
+							now,
+						);
 					}),
 				);
 
