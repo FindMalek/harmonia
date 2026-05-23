@@ -10,7 +10,7 @@ import {
 	LYRICS_CONCURRENCY,
 } from "../../../constants/lyrics";
 import { chunk } from "../../../trigger/utils/chunk";
-import { parseJsonStringArray } from "../../shared/parse-json-string-array";
+import { parseJsonStringArray } from "../../../utils/parse-json-string-array";
 import { getLyricsFromLRCLib } from "./lrclib-client";
 
 type LyricsDeltaCallback = (delta: {

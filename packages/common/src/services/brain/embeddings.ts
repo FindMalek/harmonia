@@ -14,7 +14,7 @@ import {
 	EMBEDDING_MODEL,
 } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
-import { parseJsonStringArray } from "../shared/parse-json-string-array";
+import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{

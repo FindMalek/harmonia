@@ -16,7 +16,7 @@ import pLimit from "p-limit";
 import pRetry from "p-retry";
 
 import { clusterMetadataSchema } from "@harmonia/common/schemas";
-import { parseJsonStringArray } from "../shared/parse-json-string-array";
+import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
 	if (!env.HARMONIA_GROQ_API_KEY) {
