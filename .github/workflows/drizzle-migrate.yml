@@ -1,7 +1,8 @@
 # Drizzle migration workflow
-# Runs database migrations when schema or migration files change on main.
+# Runs database migrations when migration files change on main.
+# Migrations must be generated before merge (drizzle-kit generate).
 #
-# Required secret:
+# Required secrets:
 #   PRODUCTION_DATABASE_URL - Production PostgreSQL connection string.
 #   Add it in: GitHub repo → Settings → Secrets and variables → Actions.
 
@@ -12,7 +13,6 @@ on:
     branches: [main]
     paths:
       - "packages/db/src/migrations/**"
-      - "packages/db/src/schema/**"
       - "packages/db/drizzle.config.ts"
       - "packages/db/package.json"
   workflow_dispatch:
@@ -20,6 +20,7 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,3 +42,9 @@ jobs:
         env:
           HARMONIA_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: pnpm db:migrate
+
+      - name: Migration failed
+        if: failure()
+        run: |
+          echo "❌ Database migration failed on main branch!"
+          exit 1
