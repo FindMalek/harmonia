@@ -18,6 +18,7 @@
 		"db:mark-migrations-applied": "node scripts/mark-migrations-applied.mjs",
 		"db:reset": "tsx scripts/db-reset.ts",
 		"db:reset:all": "tsx scripts/db-reset.ts --all",
+		"db:reset:embeddings": "tsx scripts/reset-embeddings.ts",
 		"db:nuke": "node scripts/db-nuke.mjs"
 	},
 	"dependencies": {
