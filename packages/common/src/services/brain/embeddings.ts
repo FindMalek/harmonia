@@ -1,5 +1,4 @@
 import type { EmbedProgress } from "@harmonia/common/types";
-import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
@@ -14,7 +13,7 @@ import {
 	EMBEDDING_MODEL,
 } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
-import { parseJsonStringArray } from "../../utils/parse-json-string-array";
+import { buildEmbeddingInput } from "./build-embedding-input";
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{
@@ -39,6 +38,7 @@ async function persistEmbedding(
 		modelVersions: {
 			...(analysisSnapshot?.modelVersions ?? {}),
 			embedding: EMBEDDING_MODEL,
+			embeddingInputVersion: "v2",
 		},
 	});
 	await db.execute(sql`
@@ -52,6 +52,32 @@ async function persistEmbedding(
 		WHERE id = ${trackId}
 		  AND embedding IS NULL
 	`);
+}
+
+type EmbeddingInput = {
+	id: string;
+	text: string;
+	analysisSnapshot: (typeof track.$inferSelect)["analysisSnapshot"];
+};
+
+function toEmbeddingInputs(
+	pendingTracks: Array<
+		Pick<typeof track.$inferSelect, "id" | "llmMood" | "llmTags" | "analysisSnapshot">
+	>,
+): EmbeddingInput[] {
+	return pendingTracks
+		.map((t) => {
+			const text = buildEmbeddingInput(t);
+			if (!text) {
+				logger.warn(
+					{ trackId: t.id },
+					"Skipping embed: classified track produced no embedding input",
+				);
+				return null;
+			}
+			return { id: t.id, text, analysisSnapshot: t.analysisSnapshot };
+		})
+		.filter((x): x is NonNullable<typeof x> => x !== null);
 }
 
 type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
@@ -78,7 +104,13 @@ export async function embedTracksBatch(
 	const allPending = await db
 		.select({ id: track.id })
 		.from(track)
-		.where(and(inArray(track.id, userTrackIds), isNull(track.embedding)));
+		.where(
+			and(
+				inArray(track.id, userTrackIds),
+				isNull(track.embedding),
+				isNotNull(track.llmClassifiedAt),
+			),
+		);
 
 	const total = allPending.length;
 
@@ -109,35 +141,8 @@ export async function embedTracksBatch(
 					"Starting embedding batch",
 				);
 
-				const inputs = pendingTracks.map((t) => {
-					const artistNames = parseJsonStringArray(t.artistNames);
-					const tags = getLlmTags(t.llmTags);
-
-					const parts = [
-						`Title: ${t.name}`,
-						`Artists: ${artistNames.join(", ")}`,
-					];
-
-					if (t.albumName) parts.push(`Album: ${t.albumName}`);
-					if (t.llmMood) parts.push(`Mood: ${t.llmMood}`);
-					if (tags.secondaryMoods?.length)
-						parts.push(`Secondary moods: ${tags.secondaryMoods.join(", ")}`);
-					if (tags.themes?.length)
-						parts.push(`Themes: ${tags.themes.join(", ")}`);
-					if (tags.topics?.length)
-						parts.push(`Topics: ${tags.topics.join(", ")}`);
-					if (tags.vibe?.length) parts.push(`Vibe: ${tags.vibe.join(", ")}`);
-					if (tags.vocalType) parts.push(`Vocal: ${tags.vocalType}`);
-					if (tags.energyLevel) parts.push(`Energy: ${tags.energyLevel}`);
-					if (tags.language) parts.push(`Language: ${tags.language}`);
-					if (tags.era) parts.push(`Era: ${tags.era}`);
-
-					return {
-						id: t.id,
-						text: parts.join(" | "),
-						analysisSnapshot: t.analysisSnapshot,
-					};
-				});
+				const inputs = toEmbeddingInputs(pendingTracks);
+				if (inputs.length === 0) return;
 
 				const json = await pRetry(
 					async () => {
@@ -264,35 +269,8 @@ export async function embedTrackIds(
 
 				if (pendingTracks.length === 0) return;
 
-				const inputs = pendingTracks.map((t) => {
-					const artistNames = parseJsonStringArray(t.artistNames);
-					const tags = getLlmTags(t.llmTags);
-
-					const parts = [
-						`Title: ${t.name}`,
-						`Artists: ${artistNames.join(", ")}`,
-					];
-
-					if (t.albumName) parts.push(`Album: ${t.albumName}`);
-					if (t.llmMood) parts.push(`Mood: ${t.llmMood}`);
-					if (tags.secondaryMoods?.length)
-						parts.push(`Secondary moods: ${tags.secondaryMoods.join(", ")}`);
-					if (tags.themes?.length)
-						parts.push(`Themes: ${tags.themes.join(", ")}`);
-					if (tags.topics?.length)
-						parts.push(`Topics: ${tags.topics.join(", ")}`);
-					if (tags.vibe?.length) parts.push(`Vibe: ${tags.vibe.join(", ")}`);
-					if (tags.vocalType) parts.push(`Vocal: ${tags.vocalType}`);
-					if (tags.energyLevel) parts.push(`Energy: ${tags.energyLevel}`);
-					if (tags.language) parts.push(`Language: ${tags.language}`);
-					if (tags.era) parts.push(`Era: ${tags.era}`);
-
-					return {
-						id: t.id,
-						text: parts.join(" | "),
-						analysisSnapshot: t.analysisSnapshot,
-					};
-				});
+				const inputs = toEmbeddingInputs(pendingTracks);
+				if (inputs.length === 0) return;
 
 				const json = await pRetry(
 					async () => {

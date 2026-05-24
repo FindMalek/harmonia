@@ -89,6 +89,12 @@
 		"db:reset": {
 			"cache": false
 		},
+		"db:reset:all": {
+			"cache": false
+		},
+		"db:reset:embeddings": {
+			"cache": false
+		},
 		"db:nuke": {
 			"cache": false
 		}
