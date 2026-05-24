@@ -1,10 +1,23 @@
-export default function InsightsPage() {
+import { DashboardInsightsContent } from "@/components/app/dashboard-insights-content";
+import { getServerSession } from "@/shared/api/session.server";
+import { insightsSummaryQueryOptions } from "@/shared/lib/insights/insights.util";
+import {
+	HydrationBoundary,
+	QueryClient,
+	dehydrate,
+} from "@tanstack/react-query";
+import { redirect } from "next/navigation";
+
+export default async function InsightsPage() {
+	const session = await getServerSession();
+	if (!session?.user) redirect("/login");
+
+	const queryClient = new QueryClient();
+	await queryClient.prefetchQuery(insightsSummaryQueryOptions());
+
 	return (
-		<div className="flex flex-col gap-4">
-			<h1 className="font-bold text-3xl tracking-tight">Insights</h1>
-			<p className="text-muted-foreground">
-				Analytics and insights coming soon.
-			</p>
-		</div>
+		<HydrationBoundary state={dehydrate(queryClient)}>
+			<DashboardInsightsContent />
+		</HydrationBoundary>
 	);
 }

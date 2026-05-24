@@ -1,5 +1,6 @@
 export * from "./classification";
 export * from "./cluster";
+export * from "./insights";
 export * from "./organize";
 export * from "./shared";
 export * from "./pipeline";

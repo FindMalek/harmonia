@@ -7,4 +7,5 @@ export const queryKeys = {
 	pipeline: () => orpc.pipeline.key(),
 	hasSpotifyLinked: () => orpc.hasSpotifyLinked.key(),
 	spotifyLibraryStats: () => orpc.spotify.libraryStats.key(),
+	insightsSummary: () => orpc.insights.summary.key(),
 } as const;
