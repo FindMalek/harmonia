@@ -42,7 +42,8 @@ async function main(): Promise<void> {
 				SET
 					embedding               = NULL,
 					embedding_generated_at  = NULL,
-					embedding_input         = NULL
+					embedding_input         = NULL,
+					updated_at              = NOW()
 				WHERE embedding IS NOT NULL
 			`);
 			console.info(

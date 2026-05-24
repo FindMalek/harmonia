@@ -54,6 +54,32 @@ async function persistEmbedding(
 	`);
 }
 
+type EmbeddingInput = {
+	id: string;
+	text: string;
+	analysisSnapshot: (typeof track.$inferSelect)["analysisSnapshot"];
+};
+
+function toEmbeddingInputs(
+	pendingTracks: Array<
+		Pick<typeof track.$inferSelect, "id" | "llmMood" | "llmTags" | "analysisSnapshot">
+	>,
+): EmbeddingInput[] {
+	return pendingTracks
+		.map((t) => {
+			const text = buildEmbeddingInput(t);
+			if (!text) {
+				logger.warn(
+					{ trackId: t.id },
+					"Skipping embed: classified track produced no embedding input",
+				);
+				return null;
+			}
+			return { id: t.id, text, analysisSnapshot: t.analysisSnapshot };
+		})
+		.filter((x): x is NonNullable<typeof x> => x !== null);
+}
+
 type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
 
 export async function embedTracksBatch(
@@ -115,14 +141,7 @@ export async function embedTracksBatch(
 					"Starting embedding batch",
 				);
 
-				const inputs = pendingTracks
-					.map((t) => {
-						const text = buildEmbeddingInput(t);
-						if (!text) return null;
-						return { id: t.id, text, analysisSnapshot: t.analysisSnapshot };
-					})
-					.filter((x): x is NonNullable<typeof x> => x !== null);
-
+				const inputs = toEmbeddingInputs(pendingTracks);
 				if (inputs.length === 0) return;
 
 				const json = await pRetry(
@@ -250,14 +269,7 @@ export async function embedTrackIds(
 
 				if (pendingTracks.length === 0) return;
 
-				const inputs = pendingTracks
-					.map((t) => {
-						const text = buildEmbeddingInput(t);
-						if (!text) return null;
-						return { id: t.id, text, analysisSnapshot: t.analysisSnapshot };
-					})
-					.filter((x): x is NonNullable<typeof x> => x !== null);
-
+				const inputs = toEmbeddingInputs(pendingTracks);
 				if (inputs.length === 0) return;
 
 				const json = await pRetry(
