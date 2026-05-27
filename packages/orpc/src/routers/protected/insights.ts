@@ -9,13 +9,6 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import { protectedProcedure } from "../../procedures";
 
-function numAvg(values: (number | null | undefined)[]): number | null {
-	const valid = values.filter((n): n is number => n != null);
-	return valid.length === 0
-		? null
-		: valid.reduce((a, b) => a + b, 0) / valid.length;
-}
-
 function normalizeEra(era: string): string | null {
 	const digits = era.replace(/\D/g, "");
 	if (digits.length >= 4) {
@@ -67,7 +60,7 @@ export const insightsRouter = {
 
 			const [
 				spotifyStatsRows,
-				pipelineRunRows,
+				runningPipelineRows,
 				genreBreakdownRows,
 				generatedPlaylistRows,
 				clusterRows,
@@ -82,12 +75,17 @@ export const insightsRouter = {
 					.where(eq(userSpotifyLibraryStats.userId, userId))
 					.limit(1),
 
+				// Check for any active pipeline runs — single row, no ordering needed
 				db
-					.select({ status: pipelineRun.status })
+					.select({ id: pipelineRun.id })
 					.from(pipelineRun)
-					.where(eq(pipelineRun.userId, userId))
-					.orderBy(desc(pipelineRun.createdAt))
-					.limit(20),
+					.where(
+						and(
+							eq(pipelineRun.userId, userId),
+							eq(pipelineRun.status, "running"),
+						),
+					)
+					.limit(1),
 
 				db
 					.select({ name: genreDomain.name, count: count() })
@@ -131,17 +129,12 @@ export const insightsRouter = {
 						and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)),
 					),
 
+				// Only select LLM-produced fields — Spotify audio features are deprecated
+				// (API removed Nov 2024) and will always be null
 				db
 					.select({
 						llmMood: track.llmMood,
 						llmTags: track.llmTags,
-						energy: track.energy,
-						valence: track.valence,
-						danceability: track.danceability,
-						acousticness: track.acousticness,
-						instrumentalness: track.instrumentalness,
-						speechiness: track.speechiness,
-						liveness: track.liveness,
 					})
 					.from(track)
 					.where(
@@ -175,11 +168,9 @@ export const insightsRouter = {
 			const spotifyStats = spotifyStatsRows[0];
 			const trackCounts = trackCountRows[0];
 			const hasClassifyRun = classifiedTrackRows.length > 0;
-			const isPipelineStable = !pipelineRunRows.some(
-				(r) => r.status === "running",
-			);
+			const isPipelineStable = runningPipelineRows.length === 0;
 
-			// JS aggregation over classified tracks
+			// Single-pass JS aggregation over classified tracks
 			const moodMap = new Map<string, number>();
 			const secondaryMoodMap = new Map<string, number>();
 			const eraMap = new Map<string, number>();
@@ -238,21 +229,17 @@ export const insightsRouter = {
 					? energyValues.reduce((a, b) => a + b, 0) / energyValues.length
 					: null;
 
+			// Spotify audio features (valence, danceability, etc.) are always null —
+			// the API was deprecated in Nov 2024. Energy is derived from llmTags.energyLevel.
 			const sonicDna = hasClassifyRun
 				? {
 						energy: avgEnergy,
-						valence: numAvg(classifiedTrackRows.map((t) => t.valence)),
-						danceability: numAvg(
-							classifiedTrackRows.map((t) => t.danceability),
-						),
-						acousticness: numAvg(
-							classifiedTrackRows.map((t) => t.acousticness),
-						),
-						instrumentalness: numAvg(
-							classifiedTrackRows.map((t) => t.instrumentalness),
-						),
-						speechiness: numAvg(classifiedTrackRows.map((t) => t.speechiness)),
-						liveness: numAvg(classifiedTrackRows.map((t) => t.liveness)),
+						valence: null,
+						danceability: null,
+						acousticness: null,
+						instrumentalness: null,
+						speechiness: null,
+						liveness: null,
 					}
 				: null;
 

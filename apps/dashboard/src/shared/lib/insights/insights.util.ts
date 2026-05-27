@@ -6,7 +6,5 @@ export function insightsSummaryQueryOptions() {
 	return {
 		...orpc.insights.summary.queryOptions({ input: {} }),
 		staleTime: INSIGHTS_STALE_MS,
-		refetchOnMount: false,
-		refetchOnWindowFocus: false,
 	};
 }

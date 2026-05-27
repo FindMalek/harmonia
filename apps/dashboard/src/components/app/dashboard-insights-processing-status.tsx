@@ -57,7 +57,10 @@ export function DashboardInsightsProcessingStatus({
 			<div className="flex flex-col gap-3.5">
 				{BARS.map(({ key, label }) => {
 					const value = status[key];
-					const pct = status.total > 0 ? (value / status.total) * 100 : 0;
+					const pct = Math.min(
+						100,
+						Math.max(0, status.total > 0 ? (value / status.total) * 100 : 0),
+					);
 					return (
 						<div key={key} className="flex flex-col gap-1.5">
 							<div className="flex justify-between text-[11px]">

@@ -6,39 +6,39 @@ import { useInsightsController } from "@/shared/lib/insights/controller.hook";
 import {
 	DashboardInsightsEmotionalLandscape,
 	DashboardInsightsEmotionalLandscapeSkeleton,
-} from "./dashboard-insights-emotional-landscape";
+} from "@/components/app/dashboard-insights-emotional-landscape";
 import {
 	DashboardInsightsGenreBreakdown,
 	DashboardInsightsGenreBreakdownSkeleton,
-} from "./dashboard-insights-genre-breakdown";
+} from "@/components/app/dashboard-insights-genre-breakdown";
 import {
 	DashboardInsightsListening,
 	DashboardInsightsListeningSkeleton,
-} from "./dashboard-insights-listening";
+} from "@/components/app/dashboard-insights-listening";
 import {
 	DashboardInsightsMoodVibe,
 	DashboardInsightsMoodVibeSkeleton,
-} from "./dashboard-insights-mood-vibe";
+} from "@/components/app/dashboard-insights-mood-vibe";
 import {
 	DashboardInsightsPersonality,
 	DashboardInsightsPersonalitySkeleton,
-} from "./dashboard-insights-personality";
+} from "@/components/app/dashboard-insights-personality";
 import {
 	DashboardInsightsPlaylistCoverage,
 	DashboardInsightsPlaylistCoverageSkeleton,
-} from "./dashboard-insights-playlist-coverage";
+} from "@/components/app/dashboard-insights-playlist-coverage";
 import {
 	DashboardInsightsProcessingStatus,
 	DashboardInsightsProcessingStatusSkeleton,
-} from "./dashboard-insights-processing-status";
+} from "@/components/app/dashboard-insights-processing-status";
 import {
 	DashboardInsightsSonicDna,
 	DashboardInsightsSonicDnaSkeleton,
-} from "./dashboard-insights-sonic-dna";
+} from "@/components/app/dashboard-insights-sonic-dna";
 import {
 	DashboardInsightsStatsGrid,
 	DashboardInsightsStatsGridSkeleton,
-} from "./dashboard-insights-stats-grid";
+} from "@/components/app/dashboard-insights-stats-grid";
 
 function InsightsSkeleton() {
 	return (

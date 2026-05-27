@@ -20,6 +20,8 @@ const DNA_FEATURES: { key: keyof SonicDna; label: string }[] = [
 	{ key: "liveness", label: "Liveness" },
 ];
 
+type VisibleFeature = { key: keyof SonicDna; label: string; value: number };
+
 export function DashboardInsightsSonicDnaSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
@@ -39,30 +41,32 @@ export function DashboardInsightsSonicDnaSkeleton() {
 }
 
 export function DashboardInsightsSonicDna({ dna }: { dna: SonicDna }) {
-	const visibleFeatures = DNA_FEATURES.filter(({ key }) => dna[key] !== null);
+	const visibleFeatures: VisibleFeature[] = DNA_FEATURES.flatMap(
+		({ key, label }) => {
+			const value = dna[key];
+			return value !== null ? [{ key, label, value }] : [];
+		},
+	);
 
 	if (visibleFeatures.length === 0) return null;
 
 	return (
 		<InsightSectionCard title="Sonic DNA">
 			<div className="flex flex-col gap-3.5">
-				{visibleFeatures.map(({ key, label }) => {
-					const val = dna[key] as number;
-					return (
-						<div key={key} className="flex flex-col gap-1.5">
-							<div className="flex justify-between text-[11px]">
-								<span className="text-muted-foreground">{label}</span>
-								<span className="text-primary">{Math.round(val * 100)}%</span>
-							</div>
-							<div className="h-1 border border-border bg-muted">
-								<div
-									className="h-full bg-primary"
-									style={{ width: `${val * 100}%` }}
-								/>
-							</div>
+				{visibleFeatures.map(({ key, label, value }) => (
+					<div key={key} className="flex flex-col gap-1.5">
+						<div className="flex justify-between text-[11px]">
+							<span className="text-muted-foreground">{label}</span>
+							<span className="text-primary">{Math.round(value * 100)}%</span>
 						</div>
-					);
-				})}
+						<div className="h-1 border border-border bg-muted">
+							<div
+								className="h-full bg-primary"
+								style={{ width: `${value * 100}%` }}
+							/>
+						</div>
+					</div>
+				))}
 			</div>
 		</InsightSectionCard>
 	);
