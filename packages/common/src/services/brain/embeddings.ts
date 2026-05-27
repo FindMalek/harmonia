@@ -62,7 +62,10 @@ type EmbeddingInput = {
 
 function toEmbeddingInputs(
 	pendingTracks: Array<
-		Pick<typeof track.$inferSelect, "id" | "llmMood" | "llmTags" | "analysisSnapshot">
+		Pick<
+			typeof track.$inferSelect,
+			"id" | "llmMood" | "llmTags" | "analysisSnapshot"
+		>
 	>,
 ): EmbeddingInput[] {
 	return pendingTracks
