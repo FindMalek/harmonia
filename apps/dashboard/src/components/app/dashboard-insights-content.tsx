@@ -1,6 +1,7 @@
 "use client";
 
 import { ErrorState } from "@/components/shared/error-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { useInsightsController } from "@/shared/lib/insights/controller.hook";
 import {
 	DashboardInsightsEmotionalLandscape,
@@ -18,7 +19,6 @@ import {
 	DashboardInsightsMoodVibe,
 	DashboardInsightsMoodVibeSkeleton,
 } from "./dashboard-insights-mood-vibe";
-import { DashboardInsightsPageHeader } from "./dashboard-insights-page-header";
 import {
 	DashboardInsightsPersonality,
 	DashboardInsightsPersonalitySkeleton,
@@ -43,7 +43,10 @@ import {
 function InsightsSkeleton() {
 	return (
 		<div className="space-y-6">
-			<DashboardInsightsPageHeader />
+			<PageHeader
+				title="Insights"
+				description="Sonic DNA, moods, and playlist coverage"
+			/>
 			<DashboardInsightsStatsGridSkeleton />
 			<DashboardInsightsPersonalitySkeleton />
 			<DashboardInsightsListeningSkeleton />
@@ -80,7 +83,10 @@ export function DashboardInsightsContent() {
 
 	return (
 		<div className="space-y-6">
-			<DashboardInsightsPageHeader />
+			<PageHeader
+				title="Insights"
+				description="Sonic DNA, moods, and playlist coverage"
+			/>
 
 			<DashboardInsightsStatsGrid
 				totalTracks={data.library.totalTracks}

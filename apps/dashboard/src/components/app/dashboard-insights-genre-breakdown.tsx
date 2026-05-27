@@ -1,6 +1,25 @@
-import { InsightSectionCard, Skeleton } from "@harmonia/ui";
+"use client";
+
+import type { ChartConfig } from "@harmonia/ui";
+import {
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+	InsightSectionCard,
+	Skeleton,
+} from "@harmonia/ui";
+import { Cell, Pie, PieChart } from "recharts";
 
 type GenreItem = { name: string; count: number; percentage: number };
+
+const CHART_COLORS = [
+	"var(--chart-1)",
+	"var(--chart-2)",
+	"var(--chart-3)",
+	"var(--chart-4)",
+	"var(--chart-5)",
+	"var(--muted-foreground)",
+] as const;
 
 export function DashboardInsightsGenreBreakdownSkeleton() {
 	return (
@@ -35,15 +54,46 @@ export function DashboardInsightsGenreBreakdown({
 
 	const totalTracks = genreBreakdown.reduce((acc, g) => acc + g.count, 0);
 
+	const chartConfig: ChartConfig = Object.fromEntries(
+		genreBreakdown.map((g, i) => [
+			`genre${i}`,
+			{ label: g.name, color: CHART_COLORS[i % CHART_COLORS.length] },
+		]),
+	);
+
+	const chartData = genreBreakdown.map((g, i) => ({
+		...g,
+		key: `genre${i}`,
+		fill: CHART_COLORS[i % CHART_COLORS.length],
+	}));
+
 	return (
 		<InsightSectionCard title="Genre Breakdown">
 			<div className="flex flex-col items-center gap-5">
-				<div className="flex size-[140px] items-center justify-center rounded-full">
-					<div className="flex size-24 flex-col items-center justify-center rounded-full bg-background">
+				<div className="relative size-[140px]">
+					<ChartContainer config={chartConfig} className="size-[140px]">
+						<PieChart>
+							<ChartTooltip
+								content={<ChartTooltipContent nameKey="key" hideLabel />}
+							/>
+							<Pie
+								data={chartData}
+								dataKey="percentage"
+								innerRadius="55%"
+								outerRadius="100%"
+								paddingAngle={1}
+							>
+								{chartData.map((entry) => (
+									<Cell key={entry.key} fill={entry.fill} />
+								))}
+							</Pie>
+						</PieChart>
+					</ChartContainer>
+					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
 						<span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
 							Genres
 						</span>
-						<span className="mt-0.5 text-[13px] text-foreground">
+						<span className="mt-0.5 text-sm text-foreground">
 							{genreBreakdown.length}
 						</span>
 					</div>
@@ -58,7 +108,7 @@ export function DashboardInsightsGenreBreakdown({
 							<div className="flex items-center gap-2.5">
 								<span
 									className="inline-block size-1.5"
-									style={{ background: GENRE_COLORS[i % GENRE_COLORS.length] }}
+									style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
 								/>
 								<span className="text-foreground">{g.name}</span>
 							</div>

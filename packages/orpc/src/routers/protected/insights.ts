@@ -32,6 +32,17 @@ function normalizeEra(era: string): string | null {
 	return null;
 }
 
+function energyFromLevel(level: string | null | undefined): number | null {
+	const map: Record<string, number> = {
+		"very low": 0.1,
+		low: 0.3,
+		medium: 0.5,
+		high: 0.7,
+		"very high": 0.9,
+	};
+	return level ? (map[level] ?? null) : null;
+}
+
 function topStringMap(
 	map: Map<string, number>,
 	limit: number,
@@ -174,6 +185,7 @@ export const insightsRouter = {
 			const eraMap = new Map<string, number>();
 			const themeMap = new Map<string, number>();
 			const vibeMap = new Map<string, number>();
+			const energyValues: number[] = [];
 
 			for (const t of classifiedTrackRows) {
 				if (t.llmMood?.trim()) {
@@ -195,6 +207,8 @@ export const insightsRouter = {
 					for (const v of tags.vibe ?? []) {
 						if (v.trim()) vibeMap.set(v, (vibeMap.get(v) ?? 0) + 1);
 					}
+					const e = energyFromLevel(tags.energyLevel);
+					if (e !== null) energyValues.push(e);
 				}
 			}
 
@@ -219,10 +233,15 @@ export const insightsRouter = {
 			const primaryMood = topStringMap(moodMap, 1)[0]?.key ?? null;
 			const secondaryMood = topStringMap(secondaryMoodMap, 1)[0]?.key ?? null;
 
+			const avgEnergy =
+				energyValues.length > 0
+					? energyValues.reduce((a, b) => a + b, 0) / energyValues.length
+					: null;
+
 			const sonicDna = hasClassifyRun
 				? {
+						energy: avgEnergy,
 						valence: numAvg(classifiedTrackRows.map((t) => t.valence)),
-						energy: numAvg(classifiedTrackRows.map((t) => t.energy)),
 						danceability: numAvg(
 							classifiedTrackRows.map((t) => t.danceability),
 						),
@@ -236,8 +255,6 @@ export const insightsRouter = {
 						liveness: numAvg(classifiedTrackRows.map((t) => t.liveness)),
 					}
 				: null;
-
-			const avgEnergy = numAvg(classifiedTrackRows.map((t) => t.energy));
 
 			const totalGenreTracks = genreBreakdownRows.reduce(
 				(acc, g) => acc + g.count,

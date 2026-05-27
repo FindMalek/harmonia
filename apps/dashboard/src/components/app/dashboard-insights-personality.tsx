@@ -9,10 +9,8 @@ type Props = {
 	eraDistribution: EraItem[];
 };
 
-function toEraShort(era: string): string {
-	const digits = era.replace(/\D/g, "");
-	if (digits.length >= 4) return `${digits.slice(2, 4)}S`;
-	return era.toUpperCase();
+function eraDigits(era: string): string {
+	return era.replace(/\D/g, "").slice(2, 4);
 }
 
 function KvRow({ label, value }: { label: string; value: string | null }) {
@@ -80,9 +78,10 @@ export function DashboardInsightsPersonality({
 						{eraDistribution.map(({ era }) => (
 							<span
 								key={era}
-								className="flex-1 text-center font-mono text-[8px] uppercase text-muted-foreground"
+								className="flex-1 text-center font-mono text-[9px] text-muted-foreground"
 							>
-								{toEraShort(era)}
+								{eraDigits(era)}
+								<span className="text-[6px] align-top">s</span>
 							</span>
 						))}
 					</div>

@@ -6,6 +6,7 @@ import {
 	DashboardSettingsSection,
 	DashboardSettingsSkeleton,
 } from "@/components/app/dashboard-settings-section";
+import { PageHeader } from "@/components/shared/page-header";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 import { Badge, Button } from "@harmonia/ui";
 import { formatDistanceToNow } from "date-fns";
@@ -47,12 +48,10 @@ export default function SettingsPage() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div>
-				<h1 className="font-bold text-3xl tracking-tight">Settings</h1>
-				<p className="mt-1 text-muted-foreground text-sm">
-					Manage your account and app preferences.
-				</p>
-			</div>
+			<PageHeader
+				title="Settings"
+				description="Manage your account and app preferences."
+			/>
 
 			<DashboardSettingsSection label="CONNECTED SERVICES">
 				<DashboardSettingsRow

@@ -46,7 +46,7 @@ export function DashboardInsightsEmotionalLandscape({
 						<span className="font-mono text-[9px] uppercase leading-tight tracking-[0.5px] text-muted-foreground">
 							{label}
 						</span>
-						<span className="text-[15px] text-primary">
+						<span className="text-sm text-primary">
 							{landscape[key].toLocaleString()}
 						</span>
 						<span className="font-mono text-[9px] text-muted-foreground">

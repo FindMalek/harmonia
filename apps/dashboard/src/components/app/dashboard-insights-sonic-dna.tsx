@@ -11,8 +11,8 @@ type SonicDna = {
 };
 
 const DNA_FEATURES: { key: keyof SonicDna; label: string }[] = [
-	{ key: "valence", label: "Valence" },
 	{ key: "energy", label: "Energy" },
+	{ key: "valence", label: "Valence" },
 	{ key: "danceability", label: "Danceability" },
 	{ key: "acousticness", label: "Acousticness" },
 	{ key: "instrumentalness", label: "Instrumentalness" },
@@ -39,11 +39,15 @@ export function DashboardInsightsSonicDnaSkeleton() {
 }
 
 export function DashboardInsightsSonicDna({ dna }: { dna: SonicDna }) {
+	const visibleFeatures = DNA_FEATURES.filter(({ key }) => dna[key] !== null);
+
+	if (visibleFeatures.length === 0) return null;
+
 	return (
 		<InsightSectionCard title="Sonic DNA">
 			<div className="flex flex-col gap-3.5">
-				{DNA_FEATURES.map(({ key, label }) => {
-					const val = dna[key] ?? 0;
+				{visibleFeatures.map(({ key, label }) => {
+					const val = dna[key] as number;
 					return (
 						<div key={key} className="flex flex-col gap-1.5">
 							<div className="flex justify-between text-[11px]">
