@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@harmonia/ui";
 
 type SonicDna = {
 	valence: number | null;
@@ -23,8 +23,7 @@ const DNA_FEATURES: { key: keyof SonicDna; label: string }[] = [
 export function DashboardInsightsSonicDnaSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<Skeleton className="size-1" />
+			<div className="border-b border-border pb-3">
 				<Skeleton className="h-2 w-24" />
 			</div>
 			<div className="flex flex-col gap-3.5">
@@ -41,14 +40,7 @@ export function DashboardInsightsSonicDnaSkeleton() {
 
 export function DashboardInsightsSonicDna({ dna }: { dna: SonicDna }) {
 	return (
-		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<span className="inline-block size-1 shrink-0 bg-primary" />
-				<span className="font-bold font-mono text-[11px] uppercase tracking-widest text-foreground">
-					Sonic DNA
-				</span>
-			</div>
-
+		<InsightSectionCard title="Sonic DNA">
 			<div className="flex flex-col gap-3.5">
 				{DNA_FEATURES.map(({ key, label }) => {
 					const val = dna[key] ?? 0;
@@ -56,9 +48,7 @@ export function DashboardInsightsSonicDna({ dna }: { dna: SonicDna }) {
 						<div key={key} className="flex flex-col gap-1.5">
 							<div className="flex justify-between text-[11px]">
 								<span className="text-muted-foreground">{label}</span>
-								<span className="font-bold text-primary">
-									{Math.round(val * 100)}%
-								</span>
+								<span className="text-primary">{Math.round(val * 100)}%</span>
 							</div>
 							<div className="h-1 border border-border bg-muted">
 								<div
@@ -70,6 +60,6 @@ export function DashboardInsightsSonicDna({ dna }: { dna: SonicDna }) {
 					);
 				})}
 			</div>
-		</div>
+		</InsightSectionCard>
 	);
 }

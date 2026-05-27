@@ -11,10 +11,6 @@ import {
 	DashboardInsightsGenreBreakdownSkeleton,
 } from "./dashboard-insights-genre-breakdown";
 import {
-	DashboardInsightsHeader,
-	DashboardInsightsHeaderSkeleton,
-} from "./dashboard-insights-header";
-import {
 	DashboardInsightsListening,
 	DashboardInsightsListeningSkeleton,
 } from "./dashboard-insights-listening";
@@ -22,6 +18,7 @@ import {
 	DashboardInsightsMoodVibe,
 	DashboardInsightsMoodVibeSkeleton,
 } from "./dashboard-insights-mood-vibe";
+import { DashboardInsightsPageHeader } from "./dashboard-insights-page-header";
 import {
 	DashboardInsightsPersonality,
 	DashboardInsightsPersonalitySkeleton,
@@ -43,19 +40,10 @@ import {
 	DashboardInsightsStatsGridSkeleton,
 } from "./dashboard-insights-stats-grid";
 
-const DOT_GRID_STYLE = {
-	backgroundImage:
-		"radial-gradient(circle at 1px 1px, var(--muted) 1px, transparent 0)",
-	backgroundSize: "16px 16px",
-} as const;
-
 function InsightsSkeleton() {
 	return (
-		<div
-			className="flex min-h-full flex-col gap-6 pb-6"
-			style={DOT_GRID_STYLE}
-		>
-			<DashboardInsightsHeaderSkeleton />
+		<div className="space-y-6">
+			<DashboardInsightsPageHeader />
 			<DashboardInsightsStatsGridSkeleton />
 			<DashboardInsightsPersonalitySkeleton />
 			<DashboardInsightsListeningSkeleton />
@@ -91,11 +79,8 @@ export function DashboardInsightsContent() {
 	if (!data) return <InsightsSkeleton />;
 
 	return (
-		<div className="flex min-h-full flex-col gap-6 pb-6" style={DOT_GRID_STYLE}>
-			<DashboardInsightsHeader
-				isSystemConnected={data.isSystemConnected}
-				isPipelineStable={data.isPipelineStable}
-			/>
+		<div className="space-y-6">
+			<DashboardInsightsPageHeader />
 
 			<DashboardInsightsStatsGrid
 				totalTracks={data.library.totalTracks}

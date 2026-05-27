@@ -21,6 +21,10 @@ export {
 } from "./components/ui/card";
 export { Checkbox } from "./components/ui/checkbox";
 export {
+	InsightSectionCard,
+	InsightStatCard,
+} from "./components/ui/insight-stat-card";
+export {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,

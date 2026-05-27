@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@harmonia/ui";
 
 type Props = {
 	topGenre: string | null;
@@ -6,30 +6,11 @@ type Props = {
 	avgEnergy: number | null;
 };
 
-function InsightsCardTitle({ title }: { title: string }) {
-	return (
-		<div className="flex items-center gap-2 border-b border-border pb-3">
-			<span className="inline-block size-1 shrink-0 bg-primary" />
-			<span className="font-bold font-mono text-[11px] uppercase tracking-widest text-foreground">
-				{title}
-			</span>
-		</div>
-	);
-}
-
-function KvRow({
-	label,
-	value,
-}: {
-	label: string;
-	value: string | null;
-}) {
+function KvRow({ label, value }: { label: string; value: string | null }) {
 	return (
 		<div className="flex items-center justify-between border-b border-border py-3 last:border-b-0">
 			<span className="text-[11px] text-muted-foreground">{label}</span>
-			<span className="font-bold capitalize text-foreground text-sm">
-				{value ?? "—"}
-			</span>
+			<span className="capitalize text-foreground text-sm">{value ?? "—"}</span>
 		</div>
 	);
 }
@@ -43,8 +24,7 @@ function energyLabel(energy: number): string {
 export function DashboardInsightsListeningSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<Skeleton className="size-1" />
+			<div className="border-b border-border pb-3">
 				<Skeleton className="h-2 w-32" />
 			</div>
 			{[1, 2, 3].map((i) => (
@@ -66,14 +46,11 @@ export function DashboardInsightsListening({
 	topThemes,
 	avgEnergy,
 }: Props) {
-	const themesString =
-		topThemes.length > 0 ? topThemes.join(" and ") : null;
+	const themesString = topThemes.length > 0 ? topThemes.join(" and ") : null;
 	const energy = avgEnergy ?? 0;
 
 	return (
-		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<InsightsCardTitle title="Listening Patterns" />
-
+		<InsightSectionCard title="Listening Patterns">
 			<div>
 				<KvRow label="Most common genre" value={topGenre} />
 				<KvRow label="Common themes" value={themesString} />
@@ -101,6 +78,6 @@ export function DashboardInsightsListening({
 					</div>
 				</div>
 			)}
-		</div>
+		</InsightSectionCard>
 	);
 }

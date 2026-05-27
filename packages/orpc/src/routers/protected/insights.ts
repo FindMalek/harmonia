@@ -16,6 +16,22 @@ function numAvg(values: (number | null | undefined)[]): number | null {
 		: valid.reduce((a, b) => a + b, 0) / valid.length;
 }
 
+function normalizeEra(era: string): string | null {
+	const digits = era.replace(/\D/g, "");
+	if (digits.length >= 4) {
+		const year = parseInt(digits.slice(0, 4));
+		if (year >= 1950 && year <= 2029) {
+			return `${Math.floor(year / 10) * 10}s`;
+		}
+	}
+	if (digits.length === 2) {
+		const d = parseInt(digits);
+		if (d >= 50 && d <= 99) return `19${digits}s`;
+		if (d >= 0 && d <= 29) return `20${digits.padStart(2, "0")}s`;
+	}
+	return null;
+}
+
 function topStringMap(
 	map: Map<string, number>,
 	limit: number,
@@ -67,7 +83,10 @@ export const insightsRouter = {
 					.from(track)
 					.innerJoin(genreDomain, eq(track.genreDomainId, genreDomain.id))
 					.where(
-						and(inArray(track.id, userTrackIds), isNotNull(track.genreDomainId)),
+						and(
+							inArray(track.id, userTrackIds),
+							isNotNull(track.genreDomainId),
+						),
 					)
 					.groupBy(genreDomain.name)
 					.orderBy(desc(count()))
@@ -135,7 +154,10 @@ export const insightsRouter = {
 					.selectDistinct({ genreDomainId: track.genreDomainId })
 					.from(track)
 					.where(
-						and(inArray(track.id, userTrackIds), isNotNull(track.genreDomainId)),
+						and(
+							inArray(track.id, userTrackIds),
+							isNotNull(track.genreDomainId),
+						),
 					),
 			]);
 
@@ -164,8 +186,9 @@ export const insightsRouter = {
 						if (sm.trim())
 							secondaryMoodMap.set(sm, (secondaryMoodMap.get(sm) ?? 0) + 1);
 					}
-					if (tags.era?.trim())
-						eraMap.set(tags.era, (eraMap.get(tags.era) ?? 0) + 1);
+					const normalizedEra = tags.era ? normalizeEra(tags.era) : null;
+					if (normalizedEra)
+						eraMap.set(normalizedEra, (eraMap.get(normalizedEra) ?? 0) + 1);
 					for (const th of tags.themes ?? []) {
 						if (th.trim()) themeMap.set(th, (themeMap.get(th) ?? 0) + 1);
 					}
@@ -192,8 +215,7 @@ export const insightsRouter = {
 				.sort(([a], [b]) => a.localeCompare(b))
 				.map(([era, c]) => ({ era, count: c }));
 
-			const favoriteEra =
-				topStringMap(eraMap, 1)[0]?.key ?? null;
+			const favoriteEra = topStringMap(eraMap, 1)[0]?.key ?? null;
 			const primaryMood = topStringMap(moodMap, 1)[0]?.key ?? null;
 			const secondaryMood = topStringMap(secondaryMoodMap, 1)[0]?.key ?? null;
 
@@ -250,9 +272,7 @@ export const insightsRouter = {
 			const playlistCoverage = hasGenerateRun
 				? {
 						percentage:
-							totalUserTracks > 0
-								? (coveredCount / totalUserTracks) * 100
-								: 0,
+							totalUserTracks > 0 ? (coveredCount / totalUserTracks) * 100 : 0,
 						coveredTracks: coveredCount,
 						totalTracks: totalUserTracks,
 						totalPlaylists: generatedPlaylistRows.length,

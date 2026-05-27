@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@harmonia/ui";
 
 type MoodItem = { mood: string; count: number; percentage: number };
 
@@ -10,8 +10,7 @@ type Props = {
 export function DashboardInsightsMoodVibeSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<Skeleton className="size-1" />
+			<div className="border-b border-border pb-3">
 				<Skeleton className="h-2 w-28" />
 			</div>
 			<div className="flex flex-col gap-3">
@@ -37,14 +36,7 @@ export function DashboardInsightsMoodVibe({
 	topVibes,
 }: Props) {
 	return (
-		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<span className="inline-block size-1 shrink-0 bg-primary" />
-				<span className="font-bold font-mono text-[11px] uppercase tracking-widest text-foreground">
-					Mood &amp; Vibe
-				</span>
-			</div>
-
+		<InsightSectionCard title="Mood & Vibe">
 			{moodDistribution.length > 0 && (
 				<div className="flex flex-col gap-3">
 					{moodDistribution.map(({ mood, percentage }) => (
@@ -58,7 +50,7 @@ export function DashboardInsightsMoodVibe({
 									style={{ width: `${percentage}%` }}
 								/>
 							</div>
-							<span className="w-9 text-right font-bold text-[11px] text-foreground">
+							<span className="w-9 text-right text-[11px] text-foreground">
 								{Math.round(percentage)}%
 							</span>
 						</div>
@@ -79,6 +71,6 @@ export function DashboardInsightsMoodVibe({
 					))}
 				</div>
 			)}
-		</div>
+		</InsightSectionCard>
 	);
 }

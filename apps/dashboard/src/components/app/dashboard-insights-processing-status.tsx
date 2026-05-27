@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@harmonia/ui";
 
 type Status = {
 	total: number;
@@ -17,10 +17,7 @@ export function DashboardInsightsProcessingStatusSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
 			<div className="flex items-center justify-between border-b border-border pb-3">
-				<div className="flex items-center gap-2">
-					<Skeleton className="size-1" />
-					<Skeleton className="h-2 w-36" />
-				</div>
+				<Skeleton className="h-2 w-36" />
 				<Skeleton className="h-4 w-20" />
 			</div>
 			<div className="flex flex-col gap-3.5">
@@ -47,23 +44,15 @@ export function DashboardInsightsProcessingStatus({
 		status.embedded >= status.total;
 
 	return (
-		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center justify-between border-b border-border pb-3">
-				<div className="flex items-center gap-2">
+		<InsightSectionCard title="Processing Status">
+			{isFullyProcessed && (
+				<div className="flex items-center gap-1.5 self-start border border-primary px-1.5 py-0.5">
 					<span className="inline-block size-1 shrink-0 bg-primary" />
-					<span className="font-bold font-mono text-[11px] uppercase tracking-widest text-foreground">
-						Processing Status
+					<span className="font-mono text-[9px] uppercase text-primary">
+						Complete
 					</span>
 				</div>
-				{isFullyProcessed && (
-					<div className="flex items-center gap-1.5 border border-emerald-500 px-1.5 py-0.5">
-						<span className="inline-block size-1 shrink-0 bg-emerald-500" />
-						<span className="font-bold font-mono text-[9px] uppercase text-emerald-500">
-							Complete
-						</span>
-					</div>
-				)}
-			</div>
+			)}
 
 			<div className="flex flex-col gap-3.5">
 				{BARS.map(({ key, label }) => {
@@ -73,13 +62,13 @@ export function DashboardInsightsProcessingStatus({
 						<div key={key} className="flex flex-col gap-1.5">
 							<div className="flex justify-between text-[11px]">
 								<span className="text-muted-foreground">{label}</span>
-								<span className="font-bold text-foreground">
+								<span className="text-foreground">
 									{value.toLocaleString()} / {status.total.toLocaleString()}
 								</span>
 							</div>
 							<div className="h-1 border border-border bg-muted">
 								<div
-									className="h-full bg-emerald-500"
+									className="h-full bg-primary"
 									style={{ width: `${pct}%` }}
 								/>
 							</div>
@@ -87,6 +76,6 @@ export function DashboardInsightsProcessingStatus({
 					);
 				})}
 			</div>
-		</div>
+		</InsightSectionCard>
 	);
 }

@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@harmonia/ui";
 
 type Coverage = {
 	percentage: number;
@@ -12,8 +12,7 @@ type Coverage = {
 export function DashboardInsightsPlaylistCoverageSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<Skeleton className="size-1" />
+			<div className="border-b border-border pb-3">
 				<Skeleton className="h-2 w-32" />
 			</div>
 			<div className="flex items-center gap-5">
@@ -38,24 +37,17 @@ export function DashboardInsightsPlaylistCoverage({
 }) {
 	const pct = Math.round(coverage.percentage);
 	const ringStyle = {
-		background: `conic-gradient(#10b981 0% ${pct}%, var(--muted) ${pct}% 100%)`,
+		background: `conic-gradient(var(--primary) 0% ${pct}%, var(--muted) ${pct}% 100%)`,
 	};
 
 	return (
-		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<span className="inline-block size-1 shrink-0 bg-primary" />
-				<span className="font-bold font-mono text-[11px] uppercase tracking-widest text-foreground">
-					Playlist Coverage
-				</span>
-			</div>
-
+		<InsightSectionCard title="Playlist Coverage">
 			<div className="flex items-center gap-5">
 				<div
 					className="flex size-20 shrink-0 items-center justify-center rounded-full"
 					style={ringStyle}
 				>
-					<div className="flex size-[58px] items-center justify-center rounded-full bg-background font-bold text-[11px] text-foreground">
+					<div className="flex size-[58px] items-center justify-center rounded-full bg-background text-[11px] text-foreground">
 						{pct}%
 					</div>
 				</div>
@@ -75,11 +67,11 @@ export function DashboardInsightsPlaylistCoverage({
 					].map(({ label, value }) => (
 						<div key={label} className="flex justify-between text-[11px]">
 							<span className="text-muted-foreground">{label}</span>
-							<span className="font-bold text-foreground">{value}</span>
+							<span className="text-foreground">{value}</span>
 						</div>
 					))}
 				</div>
 			</div>
-		</div>
+		</InsightSectionCard>
 	);
 }

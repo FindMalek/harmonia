@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@harmonia/ui";
 
 type Landscape = {
 	angryIntense: number;
@@ -7,30 +7,17 @@ type Landscape = {
 	chillHappy: number;
 };
 
-const QUADRANTS: {
-	key: keyof Landscape;
-	label: string;
-	sub: string;
-}[] = [
+const QUADRANTS: { key: keyof Landscape; label: string; sub: string }[] = [
 	{ key: "euphoric", label: "Euphoric / Hype", sub: "High energy · Bright" },
-	{
-		key: "angryIntense",
-		label: "Angry / Intense",
-		sub: "High energy · Dark",
-	},
+	{ key: "angryIntense", label: "Angry / Intense", sub: "High energy · Dark" },
 	{ key: "chillHappy", label: "Chill / Happy", sub: "Low energy · Bright" },
-	{
-		key: "darkBrooding",
-		label: "Dark / Brooding",
-		sub: "Low energy · Dark",
-	},
+	{ key: "darkBrooding", label: "Dark / Brooding", sub: "Low energy · Dark" },
 ];
 
 export function DashboardInsightsEmotionalLandscapeSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<Skeleton className="size-1" />
+			<div className="border-b border-border pb-3">
 				<Skeleton className="h-2 w-36" />
 			</div>
 			<div className="grid grid-cols-2 gap-px bg-border">
@@ -52,24 +39,14 @@ export function DashboardInsightsEmotionalLandscape({
 	landscape: Landscape;
 }) {
 	return (
-		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center gap-2 border-b border-border pb-3">
-				<span className="inline-block size-1 shrink-0 bg-primary" />
-				<span className="font-bold font-mono text-[11px] uppercase tracking-widest text-foreground">
-					Emotional Landscape
-				</span>
-			</div>
-
+		<InsightSectionCard title="Emotional Landscape">
 			<div className="grid grid-cols-2 gap-px border border-border bg-border">
 				{QUADRANTS.map(({ key, label, sub }) => (
-					<div
-						key={key}
-						className="flex flex-col gap-1.5 bg-background p-3.5"
-					>
+					<div key={key} className="flex flex-col gap-1.5 bg-background p-3.5">
 						<span className="font-mono text-[9px] uppercase leading-tight tracking-[0.5px] text-muted-foreground">
 							{label}
 						</span>
-						<span className="font-bold text-[15px] text-primary">
+						<span className="text-[15px] text-primary">
 							{landscape[key].toLocaleString()}
 						</span>
 						<span className="font-mono text-[9px] text-muted-foreground">
@@ -78,6 +55,6 @@ export function DashboardInsightsEmotionalLandscape({
 					</div>
 				))}
 			</div>
-		</div>
+		</InsightSectionCard>
 	);
 }
