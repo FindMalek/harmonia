@@ -10,6 +10,7 @@ import {
 	DropdownMenuTrigger,
 	Icons,
 } from "@harmonia/ui";
+import { PageHeader } from "../shared/page-header";
 
 export function DashboardPlaylistsPageHeader({
 	hasPlaylists,
@@ -22,14 +23,10 @@ export function DashboardPlaylistsPageHeader({
 
 	return (
 		<div className="flex items-start justify-between gap-4">
-			<div className="min-w-0 flex-1 space-y-1">
-				<h1 className="font-bold text-2xl text-foreground tracking-tight">
-					AI Playlists
-				</h1>
-				<p className="text-muted-foreground text-sm">
-					Generated from your taste.
-				</p>
-			</div>
+			<PageHeader
+				title="AI Playlists"
+				description="Generated from your taste."
+			/>
 			{hasPlaylists ? (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
