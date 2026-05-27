@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/emails",
+	"name": "@harmonia/email",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -8,9 +8,10 @@
 		"check-types": "tsc --noEmit"
 	},
 	"exports": {
-		".": {
-			"types": "./src/index.ts",
-			"default": "./src/index.ts"
+		"./emails/*": "./emails/*.tsx",
+		"./render": {
+			"types": "./render.ts",
+			"default": "./render.ts"
 		},
 		"./send": {
 			"types": "./src/send.ts",
@@ -20,8 +21,8 @@
 	"dependencies": {
 		"@react-email/components": "catalog:",
 		"@react-email/render": "catalog:",
+		"date-fns": "^4.1.0",
 		"react": "catalog:",
-		"react-email": "catalog:",
 		"resend": "catalog:",
 		"zod": "catalog:"
 	},

@@ -44,7 +44,10 @@ oRPC routers, procedures, context, and client. All API definitions live here.
 OpenTelemetry instrumentation. Initialised at app startup.
 
 ## `@harmonia/ui`
-shadcn/ui component library + Tailwind config. Import components via `@harmonia/ui` or `@/components/ui/*` within apps.
+shadcn/ui component library + Tailwind config. Import components via `@harmonia/ui` or `@/components/ui/*` within apps. Email templates do **not** use this package — see `@harmonia/email`.
+
+## `@harmonia/email`
+React Email templates (`emails/`), shared components (`components/`), Resend send helpers (`@harmonia/email/send`). Preview via `pnpm dev:email`. See `.cursor/rules/packages/email.mdc`.
 
 ## Dependency Rules
 

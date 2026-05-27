@@ -7,7 +7,7 @@ import {
 	sendLoginAlertEmail,
 	sendOrganizeCompleteEmail,
 	sendWelcomeEmail,
-} from "@harmonia/emails/send";
+} from "@harmonia/email/send";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, desc, eq } from "drizzle-orm";

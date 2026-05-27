@@ -86,7 +86,7 @@
 	"dependencies": {
 		"@ai-sdk/groq": "^3.0.39",
 		"@harmonia/db": "workspace:*",
-		"@harmonia/emails": "workspace:*",
+		"@harmonia/email": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
 		"@trigger.dev/sdk": "catalog:",

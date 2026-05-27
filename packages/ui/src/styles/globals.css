@@ -8,6 +8,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Semantic colors for dashboard / web (emails use packages/email/components/theme.tsx) */
 :root {
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.153 0.006 107.1);

@@ -29,6 +29,7 @@ Harmonia is an AI-powered music organization app. It syncs a user's Spotify libr
 - `packages/orpc`: oRPC routers, procedures, context, and client
 - `packages/tracing`: OpenTelemetry instrumentation
 - `packages/ui`: shadcn/ui component library + shared Tailwind config
+- `packages/email`: React Email templates + Resend send layer (`@harmonia/email`)
 
 ## Development Commands
 

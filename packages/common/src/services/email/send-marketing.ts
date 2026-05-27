@@ -1,7 +1,7 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
-import { sendMarketingFeatureUpdateEmail } from "@harmonia/emails/send";
+import { sendMarketingFeatureUpdateEmail } from "@harmonia/email/send";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { eq } from "drizzle-orm";

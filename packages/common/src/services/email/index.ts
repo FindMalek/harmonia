@@ -1,3 +1,7 @@
+export {
+	type EmailTemplateCategory,
+	getEmailTemplateCategory,
+} from "./categories";
 export { markEmailDelivery, reserveEmailDelivery } from "./dedupe";
 export {
 	type EmailPolicyDecision,

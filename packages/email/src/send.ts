@@ -1,4 +1,3 @@
-import { render } from "@react-email/render";
 import { Resend } from "resend";
 import { z } from "zod";
 import {
@@ -18,6 +17,7 @@ import {
 	type OrganizeCompleteEmailProps,
 } from "../emails/organize-complete";
 import { WelcomeEmail, type WelcomeEmailProps } from "../emails/welcome";
+import { render } from "../render";
 
 const sendEmailConfigSchema = z.object({
 	apiKey: z.string().min(1),

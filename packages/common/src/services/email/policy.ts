@@ -4,6 +4,7 @@ import { userEmailPreferences } from "@harmonia/db/schema/user-email-preferences
 import { eq } from "drizzle-orm";
 
 import type { EmailTemplateKey } from "../../schemas";
+import { getEmailTemplateCategory } from "./categories";
 
 export type EmailPolicyDecision = {
 	allowed: boolean;
@@ -11,14 +12,11 @@ export type EmailPolicyDecision = {
 		| "allowed"
 		| "missing_email"
 		| "suppressed"
+		| "transactional_opt_out"
+		| "product_updates_opt_out"
 		| "marketing_opt_out"
 		| "feedback_opt_out";
 };
-
-const MARKETING_TEMPLATES = new Set<EmailTemplateKey>([
-	"marketing_feature_update",
-]);
-const FEEDBACK_TEMPLATES = new Set<EmailTemplateKey>(["feedback_3day"]);
 
 export async function ensureUserEmailPreferences(userId: string) {
 	await db
@@ -61,13 +59,35 @@ export async function evaluateEmailPolicy({
 	}
 
 	const prefs = await ensureUserEmailPreferences(userId);
+	const category = getEmailTemplateCategory(templateKey);
 
-	if (MARKETING_TEMPLATES.has(templateKey) && !prefs.marketingEnabled) {
-		return { allowed: false, reason: "marketing_opt_out" };
-	}
-
-	if (FEEDBACK_TEMPLATES.has(templateKey) && !prefs.feedbackEnabled) {
-		return { allowed: false, reason: "feedback_opt_out" };
+	switch (category) {
+		case "transactional":
+			if (!prefs.transactionalEnabled) {
+				return { allowed: false, reason: "transactional_opt_out" };
+			}
+			break;
+		case "security":
+			break;
+		case "feedback":
+			if (!prefs.feedbackEnabled) {
+				return { allowed: false, reason: "feedback_opt_out" };
+			}
+			break;
+		case "product_update":
+			if (!prefs.productUpdatesEnabled) {
+				return { allowed: false, reason: "product_updates_opt_out" };
+			}
+			break;
+		case "marketing":
+			if (!prefs.marketingEnabled) {
+				return { allowed: false, reason: "marketing_opt_out" };
+			}
+			break;
+		default: {
+			const _exhaustive: never = category;
+			return _exhaustive;
+		}
 	}
 
 	return { allowed: true, reason: "allowed" };

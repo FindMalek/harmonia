@@ -25,7 +25,7 @@ export default function NotificationsSettingsPage() {
 
 			<DashboardSettingsSection label="EMAIL PREFERENCES">
 				<DashboardSettingsRow
-					label="Transactional alerts"
+					label="Organize & account emails"
 					value={
 						<PreferenceButton
 							loading={emailPreferencesLoading}
@@ -41,7 +41,7 @@ export default function NotificationsSettingsPage() {
 					}
 				/>
 				<DashboardSettingsRow
-					label="Product updates"
+					label="Product feature updates"
 					value={
 						<PreferenceButton
 							loading={emailPreferencesLoading}
@@ -73,7 +73,7 @@ export default function NotificationsSettingsPage() {
 					}
 				/>
 				<DashboardSettingsRow
-					label="Marketing emails"
+					label="Marketing & promotions"
 					value={
 						<PreferenceButton
 							loading={emailPreferencesLoading}
