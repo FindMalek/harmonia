@@ -79,7 +79,11 @@ export const track = pgTable(
 			llm: Record<string, unknown>;
 			domain: string | null;
 			embeddingDims?: number;
-			modelVersions?: { llm?: string; embedding?: string }; // e.g. openai/gpt-oss-120b
+			modelVersions?: {
+				llm?: string;
+				embedding?: string;
+				embeddingInputVersion?: string;
+			}; // e.g. openai/gpt-oss-120b
 		}>(),
 
 		createdAt: timestamp("created_at").defaultNow().notNull(),

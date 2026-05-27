@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
 import { emailPreferencesRouter } from "./email-preferences";
+import { insightsRouter } from "./insights";
 import { pipelineRouter } from "./pipeline";
 import { playlistsRouter } from "./playlists";
 import { spotifyRouter } from "./spotify";
@@ -31,6 +32,7 @@ export const protectedRouter = {
 	pipeline: pipelineRouter,
 	spotify: spotifyRouter,
 	emailPreferences: emailPreferencesRouter,
+	insights: insightsRouter,
 };
 
 export type ProtectedRouter = typeof protectedRouter;
