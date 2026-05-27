@@ -25,7 +25,8 @@
 			"!**/.svelte-kit",
 			"!**/wrangler.jsonc",
 			"!**/.source",
-			"!**/.trigger"
+			"!**/.trigger",
+			"!**/.react-email"
 		]
 	},
 	"formatter": {

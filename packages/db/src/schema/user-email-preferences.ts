@@ -11,9 +11,9 @@ export const userEmailPreferences = pgTable("user_email_preferences", {
 		.default(true),
 	productUpdatesEnabled: boolean("product_updates_enabled")
 		.notNull()
-		.default(false),
-	marketingEnabled: boolean("marketing_enabled").notNull().default(false),
-	feedbackEnabled: boolean("feedback_enabled").notNull().default(false),
+		.default(true),
+	marketingEnabled: boolean("marketing_enabled").notNull().default(true),
+	feedbackEnabled: boolean("feedback_enabled").notNull().default(true),
 	consentSource: text("consent_source"),
 	consentCapturedAt: timestamp("consent_captured_at"),
 	unsubscribedAt: timestamp("unsubscribed_at"),

@@ -1,10 +1,10 @@
 "use client";
 
 import type { PlaylistGetByIdOutput } from "@harmonia/common/schemas";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Skeleton } from "@harmonia/ui";
-
+import { DashboardDetailBackLink } from "@/components/shared/dashboard-detail-back-link";
 import { DashboardPlaylistDetailActions } from "./dashboard-playlist-detail-actions";
-import { DashboardPlaylistDetailBackLink } from "./dashboard-playlist-detail-back-link";
 import { DashboardPlaylistDetailMetadata } from "./dashboard-playlist-detail-metadata";
 import { DashboardPlaylistDetailTracklist } from "./dashboard-playlist-detail-tracklist";
 
@@ -21,7 +21,10 @@ export function DashboardPlaylistDetail({
 
 	return (
 		<div className="flex flex-col gap-6">
-			<DashboardPlaylistDetailBackLink />
+			<DashboardDetailBackLink
+				href={DASHBOARD_ROUTES.playlists.path}
+				label="Playlists"
+			/>
 
 			<div className="flex flex-col gap-1">
 				<h1 className="font-bold text-2xl tracking-tight">{playlist.name}</h1>
@@ -99,7 +102,10 @@ export function DashboardPlaylistDetailSkeleton() {
 export function DashboardPlaylistDetailNotFound() {
 	return (
 		<div className="flex flex-col gap-6">
-			<DashboardPlaylistDetailBackLink />
+			<DashboardDetailBackLink
+				href={DASHBOARD_ROUTES.playlists.path}
+				label="Playlists"
+			/>
 			<p className="text-muted-foreground text-sm">Playlist not found.</p>
 		</div>
 	);

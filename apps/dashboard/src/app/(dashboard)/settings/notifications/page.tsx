@@ -1,23 +1,30 @@
 "use client";
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Button } from "@harmonia/ui";
-import { useRouter } from "next/navigation";
+import { Switch } from "@harmonia/ui";
 import {
 	DashboardSettingsRow,
 	DashboardSettingsSection,
 } from "@/components/app/dashboard-settings-section";
+import { DashboardDetailBackLink } from "@/components/shared/dashboard-detail-back-link";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 
 export default function NotificationsSettingsPage() {
-	const router = useRouter();
 	const { emailPreferences, emailPreferencesLoading, updateEmailPreferences } =
 		useSettingsController();
 
+	const switchDisabled =
+		emailPreferencesLoading || updateEmailPreferences.isPending;
+
 	return (
 		<div className="flex flex-col gap-6">
+			<DashboardDetailBackLink
+				href={DASHBOARD_ROUTES.settings.path}
+				label="Settings"
+			/>
+
 			<div>
-				<h1 className="font-bold text-3xl tracking-tight">Notifications</h1>
+				<h1 className="font-bold text-2xl tracking-tight">Notifications</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
 					Choose which emails Harmonia sends to your inbox.
 				</p>
@@ -27,14 +34,13 @@ export default function NotificationsSettingsPage() {
 				<DashboardSettingsRow
 					label="Organize & account emails"
 					value={
-						<PreferenceButton
+						<PreferenceSwitch
 							loading={emailPreferencesLoading}
-							enabled={emailPreferences?.transactionalEnabled ?? true}
-							onToggle={() =>
+							disabled={switchDisabled}
+							checked={emailPreferences?.transactionalEnabled ?? true}
+							onCheckedChange={(checked) =>
 								updateEmailPreferences.mutate({
-									transactionalEnabled: !(
-										emailPreferences?.transactionalEnabled ?? true
-									),
+									transactionalEnabled: checked,
 								})
 							}
 						/>
@@ -43,14 +49,13 @@ export default function NotificationsSettingsPage() {
 				<DashboardSettingsRow
 					label="Product feature updates"
 					value={
-						<PreferenceButton
+						<PreferenceSwitch
 							loading={emailPreferencesLoading}
-							enabled={emailPreferences?.productUpdatesEnabled ?? false}
-							onToggle={() =>
+							disabled={switchDisabled}
+							checked={emailPreferences?.productUpdatesEnabled ?? true}
+							onCheckedChange={(checked) =>
 								updateEmailPreferences.mutate({
-									productUpdatesEnabled: !(
-										emailPreferences?.productUpdatesEnabled ?? false
-									),
+									productUpdatesEnabled: checked,
 								})
 							}
 						/>
@@ -59,14 +64,13 @@ export default function NotificationsSettingsPage() {
 				<DashboardSettingsRow
 					label="Feedback requests"
 					value={
-						<PreferenceButton
+						<PreferenceSwitch
 							loading={emailPreferencesLoading}
-							enabled={emailPreferences?.feedbackEnabled ?? false}
-							onToggle={() =>
+							disabled={switchDisabled}
+							checked={emailPreferences?.feedbackEnabled ?? true}
+							onCheckedChange={(checked) =>
 								updateEmailPreferences.mutate({
-									feedbackEnabled: !(
-										emailPreferences?.feedbackEnabled ?? false
-									),
+									feedbackEnabled: checked,
 								})
 							}
 						/>
@@ -75,50 +79,43 @@ export default function NotificationsSettingsPage() {
 				<DashboardSettingsRow
 					label="Marketing & promotions"
 					value={
-						<PreferenceButton
+						<PreferenceSwitch
 							loading={emailPreferencesLoading}
-							enabled={emailPreferences?.marketingEnabled ?? false}
-							onToggle={() =>
+							disabled={switchDisabled}
+							checked={emailPreferences?.marketingEnabled ?? true}
+							onCheckedChange={(checked) =>
 								updateEmailPreferences.mutate({
-									marketingEnabled: !(
-										emailPreferences?.marketingEnabled ?? false
-									),
+									marketingEnabled: checked,
 								})
 							}
 						/>
 					}
 				/>
 			</DashboardSettingsSection>
-
-			<Button
-				variant="outline"
-				className="w-full"
-				onClick={() => router.push(DASHBOARD_ROUTES.settings.path)}
-			>
-				Back to settings
-			</Button>
 		</div>
 	);
 }
 
-function PreferenceButton({
-	enabled,
+function PreferenceSwitch({
+	checked,
 	loading,
-	onToggle,
+	disabled,
+	onCheckedChange,
 }: {
-	enabled: boolean;
+	checked: boolean;
 	loading: boolean;
-	onToggle: () => void;
+	disabled: boolean;
+	onCheckedChange: (checked: boolean) => void;
 }) {
-	if (loading) return "...";
+	if (loading) {
+		return <span className="text-muted-foreground text-sm">...</span>;
+	}
 
 	return (
-		<Button
-			variant={enabled ? "default" : "outline"}
-			size="sm"
-			onClick={onToggle}
-		>
-			{enabled ? "Enabled" : "Disabled"}
-		</Button>
+		<Switch
+			checked={checked}
+			disabled={disabled}
+			onCheckedChange={onCheckedChange}
+		/>
 	);
 }

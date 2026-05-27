@@ -29,21 +29,17 @@ export {
 	CardHeader,
 	CardTitle,
 } from "./components/ui/card";
-export { Checkbox } from "./components/ui/checkbox";
-export * from "./components/ui/drawer";
-export {
-	InsightSectionCard,
-	InsightStatCard,
-} from "./components/ui/insight-stat-card";
+export type { ChartConfig } from "./components/ui/chart";
 export {
 	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
 	ChartLegend,
 	ChartLegendContent,
 	ChartStyle,
+	ChartTooltip,
+	ChartTooltipContent,
 } from "./components/ui/chart";
-export type { ChartConfig } from "./components/ui/chart";
+export { Checkbox } from "./components/ui/checkbox";
+export * from "./components/ui/drawer";
 export {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -62,6 +58,10 @@ export {
 	DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
 export { Input } from "./components/ui/input";
+export {
+	InsightSectionCard,
+	InsightStatCard,
+} from "./components/ui/insight-stat-card";
 export { Label } from "./components/ui/label";
 export { Progress } from "./components/ui/progress";
 export { ScrollArea, ScrollBar } from "./components/ui/scroll-area";
@@ -76,6 +76,7 @@ export {
 export { Skeleton } from "./components/ui/skeleton";
 export { Toaster } from "./components/ui/sonner";
 export { Spinner } from "./components/ui/spinner";
+export { Switch } from "./components/ui/switch";
 export {
 	Table,
 	TableBody,

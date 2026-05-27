@@ -1,15 +1,22 @@
 import { Icons, Separator } from "@harmonia/ui";
+import type { Route } from "next";
 import Link from "next/link";
 
-export function DashboardPlaylistDetailBackLink() {
+export function DashboardDetailBackLink({
+	href,
+	label,
+}: {
+	href: Route | string;
+	label: string;
+}) {
 	return (
 		<div className="flex flex-col gap-2">
 			<Link
-				href="/playlists"
+				href={href as Route}
 				className="flex items-center gap-1 text-muted-foreground text-xs uppercase tracking-widest hover:text-foreground"
 			>
 				<Icons.arrowLeft className="size-3" />
-				Playlists
+				{label}
 			</Link>
 			<Separator />
 		</div>

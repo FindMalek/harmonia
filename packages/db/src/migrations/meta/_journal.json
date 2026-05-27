@@ -92,6 +92,13 @@
 			"when": 1779547151791,
 			"tag": "0012_lyrical_barracuda",
 			"breakpoints": true
+		},
+		{
+			"idx": 13,
+			"version": "7",
+			"when": 1779600000000,
+			"tag": "0013_email_preferences_defaults",
+			"breakpoints": true
 		}
 	]
 }
