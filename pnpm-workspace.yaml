@@ -2,6 +2,12 @@ packages:
   - apps/*
   - packages/*
 
+allowBuilds:
+  esbuild: false
+  msw: false
+  protobufjs: false
+  sharp: false
+
 catalog:
   '@biomejs/biome': ^2.4.15
   '@opentelemetry/api': ^1.9.1
