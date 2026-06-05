@@ -5,7 +5,8 @@ export type EmailTemplateCategory =
 	| "security"
 	| "feedback"
 	| "product_update"
-	| "marketing";
+	| "marketing"
+	| "billing";
 
 const TEMPLATE_CATEGORIES: Record<EmailTemplateKey, EmailTemplateCategory> = {
 	organize_complete: "transactional",
@@ -13,6 +14,11 @@ const TEMPLATE_CATEGORIES: Record<EmailTemplateKey, EmailTemplateCategory> = {
 	login_alert: "security",
 	feedback_3day: "feedback",
 	marketing_feature_update: "product_update",
+	subscription_activated: "billing",
+	invoice: "billing",
+	payment_failed: "billing",
+	subscription_renewal_reminder: "billing",
+	subscription_canceled: "billing",
 };
 
 export function getEmailTemplateCategory(

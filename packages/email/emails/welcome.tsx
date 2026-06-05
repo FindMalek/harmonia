@@ -2,6 +2,7 @@ import {
 	Body,
 	Container,
 	Heading,
+	Img,
 	Preview,
 	Section,
 	Text,
@@ -14,6 +15,7 @@ import {
 	getEmailInlineStyles,
 	getEmailThemeClasses,
 } from "../components/theme";
+import { getEmailImageUrl } from "../utils";
 
 export type WelcomeEmailProps = {
 	dashboardUrl: string;
@@ -52,6 +54,14 @@ export function WelcomeEmail({
 					}}
 				>
 					<Logo />
+					<Img
+						src={getEmailImageUrl("welcome-hero.png")}
+						width="560"
+						height="280"
+						alt=""
+						className="mx-auto my-0 block w-full rounded-md object-cover"
+						style={{ display: "block" }}
+					/>
 					<Heading
 						className={`mt-[24px] mb-[8px] text-center font-normal font-serif text-[21px] ${themeClasses.heading}`}
 						style={{ color: lightStyles.text.color }}

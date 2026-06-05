@@ -31,11 +31,15 @@ export async function sendMarketingFeatureUpdate({
 	userId,
 	featureTitle,
 	featureSummary,
+	highlights,
+	badgeText,
 	campaignKey,
 }: {
 	userId: string;
 	featureTitle: string;
 	featureSummary: string;
+	highlights?: Array<{ title: string; description: string }> | null;
+	badgeText?: string | null;
 	campaignKey: string;
 }) {
 	const config = buildSendConfig();
@@ -100,6 +104,8 @@ export async function sendMarketingFeatureUpdate({
 		props: {
 			featureTitle,
 			featureSummary,
+			highlights,
+			badgeText,
 			recipientName: userRow.name,
 			ctaUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
 			preferencesUrl,

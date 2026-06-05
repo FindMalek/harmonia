@@ -12,3 +12,7 @@ export function getEmailAssetBaseUrl(): string {
 export function getEmailLogoUrl(): string {
 	return `${getEmailAssetBaseUrl()}/email/logo.png`;
 }
+
+export function getEmailImageUrl(path: string): string {
+	return `${getEmailAssetBaseUrl()}/email/images/${path}`;
+}

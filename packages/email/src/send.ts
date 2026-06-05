@@ -1,9 +1,14 @@
+import { format } from "date-fns";
 import { Resend } from "resend";
 import { z } from "zod";
 import {
 	Feedback3DayEmail,
 	type Feedback3DayEmailProps,
 } from "../emails/feedback-3day";
+import {
+	InvoiceEmail,
+	type InvoiceEmailProps,
+} from "../emails/invoice";
 import {
 	LoginAlertEmail,
 	type LoginAlertEmailProps,
@@ -16,6 +21,22 @@ import {
 	OrganizeCompleteEmail,
 	type OrganizeCompleteEmailProps,
 } from "../emails/organize-complete";
+import {
+	PaymentFailedEmail,
+	type PaymentFailedEmailProps,
+} from "../emails/payment-failed";
+import {
+	SubscriptionActivatedEmail,
+	type SubscriptionActivatedEmailProps,
+} from "../emails/subscription-activated";
+import {
+	SubscriptionCanceledEmail,
+	type SubscriptionCanceledEmailProps,
+} from "../emails/subscription-canceled";
+import {
+	SubscriptionRenewalReminderEmail,
+	type SubscriptionRenewalReminderEmailProps,
+} from "../emails/subscription-renewal-reminder";
 import { WelcomeEmail, type WelcomeEmailProps } from "../emails/welcome";
 import { render } from "../render";
 
@@ -61,6 +82,41 @@ type SendMarketingInput = {
 	props: MarketingFeatureUpdateEmailProps;
 	idempotencyKey: string;
 	listUnsubscribeUrl?: string;
+};
+
+type SendSubscriptionActivatedInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: SubscriptionActivatedEmailProps;
+	idempotencyKey: string;
+};
+
+type SendInvoiceInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: InvoiceEmailProps;
+	idempotencyKey: string;
+};
+
+type SendPaymentFailedInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: PaymentFailedEmailProps;
+	idempotencyKey: string;
+};
+
+type SendSubscriptionRenewalReminderInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: SubscriptionRenewalReminderEmailProps;
+	idempotencyKey: string;
+};
+
+type SendSubscriptionCanceledInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: SubscriptionCanceledEmailProps;
+	idempotencyKey: string;
 };
 
 type SendResult = { ok: true; emailId: string } | { ok: false; error: string };
@@ -201,6 +257,139 @@ export async function sendMarketingFeatureUpdateEmail(
 			html,
 			headers,
 			tags: [{ name: "category", value: "marketing_feature_update" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendSubscriptionActivatedEmail(
+	input: SendSubscriptionActivatedInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(SubscriptionActivatedEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Your Harmonia subscription is active",
+			html,
+			tags: [{ name: "category", value: "billing" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendInvoiceEmail(
+	input: SendInvoiceInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(InvoiceEmail(input.props));
+	const formattedDate = input.props.invoiceDate
+		? format(new Date(input.props.invoiceDate), "PPP")
+		: input.props.billingPeriod;
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: `Your Harmonia receipt — ${formattedDate}`,
+			html,
+			tags: [{ name: "category", value: "billing" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendPaymentFailedEmail(
+	input: SendPaymentFailedInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(PaymentFailedEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Action required: payment failed",
+			html,
+			tags: [{ name: "category", value: "billing" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendSubscriptionRenewalReminderEmail(
+	input: SendSubscriptionRenewalReminderInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(SubscriptionRenewalReminderEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Your Harmonia subscription renews soon",
+			html,
+			tags: [{ name: "category", value: "billing" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendSubscriptionCanceledEmail(
+	input: SendSubscriptionCanceledInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(SubscriptionCanceledEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Your Harmonia subscription has been canceled",
+			html,
+			tags: [{ name: "category", value: "billing" }],
 		},
 		{ idempotencyKey: input.idempotencyKey },
 	);

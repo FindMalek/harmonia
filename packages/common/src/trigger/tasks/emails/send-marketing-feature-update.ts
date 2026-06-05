@@ -9,17 +9,23 @@ export const sendMarketingFeatureUpdateEmailTask = task({
 		userId,
 		featureTitle,
 		featureSummary,
+		highlights,
+		badgeText,
 		campaignKey,
 	}: {
 		userId: string;
 		featureTitle: string;
 		featureSummary: string;
+		highlights?: Array<{ title: string; description: string }> | null;
+		badgeText?: string | null;
 		campaignKey: string;
 	}) => {
 		return await sendMarketingFeatureUpdate({
 			userId,
 			featureTitle,
 			featureSummary,
+			highlights,
+			badgeText,
 			campaignKey,
 		});
 	},

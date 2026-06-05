@@ -69,6 +69,8 @@ export async function evaluateEmailPolicy({
 			break;
 		case "security":
 			break;
+		case "billing":
+			break;
 		case "feedback":
 			if (!prefs.feedbackEnabled) {
 				return { allowed: false, reason: "feedback_opt_out" };
