@@ -1,4 +1,5 @@
 export { authModule } from "./auth";
+export { billingModule } from "./billing";
 export { clientModule } from "./client";
 export { dbModule } from "./db";
 export { emailsModule } from "./emails";

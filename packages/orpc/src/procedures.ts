@@ -1,5 +1,6 @@
 import { env } from "@harmonia/env/server";
 import { os, ORPCError } from "@orpc/server";
+import { isPro } from "@harmonia/common/utils/plan";
 
 import type { Context } from "./context";
 
@@ -42,3 +43,23 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const cronOrAuthProcedure = publicProcedure.use(requireCronOrAuth);
+
+const requirePlan = o.middleware(async ({ context, next }) => {
+	if (!context.session?.user) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+
+	const user = context.session.user as {
+		plan: string;
+		planExpiresAt: Date | null;
+	};
+
+	return next({
+		context: {
+			...context,
+			isPro: isPro(user),
+		},
+	});
+});
+
+export const planProcedure = protectedProcedure.use(requirePlan);
