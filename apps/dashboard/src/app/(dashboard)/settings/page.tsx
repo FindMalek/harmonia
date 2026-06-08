@@ -1,5 +1,8 @@
 "use client";
 
+import { Badge, Button } from "@harmonia/ui";
+import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from "react";
 import {
 	DashboardSettingsNavRow,
 	DashboardSettingsRow,
@@ -7,10 +10,8 @@ import {
 	DashboardSettingsSkeleton,
 } from "@/components/app/dashboard-settings-section";
 import { PageHeader } from "@/components/shared/page-header";
+import { env } from "@/lib/env";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
-import { Badge, Button } from "@harmonia/ui";
-import { formatDistanceToNow } from "date-fns";
-import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
 	const [mounted, setMounted] = useState(false);
@@ -27,6 +28,8 @@ export default function SettingsPage() {
 		resolvedTheme,
 		setTheme,
 		signOut,
+		plan,
+		isPro,
 	} = useSettingsController();
 
 	if (!mounted) {
@@ -57,16 +60,18 @@ export default function SettingsPage() {
 				<DashboardSettingsRow
 					label="Spotify"
 					value={
-						spotifyLoading ? (
-							"..."
-						) : spotifyLinked ? (
-							<span className="flex items-center gap-1.5">
-								<span className="size-2 rounded-full bg-green-500" />
-								Connected
-							</span>
-						) : (
-							"Not connected"
-						)
+						<span className="flex items-center gap-1.5">
+							{spotifyLoading ? (
+								"..."
+							) : spotifyLinked ? (
+								<>
+									<span className="size-2 rounded-full bg-green-500" />
+									Connected
+								</>
+							) : (
+								"Not connected"
+							)}
+						</span>
 					}
 				/>
 				<DashboardSettingsRow label="Last sync" value={lastSyncText} />
@@ -74,7 +79,36 @@ export default function SettingsPage() {
 
 			<DashboardSettingsSection label="ACCOUNT">
 				<DashboardSettingsRow label="Email" value={email ?? "..."} />
-				<DashboardSettingsRow label="Plan" value="Free" />
+				<DashboardSettingsRow
+					label="Plan"
+					value={
+						<div className="flex items-center gap-2">
+							<Badge variant={isPro ? "default" : "outline"}>{plan}</Badge>
+							{!isPro && (
+								<Button
+									variant="outline"
+									size="xs"
+									className="h-6 px-2 text-xs"
+									asChild
+								>
+									<a
+										href={`${env.NEXT_PUBLIC_POLAR_CHECKOUT_URL || "https://polar.sh"}${
+											(
+												env.NEXT_PUBLIC_POLAR_CHECKOUT_URL || "https://polar.sh"
+											).includes("?")
+												? "&"
+												: "?"
+										}customer_email=${encodeURIComponent(email || "")}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										Upgrade to Pro
+									</a>
+								</Button>
+							)}
+						</div>
+					}
+				/>
 			</DashboardSettingsSection>
 
 			<DashboardSettingsSection label="PREFERENCES">

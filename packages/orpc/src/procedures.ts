@@ -1,5 +1,6 @@
+import { isPro } from "@harmonia/common";
 import { env } from "@harmonia/env/server";
-import { os, ORPCError } from "@orpc/server";
+import { ORPCError, os } from "@orpc/server";
 
 import type { Context } from "./context";
 
@@ -19,6 +20,38 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
+
+const requirePlan = o.middleware(async ({ context, next }) => {
+	const user = context.session?.user;
+	if (!user) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+
+	interface SubscriptionUser {
+		plan?: string;
+		planExpiresAt?: string | number | Date | null;
+	}
+
+	const subUser = user as SubscriptionUser;
+	const plan = subUser.plan ?? "free";
+	const planExpiresAt = subUser.planExpiresAt
+		? new Date(subUser.planExpiresAt)
+		: null;
+
+	if (!isPro({ plan, planExpiresAt })) {
+		throw new ORPCError("FORBIDDEN", {
+			message: "Upgrade to Pro to access this feature.",
+		});
+	}
+
+	return next({
+		context: {
+			session: context.session,
+		},
+	});
+});
+
+export const planProcedure = protectedProcedure.use(requirePlan);
 
 const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 	const cronSecret =

@@ -11,5 +11,8 @@ export const authModule = {
 		HARMONIA_CRON_SECRET: z.string().min(1).optional(),
 		HARMONIA_OPENAI_API_KEY: z.string().min(1).optional(),
 		HARMONIA_GROQ_API_KEY: z.string().min(1).optional(),
+		POLAR_ACCESS_TOKEN: z.string().min(1).optional(),
+		POLAR_ORGANIZATION_ID: z.string().min(1).optional(),
+		POLAR_WEBHOOK_SECRET: z.string().min(1).optional(),
 	},
 } as const;

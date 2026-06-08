@@ -63,6 +63,27 @@ export function createAuth(
 					defaultValue: false,
 					input: false,
 				},
+				plan: {
+					type: "string",
+					required: false,
+					defaultValue: "free",
+					input: false,
+				},
+				planExpiresAt: {
+					type: "date",
+					required: false,
+					input: false,
+				},
+				polarCustomerId: {
+					type: "string",
+					required: false,
+					input: false,
+				},
+				polarSubscriptionId: {
+					type: "string",
+					required: false,
+					input: false,
+				},
 			},
 		},
 		trustedOrigins,

@@ -10,6 +10,7 @@
 	"dependencies": {
 		"@harmonia/common": "workspace:*",
 		"@harmonia/core": "workspace:*",
+		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
 		"@harmonia/orpc": "workspace:*",

@@ -1,10 +1,11 @@
 "use client";
 
+import { isPro } from "@harmonia/common";
+import { useQuery } from "@tanstack/react-query";
+import { useTheme } from "next-themes";
 import { authClient } from "@/shared/api/auth-client";
 import { orpc } from "@/shared/api/orpc";
 import { useOrganizeStore } from "@/shared/lib/organize/store";
-import { useQuery } from "@tanstack/react-query";
-import { useTheme } from "next-themes";
 
 function toSyncDate(value: unknown): Date | null {
 	if (value == null) {
@@ -38,6 +39,18 @@ export function useSettingsController() {
 		window.location.href = "/login";
 	};
 
+	const user = session?.user;
+	interface SubscriptionUser {
+		plan?: string;
+		planExpiresAt?: string | number | Date | null;
+	}
+	const subUser = user as SubscriptionUser | undefined;
+	const rawPlan = subUser?.plan ?? "free";
+	const planExpiresAt = subUser?.planExpiresAt
+		? new Date(subUser.planExpiresAt)
+		: null;
+	const hasPro = isPro({ plan: rawPlan, planExpiresAt });
+
 	return {
 		session,
 		sessionPending,
@@ -50,5 +63,7 @@ export function useSettingsController() {
 		resolvedTheme,
 		setTheme,
 		signOut,
+		plan: hasPro ? "Pro" : "Free",
+		isPro: hasPro,
 	};
 }

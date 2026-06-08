@@ -10,6 +10,10 @@ export const user = pgTable("user", {
 		.default(false)
 		.notNull(),
 	image: text("image"),
+	plan: text("plan").default("free").notNull(),
+	planExpiresAt: timestamp("plan_expires_at"),
+	polarCustomerId: text("polar_customer_id"),
+	polarSubscriptionId: text("polar_subscription_id"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
