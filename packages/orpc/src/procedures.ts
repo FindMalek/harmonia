@@ -49,15 +49,22 @@ const requirePlan = o.middleware(async ({ context, next }) => {
 		throw new ORPCError("UNAUTHORIZED");
 	}
 
-	const user = context.session.user as {
-		plan: string;
-		planExpiresAt: Date | null;
-	};
+	const { user } = context.session;
+
+	// Runtime check for plan fields (they might not be present if DB/Auth sync is lagging)
+	if (!("plan" in user) || typeof user.plan !== "string") {
+		return next({
+			context: {
+				...context,
+				isPro: false,
+			},
+		});
+	}
 
 	return next({
 		context: {
 			...context,
-			isPro: isPro(user),
+			isPro: isPro(user as { plan: string; planExpiresAt: Date | null }),
 		},
 	});
 });

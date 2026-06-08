@@ -16,8 +16,8 @@ export async function POST(req: Request) {
 	try {
 		const { productId } = await req.json();
 
-		if (!productId) {
-			return new NextResponse("Product ID is required", { status: 400 });
+		if (typeof productId !== "string" || productId.trim().length === 0) {
+			return new NextResponse("Valid Product ID is required", { status: 400 });
 		}
 
 		const result = await polar.checkouts.custom.create({

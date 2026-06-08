@@ -12,28 +12,30 @@ export async function POST(req: Request) {
 	const signature = headersList.get("polar-webhook-signature");
 
 	if (!signature || !env.POLAR_WEBHOOK_SECRET) {
-		return new NextResponse("Webhook secret or signature missing", { status: 401 });
-	}
-
-	let event;
-	try {
-		event = validateEvent(body, signature, env.POLAR_WEBHOOK_SECRET);
-	} catch (error) {
-		console.error("[POLAR_WEBHOOK_VERIFICATION_ERROR]", error);
-		return new NextResponse("Invalid signature", { status: 400 });
+		return new NextResponse("Webhook secret or signature missing", {
+			status: 401,
+		});
 	}
 
 	try {
-		if (event.type === "subscription.created" || event.type === "subscription.updated") {
+		const event = validateEvent(body, signature, env.POLAR_WEBHOOK_SECRET);
+
+		if (
+			event.type === "subscription.created" ||
+			event.type === "subscription.updated"
+		) {
 			const subscription = event.data;
-			const userId = subscription.metadata?.userId as string;
+			const userId = subscription.metadata?.userId;
 
-			if (userId) {
-				await db.update(user)
+			if (typeof userId === "string") {
+				await db
+					.update(user)
 					.set({
 						plan: subscription.status === "active" ? "pro" : "free",
-						planExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end) : null,
-						polarCustomerId: subscription.customer_id,
+						planExpiresAt: subscription.currentPeriodEnd
+							? new Date(subscription.currentPeriodEnd)
+							: null,
+						polarCustomerId: subscription.customerId,
 						polarSubscriptionId: subscription.id,
 					})
 					.where(eq(user.id, userId));
@@ -42,13 +44,14 @@ export async function POST(req: Request) {
 
 		if (event.type === "subscription.revoked") {
 			const subscription = event.data;
-			const userId = subscription.metadata?.userId as string;
+			const userId = subscription.metadata?.userId;
 
-			if (userId) {
-				await db.update(user)
+			if (typeof userId === "string") {
+				await db
+					.update(user)
 					.set({
 						plan: "free",
-						planExpiresAt: new Date(),
+						planExpiresAt: null,
 					})
 					.where(eq(user.id, userId));
 			}
@@ -56,7 +59,10 @@ export async function POST(req: Request) {
 
 		return new NextResponse("OK", { status: 200 });
 	} catch (error) {
-		console.error("[POLAR_WEBHOOK_HANDLER_ERROR]", error);
-		return new NextResponse("Internal Error", { status: 500 });
+		console.error("[POLAR_WEBHOOK_ERROR]", error);
+		return new NextResponse(
+			error instanceof Error ? error.message : "Internal Error",
+			{ status: error instanceof Error && error.message.includes("signature") ? 400 : 500 },
+		);
 	}
 }
