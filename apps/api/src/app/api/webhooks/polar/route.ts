@@ -6,6 +6,17 @@ import { logger } from "@harmonia/logger";
 import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
+/**
+ * Handles incoming Polar.sh webhooks for subscription events.
+ *
+ * Verifies the webhook signature using the configured `POLAR_WEBHOOK_SECRET`
+ * to protect against tampering and replay attacks. Upon successful verification,
+ * updates the user's plan and subscription status in the database based on
+ * the received event type (created, updated, canceled, revoked).
+ *
+ * @param req - The NextRequest object containing the webhook payload and headers.
+ * @returns A Response indicating the outcome of the webhook processing.
+ */
 export async function POST(req: NextRequest) {
 	const webhookSecret = apiEnv.POLAR_WEBHOOK_SECRET;
 	if (!webhookSecret) {

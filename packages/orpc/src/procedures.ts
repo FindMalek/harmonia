@@ -21,6 +21,11 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
 
+/**
+ * Middleware that requires the authenticated user to have an active Pro plan.
+ * Verifies the session and plan expiration. Throws FORBIDDEN if the user
+ * is not a Pro subscriber.
+ */
 const requirePlan = o.middleware(async ({ context, next }) => {
 	const user = context.session?.user;
 	if (!user) {
@@ -51,6 +56,10 @@ const requirePlan = o.middleware(async ({ context, next }) => {
 	});
 });
 
+/**
+ * An ORPC procedure that requires both authentication and an active Pro plan.
+ * Use this for premium-only API routes.
+ */
 export const planProcedure = protectedProcedure.use(requirePlan);
 
 const requireCronOrAuth = o.middleware(async ({ context, next }) => {
