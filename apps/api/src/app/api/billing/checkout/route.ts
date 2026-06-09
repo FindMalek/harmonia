@@ -4,6 +4,15 @@ import { auth } from "@harmonia/auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
+/**
+ * Initializes a new Polar.sh checkout session for a user.
+ *
+ * Authenticates the request, generates a checkout URL for the specified
+ * Polar product, and redirects the user to the Polar checkout page.
+ *
+ * @param req - The Request object containing the checkout parameters.
+ * @returns A NextResponse redirecting to the Polar checkout URL, or an error response.
+ */
 export async function POST(req: Request) {
 	const session = await auth.api.getSession({
 		headers: await headers(),

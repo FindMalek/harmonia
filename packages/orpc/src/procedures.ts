@@ -44,6 +44,11 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 
 export const cronOrAuthProcedure = publicProcedure.use(requireCronOrAuth);
 
+/**
+ * Middleware that ensures the authenticated user has an active Pro plan.
+ * Checks the user session for plan details and verifies expiration.
+ * Throws FORBIDDEN if the requirements are not met.
+ */
 const requirePlan = o.middleware(async ({ context, next }) => {
 	if (!context.session?.user) {
 		throw new ORPCError("UNAUTHORIZED");
@@ -69,4 +74,8 @@ const requirePlan = o.middleware(async ({ context, next }) => {
 	});
 });
 
+/**
+ * An ORPC procedure protected by both authentication and an active Pro plan.
+ * Used to restrict access to premium-tier functions.
+ */
 export const planProcedure = protectedProcedure.use(requirePlan);

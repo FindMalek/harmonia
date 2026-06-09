@@ -6,6 +6,16 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 
+/**
+ * Handles incoming Polar.sh webhooks for subscription lifecycle events.
+ *
+ * Validates the webhook signature using the Polar SDK and processes
+ * subscription creation, updates, and revocations to keep the user's
+ * plan and expiration date synchronized in the database.
+ *
+ * @param req - The Request object containing the webhook payload.
+ * @returns A NextResponse indicating the processing outcome.
+ */
 export async function POST(req: Request) {
 	const body = await req.text();
 	const headersList = await headers();
