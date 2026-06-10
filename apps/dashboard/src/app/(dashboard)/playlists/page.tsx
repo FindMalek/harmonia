@@ -1,5 +1,7 @@
 "use client";
 
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { Icons } from "@harmonia/ui";
 import {
 	DashboardPlaylistsListRow,
 	DashboardPlaylistsListSkeleton,
@@ -8,8 +10,6 @@ import { DashboardPlaylistsPageHeader } from "@/components/app/dashboard-playlis
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Icons } from "@harmonia/ui";
 
 export default function PlaylistsPage() {
 	const { list } = usePlaylistsController();

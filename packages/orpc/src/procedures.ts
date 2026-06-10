@@ -1,6 +1,6 @@
-import { env } from "@harmonia/env/server";
-import { os, ORPCError } from "@orpc/server";
 import { isPro } from "@harmonia/common/utils/plan";
+import { env } from "@harmonia/env/server";
+import { ORPCError, os } from "@orpc/server";
 
 import type { Context } from "./context";
 
@@ -45,9 +45,13 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 export const cronOrAuthProcedure = publicProcedure.use(requireCronOrAuth);
 
 /**
- * Middleware that ensures the authenticated user has an active Pro plan.
- * Checks the user session for plan details and verifies expiration.
- * Throws FORBIDDEN if the requirements are not met.
+ * Pro plan middleware that enriches the request/context with an `isPro` boolean
+ * for downstream handlers (it does not enforce access itself).
+ *
+ * - Throws UNAUTHORIZED if there is no authenticated session.
+ * - Enriches context with `isPro: false` if plan fields are missing or invalid
+ *   (does not throw FORBIDDEN).
+ * - Otherwise enriches context with `isPro: true` or `false` based on plan validation.
  */
 const requirePlan = o.middleware(async ({ context, next }) => {
 	if (!context.session?.user) {
@@ -72,7 +76,9 @@ const requirePlan = o.middleware(async ({ context, next }) => {
 		context: {
 			...context,
 			session,
-			isPro: isPro(user as unknown as { plan: string; planExpiresAt: Date | null }),
+			isPro: isPro(
+				user as unknown as { plan: string; planExpiresAt: Date | null },
+			),
 		},
 	});
 });

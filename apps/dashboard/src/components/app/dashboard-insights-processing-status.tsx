@@ -16,7 +16,7 @@ const BARS: { key: keyof Omit<Status, "total">; label: string }[] = [
 export function DashboardInsightsProcessingStatusSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="flex items-center justify-between border-b border-border pb-3">
+			<div className="flex items-center justify-between border-border border-b pb-3">
 				<Skeleton className="h-2 w-36" />
 				<Skeleton className="h-4 w-20" />
 			</div>
@@ -48,7 +48,7 @@ export function DashboardInsightsProcessingStatus({
 			{isFullyProcessed && (
 				<div className="flex items-center gap-1.5 self-start border border-primary px-1.5 py-0.5">
 					<span className="inline-block size-1 shrink-0 bg-primary" />
-					<span className="font-mono text-[9px] uppercase text-primary">
+					<span className="font-mono text-[9px] text-primary uppercase">
 						Complete
 					</span>
 				</div>

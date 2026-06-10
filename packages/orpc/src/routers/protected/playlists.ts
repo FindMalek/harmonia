@@ -11,8 +11,8 @@ import {
 	playlistUpdateOutputSchema,
 } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
-import { cluster } from "@harmonia/db/schema/cluster";
 import type { ClusterMeta } from "@harmonia/db/schema/cluster";
+import { cluster } from "@harmonia/db/schema/cluster";
 import {
 	playlist,
 	playlistClusters,

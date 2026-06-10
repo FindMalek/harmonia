@@ -1,17 +1,16 @@
+import type {
+	SpotifyPlaylistSimplified,
+	SpotifyPlaylistsResponse,
+	SpotifyPlaylistTrackItem,
+	SpotifyPlaylistTracksResponse,
+	SpotifySavedTracksResponse,
+	SpotifyTokenResponse,
+} from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { account } from "@harmonia/db/schema/auth";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
-
-import type {
-	SpotifyPlaylistSimplified,
-	SpotifyPlaylistTrackItem,
-	SpotifyPlaylistTracksResponse,
-	SpotifyPlaylistsResponse,
-	SpotifySavedTracksResponse,
-	SpotifyTokenResponse,
-} from "@harmonia/common/schemas";
 
 import {
 	SPOTIFY_API_BASE,

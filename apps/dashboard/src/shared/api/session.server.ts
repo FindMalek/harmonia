@@ -1,5 +1,5 @@
-import { env } from "@/lib/env";
 import { headers } from "next/headers";
+import { env } from "@/lib/env";
 
 export type Session = {
 	user: {

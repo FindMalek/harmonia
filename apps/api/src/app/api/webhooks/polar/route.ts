@@ -1,10 +1,10 @@
-import { env } from "@harmonia/env/server";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
+import { env } from "@harmonia/env/server";
+import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { validateEvent } from "@polar-sh/sdk/webhooks";
 
 /**
  * Handles incoming Polar.sh webhooks for subscription lifecycle events.
@@ -50,6 +50,10 @@ export async function POST(req: Request) {
 						polarSubscriptionId: subscription.id,
 					})
 					.where(eq(user.id, userId));
+			} else {
+				console.warn(
+					`[POLAR_WEBHOOK_WARN] Missing or invalid userId for event ${event.type} and subscription ${subscription.id}`,
+				);
 			}
 		}
 
@@ -65,6 +69,10 @@ export async function POST(req: Request) {
 						planExpiresAt: null,
 					})
 					.where(eq(user.id, userId));
+			} else {
+				console.warn(
+					`[POLAR_WEBHOOK_WARN] Missing or invalid userId for event ${event.type} and subscription ${subscription.id}`,
+				);
 			}
 		}
 
@@ -73,7 +81,12 @@ export async function POST(req: Request) {
 		console.error("[POLAR_WEBHOOK_ERROR]", error);
 		return new NextResponse(
 			error instanceof Error ? error.message : "Internal Error",
-			{ status: error instanceof Error && error.message.includes("signature") ? 400 : 500 },
+			{
+				status:
+					error instanceof Error && error.message.includes("signature")
+						? 400
+						: 500,
+			},
 		);
 	}
 }

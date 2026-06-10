@@ -1,7 +1,7 @@
 import { getSpotifyLibraryStats, syncLibraryTracks } from "@harmonia/common";
 import {
-	type SyncProgressEvent,
 	emptyInput,
+	type SyncProgressEvent,
 	spotifyLibraryStatsSchema,
 	syncProgressEventSchema,
 } from "@harmonia/common/schemas";

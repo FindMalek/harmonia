@@ -1,11 +1,11 @@
 "use client";
 
+import { Progress, Skeleton } from "@harmonia/ui";
 import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
 	usePipelineController,
 	usePipelineProgress,
 } from "@/shared/lib/pipeline/controller.hook";
-import { Progress, Skeleton } from "@harmonia/ui";
 
 function DashboardLibraryAnalysisProgressSkeleton() {
 	return <Skeleton className="h-1 w-full" />;

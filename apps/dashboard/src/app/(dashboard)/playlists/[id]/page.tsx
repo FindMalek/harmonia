@@ -1,12 +1,12 @@
 "use client";
 
+import { use, useEffect } from "react";
 import {
 	DashboardPlaylistDetail,
 	DashboardPlaylistDetailNotFound,
 	DashboardPlaylistDetailSkeleton,
 } from "@/components/app/dashboard-playlist-detail";
 import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
-import { use, useEffect } from "react";
 
 export default function PlaylistDetailPage({
 	params,

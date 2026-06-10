@@ -1,11 +1,11 @@
 "use client";
 
-import { client, orpc } from "@/shared/api/orpc";
-import { queryKeys } from "@/shared/api/query-keys";
-import { ONBOARDING_SYNC_MAX_ATTEMPTS } from "@/shared/lib/constants";
 import type { SyncPhase } from "@harmonia/common/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { client, orpc } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
+import { ONBOARDING_SYNC_MAX_ATTEMPTS } from "@/shared/lib/constants";
 import { runOnboardingSyncLibraryLoop } from "./onboarding.util";
 import { useOnboardingStore } from "./store";
 

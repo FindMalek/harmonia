@@ -1,7 +1,7 @@
-import { getCorsHeaders } from "@/lib/cors";
 import { auth } from "@harmonia/core";
 import { toNextJsHandler } from "better-auth/next-js";
 import type { NextRequest } from "next/server";
+import { getCorsHeaders } from "@/lib/cors";
 
 export const dynamic = "force-dynamic";
 

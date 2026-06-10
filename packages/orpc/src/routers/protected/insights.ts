@@ -12,13 +12,13 @@ import { protectedProcedure } from "../../procedures";
 function normalizeEra(era: string): string | null {
 	const digits = era.replace(/\D/g, "");
 	if (digits.length >= 4) {
-		const year = parseInt(digits.slice(0, 4));
+		const year = Number.parseInt(digits.slice(0, 4));
 		if (year >= 1950 && year <= 2029) {
 			return `${Math.floor(year / 10) * 10}s`;
 		}
 	}
 	if (digits.length === 2) {
-		const d = parseInt(digits);
+		const d = Number.parseInt(digits);
 		if (d >= 50 && d <= 99) return `19${digits}s`;
 		if (d >= 0 && d <= 29) return `20${digits.padStart(2, "0")}s`;
 	}

@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-import { authClient } from "@/lib/auth-client";
 import { env } from "@harmonia/env/web";
 import { Header } from "@harmonia/ui";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 function NavLink({
 	href,
