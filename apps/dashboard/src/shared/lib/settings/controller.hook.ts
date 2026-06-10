@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { isPro } from "@harmonia/common";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,12 @@ function toSyncDate(value: unknown): Date | null {
 	return null;
 }
 
+/**
+ * Controller hook for the settings page.
+ * 
+ * Manages theme preferences, Spotify integration status, session management,
+ * and subscription billing state (Pro/Free).
+ */
 export function useSettingsController() {
 	const { data: session, isPending: sessionPending } = authClient.useSession();
 	const { theme, setTheme, resolvedTheme } = useTheme();
@@ -67,3 +73,4 @@ export function useSettingsController() {
 		isPro: hasPro,
 	};
 }
+

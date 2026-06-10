@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge, Button } from "@harmonia/ui";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +13,12 @@ import { PageHeader } from "@/components/shared/page-header";
 import { env } from "@/lib/env";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 
+/**
+ * Settings Page Component.
+ * 
+ * Displays user profile information, subscription status, connected accounts,
+ * and application-wide preferences.
+ */
 export default function SettingsPage() {
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => {
@@ -137,3 +143,4 @@ export default function SettingsPage() {
 		</div>
 	);
 }
+
