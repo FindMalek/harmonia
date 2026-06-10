@@ -28,7 +28,8 @@ export async function POST(req: Request) {
 	}
 
 	try {
-		const event = validateEvent(body, signature, env.POLAR_WEBHOOK_SECRET);
+		const headersObj = Object.fromEntries(headersList.entries());
+		const event = validateEvent(body, headersObj, env.POLAR_WEBHOOK_SECRET);
 
 		if (
 			event.type === "subscription.created" ||

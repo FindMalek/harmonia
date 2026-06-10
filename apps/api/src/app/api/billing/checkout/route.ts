@@ -29,8 +29,8 @@ export async function POST(req: Request) {
 			return new NextResponse("Valid Product ID is required", { status: 400 });
 		}
 
-		const result = await polar.checkouts.custom.create({
-			productId,
+		const result = await polar.checkouts.create({
+			products: [productId],
 			successUrl: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}/billing/success`,
 			customerEmail: session.user.email,
 			metadata: {

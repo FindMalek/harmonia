@@ -79,6 +79,12 @@
 		"./utils/routes": {
 			"default": "./src/utils/routes.ts"
 		},
+		"./services/billing/polar": {
+			"default": "./src/services/billing/polar.ts"
+		},
+		"./utils/plan": {
+			"default": "./src/utils/plan.ts"
+		},
 		"./constants": {
 			"default": "./src/constants/index.ts"
 		}
@@ -89,6 +95,7 @@
 		"@harmonia/email": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
+		"@polar-sh/sdk": "^0.48.1",
 		"@trigger.dev/sdk": "catalog:",
 		"@zenbase/llml": "^0.4.0",
 		"ai": "^6.0.182",
