@@ -1,6 +1,7 @@
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
 import { env } from "@harmonia/env/server";
+import { logger } from "@harmonia/logger";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -42,7 +43,11 @@ export async function POST(req: Request) {
 				await db
 					.update(user)
 					.set({
-						plan: subscription.status === "active" ? "pro" : "free",
+						plan:
+							subscription.status === "active" ||
+							subscription.status === "trialing"
+								? "pro"
+								: "free",
 						planExpiresAt: subscription.currentPeriodEnd
 							? new Date(subscription.currentPeriodEnd)
 							: null,
@@ -51,8 +56,9 @@ export async function POST(req: Request) {
 					})
 					.where(eq(user.id, userId));
 			} else {
-				console.warn(
-					`[POLAR_WEBHOOK_WARN] Missing or invalid userId for event ${event.type} and subscription ${subscription.id}`,
+				logger.warn(
+					{ eventType: event.type, subscriptionId: subscription.id },
+					"Missing or invalid userId for subscription event",
 				);
 			}
 		}
@@ -70,15 +76,16 @@ export async function POST(req: Request) {
 					})
 					.where(eq(user.id, userId));
 			} else {
-				console.warn(
-					`[POLAR_WEBHOOK_WARN] Missing or invalid userId for event ${event.type} and subscription ${subscription.id}`,
+				logger.warn(
+					{ eventType: event.type, subscriptionId: subscription.id },
+					"Missing or invalid userId for subscription revoked event",
 				);
 			}
 		}
 
 		return new NextResponse("OK", { status: 200 });
 	} catch (error) {
-		console.error("[POLAR_WEBHOOK_ERROR]", error);
+		logger.error({ error }, "Polar webhook processing failed");
 		return new NextResponse(
 			error instanceof Error ? error.message : "Internal Error",
 			{

@@ -4,11 +4,17 @@
  * @param user - The user object containing plan information.
  * @returns boolean - True if the user has an active pro plan.
  */
-export function isPro(user: {
-	plan: string;
-	planExpiresAt: Date | null;
+export function isPro(user?: {
+	plan?: string | null;
+	planExpiresAt?: Date | string | null;
 }): boolean {
-	if (user.plan !== "pro") return false;
+	if (!user || user.plan !== "pro") return false;
 	if (!user.planExpiresAt) return true;
-	return user.planExpiresAt > new Date();
+
+	const expiresAt =
+		typeof user.planExpiresAt === "string"
+			? new Date(user.planExpiresAt)
+			: user.planExpiresAt;
+
+	return expiresAt > new Date();
 }

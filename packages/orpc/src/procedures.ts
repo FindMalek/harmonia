@@ -45,8 +45,8 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 export const cronOrAuthProcedure = publicProcedure.use(requireCronOrAuth);
 
 /**
- * Pro plan middleware that enriches the request/context with an `isPro` boolean
- * for downstream handlers (it does not enforce access itself).
+ * Pro plan middleware (`requirePlan`) that enriches the request/context with
+ * an `isPro` boolean for downstream handlers (it does not enforce access itself).
  *
  * - Throws UNAUTHORIZED if there is no authenticated session.
  * - Enriches context with `isPro: false` if plan fields are missing or invalid
