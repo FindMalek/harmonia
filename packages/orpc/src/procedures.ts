@@ -25,7 +25,7 @@ const requirePro = o.middleware(async ({ context, next }) => {
 	if (!context.session?.user) {
 		throw new ORPCError("UNAUTHORIZED");
 	}
-	// Убедимся, что юзер прошка
+	// Guaranteed by protectedProcedure composition, but checked defensively
 	if (!isPro(context.session.user)) {
 		throw new ORPCError("FORBIDDEN", { message: "Pro subscription required" });
 	}
