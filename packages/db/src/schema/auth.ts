@@ -15,6 +15,10 @@ export const user = pgTable("user", {
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
+	plan: text("plan").default("free").notNull(),
+	planExpiresAt: timestamp("plan_expires_at"),
+	polarCustomerId: text("polar_customer_id"),
+	polarSubscriptionId: text("polar_subscription_id"),
 });
 
 export const session = pgTable(

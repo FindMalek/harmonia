@@ -38,6 +38,9 @@ export function useSettingsController() {
 		window.location.href = "/login";
 	};
 
+	const userPlan = session?.user && 'plan' in session.user ? (session.user as any).plan : "free";
+	const planExpiresAt = session?.user && 'planExpiresAt' in session.user ? (session.user as any).planExpiresAt : null;
+
 	return {
 		session,
 		sessionPending,
@@ -46,6 +49,8 @@ export function useSettingsController() {
 		spotifyLoading: spotifyLinked.isLoading,
 		lastSync: toSyncDate(libraryStats.data?.updatedAt),
 		statsLoading: libraryStats.isLoading,
+		userPlan,
+		planExpiresAt: planExpiresAt ? new Date(planExpiresAt) : null,
 		theme,
 		resolvedTheme,
 		setTheme,
