@@ -86,14 +86,12 @@ export async function POST(req: Request) {
 		return new NextResponse("OK", { status: 200 });
 	} catch (error) {
 		logger.error({ error }, "Polar webhook processing failed");
-		return new NextResponse(
-			error instanceof Error ? error.message : "Internal Error",
-			{
-				status:
-					error instanceof Error && error.message.includes("signature")
-						? 400
-						: 500,
-			},
-		);
+
+		const isSignatureError =
+			error instanceof Error && error.message.includes("signature");
+
+		return new NextResponse(isSignatureError ? "Bad Request" : "Internal Error", {
+			status: isSignatureError ? 400 : 500,
+		});
 	}
 }
