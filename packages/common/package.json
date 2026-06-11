@@ -58,6 +58,9 @@
 		"./utils/routes": {
 			"default": "./src/utils/routes.ts"
 		},
+		"./utils/plan": {
+			"default": "./src/utils/plan.ts"
+		},
 		"./constants": {
 			"default": "./src/constants/index.ts"
 		}

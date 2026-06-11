@@ -4,3 +4,4 @@ export { dbModule } from "./db";
 export { observabilityModule } from "./observability";
 export { triggerModule } from "./trigger";
 export { urlsModule } from "./urls";
+export { billingModule } from "./billing";

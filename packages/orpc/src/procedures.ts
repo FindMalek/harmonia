@@ -1,5 +1,6 @@
 import { env } from "@harmonia/env/server";
 import { os, ORPCError } from "@orpc/server";
+import { isPro } from "@harmonia/common";
 
 import type { Context } from "./context";
 
@@ -19,6 +20,23 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
+
+const requirePro = o.middleware(async ({ context, next }) => {
+	if (!context.session?.user) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+	// Guaranteed by protectedProcedure composition, but checked defensively
+	if (!isPro(context.session.user)) {
+		throw new ORPCError("FORBIDDEN", { message: "Pro subscription required" });
+	}
+	return next({
+		context: {
+			session: context.session,
+		},
+	});
+});
+
+export const proProcedure = protectedProcedure.use(requirePro);
 
 const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 	const cronSecret =
