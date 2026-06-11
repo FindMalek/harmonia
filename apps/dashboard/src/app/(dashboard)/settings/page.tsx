@@ -24,6 +24,11 @@ export default function SettingsPage() {
 
 	const {
 		email,
+		plan,
+		planExpiresAt,
+		isPro,
+		checkoutLoading,
+		createCheckout,
 		spotifyLinked,
 		spotifyLoading,
 		lastSync,
@@ -49,6 +54,11 @@ export default function SettingsPage() {
 			: resolvedTheme === "light"
 				? "Light"
 				: "System default";
+
+	const planLabel = plan === "pro" ? "Pro" : "Free";
+	const expiryText = planExpiresAt
+		? ` (Expires ${formatDistanceToNow(new Date(planExpiresAt), { addSuffix: true })})`
+		: "";
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -78,7 +88,27 @@ export default function SettingsPage() {
 
 			<DashboardSettingsSection label="ACCOUNT">
 				<DashboardSettingsRow label="Email" value={email ?? "..."} />
-				<DashboardSettingsRow label="Plan" value="Free" />
+				<DashboardSettingsRow
+					label="Plan"
+					value={
+						<div className="flex flex-col items-end gap-2">
+							<span className="capitalize">
+								{planLabel}
+								{expiryText}
+							</span>
+							{!isPro && (
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={createCheckout}
+									disabled={checkoutLoading}
+								>
+									{checkoutLoading ? "Redirecting..." : "Upgrade to Pro"}
+								</Button>
+							)}
+						</div>
+					}
+				/>
 			</DashboardSettingsSection>
 
 			<DashboardSettingsSection label="PREFERENCES">

@@ -29,6 +29,7 @@ function toSyncDate(value: unknown): Date | null {
 }
 
 type PlanUser = {
+	email?: string | null;
 	plan?: string | null;
 	planExpiresAt?: string | Date | null;
 } | null;

@@ -46,5 +46,6 @@ export const clientModule = {
 						"NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN must be '*', a valid URL, or a wildcard pattern like *.domain.com",
 				},
 			),
+		NEXT_PUBLIC_POLAR_PRODUCT_ID: z.string().optional(),
 	},
 } as const;
