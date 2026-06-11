@@ -3,6 +3,7 @@ import { billingModule } from "@harmonia/env";
 import { db } from "@harmonia/db";
 import { user as userTable } from "@harmonia/db/schema/auth";
 import { eq } from "drizzle-orm";
+import { validateWebhooks } from "@polar-sh/sdk";
 
 interface PolarWebhookEvent {
 	type: string;
@@ -24,50 +25,81 @@ interface PolarWebhookEvent {
 }
 
 export async function POST(req: Request) {
-	const signature = req.headers.get("webhook-signature");
-	const polarWebhookSecret = process.env.POLAR_WEBHOOK_SECRET;
+	const rawBody = await req.text();
+	const signature = req.headers.get("webhook-signature") || "";
+	const polarWebhookSecret = billingModule.POLAR_WEBHOOK_SECRET || "";
 
-	// В продакшене тут валидируется сигнатура через Polar SDK, но пока сделаем базовую поддержку
-	// для прохождения тестов и корректной обработки вебхуков.
-	
+	// Валидируем сигнатуру вебхука от Polar.sh для защиты от злоумышленников
+	if (polarWebhookSecret) {
+		try {
+			// Воспользуемся верификацией вебхуков Polar.sh
+			validateWebhooks({
+				requestBody: rawBody,
+				signature: signature,
+				secret: polarWebhookSecret,
+			});
+		} catch (err) {
+			console.error("Webhook signature verification failed:", err);
+			return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+		}
+	}
+
 	try {
-		const body = (await req.json()) as PolarWebhookEvent;
+		const body = JSON.parse(rawBody) as PolarWebhookEvent;
 		const eventType = body.type;
 
-		// Вытягиваем ID юзера из кастомных полей Polar сессии или по email
+		// Сначала пробуем вытащить ID юзера из кастомных полей (более надежный способ)
+		// Если его там нет — откатываемся на email
+		const userId = body.data.custom_fields?.userId || body.data.user_id;
 		const userEmail = body.data.user?.email || body.data.customer?.email;
 
-		if (!userEmail) {
-			return NextResponse.json({ error: "No email in payload" }, { status: 400 });
+		if (!userId && !userEmail) {
+			return NextResponse.json({ error: "No user reference or email in payload" }, { status: 400 });
 		}
 
 		if (eventType === "subscription.created") {
 			// Активируем PRO подписку
-			await db.update(userTable)
-				.set({
-					plan: "pro",
-					planExpiresAt: null, // Бессрочно, пока активна
-					polarCustomerId: body.data.customer_id || body.data.customer?.id || null,
-					polarSubscriptionId: body.data.id,
-				})
-				.where(eq(userTable.email, userEmail));
+			const patchData = {
+				plan: "pro",
+				planExpiresAt: null, // Бессрочно, пока активна
+				polarCustomerId: body.data.customer_id || body.data.customer?.id || null,
+				polarSubscriptionId: body.data.id,
+			};
+
+			if (userId) {
+				await db.update(userTable).set(patchData).where(eq(userTable.id, userId));
+			} else if (userEmail) {
+				await db.update(userTable).set(patchData).where(eq(userTable.email, userEmail));
+			}
+
 		} else if (eventType === "subscription.updated") {
 			const expiresAt = body.data.ends_at ? new Date(body.data.ends_at) : null;
-			await db.update(userTable)
-				.set({
-					planExpiresAt: expiresAt,
-					polarSubscriptionId: body.data.id,
-				})
-				.where(eq(userTable.email, userEmail));
+			const patchData = {
+				planExpiresAt: expiresAt,
+				polarSubscriptionId: body.data.id,
+			};
+
+			if (userId) {
+				await db.update(userTable).set(patchData).where(eq(userTable.id, userId));
+			} else if (userEmail) {
+				await db.update(userTable).set(patchData).where(eq(userTable.email, userEmail));
+			}
+
 		} else if (eventType === "subscription.canceled") {
+			// При отмене подписки юзер не должен вылетать сразу!
+			// Он остается PRO, пока не наступит дата конца расчетного периода (ends_at)
 			const expiresAt = body.data.ends_at ? new Date(body.data.ends_at) : new Date();
-			await db.update(userTable)
-				.set({
-					plan: "free",
-					planExpiresAt: expiresAt,
-					polarSubscriptionId: null,
-				})
-				.where(eq(userTable.email, userEmail));
+			const patchData = {
+				plan: "pro", // сохраняем PRO, плагин isPro проверит по дате planExpiresAt
+				planExpiresAt: expiresAt,
+				polarSubscriptionId: null,
+			};
+
+			if (userId) {
+				await db.update(userTable).set(patchData).where(eq(userTable.id, userId));
+			} else if (userEmail) {
+				await db.update(userTable).set(patchData).where(eq(userTable.email, userEmail));
+			}
 		}
 
 		return NextResponse.json({ received: true });

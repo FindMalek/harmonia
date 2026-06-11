@@ -9,6 +9,7 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 import { Badge, Button } from "@harmonia/ui";
+import { billingModule } from "@harmonia/env";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -48,7 +49,7 @@ export default function SettingsPage() {
 				? "Light"
 				: "System default";
 
-	const polarCheckoutUrl = process.env.NEXT_PUBLIC_POLAR_CHECKOUT_URL || "#";
+	const polarCheckoutUrl = billingModule.NEXT_PUBLIC_POLAR_CHECKOUT_URL || "#";
 
 	return (
 		<div className="flex flex-col gap-6">
