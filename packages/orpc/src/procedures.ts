@@ -72,13 +72,14 @@ const requirePlan = o.middleware(async ({ context, next }) => {
 		});
 	}
 
+	// After the runtime narrowing above, `user.plan` is a string.
+	// `user.planExpiresAt` is exposed by better-auth as Date | null | undefined
+	// (per the additionalFields schema) which is compatible with isPro's signature.
 	return next({
 		context: {
 			...context,
 			session,
-			isPro: isPro(
-				user as unknown as { plan: string; planExpiresAt: Date | null },
-			),
+			isPro: isPro(user),
 		},
 	});
 });
