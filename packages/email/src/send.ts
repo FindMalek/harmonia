@@ -5,14 +5,7 @@ import {
 	Feedback3DayEmail,
 	type Feedback3DayEmailProps,
 } from "../emails/feedback-3day";
-import {
-	InvoiceEmail,
-	type InvoiceEmailProps,
-} from "../emails/invoice";
-import {
-	LoginAlertEmail,
-	type LoginAlertEmailProps,
-} from "../emails/login-alert";
+import { InvoiceEmail, type InvoiceEmailProps } from "../emails/invoice";
 import {
 	MarketingFeatureUpdateEmail,
 	type MarketingFeatureUpdateEmailProps,
@@ -21,22 +14,6 @@ import {
 	OrganizeCompleteEmail,
 	type OrganizeCompleteEmailProps,
 } from "../emails/organize-complete";
-import {
-	PaymentFailedEmail,
-	type PaymentFailedEmailProps,
-} from "../emails/payment-failed";
-import {
-	SubscriptionActivatedEmail,
-	type SubscriptionActivatedEmailProps,
-} from "../emails/subscription-activated";
-import {
-	SubscriptionCanceledEmail,
-	type SubscriptionCanceledEmailProps,
-} from "../emails/subscription-canceled";
-import {
-	SubscriptionRenewalReminderEmail,
-	type SubscriptionRenewalReminderEmailProps,
-} from "../emails/subscription-renewal-reminder";
 import { WelcomeEmail, type WelcomeEmailProps } from "../emails/welcome";
 import { render } from "../render";
 
@@ -62,13 +39,6 @@ type SendWelcomeInput = {
 	idempotencyKey: string;
 };
 
-type SendLoginAlertInput = {
-	config: SendEmailConfig;
-	to: string;
-	props: LoginAlertEmailProps;
-	idempotencyKey: string;
-};
-
 type SendFeedbackInput = {
 	config: SendEmailConfig;
 	to: string;
@@ -84,38 +54,10 @@ type SendMarketingInput = {
 	listUnsubscribeUrl?: string;
 };
 
-type SendSubscriptionActivatedInput = {
-	config: SendEmailConfig;
-	to: string;
-	props: SubscriptionActivatedEmailProps;
-	idempotencyKey: string;
-};
-
 type SendInvoiceInput = {
 	config: SendEmailConfig;
 	to: string;
 	props: InvoiceEmailProps;
-	idempotencyKey: string;
-};
-
-type SendPaymentFailedInput = {
-	config: SendEmailConfig;
-	to: string;
-	props: PaymentFailedEmailProps;
-	idempotencyKey: string;
-};
-
-type SendSubscriptionRenewalReminderInput = {
-	config: SendEmailConfig;
-	to: string;
-	props: SubscriptionRenewalReminderEmailProps;
-	idempotencyKey: string;
-};
-
-type SendSubscriptionCanceledInput = {
-	config: SendEmailConfig;
-	to: string;
-	props: SubscriptionCanceledEmailProps;
 	idempotencyKey: string;
 };
 
@@ -170,32 +112,6 @@ export async function sendWelcomeEmail(
 			subject: "Welcome to Harmonia",
 			html,
 			tags: [{ name: "category", value: "welcome" }],
-		},
-		{ idempotencyKey: input.idempotencyKey },
-	);
-
-	if (error) {
-		return { ok: false, error: error.message };
-	}
-
-	return { ok: true, emailId: data?.id ?? "" };
-}
-
-export async function sendLoginAlertEmail(
-	input: SendLoginAlertInput,
-): Promise<SendResult> {
-	const config = resolveConfig(input.config);
-	const resend = createResend(config);
-	const html = await render(LoginAlertEmail(input.props));
-
-	const { data, error } = await resend.emails.send(
-		{
-			from: config.from,
-			to: [input.to],
-			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: "New Harmonia login",
-			html,
-			tags: [{ name: "category", value: "login_alert" }],
 		},
 		{ idempotencyKey: input.idempotencyKey },
 	);
@@ -268,32 +184,6 @@ export async function sendMarketingFeatureUpdateEmail(
 	return { ok: true, emailId: data?.id ?? "" };
 }
 
-export async function sendSubscriptionActivatedEmail(
-	input: SendSubscriptionActivatedInput,
-): Promise<SendResult> {
-	const config = resolveConfig(input.config);
-	const resend = createResend(config);
-	const html = await render(SubscriptionActivatedEmail(input.props));
-
-	const { data, error } = await resend.emails.send(
-		{
-			from: config.from,
-			to: [input.to],
-			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: "Your Harmonia subscription is active",
-			html,
-			tags: [{ name: "category", value: "billing" }],
-		},
-		{ idempotencyKey: input.idempotencyKey },
-	);
-
-	if (error) {
-		return { ok: false, error: error.message };
-	}
-
-	return { ok: true, emailId: data?.id ?? "" };
-}
-
 export async function sendInvoiceEmail(
 	input: SendInvoiceInput,
 ): Promise<SendResult> {
@@ -310,84 +200,6 @@ export async function sendInvoiceEmail(
 			to: [input.to],
 			replyTo: config.replyTo ? [config.replyTo] : undefined,
 			subject: `Your Harmonia receipt — ${formattedDate}`,
-			html,
-			tags: [{ name: "category", value: "billing" }],
-		},
-		{ idempotencyKey: input.idempotencyKey },
-	);
-
-	if (error) {
-		return { ok: false, error: error.message };
-	}
-
-	return { ok: true, emailId: data?.id ?? "" };
-}
-
-export async function sendPaymentFailedEmail(
-	input: SendPaymentFailedInput,
-): Promise<SendResult> {
-	const config = resolveConfig(input.config);
-	const resend = createResend(config);
-	const html = await render(PaymentFailedEmail(input.props));
-
-	const { data, error } = await resend.emails.send(
-		{
-			from: config.from,
-			to: [input.to],
-			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: "Action required: payment failed",
-			html,
-			tags: [{ name: "category", value: "billing" }],
-		},
-		{ idempotencyKey: input.idempotencyKey },
-	);
-
-	if (error) {
-		return { ok: false, error: error.message };
-	}
-
-	return { ok: true, emailId: data?.id ?? "" };
-}
-
-export async function sendSubscriptionRenewalReminderEmail(
-	input: SendSubscriptionRenewalReminderInput,
-): Promise<SendResult> {
-	const config = resolveConfig(input.config);
-	const resend = createResend(config);
-	const html = await render(SubscriptionRenewalReminderEmail(input.props));
-
-	const { data, error } = await resend.emails.send(
-		{
-			from: config.from,
-			to: [input.to],
-			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: "Your Harmonia subscription renews soon",
-			html,
-			tags: [{ name: "category", value: "billing" }],
-		},
-		{ idempotencyKey: input.idempotencyKey },
-	);
-
-	if (error) {
-		return { ok: false, error: error.message };
-	}
-
-	return { ok: true, emailId: data?.id ?? "" };
-}
-
-export async function sendSubscriptionCanceledEmail(
-	input: SendSubscriptionCanceledInput,
-): Promise<SendResult> {
-	const config = resolveConfig(input.config);
-	const resend = createResend(config);
-	const html = await render(SubscriptionCanceledEmail(input.props));
-
-	const { data, error } = await resend.emails.send(
-		{
-			from: config.from,
-			to: [input.to],
-			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: "Your Harmonia subscription has been canceled",
 			html,
 			tags: [{ name: "category", value: "billing" }],
 		},

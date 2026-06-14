@@ -81,14 +81,14 @@ export function MarketingFeatureUpdateEmail({
 					{/* Badge */}
 					{badgeText ? (
 						<Text
-							className="mt-[24px] mb-[8px] text-center text-[11px] font-semibold uppercase tracking-widest"
+							className="mt-[24px] mb-[8px] text-center font-semibold text-[11px] uppercase tracking-widest"
 							style={{ color: lightStyles.button.color }}
 						>
 							{badgeText}
 						</Text>
 					) : (
 						<Text
-							className="mt-[24px] mb-[8px] text-center text-[11px] font-semibold uppercase tracking-widest"
+							className="mt-[24px] mb-[8px] text-center font-semibold text-[11px] uppercase tracking-widest"
 							style={{ color: lightStyles.button.color }}
 						>
 							Just shipped
@@ -143,7 +143,7 @@ export function MarketingFeatureUpdateEmail({
 							/>
 							<Section className="my-[20px]">
 								<Text
-									className={`mb-[12px] text-[12px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`mb-[12px] font-semibold text-[12px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									What&apos;s new
@@ -151,7 +151,7 @@ export function MarketingFeatureUpdateEmail({
 								{resolvedHighlights.map((highlight, index) => (
 									<Section key={`highlight-${index}`} className="mb-[12px]">
 										<Text
-											className={`m-0 text-[14px] font-semibold ${themeClasses.text}`}
+											className={`m-0 font-semibold text-[14px] ${themeClasses.text}`}
 											style={{ color: lightStyles.text.color }}
 										>
 											✦ {highlight.title}

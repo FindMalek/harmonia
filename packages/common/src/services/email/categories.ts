@@ -11,14 +11,9 @@ export type EmailTemplateCategory =
 const TEMPLATE_CATEGORIES: Record<EmailTemplateKey, EmailTemplateCategory> = {
 	organize_complete: "transactional",
 	welcome: "transactional",
-	login_alert: "security",
 	feedback_3day: "feedback",
 	marketing_feature_update: "product_update",
-	subscription_activated: "billing",
 	invoice: "billing",
-	payment_failed: "billing",
-	subscription_renewal_reminder: "billing",
-	subscription_canceled: "billing",
 };
 
 export function getEmailTemplateCategory(

@@ -1,4 +1,3 @@
-import { sendLoginAlertEmailTask } from "@harmonia/common/trigger/tasks/emails/send-login-alert";
 import { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";
 import { buildTrustedOrigins } from "@harmonia/common/utils/origin";
 import * as schema from "@harmonia/db/schema/auth";
@@ -71,28 +70,6 @@ export function createAuth(
 									error: err instanceof Error ? err.message : String(err),
 								},
 								"Failed to send welcome email",
-							);
-						}
-					},
-				},
-			},
-			session: {
-				create: {
-					after: async (sessionRow) => {
-						try {
-							await sendLoginAlertEmailTask.trigger({
-								userId: sessionRow.userId,
-								loginAtIso: sessionRow.createdAt.toISOString(),
-								ipAddress: sessionRow.ipAddress,
-								userAgent: sessionRow.userAgent,
-							});
-						} catch (err) {
-							logger.warn(
-								{
-									userId: sessionRow.userId,
-									error: err instanceof Error ? err.message : String(err),
-								},
-								"Failed to send login alert email",
 							);
 						}
 					},

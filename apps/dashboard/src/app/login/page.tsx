@@ -1,10 +1,9 @@
-import { redirect } from "next/navigation";
-
-import { AuthSpotifySignInButton } from "@/components/app/auth-spotify-sign-in-button";
-import { Header } from "@/components/shared/header";
-import { getServerSession } from "@/shared/api/session.server";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { HarmoniaBrandHeader } from "@harmonia/ui";
 import type { Route } from "next";
+import { redirect } from "next/navigation";
+import { AuthSpotifySignInButton } from "@/components/app/auth-spotify-sign-in-button";
+import { getServerSession } from "@/shared/api/session.server";
 
 export default async function LoginPage() {
 	const session = await getServerSession();
@@ -20,7 +19,7 @@ export default async function LoginPage() {
 	return (
 		<div className="flex h-full min-h-svh flex-col bg-background font-sans">
 			<div className="flex flex-1 flex-col justify-between p-8 sm:p-12 lg:p-16">
-				<Header />
+				<HarmoniaBrandHeader />
 
 				{/* Hero Text */}
 				<div className="mt-42 mb-16 max-w-2xl border-foreground border-l-4 pl-6 sm:pl-8">

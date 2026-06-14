@@ -127,13 +127,13 @@ export function InvoiceEmail({
 						<Row>
 							<Column>
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Status
 								</Text>
 								<Text
-									className="m-0 mt-[4px] inline-block rounded px-[8px] py-[3px] text-[11px] font-semibold"
+									className="m-0 mt-[4px] inline-block rounded px-[8px] py-[3px] font-semibold text-[11px]"
 									style={{
 										backgroundColor: "#dcfce7",
 										color: "#15803d",
@@ -144,13 +144,13 @@ export function InvoiceEmail({
 							</Column>
 							<Column align="right">
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Invoice
 								</Text>
 								<Text
-									className={`m-0 mt-[4px] text-[13px] font-medium ${themeClasses.text}`}
+									className={`m-0 mt-[4px] font-medium text-[13px] ${themeClasses.text}`}
 									style={{ color: lightStyles.text.color }}
 								>
 									{invoiceNumber}
@@ -169,14 +169,14 @@ export function InvoiceEmail({
 						<Row>
 							<Column>
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Bill to
 								</Text>
 								{safeName !== "there" ? (
 									<Text
-										className={`m-0 mt-[4px] text-[13px] font-medium ${themeClasses.text}`}
+										className={`m-0 mt-[4px] font-medium text-[13px] ${themeClasses.text}`}
 										style={{ color: lightStyles.text.color }}
 									>
 										{safeName}
@@ -191,7 +191,7 @@ export function InvoiceEmail({
 							</Column>
 							<Column align="right">
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Invoice date
@@ -216,7 +216,7 @@ export function InvoiceEmail({
 						<Row>
 							<Column style={{ width: "50%" }}>
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Description
@@ -224,7 +224,7 @@ export function InvoiceEmail({
 							</Column>
 							<Column align="center" style={{ width: "20%" }}>
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Qty
@@ -232,7 +232,7 @@ export function InvoiceEmail({
 							</Column>
 							<Column align="right" style={{ width: "15%" }}>
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Unit price
@@ -240,7 +240,7 @@ export function InvoiceEmail({
 							</Column>
 							<Column align="right" style={{ width: "15%" }}>
 								<Text
-									className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+									className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 									style={{ color: lightStyles.mutedText.color }}
 								>
 									Total
@@ -290,7 +290,7 @@ export function InvoiceEmail({
 								</Column>
 								<Column align="right" style={{ width: "15%" }}>
 									<Text
-										className={`m-0 py-[10px] text-[13px] font-medium ${themeClasses.text}`}
+										className={`m-0 py-[10px] font-medium text-[13px] ${themeClasses.text}`}
 										style={{ color: lightStyles.text.color }}
 									>
 										{item.total}
@@ -349,7 +349,7 @@ export function InvoiceEmail({
 						<Row>
 							<Column>
 								<Text
-									className={`m-0 pt-[8px] text-[15px] font-semibold ${themeClasses.text}`}
+									className={`m-0 pt-[8px] font-semibold text-[15px] ${themeClasses.text}`}
 									style={{ color: lightStyles.text.color }}
 								>
 									Total
@@ -357,7 +357,7 @@ export function InvoiceEmail({
 							</Column>
 							<Column align="right">
 								<Text
-									className={`m-0 pt-[8px] text-[15px] font-semibold ${themeClasses.text}`}
+									className={`m-0 pt-[8px] font-semibold text-[15px] ${themeClasses.text}`}
 									style={{ color: lightStyles.text.color }}
 								>
 									{amount}
@@ -377,7 +377,7 @@ export function InvoiceEmail({
 								<Row>
 									<Column>
 										<Text
-											className={`m-0 text-[11px] font-semibold uppercase tracking-widest ${themeClasses.mutedText}`}
+											className={`m-0 font-semibold text-[11px] uppercase tracking-widest ${themeClasses.mutedText}`}
 											style={{ color: lightStyles.mutedText.color }}
 										>
 											Payment method

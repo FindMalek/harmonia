@@ -4,7 +4,6 @@ import { user } from "@harmonia/db/schema/auth";
 import { playlist } from "@harmonia/db/schema/playlist";
 import {
 	sendFeedback3DayEmail,
-	sendLoginAlertEmail,
 	sendOrganizeCompleteEmail,
 	sendWelcomeEmail,
 } from "@harmonia/email/send";
@@ -248,100 +247,6 @@ export async function sendWelcomeNotification({ userId }: { userId: string }) {
 		{
 			userId,
 			templateKey: "welcome",
-			providerMessageId: result.emailId,
-		},
-		"Email delivery sent",
-	);
-	return { ok: true, reason: "sent" as const };
-}
-
-export async function sendLoginAlertNotification({
-	userId,
-	loginAtIso,
-	ipAddress,
-	userAgent,
-}: {
-	userId: string;
-	loginAtIso: string;
-	ipAddress?: string | null;
-	userAgent?: string | null;
-}) {
-	const config = buildSendConfig();
-	if (!config) return { ok: false, reason: "provider_not_configured" as const };
-
-	const userRow = await getUserForEmail(userId);
-	if (!userRow?.email) return { ok: false, reason: "missing_email" as const };
-
-	const idempotencyKey = `login-alert/${userId}/${loginAtIso}`;
-	const policy = await evaluateEmailPolicy({
-		userId,
-		email: userRow.email,
-		templateKey: "login_alert",
-	});
-	if (!policy.allowed) {
-		await reserveEmailDelivery({
-			userId,
-			email: userRow.email,
-			templateKey: "login_alert",
-			idempotencyKey,
-			metadata: { policyReason: policy.reason },
-		});
-		await markEmailDelivery({
-			idempotencyKey,
-			status: "skipped",
-			skipReason: policy.reason,
-		});
-		logger.info(
-			{ userId, templateKey: "login_alert", reason: policy.reason },
-			"Email delivery skipped",
-		);
-		return { ok: false, reason: policy.reason };
-	}
-
-	const reservation = await reserveEmailDelivery({
-		userId,
-		email: userRow.email,
-		templateKey: "login_alert",
-		idempotencyKey,
-	});
-	if (!reservation.created)
-		return { ok: true, reason: "already_sent" as const };
-
-	const result = await sendLoginAlertEmail({
-		config,
-		to: userRow.email,
-		idempotencyKey,
-		props: {
-			recipientName: userRow.name,
-			loginAtIso,
-			ipAddress,
-			userAgent,
-			settingsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.settings.children.notifications.path}`,
-		},
-	});
-
-	if (!result.ok) {
-		await markEmailDelivery({
-			idempotencyKey,
-			status: "failed",
-			error: result.error,
-		});
-		logger.warn(
-			{ userId, templateKey: "login_alert", error: result.error },
-			"Email delivery failed",
-		);
-		return { ok: false, reason: "send_failed" as const, error: result.error };
-	}
-
-	await markEmailDelivery({
-		idempotencyKey,
-		status: "sent",
-		providerMessageId: result.emailId,
-	});
-	logger.info(
-		{
-			userId,
-			templateKey: "login_alert",
 			providerMessageId: result.emailId,
 		},
 		"Email delivery sent",

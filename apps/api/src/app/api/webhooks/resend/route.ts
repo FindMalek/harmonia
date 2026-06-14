@@ -1,9 +1,8 @@
 import { upsertEmailSuppression } from "@harmonia/common/services/email";
-import { db } from "@harmonia/db";
+import { db, eq } from "@harmonia/db";
 import { emailSendLog } from "@harmonia/db/schema/email-send-log";
 import { apiEnv } from "@harmonia/env/presets/api";
 import { logger } from "@harmonia/logger";
-import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
