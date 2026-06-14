@@ -119,8 +119,6 @@ export async function sendOrganizeCompleteNotification({
 		props: {
 			dashboardPlaylistsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
 			recipientName: userRow.name,
-			playlistsCreated,
-			tracksOrganized,
 			topPlaylists: await getRecentGeneratedPlaylists(userId),
 		},
 	});

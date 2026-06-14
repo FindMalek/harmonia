@@ -18,8 +18,6 @@ import {
 export type OrganizeCompleteEmailProps = {
 	dashboardPlaylistsUrl: string;
 	recipientName?: string | null;
-	playlistsCreated: number;
-	tracksOrganized: number;
 	topPlaylists?: Array<{
 		name: string;
 		trackCount?: number | null;
@@ -29,8 +27,6 @@ export type OrganizeCompleteEmailProps = {
 export function OrganizeCompleteEmail({
 	dashboardPlaylistsUrl = "http://127.0.0.1:3003/playlists",
 	recipientName,
-	playlistsCreated = 0,
-	tracksOrganized = 0,
 	topPlaylists = [],
 }: OrganizeCompleteEmailProps) {
 	const themeClasses = getEmailThemeClasses();
@@ -70,37 +66,8 @@ export function OrganizeCompleteEmail({
 						ready to listen in your dashboard.
 					</Text>
 
-					<Section
-						className={`mb-[20px] rounded-md p-[16px] ${themeClasses.highlight}`}
-						style={{
-							borderStyle: "solid",
-							borderWidth: 1,
-							borderColor: lightStyles.container.borderColor,
-						}}
-					>
-						<Text
-							className={`m-0 mb-[8px] text-[14px] ${themeClasses.text}`}
-							style={{ color: lightStyles.text.color }}
-						>
-							<strong>Playlists created:</strong> {playlistsCreated}
-						</Text>
-						<Text
-							className={`m-0 text-[14px] ${themeClasses.text}`}
-							style={{ color: lightStyles.text.color }}
-						>
-							<strong>Tracks organized:</strong> {tracksOrganized}
-						</Text>
-					</Section>
-
-					<Text
-						className={`mb-[12px] font-semibold text-[13px] ${themeClasses.text}`}
-						style={{ color: lightStyles.text.color }}
-					>
-						Top playlists from this run
-					</Text>
-
-					{playlistItems.length > 0 ? (
-						playlistItems.slice(0, 3).map((playlist, index) => (
+					{playlistItems.length > 0 && (
+						playlistItems.slice(0, 5).map((playlist, index) => (
 							<Section
 								key={`${playlist.name}-${index}`}
 								className={`border-t border-solid py-[10px] ${themeClasses.border}`}
@@ -122,17 +89,10 @@ export function OrganizeCompleteEmail({
 								</Text>
 							</Section>
 						))
-					) : (
-						<Text
-							className={`text-[13px] ${themeClasses.mutedText}`}
-							style={{ color: lightStyles.mutedText.color }}
-						>
-							We created your playlists and they are ready in your dashboard.
-						</Text>
 					)}
 
 					<Section className="mt-[40px] mb-[40px] text-center">
-						<Button href={dashboardPlaylistsUrl}>See more playlists</Button>
+						<Button href={dashboardPlaylistsUrl}>See the rest of {playlistItems.length} playlists</Button>
 					</Section>
 
 					<Footer complianceText="You are receiving this transactional email because your organize run completed successfully." />
@@ -145,8 +105,6 @@ export function OrganizeCompleteEmail({
 OrganizeCompleteEmail.PreviewProps = {
 	dashboardPlaylistsUrl: "http://127.0.0.1:3003/playlists",
 	recipientName: "Malek",
-	playlistsCreated: 7,
-	tracksOrganized: 143,
 	topPlaylists: [
 		{ name: "Neon Night Drive", trackCount: 24 },
 		{ name: "Focused Flow", trackCount: 18 },
