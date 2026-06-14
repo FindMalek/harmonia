@@ -6,6 +6,7 @@ export type PipelineProgressStage = {
 	embedded?: number;
 	clusters?: number;
 	playlists?: number;
+	tracksOrganized?: number;
 };
 
 export type PipelineStreamState = {

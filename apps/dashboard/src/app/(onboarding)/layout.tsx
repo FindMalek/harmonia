@@ -1,9 +1,8 @@
-import { redirect } from "next/navigation";
-
-import { OnboardingFooter } from "@/components/layout/onboarding-footer";
-import { Header } from "@/components/shared/header";
-import { getServerSession } from "@/shared/api/session.server";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { HarmoniaBrandHeader } from "@harmonia/ui";
+import { redirect } from "next/navigation";
+import { OnboardingFooter } from "@/components/layout/onboarding-footer";
+import { getServerSession } from "@/shared/api/session.server";
 
 export default async function OnboardingLayout({
 	children,
@@ -23,7 +22,7 @@ export default async function OnboardingLayout({
 	return (
 		<div className="flex h-full min-h-svh flex-col bg-background font-sans">
 			<div className="flex flex-1 flex-col justify-between p-8 sm:p-12 lg:p-16">
-				<Header />
+				<HarmoniaBrandHeader />
 
 				<div className="flex flex-1 flex-col justify-center">{children}</div>
 				<OnboardingFooter />

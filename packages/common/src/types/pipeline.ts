@@ -40,6 +40,7 @@ export type ClusterProgress = {
 
 export type GenerateProgress = {
 	playlists: number;
+	tracksOrganized: number;
 };
 
 export type PipelineProgress = {

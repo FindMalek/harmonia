@@ -21,7 +21,7 @@ export type PipelineProgress = {
 	classify?: { classified: number; total: number; pending: number };
 	embed?: { embedded: number; total: number; pending: number };
 	cluster?: { clusters: number; noise: number; totalTracks: number };
-	generate?: { playlists: number };
+	generate?: { playlists: number; tracksOrganized: number };
 	export?: Record<string, unknown>;
 };
 

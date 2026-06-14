@@ -1,40 +1,27 @@
 "use client";
 
-import { useOrganizeStore } from "@/shared/lib/organize/store";
-import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";
-import {
-	DASHBOARD_MOBILE_NAV_ITEMS,
-	DASHBOARD_ROUTES,
-} from "@harmonia/common/utils/routes";
+import { DASHBOARD_MOBILE_NAV_ITEMS } from "@harmonia/common/utils/routes";
 import {
 	Button,
+	cn,
 	Icons,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
-	cn,
 } from "@harmonia/ui";
 import Link, { type LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
+import { useMobileBottomNavState } from "@/hooks/use-mobile-bottom-nav-state";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 
 type Href = LinkProps<string>["href"];
 
 export function MobileBottomNav() {
 	const pathname = usePathname();
-	const { activeRunId, isAnalysisDrawerOpen, setIsAnalysisDrawerOpen } =
-		useOrganizeStore();
-	const { snapshot: streamState, connectionState } = usePipelineProgress();
+	const { setIsAnalysisDrawerOpen } = useOrganizeStore();
+	const { hidden, showAnalysisBar } = useMobileBottomNavState();
 
-	const isPlaylistDetail =
-		pathname.startsWith(`${DASHBOARD_ROUTES.playlists.path}/`) &&
-		DASHBOARD_ROUTES.playlists.children.detail.hideBottomNav;
-
-	const showAnalysisBar =
-		activeRunId != null &&
-		!isAnalysisDrawerOpen &&
-		(streamState.status === "running" || connectionState === "reconnecting");
-
-	if (isPlaylistDetail) {
+	if (hidden) {
 		return null;
 	}
 

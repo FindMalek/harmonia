@@ -1,9 +1,12 @@
 import { db } from "@harmonia/db";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { queue, task } from "@trigger.dev/sdk/v3";
+import { queue, task } from "@trigger.dev/sdk";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
-
+import {
+	LYRICS_FANOUT_CHUNK_SIZE,
+	LYRICS_WORKER_QUEUE_CONCURRENCY,
+} from "../../../constants";
 import { fetchLyricsForTrackIds } from "../../../services/music";
 import {
 	checkCancelled,
@@ -11,10 +14,6 @@ import {
 	updateRun,
 	updateStageProgress,
 } from "../../../services/organize";
-import {
-	LYRICS_FANOUT_CHUNK_SIZE,
-	LYRICS_WORKER_QUEUE_CONCURRENCY,
-} from "../../../constants";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
 
 const lyricsWorkerQueue = queue({

@@ -60,6 +60,12 @@ export const DASHBOARD_ROUTES = {
 		label: "Settings",
 		icon: "settings",
 		isNav: true,
+		children: {
+			notifications: {
+				path: "/settings/notifications",
+				label: "Notifications",
+			},
+		},
 	},
 	onboarding: {
 		index: {

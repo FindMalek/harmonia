@@ -77,7 +77,7 @@ export const myTable = pgTable("my_table", {
 ## Trigger.dev Task Pattern
 
 ```typescript
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 import { checkCancelled, updateRun, updateStageProgress } from "../../../services/organize";
 
 export const myStageTask = task({

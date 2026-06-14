@@ -3,6 +3,7 @@ import { account } from "@harmonia/db/schema/auth";
 import { and, eq } from "drizzle-orm";
 import { protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
+import { emailPreferencesRouter } from "./email-preferences";
 import { insightsRouter } from "./insights";
 import { pipelineRouter } from "./pipeline";
 import { playlistsRouter } from "./playlists";
@@ -30,6 +31,7 @@ export const protectedRouter = {
 	playlists: playlistsRouter,
 	pipeline: pipelineRouter,
 	spotify: spotifyRouter,
+	emailPreferences: emailPreferencesRouter,
 	insights: insightsRouter,
 };
 

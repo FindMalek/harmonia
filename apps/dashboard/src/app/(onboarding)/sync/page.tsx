@@ -1,10 +1,10 @@
 "use client";
 
+import { Icons, Progress } from "@harmonia/ui";
 import {
 	useOnboardingController,
 	useOnboardingSyncStream,
 } from "@/shared/lib/onboarding/controller.hook";
-import { Icons, Progress } from "@harmonia/ui";
 
 export default function SyncPage() {
 	const { isComplete, isSyncing } = useOnboardingController();

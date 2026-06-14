@@ -11,9 +11,10 @@
 		"dev:api": "concurrently -n api,trigger -c blue,green \"turbo -F api dev\" \"pnpm trigger:dev\"",
 		"dev:web": "turbo -F web dev",
 		"dev:dashboard": "turbo -F dashboard dev",
+		"dev:email": "turbo -F email dev",
 		"dev:aw": "concurrently -n api,web,trigger -c blue,yellow,green \"turbo run dev --filter=api --filter=web\" \"pnpm trigger:dev\"",
 		"dev:ad": "concurrently -n api,dashboard,trigger -c blue,cyan,green \"turbo run dev --filter=api --filter=dashboard\" \"pnpm trigger:dev\"",
-		"dev:all": "concurrently -n api,web,dashboard,trigger -c blue,yellow,cyan,green \"turbo run dev --filter=api --filter=web --filter=dashboard\" \"pnpm trigger:dev\"",
+		"dev:all": "concurrently -n api,web,dashboard,email,trigger -c blue,yellow,cyan,magenta,green \"turbo run dev --filter=api --filter=web --filter=dashboard --filter=email\" \"pnpm trigger:dev\"",
 		"build": "turbo build",
 		"db:push": "turbo -F @harmonia/db db:push",
 		"db:studio": "turbo -F @harmonia/db db:studio",
@@ -50,10 +51,15 @@
 		"turbo": "^2.9.14",
 		"typescript": "catalog:"
 	},
-	"packageManager": "pnpm@10.26.1",
+	"packageManager": "pnpm@11.5.0+sha512.dbfcc4f81cf48597afd4bc391ffdf12c11f1a9fb83a395bfa6b0a2d9cc2fd8ffebafdb1ccbd529632153f793904c2615b7f09fe1a345473fd1c35845172a8eb1",
 	"pnpm": {
 		"overrides": {
-			"@opentelemetry/api": "^1.9.1"
+			"@opentelemetry/api": "^1.9.1",
+			"@types/react": "19.2.14",
+			"@types/react-dom": "19.2.3"
+		},
+		"patchedDependencies": {
+			"next-themes@0.4.6": "patches/next-themes@0.4.6.patch"
 		}
 	}
 }

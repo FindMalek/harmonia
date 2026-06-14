@@ -1,6 +1,8 @@
-import { task } from "@trigger.dev/sdk/v3";
+import { logger } from "@harmonia/logger";
+import { task } from "@trigger.dev/sdk";
 
 import { PipelineCancelledError, updateRun } from "../../services/organize";
+import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
 import { classifyStageTask } from "./stages/classify";
 import { clusterStageTask } from "./stages/cluster";
 import { embedStageTask } from "./stages/embed";
@@ -29,6 +31,23 @@ export const organizePipeline = task({
 				currentStage: null,
 				completedAt: new Date(),
 			});
+
+			try {
+				await sendOrganizeCompleteEmailTask.trigger({
+					userId,
+					runId,
+				});
+			} catch (emailErr) {
+				logger.warn(
+					{
+						userId,
+						runId,
+						error:
+							emailErr instanceof Error ? emailErr.message : String(emailErr),
+					},
+					"Failed to queue organize completion email task",
+				);
+			}
 
 			return { userId, runId, status: "completed" as const };
 		} catch (err) {

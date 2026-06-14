@@ -1,5 +1,11 @@
 "use client";
 
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { Badge, Button } from "@harmonia/ui";
+import { formatDistanceToNow } from "date-fns";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
 	DashboardSettingsNavRow,
 	DashboardSettingsRow,
@@ -8,11 +14,9 @@ import {
 } from "@/components/app/dashboard-settings-section";
 import { PageHeader } from "@/components/shared/page-header";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
-import { Badge, Button } from "@harmonia/ui";
-import { formatDistanceToNow } from "date-fns";
-import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
+	const router = useRouter();
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => {
 		setMounted(true);
@@ -89,6 +93,15 @@ export default function SettingsPage() {
 						<Badge variant="outline" className="text-xs">
 							Coming soon
 						</Badge>
+					}
+				/>
+				<DashboardSettingsNavRow
+					label="Notifications"
+					subtitle="Manage email alerts and marketing preferences"
+					onClick={() =>
+						router.push(
+							DASHBOARD_ROUTES.settings.children.notifications.path as Route,
+						)
 					}
 				/>
 			</DashboardSettingsSection>

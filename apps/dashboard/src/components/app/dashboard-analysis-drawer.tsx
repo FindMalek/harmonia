@@ -1,8 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
-import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";
 import {
 	Button,
 	Drawer,
@@ -14,6 +11,9 @@ import {
 	Progress,
 	ScrollArea,
 } from "@harmonia/ui";
+import { cn } from "@/lib/utils";
+import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
+import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";
 
 const STAGES = [
 	{ id: "sync", label: "Syncing library" },
@@ -128,11 +128,12 @@ export function DashboardAnalysisDrawer() {
 						? "Completed"
 						: "Grouping similar tracks...";
 			case "generate":
-				return prog.playlists
-					? `Generated ${prog.playlists} playlists`
-					: isStageDone
-						? "Completed"
-						: "Curating your new library...";
+				if (prog.playlists || prog.tracksOrganized) {
+					const playlistLabel = `Generated ${prog.playlists ?? 0} playlists`;
+					if (!prog.tracksOrganized) return playlistLabel;
+					return `${playlistLabel} • Organized ${prog.tracksOrganized} tracks`;
+				}
+				return isStageDone ? "Completed" : "Curating your new library...";
 			default:
 				return "Processing...";
 		}

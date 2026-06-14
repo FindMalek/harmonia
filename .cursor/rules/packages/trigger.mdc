@@ -6,12 +6,12 @@ globs:
 alwaysApply: false
 ---
 
-# Trigger.dev (`@trigger.dev/sdk/v3`)
+# Trigger.dev (`@trigger.dev/sdk`)
 
 ## Task Structure
 
 ```typescript
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 import { checkCancelled, updateRun, updateStageProgress } from "../../../services/organize";
 
 export const myStageTask = task({

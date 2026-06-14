@@ -1,5 +1,5 @@
 import { apiEnv } from "@harmonia/env/presets/api";
-import { defineConfig } from "@trigger.dev/sdk/v3";
+import { defineConfig } from "@trigger.dev/sdk";
 
 export default defineConfig({
 	// standard Trigger.dev var, not in @harmonia/env — fall back to it when HARMONIA_TRIGGER_PROJECT_REF is unset

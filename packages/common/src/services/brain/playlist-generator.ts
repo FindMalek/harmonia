@@ -1,10 +1,11 @@
 import { createGroq } from "@ai-sdk/groq";
+import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import {
-	cluster,
 	type ClusterMeta,
+	cluster,
 	clusterTracks,
 } from "@harmonia/db/schema/cluster";
 import {
@@ -16,19 +17,17 @@ import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
-import { Output, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { and, eq } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
-
-import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 
 export async function generatePlaylists(
 	userId: string,
 	onProgress?: (progress: GenerateProgress) => Promise<void>,
 ): Promise<GenerateProgress> {
-	const stats: GenerateProgress = { playlists: 0 };
+	const stats: GenerateProgress = { playlists: 0, tracksOrganized: 0 };
 
 	if (!env.HARMONIA_GROQ_API_KEY) {
 		logger.warn(
@@ -190,6 +189,7 @@ export async function generatePlaylists(
 					}
 
 					stats.playlists++;
+					stats.tracksOrganized += trackValues.length;
 					await onProgress?.(stats);
 				} catch (err) {
 					logger.error(

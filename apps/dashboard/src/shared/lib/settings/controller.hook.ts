@@ -1,10 +1,12 @@
 "use client";
 
-import { authClient } from "@/shared/api/auth-client";
-import { orpc } from "@/shared/api/orpc";
-import { useOrganizeStore } from "@/shared/lib/organize/store";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
+import { authClient } from "@/shared/api/auth-client";
+import { toastError } from "@/shared/api/error-handler";
+import { orpc } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
+import { useOrganizeStore } from "@/shared/lib/organize/store";
 
 function toSyncDate(value: unknown): Date | null {
 	if (value == null) {
@@ -21,6 +23,7 @@ function toSyncDate(value: unknown): Date | null {
 }
 
 export function useSettingsController() {
+	const queryClient = useQueryClient();
 	const { data: session, isPending: sessionPending } = authClient.useSession();
 	const { theme, setTheme, resolvedTheme } = useTheme();
 
@@ -29,6 +32,21 @@ export function useSettingsController() {
 	);
 	const libraryStats = useQuery(
 		orpc.spotify.libraryStats.queryOptions({ input: {} }),
+	);
+	const emailPreferences = useQuery(
+		orpc.emailPreferences.get.queryOptions({ input: {} }),
+	);
+	const updateEmailPreferences = useMutation(
+		orpc.emailPreferences.update.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.emailPreferences(),
+				});
+			},
+			onError: (error) => {
+				toastError(error.message ?? "Failed to update email preferences");
+			},
+		}),
 	);
 
 	const signOut = async () => {
@@ -46,6 +64,9 @@ export function useSettingsController() {
 		spotifyLoading: spotifyLinked.isLoading,
 		lastSync: toSyncDate(libraryStats.data?.updatedAt),
 		statsLoading: libraryStats.isLoading,
+		emailPreferences: emailPreferences.data ?? null,
+		emailPreferencesLoading: emailPreferences.isLoading,
+		updateEmailPreferences,
 		theme,
 		resolvedTheme,
 		setTheme,

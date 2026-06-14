@@ -1,4 +1,4 @@
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 
 import {
 	generateClusterMetadata,
@@ -17,8 +17,10 @@ export const generateStageTask = task({
 		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "generate" });
 		await generateClusterMetadata(userId);
-		return await generatePlaylists(userId, async (p) => {
+		const result = await generatePlaylists(userId, async (p) => {
 			await updateStageProgress(runId, "generate", p);
 		});
+		await updateStageProgress(runId, "generate", result);
+		return result;
 	},
 });

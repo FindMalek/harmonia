@@ -1,0 +1,10 @@
+{
+	"extends": "@harmonia/config/tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"jsx": "react-jsx",
+		"noEmit": true
+	},
+	"include": ["emails", "components", "src", "render.ts", "utils.ts"],
+	"exclude": ["node_modules"]
+}
