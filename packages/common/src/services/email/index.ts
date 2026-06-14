@@ -16,3 +16,8 @@ export {
 	sendOrganizeCompleteNotification,
 	sendWelcomeNotification,
 } from "./send-transactional";
+export {
+	processResendWebhookEvent,
+	type ResendWebhookEvent,
+	verifyResendWebhookEvent,
+} from "./webhook";

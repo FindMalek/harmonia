@@ -10,7 +10,6 @@
 	"dependencies": {
 		"@harmonia/common": "workspace:*",
 		"@harmonia/core": "workspace:*",
-		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
 		"@harmonia/orpc": "workspace:*",
@@ -20,12 +19,10 @@
 		"@orpc/zod": "catalog:",
 		"@trigger.dev/sdk": "catalog:",
 		"better-auth": "catalog:",
-		"drizzle-orm": "catalog:",
 		"dotenv": "catalog:",
 		"next": "catalog:",
 		"react": "catalog:",
 		"react-dom": "catalog:",
-		"resend": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

@@ -40,9 +40,6 @@
 		"./trigger/tasks/emails/send-welcome": {
 			"default": "./src/trigger/tasks/emails/send-welcome.ts"
 		},
-		"./trigger/tasks/emails/send-login-alert": {
-			"default": "./src/trigger/tasks/emails/send-login-alert.ts"
-		},
 		"./trigger/tasks/emails/send-feedback-3day": {
 			"default": "./src/trigger/tasks/emails/send-feedback-3day.ts"
 		},
@@ -52,20 +49,8 @@
 		"./trigger/tasks/emails/send-marketing-feature-update": {
 			"default": "./src/trigger/tasks/emails/send-marketing-feature-update.ts"
 		},
-		"./trigger/tasks/emails/send-subscription-activated": {
-			"default": "./src/trigger/tasks/emails/send-subscription-activated.ts"
-		},
 		"./trigger/tasks/emails/send-invoice": {
 			"default": "./src/trigger/tasks/emails/send-invoice.ts"
-		},
-		"./trigger/tasks/emails/send-payment-failed": {
-			"default": "./src/trigger/tasks/emails/send-payment-failed.ts"
-		},
-		"./trigger/tasks/emails/send-subscription-renewal-reminder": {
-			"default": "./src/trigger/tasks/emails/send-subscription-renewal-reminder.ts"
-		},
-		"./trigger/tasks/emails/send-subscription-canceled": {
-			"default": "./src/trigger/tasks/emails/send-subscription-canceled.ts"
 		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
@@ -111,6 +96,7 @@
 		"drizzle-orm": "catalog:",
 		"p-limit": "^7.3.0",
 		"p-retry": "^8.0.0",
+		"resend": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

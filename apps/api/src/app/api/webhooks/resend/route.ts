@@ -1,24 +1,10 @@
-import { upsertEmailSuppression } from "@harmonia/common/services/email";
-import { db, eq } from "@harmonia/db";
-import { emailSendLog } from "@harmonia/db/schema/email-send-log";
+import {
+	processResendWebhookEvent,
+	verifyResendWebhookEvent,
+} from "@harmonia/common/services/email";
 import { apiEnv } from "@harmonia/env/presets/api";
 import { logger } from "@harmonia/logger";
 import { type NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
-import { z } from "zod";
-
-const resendWebhookSchema = z.object({
-	type: z.string(),
-	data: z.object({
-		email_id: z.string().optional(),
-		to: z.array(z.string()).optional(),
-		bounce: z
-			.object({
-				message: z.string().optional(),
-			})
-			.optional(),
-	}),
-});
 
 export async function POST(req: NextRequest) {
 	const webhookSecret = apiEnv.HARMONIA_RESEND_WEBHOOK_SECRET;
@@ -44,72 +30,31 @@ export async function POST(req: NextRequest) {
 		);
 	}
 
-	const resend = new Resend(apiEnv.HARMONIA_RESEND_API_KEY ?? "");
-
-	let verifiedPayload: unknown;
-	try {
-		verifiedPayload = resend.webhooks.verify({
-			payload,
-			headers: {
-				id,
-				timestamp,
-				signature,
-			},
-			webhookSecret,
-		});
-	} catch (error) {
-		logger.warn({ error }, "Invalid Resend webhook signature");
+	if (!apiEnv.HARMONIA_RESEND_API_KEY) {
+		logger.error("Missing HARMONIA_RESEND_API_KEY for webhook verification");
 		return NextResponse.json(
-			{ error: "Invalid webhook signature" },
-			{ status: 401 },
+			{ error: "API key is not configured" },
+			{ status: 500 },
+		);
+	}
+	const event = verifyResendWebhookEvent({
+		apiKey: apiEnv.HARMONIA_RESEND_API_KEY,
+		webhookSecret,
+		payload,
+		headers: { id, timestamp, signature },
+	});
+
+	if (!event) {
+		logger.warn("Invalid or unparseable Resend webhook payload");
+		return NextResponse.json(
+			{ error: "Invalid webhook payload" },
+			{ status: 400 },
 		);
 	}
 
-	const parsed = resendWebhookSchema.safeParse(verifiedPayload);
-	if (!parsed.success) {
-		return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-	}
+	const result = await processResendWebhookEvent(event);
 
-	const { type, data } = parsed.data;
-	const providerMessageId = data.email_id;
-	const recipientEmail = data.to?.[0]?.toLowerCase();
-
-	if (providerMessageId) {
-		if (type === "email.delivered") {
-			await db
-				.update(emailSendLog)
-				.set({ status: "sent", sentAt: new Date() })
-				.where(eq(emailSendLog.providerMessageId, providerMessageId));
-		}
-
-		if (type === "email.failed") {
-			await db
-				.update(emailSendLog)
-				.set({ status: "failed", error: "Provider send failed" })
-				.where(eq(emailSendLog.providerMessageId, providerMessageId));
-		}
-	}
-
-	if (recipientEmail && type === "email.bounced") {
-		await upsertEmailSuppression({
-			email: recipientEmail,
-			reason: data.bounce?.message ?? "bounced",
-			source: "resend_webhook",
-		});
-	}
-
-	if (recipientEmail && type === "email.complained") {
-		await upsertEmailSuppression({
-			email: recipientEmail,
-			reason: "complained",
-			source: "resend_webhook",
-		});
-	}
-
-	logger.info(
-		{ eventType: type, providerMessageId, recipientEmail },
-		"Processed Resend webhook event",
-	);
+	logger.info(result, "Processed Resend webhook event");
 
 	return NextResponse.json({ ok: true });
 }
