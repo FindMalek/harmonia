@@ -11,7 +11,7 @@ import {
 	Section,
 	Text,
 } from "@react-email/components";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Footer } from "../components/footer";
 import { Logo } from "../components/logo";
 import {
@@ -66,9 +66,11 @@ export function InvoiceEmail({
 		typeof recipientName === "string" && recipientName.trim().length > 0
 			? recipientName
 			: "there";
-	const formattedInvoiceDate = invoiceDate
-		? format(new Date(invoiceDate), "PPP")
-		: null;
+	const parsedInvoiceDate = invoiceDate ? new Date(invoiceDate) : null;
+	const formattedInvoiceDate =
+		parsedInvoiceDate && isValid(parsedInvoiceDate)
+			? format(parsedInvoiceDate, "PPP")
+			: null;
 
 	const resolvedLineItems =
 		Array.isArray(lineItems) && lineItems.length > 0

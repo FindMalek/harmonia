@@ -16,7 +16,13 @@ export const sendOrganizeCompleteEmailTask = task({
 			.from(pipelineRun)
 			.where(and(eq(pipelineRun.id, runId), eq(pipelineRun.userId, userId)));
 
-		const generate = run?.progress?.generate;
+		if (!run) {
+			throw new Error(
+				`Pipeline run not found for userId=${userId}, runId=${runId}`,
+			);
+		}
+
+		const generate = run.progress?.generate;
 		const playlistsCreated = generate?.playlists ?? 0;
 		const tracksOrganized = generate?.tracksOrganized ?? 0;
 

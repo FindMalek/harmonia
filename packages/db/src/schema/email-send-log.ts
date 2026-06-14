@@ -30,5 +30,6 @@ export const emailSendLog = pgTable(
 		index("email_send_log_status_idx").on(table.status),
 		index("email_send_log_template_key_idx").on(table.templateKey),
 		index("email_send_log_created_at_idx").on(table.createdAt),
+		index("email_send_log_provider_message_id_idx").on(table.providerMessageId),
 	],
 );

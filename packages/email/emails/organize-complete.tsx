@@ -36,6 +36,7 @@ export function OrganizeCompleteEmail({
 			? recipientName
 			: "there";
 	const playlistItems = Array.isArray(topPlaylists) ? topPlaylists : [];
+	const remainingPlaylists = playlistItems.length - 5;
 
 	return (
 		<EmailThemeProvider preview={<Preview>Your playlists are ready</Preview>}>
@@ -66,7 +67,7 @@ export function OrganizeCompleteEmail({
 						ready to listen in your dashboard.
 					</Text>
 
-					{playlistItems.length > 0 && (
+					{playlistItems.length > 0 &&
 						playlistItems.slice(0, 5).map((playlist, index) => (
 							<Section
 								key={`${playlist.name}-${index}`}
@@ -88,11 +89,14 @@ export function OrganizeCompleteEmail({
 										: "Ready to play"}
 								</Text>
 							</Section>
-						))
-					)}
+						))}
 
 					<Section className="mt-[40px] mb-[40px] text-center">
-						<Button href={dashboardPlaylistsUrl}>See the rest of {playlistItems.length} playlists</Button>
+						<Button href={dashboardPlaylistsUrl}>
+							{remainingPlaylists > 0
+								? `See ${remainingPlaylists} more playlist${remainingPlaylists === 1 ? "" : "s"}`
+								: "View your playlists"}
+						</Button>
 					</Section>
 
 					<Footer complianceText="You are receiving this transactional email because your organize run completed successfully." />

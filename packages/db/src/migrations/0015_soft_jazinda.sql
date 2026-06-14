@@ -1,0 +1,1 @@
+CREATE INDEX "email_send_log_provider_message_id_idx" ON "email_send_log" USING btree ("provider_message_id");

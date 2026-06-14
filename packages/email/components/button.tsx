@@ -32,8 +32,8 @@ export function Button({
 					borderColor: lightStyles.button.borderColor,
 				}
 			: {
-					color: "#6b7280",
-					borderColor: "#d1d5db",
+					color: lightStyles.mutedText.color,
+					borderColor: lightStyles.container.borderColor,
 				};
 
 	return (

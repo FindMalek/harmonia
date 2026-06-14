@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Resend } from "resend";
 import { z } from "zod";
 import {
@@ -190,9 +190,13 @@ export async function sendInvoiceEmail(
 	const config = resolveConfig(input.config);
 	const resend = createResend(config);
 	const html = await render(InvoiceEmail(input.props));
-	const formattedDate = input.props.invoiceDate
-		? format(new Date(input.props.invoiceDate), "PPP")
-		: input.props.billingPeriod;
+	const parsedInvoiceDate = input.props.invoiceDate
+		? new Date(input.props.invoiceDate)
+		: null;
+	const formattedDate =
+		parsedInvoiceDate && isValid(parsedInvoiceDate)
+			? format(parsedInvoiceDate, "PPP")
+			: input.props.billingPeriod;
 
 	const { data, error } = await resend.emails.send(
 		{

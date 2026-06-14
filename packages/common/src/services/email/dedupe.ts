@@ -22,15 +22,6 @@ export async function reserveEmailDelivery({
 	idempotencyKey: string;
 	metadata?: Record<string, unknown>;
 }): Promise<EmailDeliveryReservation> {
-	const [existing] = await db
-		.select({ id: emailSendLog.id })
-		.from(emailSendLog)
-		.where(eq(emailSendLog.idempotencyKey, idempotencyKey));
-
-	if (existing) {
-		return { created: false, logId: existing.id };
-	}
-
 	const [created] = await db
 		.insert(emailSendLog)
 		.values({
@@ -41,9 +32,24 @@ export async function reserveEmailDelivery({
 			status: "queued",
 			metadata: metadata ?? null,
 		})
+		.onConflictDoNothing({ target: emailSendLog.idempotencyKey })
 		.returning({ id: emailSendLog.id });
 
-	return { created: true, logId: created?.id ?? null };
+	if (created) {
+		return { created: true, logId: created.id };
+	}
+
+	const [existing] = await db
+		.select({ id: emailSendLog.id, status: emailSendLog.status })
+		.from(emailSendLog)
+		.where(eq(emailSendLog.idempotencyKey, idempotencyKey));
+
+	if (existing?.status === "sent") {
+		return { created: false, logId: existing.id };
+	}
+
+	// Previous attempt didn't make it to "sent" (queued/failed/skipped) - allow retry on the same row.
+	return { created: true, logId: existing?.id ?? null };
 }
 
 export async function markEmailDelivery({
