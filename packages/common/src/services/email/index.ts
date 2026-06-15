@@ -17,6 +17,10 @@ export {
 	sendWelcomeNotification,
 } from "./send-transactional";
 export {
+	sendWaitlistApprovedNotification,
+	sendWaitlistConfirmationNotification,
+} from "./send-waitlist";
+export {
 	processResendWebhookEvent,
 	type ResendWebhookEvent,
 	verifyResendWebhookEvent,

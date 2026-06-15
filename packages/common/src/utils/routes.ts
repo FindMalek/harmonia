@@ -4,6 +4,10 @@ export const WEB_ROUTES = {
 		path: "/",
 		label: "Home",
 	},
+	waitlist: {
+		path: "/waitlist",
+		label: "Waitlist",
+	},
 } as const;
 
 export type WebRoutes = typeof WEB_ROUTES;

@@ -52,6 +52,15 @@
 		"./trigger/tasks/emails/send-invoice": {
 			"default": "./src/trigger/tasks/emails/send-invoice.ts"
 		},
+		"./trigger/tasks/emails/send-waitlist-confirmation": {
+			"default": "./src/trigger/tasks/emails/send-waitlist-confirmation.ts"
+		},
+		"./trigger/tasks/emails/send-waitlist-approved": {
+			"default": "./src/trigger/tasks/emails/send-waitlist-approved.ts"
+		},
+		"./trigger/tasks/emails/poll-waitlist-approvals": {
+			"default": "./src/trigger/tasks/emails/poll-waitlist-approvals.ts"
+		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
 		},
