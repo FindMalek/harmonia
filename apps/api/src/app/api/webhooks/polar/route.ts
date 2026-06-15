@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 	const headersList = await headers();
 	const signature = headersList.get("polar-webhook-signature");
 
-	if (!signature || !env.POLAR_WEBHOOK_SECRET) {
+	if (!signature || !env.HARMONIA_POLAR_WEBHOOK_SECRET) {
 		return new NextResponse("Webhook secret or signature missing", {
 			status: 401,
 		});
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
 	try {
 		const headersObj = Object.fromEntries(headersList.entries());
-		const event = validateEvent(body, headersObj, env.POLAR_WEBHOOK_SECRET);
+		const event = validateEvent(body, headersObj, env.HARMONIA_POLAR_WEBHOOK_SECRET);
 
 		if (
 			event.type === "subscription.created" ||

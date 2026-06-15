@@ -72,7 +72,7 @@ export function useSettingsController() {
 
 	const createCheckout = useMutation({
 		mutationFn: async () => {
-			if (!env.NEXT_PUBLIC_POLAR_PRODUCT_ID) {
+			if (!env.NEXT_PUBLIC_HARMONIA_POLAR_PRODUCT_ID) {
 				throw new Error("Billing is not configured yet.");
 			}
 
@@ -82,7 +82,7 @@ export function useSettingsController() {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					productId: env.NEXT_PUBLIC_POLAR_PRODUCT_ID,
+					productId: env.NEXT_PUBLIC_HARMONIA_POLAR_PRODUCT_ID,
 				}),
 			});
 

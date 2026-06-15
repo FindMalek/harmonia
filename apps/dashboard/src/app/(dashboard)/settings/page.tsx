@@ -3,7 +3,6 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Badge, Button } from "@harmonia/ui";
 import { formatDistanceToNow } from "date-fns";
-import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -130,7 +129,7 @@ export default function SettingsPage() {
 					subtitle="Manage email alerts and marketing preferences"
 					onClick={() =>
 						router.push(
-							DASHBOARD_ROUTES.settings.children.notifications.path as Route,
+							DASHBOARD_ROUTES.settings.children.notifications.path,
 						)
 					}
 				/>
