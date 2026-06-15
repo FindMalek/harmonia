@@ -7,7 +7,7 @@ import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { userSpotifyLibraryStats } from "@harmonia/db/schema/spotify";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { and, count, desc, eq, inArray, isNotNull } from "drizzle-orm";
-import { protectedProcedure } from "../../procedures";
+import { planProcedure } from "../../procedures";
 
 function normalizeEra(era: string): string | null {
 	const digits = era.replace(/\D/g, "");
@@ -47,7 +47,7 @@ function topStringMap(
 }
 
 export const insightsRouter = {
-	summary: protectedProcedure
+	summary: planProcedure
 		.input(emptyInput)
 		.output(insightsSummarySchema)
 		.handler(async ({ context }) => {

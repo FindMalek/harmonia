@@ -5,6 +5,7 @@ export { createContext } from "./context";
 export {
 	cronOrAuthProcedure,
 	o,
+	planProcedure,
 	protectedProcedure,
 	publicProcedure,
 } from "./procedures";

@@ -1,6 +1,7 @@
 import { auth } from "@harmonia/auth";
 import { polar } from "@harmonia/common/services/billing/polar";
 import { env } from "@harmonia/env/server";
+import { logger } from "@harmonia/logger";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
 
 		return NextResponse.json({ url: result.url });
 	} catch (error) {
-		console.error("[POLAR_CHECKOUT_ERROR]", error);
+		logger.error({ error }, "Polar checkout creation failed");
 		return new NextResponse("Internal Error", { status: 500 });
 	}
 }

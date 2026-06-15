@@ -82,7 +82,7 @@ export function useSettingsController() {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					productPriceId: env.NEXT_PUBLIC_POLAR_PRODUCT_ID,
+					productId: env.NEXT_PUBLIC_POLAR_PRODUCT_ID,
 				}),
 			});
 
