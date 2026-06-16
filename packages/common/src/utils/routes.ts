@@ -2,10 +2,6 @@
 export const WEB_ROUTES = {
 	home: {
 		path: "/",
-		label: "Home",
-	},
-	waitlist: {
-		path: "/waitlist",
 		label: "Waitlist",
 	},
 } as const;
