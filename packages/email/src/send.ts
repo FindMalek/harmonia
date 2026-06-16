@@ -14,6 +14,14 @@ import {
 	OrganizeCompleteEmail,
 	type OrganizeCompleteEmailProps,
 } from "../emails/organize-complete";
+import {
+	WaitlistApprovedEmail,
+	type WaitlistApprovedEmailProps,
+} from "../emails/waitlist-approved";
+import {
+	WaitlistConfirmationEmail,
+	type WaitlistConfirmationEmailProps,
+} from "../emails/waitlist-confirmation";
 import { WelcomeEmail, type WelcomeEmailProps } from "../emails/welcome";
 import { render } from "../render";
 
@@ -58,6 +66,20 @@ type SendInvoiceInput = {
 	config: SendEmailConfig;
 	to: string;
 	props: InvoiceEmailProps;
+	idempotencyKey: string;
+};
+
+type SendWaitlistConfirmationInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: WaitlistConfirmationEmailProps;
+	idempotencyKey: string;
+};
+
+type SendWaitlistApprovedInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: WaitlistApprovedEmailProps;
 	idempotencyKey: string;
 };
 
@@ -173,6 +195,58 @@ export async function sendMarketingFeatureUpdateEmail(
 			html,
 			headers,
 			tags: [{ name: "category", value: "marketing_feature_update" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendWaitlistConfirmationEmail(
+	input: SendWaitlistConfirmationInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(WaitlistConfirmationEmail());
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "You're on the Harmonia waitlist",
+			html,
+			tags: [{ name: "category", value: "waitlist_confirmation" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendWaitlistApprovedEmail(
+	input: SendWaitlistApprovedInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(WaitlistApprovedEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "You're in — welcome to Harmonia",
+			html,
+			tags: [{ name: "category", value: "waitlist_approved" }],
 		},
 		{ idempotencyKey: input.idempotencyKey },
 	);

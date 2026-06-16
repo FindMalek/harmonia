@@ -18,6 +18,15 @@ export type EmailPolicyDecision = {
 		| "feedback_opt_out";
 };
 
+export async function isEmailSuppressed(email: string): Promise<boolean> {
+	const [suppressed] = await db
+		.select({ id: emailSuppression.id })
+		.from(emailSuppression)
+		.where(eq(emailSuppression.email, email.toLowerCase()));
+
+	return Boolean(suppressed);
+}
+
 export async function ensureUserEmailPreferences(userId: string) {
 	await db
 		.insert(userEmailPreferences)
@@ -49,12 +58,7 @@ export async function evaluateEmailPolicy({
 		return { allowed: false, reason: "missing_email" };
 	}
 
-	const [suppressed] = await db
-		.select({ id: emailSuppression.id })
-		.from(emailSuppression)
-		.where(eq(emailSuppression.email, email.toLowerCase()));
-
-	if (suppressed) {
+	if (await isEmailSuppressed(email)) {
 		return { allowed: false, reason: "suppressed" };
 	}
 

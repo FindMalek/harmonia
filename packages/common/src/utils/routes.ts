@@ -2,7 +2,7 @@
 export const WEB_ROUTES = {
 	home: {
 		path: "/",
-		label: "Home",
+		label: "Waitlist",
 	},
 } as const;
 

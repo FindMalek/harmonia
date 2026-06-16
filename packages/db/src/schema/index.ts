@@ -8,3 +8,4 @@ export * from "./playlist";
 export * from "./spotify";
 export * from "./track";
 export * from "./user-email-preferences";
+export * from "./waitlist-signup";

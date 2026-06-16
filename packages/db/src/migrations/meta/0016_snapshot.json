@@ -1,6 +1,6 @@
 {
-	"id": "612c1c5f-f8dd-4953-8ab8-415f9a788e2f",
-	"prevId": "e6b62b87-6695-4064-9f1c-97c5b3436bfb",
+	"id": "c3f246c2-26f2-47d3-ba2e-ebc6692c4330",
+	"prevId": "612c1c5f-f8dd-4953-8ab8-415f9a788e2f",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -2143,9 +2143,123 @@
 			"policies": {},
 			"checkConstraints": {},
 			"isRLSEnabled": false
+		},
+		"public.waitlist_signup": {
+			"name": "waitlist_signup",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "waitlist_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"note": {
+					"name": "note",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"confirmation_email_sent_at": {
+					"name": "confirmation_email_sent_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"approved_at": {
+					"name": "approved_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"approval_email_sent_at": {
+					"name": "approval_email_sent_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"waitlist_signup_status_idx": {
+					"name": "waitlist_signup_status_idx",
+					"columns": [
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"waitlist_signup_created_at_idx": {
+					"name": "waitlist_signup_created_at_idx",
+					"columns": [
+						{
+							"expression": "created_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"waitlist_signup_email_unique": {
+					"name": "waitlist_signup_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
 		}
 	},
-	"enums": {},
+	"enums": {
+		"public.waitlist_status": {
+			"name": "waitlist_status",
+			"schema": "public",
+			"values": ["pending", "approved", "rejected"]
+		}
+	},
 	"schemas": {},
 	"sequences": {},
 	"roles": {},

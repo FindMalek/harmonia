@@ -14,6 +14,8 @@ const TEMPLATE_CATEGORIES: Record<EmailTemplateKey, EmailTemplateCategory> = {
 	feedback_3day: "feedback",
 	marketing_feature_update: "product_update",
 	invoice: "billing",
+	waitlist_confirmation: "transactional",
+	waitlist_approved: "transactional",
 };
 
 export function getEmailTemplateCategory(

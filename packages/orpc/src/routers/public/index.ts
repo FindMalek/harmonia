@@ -1,5 +1,6 @@
 import { publicProcedure } from "../../procedures";
 import { organizeRouter } from "./organize";
+import { waitlistRouter } from "./waitlist";
 
 export function createPublicRouter() {
 	return {
@@ -7,6 +8,7 @@ export function createPublicRouter() {
 			return "OK";
 		}),
 		organize: organizeRouter,
+		waitlist: waitlistRouter,
 	};
 }
 
