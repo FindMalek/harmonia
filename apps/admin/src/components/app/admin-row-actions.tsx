@@ -5,7 +5,9 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
+	Icons,
 } from "@harmonia/ui";
 
 type RowAction = {
@@ -15,22 +17,31 @@ type RowAction = {
 };
 
 export function AdminRowActions({ actions }: { actions: RowAction[] }) {
+	const defaultActions = actions.filter((a) => a.variant !== "destructive");
+	const destructiveActions = actions.filter((a) => a.variant === "destructive");
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+				<Button variant="ghost" size="icon-sm">
+					<Icons.dots />
 					<span className="sr-only">Open actions</span>
-					<span className="text-base leading-none">⋯</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				{actions.map((action) => (
+				{defaultActions.map((action) => (
+					<DropdownMenuItem key={action.label} onClick={action.onClick}>
+						{action.label}
+					</DropdownMenuItem>
+				))}
+				{destructiveActions.length > 0 && defaultActions.length > 0 && (
+					<DropdownMenuSeparator />
+				)}
+				{destructiveActions.map((action) => (
 					<DropdownMenuItem
 						key={action.label}
 						onClick={action.onClick}
-						className={
-							action.variant === "destructive" ? "text-destructive" : undefined
-						}
+						variant="destructive"
 					>
 						{action.label}
 					</DropdownMenuItem>

@@ -1,6 +1,14 @@
 "use client";
 
-import { Button } from "@harmonia/ui";
+import {
+	Button,
+	Icons,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@harmonia/ui";
 
 type AdminTablePaginationProps = {
 	total: number;
@@ -23,44 +31,53 @@ export function AdminTablePagination({
 	const to = Math.min(page * pageSize, total);
 
 	return (
-		<div className="flex items-center justify-between gap-4 text-sm">
-			<span className="text-muted-foreground">
+		<div className="flex items-center justify-between gap-4">
+			<span className="text-muted-foreground text-xs">
 				{total === 0 ? "No results" : `${from}–${to} of ${total}`}
 			</span>
-			<div className="flex items-center gap-2">
-				<label className="flex items-center gap-1 text-muted-foreground">
-					Rows
-					<select
-						value={pageSize}
-						onChange={(e) => onPageSizeChange(Number(e.target.value))}
-						className="rounded border bg-background px-1 py-0.5 text-foreground text-sm"
+
+			<div className="flex items-center gap-3">
+				<div className="flex items-center gap-1.5">
+					<span className="text-muted-foreground text-xs">Rows per page</span>
+					<Select
+						value={String(pageSize)}
+						onValueChange={(val) => onPageSizeChange(Number(val))}
 					>
-						{[25, 50, 100].map((size) => (
-							<option key={size} value={size}>
-								{size}
-							</option>
-						))}
-					</select>
-				</label>
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => onPageChange(page - 1)}
-					disabled={page <= 1}
-				>
-					Previous
-				</Button>
-				<span className="text-muted-foreground">
+						<SelectTrigger className="h-7 w-16">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{[25, 50, 100].map((size) => (
+								<SelectItem key={size} value={String(size)}>
+									{size}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+
+				<span className="text-muted-foreground text-xs tabular-nums">
 					{page} / {pageCount || 1}
 				</span>
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => onPageChange(page + 1)}
-					disabled={page >= pageCount}
-				>
-					Next
-				</Button>
+
+				<div className="flex items-center gap-1">
+					<Button
+						variant="outline"
+						size="icon-sm"
+						onClick={() => onPageChange(page - 1)}
+						disabled={page <= 1}
+					>
+						<Icons.chevronLeft />
+					</Button>
+					<Button
+						variant="outline"
+						size="icon-sm"
+						onClick={() => onPageChange(page + 1)}
+						disabled={page >= pageCount}
+					>
+						<Icons.chevronRight />
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

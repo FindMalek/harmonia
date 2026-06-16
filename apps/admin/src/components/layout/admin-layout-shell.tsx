@@ -1,10 +1,16 @@
+"use client";
+
+import { SidebarInset, SidebarProvider } from "@harmonia/ui";
+
 import { AdminSidebar } from "./admin-sidebar";
 
 export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="flex h-svh overflow-hidden bg-background">
+		<SidebarProvider>
 			<AdminSidebar />
-			<main className="flex-1 overflow-auto p-6">{children}</main>
-		</div>
+			<SidebarInset>
+				<div className="flex flex-1 flex-col p-6">{children}</div>
+			</SidebarInset>
+		</SidebarProvider>
 	);
 }

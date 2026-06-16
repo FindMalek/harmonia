@@ -1,3 +1,5 @@
+import { Separator } from "@harmonia/ui";
+
 export function AdminShell({
 	title,
 	description,
@@ -10,16 +12,17 @@ export function AdminShell({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="space-y-6">
+		<div className="flex flex-col gap-6">
 			<div className="flex items-start justify-between gap-4">
-				<div className="space-y-1">
-					<h1 className="font-semibold text-2xl tracking-tight">{title}</h1>
+				<div className="space-y-0.5">
+					<h1 className="font-semibold text-xl tracking-tight">{title}</h1>
 					{description && (
-						<p className="text-muted-foreground text-sm">{description}</p>
+						<p className="text-muted-foreground text-xs">{description}</p>
 					)}
 				</div>
 				{actions && <div className="shrink-0">{actions}</div>}
 			</div>
+			<Separator />
 			{children}
 		</div>
 	);

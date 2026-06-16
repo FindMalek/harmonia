@@ -34,7 +34,7 @@ const columns: ColumnDef<AdminUserItem>[] = [
 	{
 		accessorKey: "createdAt",
 		header: "Joined",
-		cell: ({ row }) => format(row.original.createdAt, "d MMM yyyy"),
+		cell: ({ row }) => format(new Date(row.original.createdAt), "d MMM yyyy"),
 	},
 ];
 

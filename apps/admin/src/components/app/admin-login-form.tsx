@@ -31,8 +31,10 @@ export function AdminLoginForm() {
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4">
-			<div className="space-y-2">
-				<Label htmlFor="email">Email</Label>
+			<div className="space-y-1.5">
+				<Label htmlFor="email" className="text-xs">
+					Email
+				</Label>
 				<Input
 					id="email"
 					type="email"
@@ -41,10 +43,13 @@ export function AdminLoginForm() {
 					onChange={(e) => setEmail(e.target.value)}
 					required
 					autoComplete="email"
+					className="h-8"
 				/>
 			</div>
-			<div className="space-y-2">
-				<Label htmlFor="password">Password</Label>
+			<div className="space-y-1.5">
+				<Label htmlFor="password" className="text-xs">
+					Password
+				</Label>
 				<Input
 					id="password"
 					type="password"
@@ -52,9 +57,15 @@ export function AdminLoginForm() {
 					onChange={(e) => setPassword(e.target.value)}
 					required
 					autoComplete="current-password"
+					className="h-8"
 				/>
 			</div>
-			<Button type="submit" className="w-full" disabled={isPending}>
+			<Button
+				type="submit"
+				className="w-full"
+				disabled={isPending}
+				isLoading={isPending}
+			>
 				{isPending ? "Signing in…" : "Sign in"}
 			</Button>
 		</form>

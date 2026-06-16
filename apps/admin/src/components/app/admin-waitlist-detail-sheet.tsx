@@ -4,24 +4,25 @@ import type { WaitlistAdminItem } from "@harmonia/common/schemas";
 import {
 	Badge,
 	Button,
+	Icons,
+	ScrollArea,
+	Separator,
 	Sheet,
 	SheetContent,
 	SheetDescription,
+	SheetFooter,
 	SheetHeader,
 	SheetTitle,
 } from "@harmonia/ui";
 import { format } from "date-fns";
 
-function StatusBadge({ status }: { status: WaitlistAdminItem["status"] }) {
-	const variants = {
-		pending: "secondary",
-		approved: "default",
-		rejected: "destructive",
-	} as const;
-	return <Badge variant={variants[status]}>{status}</Badge>;
-}
+const STATUS_VARIANTS = {
+	pending: "secondary",
+	approved: "default",
+	rejected: "destructive",
+} as const;
 
-function Row({
+function DetailRow({
 	label,
 	children,
 }: {
@@ -29,10 +30,18 @@ function Row({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="flex items-start justify-between gap-4 border-b py-3 last:border-b-0">
-			<span className="text-muted-foreground text-sm">{label}</span>
-			<span className="text-right text-sm">{children}</span>
+		<div className="grid grid-cols-[110px_1fr] items-baseline gap-x-3 py-1.5">
+			<span className="text-muted-foreground text-xs">{label}</span>
+			<span className="text-xs">{children}</span>
 		</div>
+	);
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+	return (
+		<p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+			{children}
+		</p>
 	);
 }
 
@@ -55,59 +64,111 @@ export function AdminWaitlistDetailSheet({
 }: AdminWaitlistDetailSheetProps) {
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent>
-				<SheetHeader>
-					<SheetTitle>Waitlist Entry</SheetTitle>
-					<SheetDescription>{item?.email}</SheetDescription>
+			<SheetContent className="flex flex-col gap-0 p-0 sm:max-w-[400px]">
+				<SheetHeader className="border-b px-5 py-4">
+					<SheetTitle>Waitlist entry</SheetTitle>
+					<SheetDescription className="truncate font-mono text-xs">
+						{item?.email ?? "—"}
+					</SheetDescription>
 				</SheetHeader>
 
-				{item && (
-					<div className="mt-6 space-y-0">
-						<Row label="Email">{item.email}</Row>
-						<Row label="Status">
-							<StatusBadge status={item.status} />
-						</Row>
-						<Row label="Note">{item.note ?? "—"}</Row>
-						<Row label="Signed up">
-							{format(item.createdAt, "d MMM yyyy, HH:mm")}
-						</Row>
-						<Row label="Confirmation sent">
-							{item.confirmationEmailSentAt
-								? format(item.confirmationEmailSentAt, "d MMM yyyy, HH:mm")
-								: "—"}
-						</Row>
-						<Row label="Approved at">
-							{item.approvedAt
-								? format(item.approvedAt, "d MMM yyyy, HH:mm")
-								: "—"}
-						</Row>
-						<Row label="Approval email sent">
-							{item.approvalEmailSentAt
-								? format(item.approvalEmailSentAt, "d MMM yyyy, HH:mm")
-								: "—"}
-						</Row>
-					</div>
-				)}
+				{item ? (
+					<>
+						<ScrollArea className="flex-1">
+							<div className="space-y-5 px-5 py-4">
+								{/* Status */}
+								<div>
+									<SectionHeading>Status</SectionHeading>
+									<Badge variant={STATUS_VARIANTS[item.status]}>
+										{item.status}
+									</Badge>
+								</div>
 
-				{item && item.status !== "approved" && (
-					<div className="mt-6 flex gap-2">
-						<Button
-							size="sm"
-							onClick={() => onApprove(item.id)}
-							disabled={isActionLoading}
-						>
-							Approve
-						</Button>
-						{item.status !== "rejected" && (
-							<Button
-								size="sm"
-								variant="destructive"
-								onClick={() => onReject(item.id)}
-								disabled={isActionLoading}
-							>
-								Reject
-							</Button>
+								<Separator />
+
+								{/* Contact */}
+								<div>
+									<SectionHeading>Contact</SectionHeading>
+									<DetailRow label="Email">{item.email}</DetailRow>
+									<DetailRow label="Note">
+										{item.note ?? (
+											<span className="text-muted-foreground">—</span>
+										)}
+									</DetailRow>
+								</div>
+
+								<Separator />
+
+								{/* Timeline */}
+								<div>
+									<SectionHeading>Timeline</SectionHeading>
+									<DetailRow label="Signed up">
+										{format(new Date(item.createdAt), "d MMM yyyy, HH:mm")}
+									</DetailRow>
+									<DetailRow label="Confirmation">
+										{item.confirmationEmailSentAt ? (
+											format(
+												new Date(item.confirmationEmailSentAt),
+												"d MMM yyyy, HH:mm",
+											)
+										) : (
+											<span className="text-muted-foreground">—</span>
+										)}
+									</DetailRow>
+									<DetailRow label="Approved at">
+										{item.approvedAt ? (
+											format(new Date(item.approvedAt), "d MMM yyyy, HH:mm")
+										) : (
+											<span className="text-muted-foreground">—</span>
+										)}
+									</DetailRow>
+									<DetailRow label="Approval email">
+										{item.approvalEmailSentAt ? (
+											format(
+												new Date(item.approvalEmailSentAt),
+												"d MMM yyyy, HH:mm",
+											)
+										) : (
+											<span className="text-muted-foreground">—</span>
+										)}
+									</DetailRow>
+								</div>
+							</div>
+						</ScrollArea>
+
+						{item.status !== "approved" && (
+							<SheetFooter className="border-t px-5 py-4">
+								<div className="flex w-full gap-2">
+									<Button
+										size="sm"
+										onClick={() => onApprove(item.id)}
+										disabled={isActionLoading}
+										isLoading={isActionLoading}
+										className="flex-1"
+									>
+										<Icons.circleCheck />
+										Approve
+									</Button>
+									{item.status !== "rejected" && (
+										<Button
+											size="sm"
+											variant="destructive"
+											onClick={() => onReject(item.id)}
+											disabled={isActionLoading}
+											isLoading={isActionLoading}
+											className="flex-1"
+										>
+											<Icons.x />
+											Reject
+										</Button>
+									)}
+								</div>
+							</SheetFooter>
 						)}
+					</>
+				) : (
+					<div className="flex flex-1 items-center justify-center text-muted-foreground text-xs">
+						Select an entry to view details
 					</div>
 				)}
 			</SheetContent>

@@ -1,4 +1,10 @@
-import { Skeleton } from "@harmonia/ui";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	Skeleton,
+} from "@harmonia/ui";
 
 export function AdminStatCard({
 	label,
@@ -11,20 +17,28 @@ export function AdminStatCard({
 		typeof value === "number" ? new Intl.NumberFormat().format(value) : value;
 
 	return (
-		<div className="rounded-md border p-4 space-y-1">
-			<p className="text-muted-foreground text-xs uppercase tracking-widest">
-				{label}
-			</p>
-			<p className="font-semibold text-2xl tabular-nums">{formatted}</p>
-		</div>
+		<Card>
+			<CardHeader>
+				<CardTitle className="font-medium text-muted-foreground text-xs uppercase tracking-widest">
+					{label}
+				</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<p className="font-semibold text-2xl tabular-nums">{formatted}</p>
+			</CardContent>
+		</Card>
 	);
 }
 
 export function AdminStatCardSkeleton() {
 	return (
-		<div className="rounded-md border p-4 space-y-1">
-			<Skeleton className="h-3 w-24" />
-			<Skeleton className="h-8 w-16" />
-		</div>
+		<Card>
+			<CardHeader>
+				<Skeleton className="h-3 w-24" />
+			</CardHeader>
+			<CardContent>
+				<Skeleton className="h-8 w-16" />
+			</CardContent>
+		</Card>
 	);
 }

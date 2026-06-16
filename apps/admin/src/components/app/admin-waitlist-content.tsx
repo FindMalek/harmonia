@@ -108,14 +108,14 @@ export function AdminWaitlistContent() {
 		{
 			accessorKey: "createdAt",
 			header: "Signed up",
-			cell: ({ row }) => format(row.original.createdAt, "d MMM yyyy"),
+			cell: ({ row }) => format(new Date(row.original.createdAt), "d MMM yyyy"),
 		},
 		{
 			accessorKey: "approvedAt",
 			header: "Approved at",
 			cell: ({ row }) =>
 				row.original.approvedAt
-					? format(row.original.approvedAt, "d MMM yyyy")
+					? format(new Date(row.original.approvedAt), "d MMM yyyy")
 					: "—",
 		},
 		{
