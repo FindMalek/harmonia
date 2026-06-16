@@ -3,6 +3,7 @@
 import { Button, Input, Label } from "@harmonia/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { orpc } from "@/utils/orpc";
 
@@ -14,6 +15,9 @@ export function WaitlistForm() {
 	const signup = useMutation(
 		orpc.waitlist.signup.mutationOptions({
 			onSuccess: () => setSubmitted(true),
+			onError: () => {
+				toast.error("Could not join the waitlist. Please try again.");
+			},
 		}),
 	);
 

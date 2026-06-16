@@ -23,9 +23,11 @@ function buildSendConfig() {
 	};
 }
 
-function getDashboardLoginUrl() {
-	const dashboardUrl =
-		env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL ?? env.NEXT_PUBLIC_HARMONIA_API_URL;
+function getDashboardLoginUrl(): string | null {
+	const dashboardUrl = env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL;
+	if (!dashboardUrl) {
+		return null;
+	}
 	return `${dashboardUrl}/login`;
 }
 
@@ -113,6 +115,15 @@ export async function sendWaitlistApprovedNotification({
 	waitlistId: number;
 	email: string;
 }) {
+	const loginUrl = getDashboardLoginUrl();
+	if (!loginUrl) {
+		logger.warn(
+			{ waitlistId },
+			"Skipping waitlist approved email because dashboard URL is not configured",
+		);
+		return { ok: false, reason: "provider_not_configured" as const };
+	}
+
 	const config = buildSendConfig();
 	if (!config) {
 		logger.warn(
@@ -125,8 +136,13 @@ export async function sendWaitlistApprovedNotification({
 	if (await isEmailSuppressed(email)) {
 		logger.info(
 			{ waitlistId, templateKey: "waitlist_approved" },
-			"Email delivery skipped",
+			"Email delivery skipped — address suppressed",
 		);
+		// Stamp so the poller stops retrying a suppressed address.
+		await db
+			.update(waitlistSignup)
+			.set({ approvalEmailSentAt: new Date() })
+			.where(eq(waitlistSignup.id, waitlistId));
 		return { ok: false, reason: "suppressed" as const };
 	}
 
@@ -139,6 +155,11 @@ export async function sendWaitlistApprovedNotification({
 		metadata: { waitlistId },
 	});
 	if (!reservation.created) {
+		// Already delivered in a prior run — stamp so the poller stops picking it up.
+		await db
+			.update(waitlistSignup)
+			.set({ approvalEmailSentAt: new Date() })
+			.where(eq(waitlistSignup.id, waitlistId));
 		return { ok: true, reason: "already_sent" as const };
 	}
 
@@ -146,7 +167,7 @@ export async function sendWaitlistApprovedNotification({
 		config,
 		to: email,
 		idempotencyKey,
-		props: { loginUrl: getDashboardLoginUrl() },
+		props: { loginUrl },
 	});
 
 	if (!result.ok) {
@@ -159,6 +180,7 @@ export async function sendWaitlistApprovedNotification({
 			{ waitlistId, templateKey: "waitlist_approved", error: result.error },
 			"Email delivery failed",
 		);
+		// Do NOT stamp approvalEmailSentAt — let the poller retry.
 		return { ok: false, reason: "send_failed" as const, error: result.error };
 	}
 
@@ -167,6 +189,10 @@ export async function sendWaitlistApprovedNotification({
 		status: "sent",
 		providerMessageId: result.emailId,
 	});
+	await db
+		.update(waitlistSignup)
+		.set({ approvalEmailSentAt: new Date() })
+		.where(eq(waitlistSignup.id, waitlistId));
 
 	logger.info(
 		{
