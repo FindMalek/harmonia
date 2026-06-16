@@ -16,7 +16,7 @@
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
-		"@react-email/preview-server": "5.2.11",
+		"@react-email/preview-server": "catalog:",
 		"typescript": "catalog:"
 	}
 }

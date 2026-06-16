@@ -1,5 +1,6 @@
 {
 	"name": "@harmonia/db",
+	"version": "0.0.0",
 	"type": "module",
 	"exports": {
 		".": {
@@ -26,8 +27,8 @@
 		"@neondatabase/serverless": "^1.1.0",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
-		"pg": "^8.20.0",
-		"ws": "^8.20.1",
+		"pg": "^8.21.0",
+		"ws": "^8.21.0",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
@@ -35,7 +36,7 @@
 		"@types/pg": "^8.20.0",
 		"@types/ws": "^8.18.1",
 		"drizzle-kit": "^0.31.10",
-		"tsx": "^4.22.0",
+		"tsx": "^4.22.4",
 		"typescript": "catalog:"
 	}
 }

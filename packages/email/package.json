@@ -21,7 +21,7 @@
 	"dependencies": {
 		"@react-email/components": "catalog:",
 		"@react-email/render": "catalog:",
-		"date-fns": "^4.1.0",
+		"date-fns": "^4.4.0",
 		"react": "catalog:",
 		"resend": "catalog:",
 		"zod": "catalog:"

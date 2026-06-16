@@ -1,6 +1,17 @@
 {
 	"versionGroups": [
 		{
+			"label": "Use workspace protocol for local packages",
+			"dependencies": ["$LOCAL"],
+			"dependencyTypes": ["!local"],
+			"pinVersion": "workspace:*"
+		},
+		{
+			"label": "Ignore .version properties of local packages",
+			"dependencyTypes": ["local"],
+			"isIgnored": true
+		},
+		{
 			"label": "pnpm catalog (see pnpm-workspace.yaml)",
 			"dependencies": [
 				"@biomejs/biome",
