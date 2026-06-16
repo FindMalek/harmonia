@@ -18,14 +18,6 @@ const USERS_PARAMS = {
 	q: parseAsString.withDefault(""),
 };
 
-type Props = {
-	initialParams: {
-		page: number;
-		pageSize: number;
-		q?: string;
-	};
-};
-
 const columns: ColumnDef<AdminUserItem>[] = [
 	{ accessorKey: "name", header: "Name" },
 	{ accessorKey: "email", header: "Email" },
@@ -46,7 +38,7 @@ const columns: ColumnDef<AdminUserItem>[] = [
 	},
 ];
 
-export function AdminUsersContent({ initialParams: _ }: Props) {
+export function AdminUsersContent() {
 	const [params, setParams] = useQueryStates(USERS_PARAMS, {
 		shallow: false,
 		startTransition: undefined,

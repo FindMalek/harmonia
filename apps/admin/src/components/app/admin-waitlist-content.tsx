@@ -44,16 +44,7 @@ const WAITLIST_PARAMS = {
 	q: parseAsString.withDefault(""),
 };
 
-type Props = {
-	initialParams: {
-		page: number;
-		pageSize: number;
-		status?: WaitlistStatus;
-		q?: string;
-	};
-};
-
-export function AdminWaitlistContent({ initialParams }: Props) {
+export function AdminWaitlistContent() {
 	const queryClient = useQueryClient();
 
 	const [params, setParams] = useQueryStates(WAITLIST_PARAMS, {

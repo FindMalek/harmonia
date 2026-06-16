@@ -67,7 +67,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full setup guide.
 
 ```bash
 pnpm db:push              # apply schema changes (role + banned fields added)
-pnpm db:seed:admin        # create admin@harmonia.com / changeme123!
+pnpm db:seed              # create admin@harmonia.com / changeme123!
 pnpm dev:ada              # start API + dashboard + admin on ports 3002/3003/3004
 ```
 
