@@ -42,3 +42,17 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const cronOrAuthProcedure = publicProcedure.use(requireCronOrAuth);
+
+const requireAdmin = o.middleware(async ({ context, next }) => {
+	const user = context.session?.user;
+	if (!user) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+	const userWithRole = user as typeof user & { role?: string | null };
+	if (userWithRole.role !== "admin") {
+		throw new ORPCError("FORBIDDEN");
+	}
+	return next({ context: { session: context.session } });
+});
+
+export const adminProcedure = protectedProcedure.use(requireAdmin);

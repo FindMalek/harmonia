@@ -5,6 +5,7 @@ import { logger } from "@harmonia/logger";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins";
 
 /**
  * Environment config required for auth initialization
@@ -13,6 +14,7 @@ export type AuthEnvConfig = {
 	HARMONIA_BETTER_AUTH_SECRET: string;
 	NEXT_PUBLIC_HARMONIA_API_URL: string;
 	NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?: string;
+	NEXT_PUBLIC_HARMONIA_ADMIN_URL?: string;
 	NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN?: string;
 	HARMONIA_SPOTIFY_CLIENT_ID?: string;
 	HARMONIA_SPOTIFY_CLIENT_SECRET?: string;
@@ -40,6 +42,7 @@ export function createAuth(
 	const originConfig = [
 		envConfig.NEXT_PUBLIC_HARMONIA_API_URL,
 		envConfig.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
+		envConfig.NEXT_PUBLIC_HARMONIA_ADMIN_URL,
 		envConfig.VERCEL_BRANCH_URL,
 		envConfig.VERCEL_PROJECT_PRODUCTION_URL,
 	].filter((origin): origin is string => origin !== undefined);
@@ -88,7 +91,7 @@ export function createAuth(
 		},
 		trustedOrigins,
 		emailAndPassword: {
-			enabled: false,
+			enabled: true,
 		},
 		socialProviders:
 			spotifyEnabled && spotifyClientId && spotifyClientSecret
@@ -109,7 +112,7 @@ export function createAuth(
 						},
 					}
 				: {},
-		plugins: [nextCookies()],
+		plugins: [nextCookies(), admin({ defaultRole: "user" })],
 	});
 }
 

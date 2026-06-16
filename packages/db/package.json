@@ -20,7 +20,8 @@
 		"db:reset": "tsx scripts/db-reset.ts",
 		"db:reset:all": "tsx scripts/db-reset.ts --all",
 		"db:reset:embeddings": "tsx scripts/reset-embeddings.ts",
-		"db:nuke": "node scripts/db-nuke.mjs"
+		"db:nuke": "node scripts/db-nuke.mjs",
+		"db:seed:admin": "tsx scripts/seed-admin.ts"
 	},
 	"dependencies": {
 		"@harmonia/env": "workspace:*",
