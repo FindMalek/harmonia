@@ -33,6 +33,7 @@ apps/
   api         Next.js API server (port 3002)
   dashboard   Authenticated user dashboard (port 3003)
   web         Public-facing pages (port 3001)
+  admin       Internal admin dashboard (port 3004)
 
 packages/
   auth        Better Auth + Spotify OAuth
@@ -61,6 +62,16 @@ pnpm dev:api             # start API + Trigger.dev worker
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full setup guide.
+
+### Admin dashboard (local)
+
+```bash
+pnpm db:push              # apply schema changes (role + banned fields added)
+pnpm db:seed:admin        # create admin@harmonia.com / changeme123!
+pnpm dev:ada              # start API + dashboard + admin on ports 3002/3003/3004
+```
+
+Then open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with the seeded credentials.
 
 ## Environment Variables
 

@@ -107,6 +107,9 @@
 		},
 		"db:nuke": {
 			"cache": false
+		},
+		"db:seed": {
+			"cache": false
 		}
 	}
 }
