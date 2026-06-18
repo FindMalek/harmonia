@@ -66,12 +66,20 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full setup guide.
 ### Admin dashboard (local)
 
 ```bash
-pnpm db:push              # apply schema changes (role + banned fields added)
-pnpm db:seed              # create admin@harmonia.com / changeme123!
-pnpm dev:ada              # start API + dashboard + admin on ports 3002/3003/3004
+pnpm db:push              # apply schema (adds role + banned columns)
+pnpm db:seed              # seed admin@harmonia.com / changeme123!
+pnpm dev:admin            # admin only (port 3004) — needs API already running
+# or
+pnpm dev:ada              # API + dashboard + admin together (ports 3002/3003/3004)
 ```
 
-Then open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with the seeded credentials.
+Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with the seeded credentials.
+
+The admin dashboard provides:
+
+- **Stats** — total users, tracks, and waitlist breakdown by status
+- **Waitlist** — list, search, filter by status, approve / reject individually or in bulk
+- **Users** — list and search all registered users
 
 ## Environment Variables
 
