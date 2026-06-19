@@ -1,5 +1,6 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { HarmoniaBrandHeader } from "@harmonia/ui";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { OnboardingFooter } from "@/components/layout/onboarding-footer";
 import { getServerSession } from "@/shared/api/session.server";
@@ -13,6 +14,12 @@ export default async function OnboardingLayout({
 
 	if (!session?.user) {
 		redirect("/login");
+	}
+
+	if (!session.user.isApproved) {
+		const cookieStore = await cookies();
+		const hasInvite = cookieStore.has("harmonia_invite");
+		redirect(hasInvite ? "/api/redeem-invite?next=/introduction" : "/waiting");
 	}
 
 	if (session.user.hasCompletedOnboarding) {

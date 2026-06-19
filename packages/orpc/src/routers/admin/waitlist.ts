@@ -7,8 +7,16 @@ import {
 import { sendWaitlistApprovedEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-approved";
 import { db } from "@harmonia/db";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
+import { createHash, randomBytes } from "crypto";
 import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { z } from "zod";
+
+function generateInviteToken() {
+	const raw = randomBytes(32).toString("hex");
+	const hash = createHash("sha256").update(raw).digest("hex");
+	const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+	return { raw, hash, expiresAt };
+}
 
 import { adminProcedure } from "../../procedures";
 
@@ -53,12 +61,20 @@ export const adminWaitlistRouter = {
 		.handler(async ({ input }) => {
 			const { id, status, note } = input;
 
+			const token =
+				status === "approved" ? generateInviteToken() : undefined;
+
 			const [updated] = await db
 				.update(waitlistSignup)
 				.set({
 					status,
 					note: note ?? null,
 					approvedAt: status === "approved" ? new Date() : null,
+					...(token && {
+						inviteToken: token.hash,
+						inviteTokenRaw: token.raw,
+						inviteTokenExpiresAt: token.expiresAt,
+					}),
 					updatedAt: new Date(),
 				})
 				.where(eq(waitlistSignup.id, id))
@@ -84,13 +100,10 @@ export const adminWaitlistRouter = {
 		.handler(async ({ input }) => {
 			const { ids } = input;
 
-			const updated = await db
-				.update(waitlistSignup)
-				.set({
-					status: "approved",
-					approvedAt: new Date(),
-					updatedAt: new Date(),
-				})
+			// Fetch only rows that aren't already approved so we generate tokens for each
+			const rows = await db
+				.select({ id: waitlistSignup.id, email: waitlistSignup.email })
+				.from(waitlistSignup)
 				.where(
 					and(
 						inArray(waitlistSignup.id, ids),
@@ -99,16 +112,32 @@ export const adminWaitlistRouter = {
 							eq(waitlistSignup.status, "rejected"),
 						),
 					),
-				)
-				.returning({ id: waitlistSignup.id, email: waitlistSignup.email });
+				);
 
-			for (const row of updated) {
-				await sendWaitlistApprovedEmailTask.trigger({
-					waitlistId: row.id,
-					email: row.email,
-				});
-			}
+			if (rows.length === 0) return { approved: 0 };
 
-			return { approved: updated.length };
+			// Update each row with its own token (can't do a single set; tokens differ per row)
+			await Promise.all(
+				rows.map((row) => {
+					const token = generateInviteToken();
+					return db
+						.update(waitlistSignup)
+						.set({
+							status: "approved",
+							approvedAt: new Date(),
+							inviteToken: token.hash,
+							inviteTokenRaw: token.raw,
+							inviteTokenExpiresAt: token.expiresAt,
+							updatedAt: new Date(),
+						})
+						.where(eq(waitlistSignup.id, row.id));
+				}),
+			);
+
+			await sendWaitlistApprovedEmailTask.batchTrigger(
+				rows.map((row) => ({ payload: { waitlistId: row.id, email: row.email } })),
+			);
+
+			return { approved: rows.length };
 		}),
 };

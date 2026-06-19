@@ -87,6 +87,12 @@ export function createAuth(
 					defaultValue: false,
 					input: false,
 				},
+				isApproved: {
+					type: "boolean",
+					required: false,
+					defaultValue: false,
+					input: false,
+				},
 			},
 		},
 		trustedOrigins,
