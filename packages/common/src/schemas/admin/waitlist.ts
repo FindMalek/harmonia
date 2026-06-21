@@ -11,7 +11,7 @@ export const waitlistAdminListInput = z.object({
 export type WaitlistAdminListInput = z.infer<typeof waitlistAdminListInput>;
 
 export const waitlistAdminItemSchema = z.object({
-	id: z.number(),
+	id: z.number().int(),
 	email: z.string(),
 	status: waitlistStatusEnum,
 	note: z.string().nullable(),
@@ -25,17 +25,17 @@ export type WaitlistAdminItem = z.infer<typeof waitlistAdminItemSchema>;
 
 export const waitlistAdminListOutputSchema = z.object({
 	items: z.array(waitlistAdminItemSchema),
-	total: z.number(),
-	page: z.number(),
-	pageSize: z.number(),
-	pageCount: z.number(),
+	total: z.number().int().min(0),
+	page: z.number().int().min(1),
+	pageSize: z.number().int().min(1),
+	pageCount: z.number().int().min(0),
 });
 export type WaitlistAdminListOutput = z.infer<
 	typeof waitlistAdminListOutputSchema
 >;
 
 export const waitlistAdminUpdateStatusInput = z.object({
-	id: z.number(),
+	id: z.number().int(),
 	status: waitlistStatusEnum,
 	note: z.string().optional(),
 });
@@ -43,9 +43,9 @@ export type WaitlistAdminUpdateStatusInput = z.infer<
 	typeof waitlistAdminUpdateStatusInput
 >;
 
-export const waitlistAdminBulkApproveInput = z.object({
-	ids: z.array(z.number()).min(1),
+export const waitlistAdminBulkIdsInput = z.object({
+	ids: z.array(z.number().int()).min(1),
 });
-export type WaitlistAdminBulkApproveInput = z.infer<
-	typeof waitlistAdminBulkApproveInput
+export type WaitlistAdminBulkIdsInput = z.infer<
+	typeof waitlistAdminBulkIdsInput
 >;

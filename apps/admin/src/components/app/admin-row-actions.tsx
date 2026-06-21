@@ -29,17 +29,20 @@ export function AdminRowActions({ actions }: { actions: RowAction[] }) {
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				{defaultActions.map((action) => (
-					<DropdownMenuItem key={action.label} onClick={action.onClick}>
+				{defaultActions.map((action, index) => (
+					<DropdownMenuItem
+						key={`default-${index}`}
+						onClick={action.onClick}
+					>
 						{action.label}
 					</DropdownMenuItem>
 				))}
 				{destructiveActions.length > 0 && defaultActions.length > 0 && (
 					<DropdownMenuSeparator />
 				)}
-				{destructiveActions.map((action) => (
+				{destructiveActions.map((action, index) => (
 					<DropdownMenuItem
-						key={action.label}
+						key={`destructive-${index}`}
 						onClick={action.onClick}
 						variant="destructive"
 					>

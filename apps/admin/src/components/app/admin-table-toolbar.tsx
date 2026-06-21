@@ -37,6 +37,10 @@ export function AdminTableToolbar({
 		setLocalSearch(currentSearch);
 	}, [currentSearch]);
 
+	useEffect(() => {
+		return () => clearTimeout(debounceRef.current);
+	}, []);
+
 	function handleSearchChange(value: string) {
 		setLocalSearch(value);
 		clearTimeout(debounceRef.current);

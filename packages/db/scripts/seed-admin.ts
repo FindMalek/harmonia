@@ -13,8 +13,15 @@ const { user, account } = await import("@harmonia/db/schema/auth");
 const { eq } = await import("drizzle-orm");
 
 const ADMIN_EMAIL = process.env.HARMONIA_ADMIN_EMAIL ?? "admin@harmonia.com";
-const ADMIN_PASSWORD = process.env.HARMONIA_ADMIN_PASSWORD ?? "changeme123!";
+const ADMIN_PASSWORD = process.env.HARMONIA_ADMIN_PASSWORD;
 const ADMIN_NAME = "Harmonia Admin";
+
+if (!ADMIN_PASSWORD) {
+	console.error(
+		"HARMONIA_ADMIN_PASSWORD is not set — refusing to seed an admin user with no password.",
+	);
+	process.exit(1);
+}
 
 // Same algorithm as @better-auth/utils/password (node export condition)
 async function hashPassword(password: string): Promise<string> {
@@ -82,7 +89,6 @@ async function main() {
 	});
 
 	console.info(`Admin created: ${ADMIN_EMAIL} (id: ${userId})`);
-	console.info(`Password: ${ADMIN_PASSWORD}`);
 	console.info("Login: http://127.0.0.1:3004/login");
 }
 

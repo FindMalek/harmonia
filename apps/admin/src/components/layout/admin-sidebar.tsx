@@ -64,7 +64,7 @@ export function AdminSidebar() {
 								return (
 									<SidebarMenuItem key={item.key}>
 										<SidebarMenuButton asChild isActive={isActive}>
-											<Link href={item.path as "/"}>
+											<Link href={item.path}>
 												<Icon />
 												<span>{item.label}</span>
 											</Link>

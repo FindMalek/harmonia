@@ -6,7 +6,7 @@ export function getEmailAssetBaseUrl(): string {
 	if (fromEnv) {
 		return fromEnv.replace(/\/$/, "");
 	}
-	return "http://127.0.0.1:3004";
+	return "http://127.0.0.1:3003";
 }
 
 export function getEmailLogoUrl(): string {

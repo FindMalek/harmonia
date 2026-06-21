@@ -55,26 +55,27 @@ export const protectedRouter = {
 				return { success: false };
 			}
 
-			// Atomic: only stamp if still unredeemed (race condition guard)
-			const [redeemed] = await db
-				.update(waitlistSignup)
-				.set({ inviteRedeemedAt: new Date(), inviteRedeemedByUserId: userId })
-				.where(
-					and(
-						eq(waitlistSignup.id, row.id),
-						isNull(waitlistSignup.inviteRedeemedAt),
-					),
-				)
-				.returning({ id: waitlistSignup.id });
+			const success = await db.transaction(async (tx) => {
+				// Atomic: only stamp if still unredeemed (race condition guard)
+				const [redeemed] = await tx
+					.update(waitlistSignup)
+					.set({ inviteRedeemedAt: new Date(), inviteRedeemedByUserId: userId })
+					.where(
+						and(
+							eq(waitlistSignup.id, row.id),
+							isNull(waitlistSignup.inviteRedeemedAt),
+						),
+					)
+					.returning({ id: waitlistSignup.id });
 
-			if (!redeemed) return { success: false };
+				if (!redeemed) return false;
 
-			await db
-				.update(user)
-				.set({ isApproved: true })
-				.where(eq(user.id, userId));
+				await tx.update(user).set({ isApproved: true }).where(eq(user.id, userId));
 
-			return { success: true };
+				return true;
+			});
+
+			return { success };
 		}),
 	tracks: tracksRouter,
 	clusters: clustersRouter,

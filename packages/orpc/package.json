@@ -14,6 +14,9 @@
 		},
 		"./utils/headers": {
 			"default": "./src/utils/headers.ts"
+		},
+		"./utils/rate-limiter": {
+			"default": "./src/utils/rate-limiter.ts"
 		}
 	},
 	"scripts": {

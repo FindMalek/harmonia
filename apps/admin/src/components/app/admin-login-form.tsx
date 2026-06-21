@@ -1,73 +1,124 @@
 "use client";
 
-import { Button, Input, Label } from "@harmonia/ui";
+import {
+	Button,
+	Field,
+	FieldError,
+	FieldGroup,
+	FieldLabel,
+	Input,
+} from "@harmonia/ui";
+import { useForm } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { authClient } from "@/shared/api/auth-client";
 
+const loginSchema = z.object({
+	email: z.string().email("Enter a valid email address."),
+	password: z.string().min(1, "Password is required."),
+});
+
 export function AdminLoginForm() {
 	const router = useRouter();
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [isPending, setIsPending] = useState(false);
 
-	async function handleSubmit(e: React.FormEvent) {
-		e.preventDefault();
-		setIsPending(true);
+	const form = useForm({
+		defaultValues: { email: "", password: "" },
+		validators: { onSubmit: loginSchema },
+		onSubmit: async ({ value }) => {
+			try {
+				const { error } = await authClient.signIn.email(value);
 
-		const { error } = await authClient.signIn.email({ email, password });
+				if (error) {
+					toast.error(error.message ?? "Invalid credentials");
+					return;
+				}
 
-		if (error) {
-			toast.error(error.message ?? "Invalid credentials");
-			setIsPending(false);
-			return;
-		}
-
-		router.push("/");
-		router.refresh();
-	}
+				router.push("/");
+				router.refresh();
+			} catch {
+				toast.error("Unable to sign in. Please try again.");
+			}
+		},
+	});
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-4">
-			<div className="space-y-1.5">
-				<Label htmlFor="email" className="text-xs">
-					Email
-				</Label>
-				<Input
-					id="email"
-					type="email"
-					placeholder="admin@harmonia.com"
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
-					required
-					autoComplete="email"
-					className="h-8"
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				form.handleSubmit();
+			}}
+		>
+			<FieldGroup>
+				<form.Field
+					name="email"
+					children={(field) => {
+						const isInvalid =
+							field.state.meta.isTouched && !field.state.meta.isValid;
+						return (
+							<Field data-invalid={isInvalid}>
+								<FieldLabel htmlFor={field.name} className="text-xs">
+									Email
+								</FieldLabel>
+								<Input
+									id={field.name}
+									name={field.name}
+									type="email"
+									placeholder="admin@harmonia.com"
+									autoComplete="email"
+									className="h-8"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									aria-invalid={isInvalid}
+								/>
+								{isInvalid && <FieldError errors={field.state.meta.errors} />}
+							</Field>
+						);
+					}}
 				/>
-			</div>
-			<div className="space-y-1.5">
-				<Label htmlFor="password" className="text-xs">
-					Password
-				</Label>
-				<Input
-					id="password"
-					type="password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					required
-					autoComplete="current-password"
-					className="h-8"
+
+				<form.Field
+					name="password"
+					children={(field) => {
+						const isInvalid =
+							field.state.meta.isTouched && !field.state.meta.isValid;
+						return (
+							<Field data-invalid={isInvalid}>
+								<FieldLabel htmlFor={field.name} className="text-xs">
+									Password
+								</FieldLabel>
+								<Input
+									id={field.name}
+									name={field.name}
+									type="password"
+									autoComplete="current-password"
+									className="h-8"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									aria-invalid={isInvalid}
+								/>
+								{isInvalid && <FieldError errors={field.state.meta.errors} />}
+							</Field>
+						);
+					}}
 				/>
-			</div>
-			<Button
-				type="submit"
-				className="w-full"
-				disabled={isPending}
-				isLoading={isPending}
-			>
-				{isPending ? "Signing in…" : "Sign in"}
-			</Button>
+
+				<form.Subscribe selector={(state) => state.isSubmitting}>
+					{(isSubmitting) => (
+						<Button
+							type="submit"
+							className="w-full"
+							disabled={isSubmitting}
+							isLoading={isSubmitting}
+						>
+							{isSubmitting ? "Signing in…" : "Sign in"}
+						</Button>
+					)}
+				</form.Subscribe>
+			</FieldGroup>
 		</form>
 	);
 }

@@ -1,9 +1,11 @@
 import { adminStatsOutputSchema } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
+import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
+import { playlist } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { count } from "drizzle-orm";
+import { and, count, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { adminProcedure } from "../../procedures";
@@ -13,15 +15,37 @@ export const adminStatsRouter = {
 		.input(z.void())
 		.output(adminStatsOutputSchema)
 		.handler(async () => {
-			const [userCountRows, trackCountRows, waitlistByStatus] =
-				await Promise.all([
-					db.select({ total: count() }).from(user),
-					db.select({ total: count() }).from(track),
-					db
-						.select({ status: waitlistSignup.status, total: count() })
-						.from(waitlistSignup)
-						.groupBy(waitlistSignup.status),
-				]);
+			const [
+				userCountRows,
+				trackCountRows,
+				waitlistByStatus,
+				pipelineRunRows,
+				completedPipelineRunRows,
+				generatedPlaylistRows,
+				exportedPlaylistRows,
+			] = await Promise.all([
+				db.select({ total: count() }).from(user),
+				db.select({ total: count() }).from(track),
+				db
+					.select({ status: waitlistSignup.status, total: count() })
+					.from(waitlistSignup)
+					.groupBy(waitlistSignup.status),
+				db.select({ total: count() }).from(pipelineRun),
+				db
+					.select({ total: count() })
+					.from(pipelineRun)
+					.where(eq(pipelineRun.status, "completed")),
+				db
+					.select({ total: count() })
+					.from(playlist)
+					.where(eq(playlist.isGenerated, true)),
+				db
+					.select({ total: count() })
+					.from(playlist)
+					.where(
+						and(eq(playlist.isGenerated, true), isNotNull(playlist.exportedAt)),
+					),
+			]);
 
 			const byStatus = Object.fromEntries(
 				waitlistByStatus.map((r) => [r.status, r.total]),
@@ -34,6 +58,10 @@ export const adminStatsRouter = {
 				waitlistPending: byStatus.pending ?? 0,
 				waitlistApproved: byStatus.approved ?? 0,
 				waitlistRejected: byStatus.rejected ?? 0,
+				totalPipelineRuns: pipelineRunRows[0]?.total ?? 0,
+				completedPipelineRuns: completedPipelineRunRows[0]?.total ?? 0,
+				totalPlaylistsGenerated: generatedPlaylistRows[0]?.total ?? 0,
+				playlistsExportedToSpotify: exportedPlaylistRows[0]?.total ?? 0,
 			};
 		}),
 };

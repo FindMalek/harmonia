@@ -11,6 +11,7 @@ import {
 } from "@harmonia/ui";
 import {
 	type ColumnDef,
+	type RowSelectionState,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
@@ -20,12 +21,18 @@ type AdminDataTableProps<TData> = {
 	columns: ColumnDef<TData>[];
 	data: TData[];
 	isLoading?: boolean;
+	getRowId?: (row: TData) => string;
+	rowSelection?: RowSelectionState;
+	onRowSelectionChange?: (selection: RowSelectionState) => void;
 };
 
 export function AdminDataTable<TData>({
 	columns,
 	data,
 	isLoading,
+	getRowId,
+	rowSelection,
+	onRowSelectionChange,
 }: AdminDataTableProps<TData>) {
 	const table = useReactTable({
 		data,
@@ -34,6 +41,15 @@ export function AdminDataTable<TData>({
 		manualPagination: true,
 		manualFiltering: true,
 		manualSorting: true,
+		getRowId,
+		enableRowSelection: !!onRowSelectionChange,
+		state: { rowSelection },
+		onRowSelectionChange: (updater) => {
+			if (!onRowSelectionChange) return;
+			const next =
+				typeof updater === "function" ? updater(rowSelection ?? {}) : updater;
+			onRowSelectionChange(next);
+		},
 	});
 
 	if (isLoading) {

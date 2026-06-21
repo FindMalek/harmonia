@@ -19,9 +19,9 @@ export type AdminUserItem = z.infer<typeof adminUserItemSchema>;
 
 export const adminUserListOutputSchema = z.object({
 	items: z.array(adminUserItemSchema),
-	total: z.number(),
-	page: z.number(),
-	pageSize: z.number(),
-	pageCount: z.number(),
+	total: z.number().int().min(0),
+	page: z.number().int().min(1),
+	pageSize: z.number().int().min(1),
+	pageCount: z.number().int().min(0),
 });
 export type AdminUserListOutput = z.infer<typeof adminUserListOutputSchema>;

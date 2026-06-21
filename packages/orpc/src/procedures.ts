@@ -1,11 +1,12 @@
 import { env } from "@harmonia/env/server";
-import { os, ORPCError } from "@orpc/server";
+import { ORPCError } from "@orpc/server";
 
-import type { Context } from "./context";
+import { rateLimitMiddleware } from "./middleware/rate-limit";
+import { o } from "./os";
 
-export const o = os.$context<Context>();
+export { o };
 
-export const publicProcedure = o;
+export const publicProcedure = o.use(rateLimitMiddleware);
 
 const requireAuth = o.middleware(async ({ context, next }) => {
 	if (!context.session?.user) {
@@ -48,8 +49,9 @@ const requireAdmin = o.middleware(async ({ context, next }) => {
 	if (!user) {
 		throw new ORPCError("UNAUTHORIZED");
 	}
-	const role = (user as Record<string, unknown>).role;
-	if (role !== "admin") {
+	// better-auth's admin plugin adds `role` at runtime; its type isn't
+	// threaded through auth.api.getSession()'s inferred return type.
+	if (!("role" in user) || user.role !== "admin") {
 		throw new ORPCError("FORBIDDEN");
 	}
 	return next();

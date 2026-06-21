@@ -1,22 +1,31 @@
 import { headers } from "next/headers";
+import { z } from "zod";
 
 import { env } from "@/lib/env";
 
-export type AdminSession = {
-	user: {
-		id: string;
-		name: string;
-		email: string;
-		image?: string | null;
-		role?: string | null;
-	};
-	session: {
-		id: string;
-		userId: string;
-		expiresAt: Date;
-		token: string;
-	};
-};
+const adminSessionSchema = z.object({
+	user: z.object({
+		id: z.string(),
+		name: z.string(),
+		email: z.string(),
+		image: z.string().nullable().optional(),
+		role: z.string().nullable().optional(),
+	}),
+	session: z.object({
+		id: z.string(),
+		userId: z.string(),
+		expiresAt: z.coerce.date(),
+		token: z.string(),
+	}),
+});
+
+const apiResponseSchema = z.union([
+	z.object({ data: adminSessionSchema }),
+	adminSessionSchema,
+	z.null(),
+]);
+
+export type AdminSession = z.infer<typeof adminSessionSchema>;
 
 export async function getAdminServerSession(): Promise<AdminSession | null> {
 	try {
@@ -36,15 +45,16 @@ export async function getAdminServerSession(): Promise<AdminSession | null> {
 			return null;
 		}
 
-		const data = (await res.json()) as
-			| { data?: AdminSession }
-			| AdminSession
-			| null;
-
-		if (data && typeof data === "object" && "data" in data && data.data) {
-			return data.data as AdminSession;
+		const parsed = apiResponseSchema.safeParse(await res.json());
+		if (!parsed.success) {
+			return null;
 		}
-		return data as AdminSession | null;
+
+		const data = parsed.data;
+		if (data && "data" in data) {
+			return data.data;
+		}
+		return data;
 	} catch {
 		return null;
 	}

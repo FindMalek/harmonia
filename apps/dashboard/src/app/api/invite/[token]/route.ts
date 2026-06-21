@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+import { rateLimiters } from "@harmonia/orpc/utils/rate-limiter";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
@@ -7,9 +9,16 @@ const TOKEN_REGEX = /^[0-9a-f]{64}$/;
 const COOKIE_MAX_AGE = 60 * 60;
 
 export async function GET(
-	_req: NextRequest,
+	req: NextRequest,
 	{ params }: { params: Promise<{ token: string }> },
 ) {
+	const { success } = rateLimiters.veryStrict.check(
+		rateLimiters.veryStrict.getIdentifier(req.headers),
+	);
+	if (!success) {
+		redirect("/invite-expired");
+	}
+
 	const { token } = await params;
 
 	if (!TOKEN_REGEX.test(token)) {
@@ -19,7 +28,7 @@ export async function GET(
 	const cookieStore = await cookies();
 	cookieStore.set("harmonia_invite", token, {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
+		secure: env.NEXT_PUBLIC_HARMONIA_NODE_ENV === "production",
 		sameSite: "lax", // lax: cookie sent on top-level nav (final OAuth redirect back to dashboard)
 		maxAge: COOKIE_MAX_AGE,
 		path: "/",

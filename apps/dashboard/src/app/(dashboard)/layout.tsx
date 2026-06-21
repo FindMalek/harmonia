@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { DashboardLayoutShell } from "@/components/layout/dashboard-layout-shell";
@@ -17,11 +16,7 @@ export default async function DashboardLayout({
 		redirect("/login");
 	}
 
-	if (!session.user.isApproved) {
-		const cookieStore = await cookies();
-		const hasInvite = cookieStore.has("harmonia_invite");
-		redirect(hasInvite ? "/api/redeem-invite?next=/" : "/waiting");
-	}
+	// Approval gating happens in middleware.ts before this layout ever renders.
 
 	if (!session.user.hasCompletedOnboarding) {
 		redirect(DASHBOARD_ROUTES.onboarding.index.path as Route);

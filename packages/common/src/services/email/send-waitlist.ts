@@ -31,6 +31,14 @@ function getDashboardInviteUrl(rawToken: string): string | null {
 	return `${dashboardUrl}/api/invite/${rawToken}`;
 }
 
+function getDashboardWaitingUrl(email: string): string | null {
+	const dashboardUrl = env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL;
+	if (!dashboardUrl) {
+		return null;
+	}
+	return `${dashboardUrl}/waiting?email=${encodeURIComponent(email)}`;
+}
+
 export async function sendWaitlistConfirmationNotification({
 	waitlistId,
 	email,
@@ -43,6 +51,15 @@ export async function sendWaitlistConfirmationNotification({
 		logger.warn(
 			{ waitlistId },
 			"Skipping waitlist confirmation email because email provider config is missing",
+		);
+		return { ok: false, reason: "provider_not_configured" as const };
+	}
+
+	const waitingUrl = getDashboardWaitingUrl(email);
+	if (!waitingUrl) {
+		logger.warn(
+			{ waitlistId },
+			"Skipping waitlist confirmation email because dashboard URL is not configured",
 		);
 		return { ok: false, reason: "provider_not_configured" as const };
 	}
@@ -71,7 +88,7 @@ export async function sendWaitlistConfirmationNotification({
 		config,
 		to: email,
 		idempotencyKey,
-		props: {},
+		props: { waitingUrl },
 	});
 
 	if (!result.ok) {
@@ -136,7 +153,7 @@ export async function sendWaitlistApprovedNotification({
 			{ waitlistId },
 			"Skipping waitlist approved email because invite token is missing — was the row approved via the admin panel?",
 		);
-		return { ok: false, reason: "provider_not_configured" as const };
+		return { ok: false, reason: "token_missing" as const };
 	}
 
 	const inviteUrl = getDashboardInviteUrl(rawToken);

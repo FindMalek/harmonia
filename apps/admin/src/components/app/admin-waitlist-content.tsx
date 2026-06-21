@@ -4,9 +4,9 @@ import type {
 	WaitlistAdminItem,
 	WaitlistStatus,
 } from "@harmonia/common/schemas";
-import { Badge } from "@harmonia/ui";
+import { Badge, Button, Checkbox, Icons } from "@harmonia/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {
 	parseAsInteger,
@@ -14,11 +14,10 @@ import {
 	parseAsStringLiteral,
 	useQueryStates,
 } from "nuqs";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { toastError } from "@/shared/api/error-handler";
 import { orpc } from "@/shared/api/orpc";
-import { adminQueryKeys } from "@/shared/lib/admin/query-keys";
 import { AdminDataTable } from "./admin-data-table";
 import { AdminRowActions } from "./admin-row-actions";
 import { AdminTablePagination } from "./admin-table-pagination";
@@ -30,6 +29,10 @@ const STATUS_OPTIONS = [
 	{ value: "approved", label: "Approved" },
 	{ value: "rejected", label: "Rejected" },
 ];
+
+function isWaitlistStatus(value: string): value is WaitlistStatus {
+	return value === "pending" || value === "approved" || value === "rejected";
+}
 
 const STATUS_VARIANTS = {
 	pending: "secondary",
@@ -61,6 +64,7 @@ export function AdminWaitlistContent() {
 		null,
 	);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
+	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
 	const { data, isFetching } = useQuery(
 		orpc.admin.waitlist.list.queryOptions({
@@ -68,14 +72,43 @@ export function AdminWaitlistContent() {
 		}),
 	);
 
+	// Selection is scoped to the current page/filter — drop it when either changes
+	useEffect(() => {
+		setRowSelection({});
+	}, [page, status, q]);
+
+	// orpc's query keys are [path, meta] tuples — invalidating with this matches
+	// every cached variation (any page/status/search) of admin.waitlist.*
+	const invalidateWaitlist = useCallback(() => {
+		queryClient.invalidateQueries({ queryKey: orpc.admin.waitlist.key() });
+		queryClient.invalidateQueries({ queryKey: orpc.admin.stats.key() });
+	}, [queryClient]);
+
 	const { mutate: updateStatus, isPending: isActionLoading } = useMutation(
 		orpc.admin.waitlist.updateStatus.mutationOptions({
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: adminQueryKeys.waitlist.all,
-				});
-				queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats });
+				invalidateWaitlist();
 				setIsSheetOpen(false);
+			},
+			onError: toastError,
+		}),
+	);
+
+	const { mutate: bulkApprove, isPending: isBulkApproving } = useMutation(
+		orpc.admin.waitlist.bulkApprove.mutationOptions({
+			onSuccess: () => {
+				invalidateWaitlist();
+				setRowSelection({});
+			},
+			onError: toastError,
+		}),
+	);
+
+	const { mutate: bulkReject, isPending: isBulkRejecting } = useMutation(
+		orpc.admin.waitlist.bulkReject.mutationOptions({
+			onSuccess: () => {
+				invalidateWaitlist();
+				setRowSelection({});
 			},
 			onError: toastError,
 		}),
@@ -91,7 +124,35 @@ export function AdminWaitlistContent() {
 		[updateStatus],
 	);
 
+	const selectedIds = Object.keys(rowSelection)
+		.filter((id) => rowSelection[id])
+		.map(Number);
+
 	const columns: ColumnDef<WaitlistAdminItem>[] = [
+		{
+			id: "select",
+			header: ({ table }) => (
+				<Checkbox
+					checked={
+						table.getIsAllPageRowsSelected()
+							? true
+							: table.getIsSomePageRowsSelected()
+								? "indeterminate"
+								: false
+					}
+					onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+					aria-label="Select all"
+				/>
+			),
+			cell: ({ row }) => (
+				<Checkbox
+					checked={row.getIsSelected()}
+					onCheckedChange={(value) => row.toggleSelected(!!value)}
+					aria-label="Select row"
+				/>
+			),
+			enableSorting: false,
+		},
 		{
 			accessorKey: "email",
 			header: "Email",
@@ -163,14 +224,48 @@ export function AdminWaitlistContent() {
 				currentStatus={status}
 				onSearch={(value) => setParams({ q: value, page: 1 })}
 				onStatusChange={(value) =>
-					setParams({ status: (value as WaitlistStatus) ?? null, page: 1 })
+					setParams({
+						status: value && isWaitlistStatus(value) ? value : null,
+						page: 1,
+					})
 				}
 			/>
+
+			{selectedIds.length > 0 && (
+				<div className="flex items-center gap-3 rounded-md border bg-muted/40 px-3 py-2">
+					<span className="text-muted-foreground text-xs">
+						{selectedIds.length} selected
+					</span>
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={() => bulkApprove({ ids: selectedIds })}
+						disabled={isBulkApproving || isBulkRejecting}
+						isLoading={isBulkApproving}
+					>
+						<Icons.circleCheck />
+						Approve
+					</Button>
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={() => bulkReject({ ids: selectedIds })}
+						disabled={isBulkApproving || isBulkRejecting}
+						isLoading={isBulkRejecting}
+					>
+						<Icons.x />
+						Reject
+					</Button>
+				</div>
+			)}
 
 			<AdminDataTable
 				columns={columns}
 				data={data?.items ?? []}
 				isLoading={isFetching && !data}
+				getRowId={(row) => String(row.id)}
+				rowSelection={rowSelection}
+				onRowSelectionChange={setRowSelection}
 			/>
 
 			<AdminTablePagination

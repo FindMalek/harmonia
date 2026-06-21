@@ -1,5 +1,5 @@
 import {
-	waitlistAdminBulkApproveInput,
+	waitlistAdminBulkIdsInput,
 	waitlistAdminListInput,
 	waitlistAdminListOutputSchema,
 	waitlistAdminUpdateStatusInput,
@@ -11,6 +11,9 @@ import { createHash, randomBytes } from "crypto";
 import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 
+import { logger } from "@harmonia/logger";
+import { adminProcedure } from "../../procedures";
+
 function generateInviteToken() {
 	const raw = randomBytes(32).toString("hex");
 	const hash = createHash("sha256").update(raw).digest("hex");
@@ -18,7 +21,21 @@ function generateInviteToken() {
 	return { raw, hash, expiresAt };
 }
 
-import { adminProcedure } from "../../procedures";
+// The poll-waitlist-approvals cron is the safety net if this fails —
+// don't let a Trigger.dev hiccup fail the admin's approve action.
+async function triggerApprovedEmailSafely(payload: {
+	waitlistId: number;
+	email: string;
+}) {
+	try {
+		await sendWaitlistApprovedEmailTask.trigger(payload);
+	} catch (error) {
+		logger.warn(
+			{ waitlistId: payload.waitlistId, error },
+			"Failed to trigger waitlist approved email task — poll cron will retry",
+		);
+	}
+}
 
 export const adminWaitlistRouter = {
 	list: adminProcedure
@@ -68,7 +85,7 @@ export const adminWaitlistRouter = {
 				.update(waitlistSignup)
 				.set({
 					status,
-					note: note ?? null,
+					...(note !== undefined && { note }),
 					approvedAt: status === "approved" ? new Date() : null,
 					...(token && {
 						inviteToken: token.hash,
@@ -85,7 +102,7 @@ export const adminWaitlistRouter = {
 			}
 
 			if (status === "approved") {
-				await sendWaitlistApprovedEmailTask.trigger({
+				await triggerApprovedEmailSafely({
 					waitlistId: updated.id,
 					email: updated.email,
 				});
@@ -95,7 +112,7 @@ export const adminWaitlistRouter = {
 		}),
 
 	bulkApprove: adminProcedure
-		.input(waitlistAdminBulkApproveInput)
+		.input(waitlistAdminBulkIdsInput)
 		.output(z.object({ approved: z.number() }))
 		.handler(async ({ input }) => {
 			const { ids } = input;
@@ -134,10 +151,46 @@ export const adminWaitlistRouter = {
 				}),
 			);
 
-			await sendWaitlistApprovedEmailTask.batchTrigger(
-				rows.map((row) => ({ payload: { waitlistId: row.id, email: row.email } })),
-			);
+			try {
+				await sendWaitlistApprovedEmailTask.batchTrigger(
+					rows.map((row) => ({
+						payload: { waitlistId: row.id, email: row.email },
+					})),
+				);
+			} catch (error) {
+				logger.warn(
+					{ ids: rows.map((r) => r.id), error },
+					"Failed to batch-trigger waitlist approved email tasks — poll cron will retry",
+				);
+			}
 
 			return { approved: rows.length };
+		}),
+
+	bulkReject: adminProcedure
+		.input(waitlistAdminBulkIdsInput)
+		.output(z.object({ rejected: z.number() }))
+		.handler(async ({ input }) => {
+			const { ids } = input;
+
+			const updated = await db
+				.update(waitlistSignup)
+				.set({
+					status: "rejected",
+					approvedAt: null,
+					updatedAt: new Date(),
+				})
+				.where(
+					and(
+						inArray(waitlistSignup.id, ids),
+						or(
+							eq(waitlistSignup.status, "pending"),
+							eq(waitlistSignup.status, "approved"),
+						),
+					),
+				)
+				.returning({ id: waitlistSignup.id });
+
+			return { rejected: updated.length };
 		}),
 };
