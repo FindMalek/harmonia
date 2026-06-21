@@ -79,7 +79,11 @@ export class RateLimiter {
 		if (!entry || now > entry.resetTime) {
 			const resetTime = now + this.config.windowMs;
 			memoryStore.set(key, { count: 1, resetTime });
-			return { success: true, remaining: this.config.max - 1, reset: resetTime };
+			return {
+				success: true,
+				remaining: this.config.max - 1,
+				reset: resetTime,
+			};
 		}
 
 		const count = entry.count + 1;
@@ -94,7 +98,11 @@ export class RateLimiter {
 			};
 		}
 
-		return { success: true, remaining: this.config.max - count, reset: entry.resetTime };
+		return {
+			success: true,
+			remaining: this.config.max - count,
+			reset: entry.resetTime,
+		};
 	}
 
 	getIdentifier(headers: Headers, userId?: string): string {
@@ -104,9 +112,17 @@ export class RateLimiter {
 
 export const rateLimiters = {
 	/** Unauthenticated default — 10 requests/min */
-	strict: new RateLimiter({ max: 10, windowMs: 60 * 1000, keyPrefix: "ratelimit:strict" }),
+	strict: new RateLimiter({
+		max: 10,
+		windowMs: 60 * 1000,
+		keyPrefix: "ratelimit:strict",
+	}),
 	/** Authenticated default — 30 requests/min */
-	standard: new RateLimiter({ max: 30, windowMs: 60 * 1000, keyPrefix: "ratelimit:standard" }),
+	standard: new RateLimiter({
+		max: 30,
+		windowMs: 60 * 1000,
+		keyPrefix: "ratelimit:standard",
+	}),
 	/** Sensitive one-shot flows (invite redemption) — 5 requests / 15 min */
 	veryStrict: new RateLimiter({
 		max: 5,

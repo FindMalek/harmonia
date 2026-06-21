@@ -70,7 +70,10 @@ export const protectedRouter = {
 
 				if (!redeemed) return false;
 
-				await tx.update(user).set({ isApproved: true }).where(eq(user.id, userId));
+				await tx
+					.update(user)
+					.set({ isApproved: true })
+					.where(eq(user.id, userId));
 
 				return true;
 			});

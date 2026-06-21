@@ -78,8 +78,7 @@ export const adminWaitlistRouter = {
 		.handler(async ({ input }) => {
 			const { id, status, note } = input;
 
-			const token =
-				status === "approved" ? generateInviteToken() : undefined;
+			const token = status === "approved" ? generateInviteToken() : undefined;
 
 			const [updated] = await db
 				.update(waitlistSignup)

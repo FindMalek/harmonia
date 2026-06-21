@@ -30,10 +30,7 @@ export function AdminRowActions({ actions }: { actions: RowAction[] }) {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
 				{defaultActions.map((action, index) => (
-					<DropdownMenuItem
-						key={`default-${index}`}
-						onClick={action.onClick}
-					>
+					<DropdownMenuItem key={`default-${index}`} onClick={action.onClick}>
 						{action.label}
 					</DropdownMenuItem>
 				))}

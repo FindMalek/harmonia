@@ -10,7 +10,10 @@ import { rateLimiters } from "../utils/rate-limiter";
 export const rateLimitMiddleware = o.middleware(async ({ context, next }) => {
 	const isAuthenticated = !!context.session?.user;
 	const limiter = isAuthenticated ? rateLimiters.standard : rateLimiters.strict;
-	const identifier = limiter.getIdentifier(context.headers, context.session?.user?.id);
+	const identifier = limiter.getIdentifier(
+		context.headers,
+		context.session?.user?.id,
+	);
 
 	const result = limiter.check(identifier);
 	if (!result.success) {
