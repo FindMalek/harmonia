@@ -149,7 +149,10 @@ export function AdminWaitlistDetailSheet({
 									</DetailRow>
 									<DetailRow label="Redeemed at">
 										{item.inviteRedeemedAt ? (
-											format(new Date(item.inviteRedeemedAt), "d MMM yyyy, HH:mm")
+											format(
+												new Date(item.inviteRedeemedAt),
+												"d MMM yyyy, HH:mm",
+											)
 										) : (
 											<span className="text-muted-foreground">—</span>
 										)}

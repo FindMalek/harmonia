@@ -18,7 +18,9 @@ function resolveSafeNext(
 	if (!nextParam) return fallback;
 	try {
 		const candidate = new URL(nextParam, requestUrl);
-		return candidate.origin === new URL(requestUrl).origin ? candidate : fallback;
+		return candidate.origin === new URL(requestUrl).origin
+			? candidate
+			: fallback;
 	} catch {
 		return fallback;
 	}
