@@ -4,8 +4,24 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-function isSafeRelativePath(value: string | null): value is string {
-	return !!value && value.startsWith("/") && !value.startsWith("//");
+// Parse-then-verify-origin, not string pattern-matching: backslashes, raw
+// control characters, etc. all get normalized by the URL parser the same way
+// browsers do, so "/\evil.com" or "/\t/evil.com" resolve to a //evil.com
+// redirect even though they don't textually start with "//". Comparing the
+// parsed origin is the only check that can't be bypassed by encoding tricks.
+function resolveSafeNext(
+	nextParam: string | null,
+	requestUrl: string,
+	fallbackPath: string,
+): URL {
+	const fallback = new URL(fallbackPath, requestUrl);
+	if (!nextParam) return fallback;
+	try {
+		const candidate = new URL(nextParam, requestUrl);
+		return candidate.origin === new URL(requestUrl).origin ? candidate : fallback;
+	} catch {
+		return fallback;
+	}
 }
 
 export async function GET(req: NextRequest) {
@@ -21,7 +37,7 @@ export async function GET(req: NextRequest) {
 	}
 
 	const nextParam = req.nextUrl.searchParams.get("next");
-	const nextPath = isSafeRelativePath(nextParam) ? nextParam : "/introduction";
+	const nextUrl = resolveSafeNext(nextParam, req.url, "/introduction");
 
 	const cookieStore = await cookies();
 	const token = cookieStore.get("harmonia_invite")?.value;
@@ -45,5 +61,5 @@ export async function GET(req: NextRequest) {
 		);
 	}
 
-	return NextResponse.redirect(new URL(nextPath, req.url));
+	return NextResponse.redirect(nextUrl);
 }
