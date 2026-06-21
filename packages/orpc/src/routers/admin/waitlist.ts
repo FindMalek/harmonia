@@ -6,6 +6,7 @@ import {
 } from "@harmonia/common/schemas";
 import { sendWaitlistApprovedEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-approved";
 import { db } from "@harmonia/db";
+import { user } from "@harmonia/db/schema/auth";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
 import { createHash, randomBytes } from "crypto";
 import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
@@ -52,8 +53,21 @@ export const adminWaitlistRouter = {
 
 			const [items, totalRows] = await Promise.all([
 				db
-					.select()
+					.select({
+						id: waitlistSignup.id,
+						email: waitlistSignup.email,
+						status: waitlistSignup.status,
+						note: waitlistSignup.note,
+						confirmationEmailSentAt: waitlistSignup.confirmationEmailSentAt,
+						approvedAt: waitlistSignup.approvedAt,
+						approvalEmailSentAt: waitlistSignup.approvalEmailSentAt,
+						inviteRedeemedAt: waitlistSignup.inviteRedeemedAt,
+						redeemedByEmail: user.email,
+						createdAt: waitlistSignup.createdAt,
+						updatedAt: waitlistSignup.updatedAt,
+					})
 					.from(waitlistSignup)
+					.leftJoin(user, eq(waitlistSignup.inviteRedeemedByUserId, user.id))
 					.where(where)
 					.orderBy(desc(waitlistSignup.createdAt))
 					.limit(pageSize)
@@ -86,11 +100,21 @@ export const adminWaitlistRouter = {
 					status,
 					...(note !== undefined && { note }),
 					approvedAt: status === "approved" ? new Date() : null,
-					...(token && {
-						inviteToken: token.hash,
-						inviteTokenRaw: token.raw,
-						inviteTokenExpiresAt: token.expiresAt,
-					}),
+					...(token
+						? {
+								inviteToken: token.hash,
+								inviteTokenRaw: token.raw,
+								inviteTokenExpiresAt: token.expiresAt,
+							}
+						: {
+								// Moving away from approved invalidates any previously
+								// emailed invite link — redeemInvite also re-checks status,
+								// but clearing the token here means there's nothing left
+								// to redeem at all, not just a denied request.
+								inviteToken: null,
+								inviteTokenRaw: null,
+								inviteTokenExpiresAt: null,
+							}),
 					updatedAt: new Date(),
 				})
 				.where(eq(waitlistSignup.id, id))
@@ -177,6 +201,11 @@ export const adminWaitlistRouter = {
 				.set({
 					status: "rejected",
 					approvedAt: null,
+					// Invalidate any previously emailed invite link — see the
+					// matching comment in updateStatus.
+					inviteToken: null,
+					inviteTokenRaw: null,
+					inviteTokenExpiresAt: null,
 					updatedAt: new Date(),
 				})
 				.where(

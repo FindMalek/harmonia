@@ -7,6 +7,8 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 
+import { user } from "./auth";
+
 export const waitlistStatusEnum = pgEnum("waitlist_status", [
 	"pending",
 	"approved",
@@ -29,7 +31,10 @@ export const waitlistSignup = pgTable(
 		inviteTokenRaw: text("invite_token_raw"),
 		inviteTokenExpiresAt: timestamp("invite_token_expires_at"),
 		inviteRedeemedAt: timestamp("invite_redeemed_at"),
-		inviteRedeemedByUserId: text("invite_redeemed_by_user_id"),
+		// unique: one Spotify identity can only ever redeem one waitlist invite
+		inviteRedeemedByUserId: text("invite_redeemed_by_user_id")
+			.unique()
+			.references(() => user.id, { onDelete: "set null" }),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 	},

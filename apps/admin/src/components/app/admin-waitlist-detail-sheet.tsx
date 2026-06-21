@@ -133,6 +133,28 @@ export function AdminWaitlistDetailSheet({
 										)}
 									</DetailRow>
 								</div>
+
+								<Separator />
+
+								{/* Identity check — the Spotify account isn't required to share
+								    the waitlist email, so surface who actually claimed the invite. */}
+								<div>
+									<SectionHeading>Redeemed by</SectionHeading>
+									<DetailRow label="Spotify account">
+										{item.redeemedByEmail ?? (
+											<span className="text-muted-foreground">
+												Not redeemed yet
+											</span>
+										)}
+									</DetailRow>
+									<DetailRow label="Redeemed at">
+										{item.inviteRedeemedAt ? (
+											format(new Date(item.inviteRedeemedAt), "d MMM yyyy, HH:mm")
+										) : (
+											<span className="text-muted-foreground">—</span>
+										)}
+									</DetailRow>
+								</div>
 							</div>
 						</ScrollArea>
 

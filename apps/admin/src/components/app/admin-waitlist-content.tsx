@@ -72,10 +72,10 @@ export function AdminWaitlistContent() {
 		}),
 	);
 
-	// Selection is scoped to the current page/filter — drop it when either changes
+	// Selection is scoped to the current page/filter — drop it when any change
 	useEffect(() => {
 		setRowSelection({});
-	}, [page, status, q]);
+	}, [page, pageSize, status, q]);
 
 	// orpc's query keys are [path, meta] tuples — invalidating with this matches
 	// every cached variation (any page/status/search) of admin.waitlist.*

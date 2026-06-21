@@ -18,6 +18,11 @@ export const waitlistAdminItemSchema = z.object({
 	confirmationEmailSentAt: z.date().nullable(),
 	approvedAt: z.date().nullable(),
 	approvalEmailSentAt: z.date().nullable(),
+	inviteRedeemedAt: z.date().nullable(),
+	// The actual Spotify-authenticated account that claimed this invite —
+	// surfaced so admins can audit "did the right person get in," since the
+	// waitlist email and the Spotify account email aren't required to match.
+	redeemedByEmail: z.string().nullable(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });

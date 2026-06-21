@@ -47,23 +47,6 @@ if (typeof setInterval !== "undefined") {
 	setInterval(() => memoryStore.cleanup(), 60 * 1000);
 }
 
-function getIdentifier(headers: Headers, userId?: string): string {
-	if (userId) return `user:${userId}`;
-
-	const vercelIp = headers.get("x-vercel-forwarded-for");
-	const forwardedFor = headers.get("x-forwarded-for");
-	const cfConnectingIp = headers.get("cf-connecting-ip");
-	const realIp = headers.get("x-real-ip");
-
-	const ip =
-		vercelIp?.split(",")[0]?.trim() ??
-		forwardedFor?.split(",")[0]?.trim() ??
-		cfConnectingIp ??
-		realIp;
-
-	return ip ? `ip:${ip}` : "anonymous";
-}
-
 export class RateLimiter {
 	private config: Required<RateLimitConfig>;
 
@@ -106,7 +89,20 @@ export class RateLimiter {
 	}
 
 	getIdentifier(headers: Headers, userId?: string): string {
-		return getIdentifier(headers, userId);
+		if (userId) return `user:${userId}`;
+
+		const vercelIp = headers.get("x-vercel-forwarded-for");
+		const forwardedFor = headers.get("x-forwarded-for");
+		const cfConnectingIp = headers.get("cf-connecting-ip");
+		const realIp = headers.get("x-real-ip");
+
+		const ip =
+			vercelIp?.split(",")[0]?.trim() ??
+			forwardedFor?.split(",")[0]?.trim() ??
+			cfConnectingIp ??
+			realIp;
+
+		return ip ? `ip:${ip}` : "anonymous";
 	}
 }
 

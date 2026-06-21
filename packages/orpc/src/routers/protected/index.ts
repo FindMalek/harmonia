@@ -36,9 +36,24 @@ export const protectedRouter = {
 			const userId = context.session.user.id;
 			const hash = createHash("sha256").update(input.token).digest("hex");
 
+			// One Spotify identity can only ever redeem one invite. Re-check
+			// against the DB rather than the session payload — a session can be
+			// stale relative to a just-completed redemption. Also closes a
+			// farming vector: someone collecting multiple waitlist approvals
+			// (e.g. via several emails) can't stack them onto one account.
+			const [callingUser] = await db
+				.select({ isApproved: user.isApproved })
+				.from(user)
+				.where(eq(user.id, userId));
+
+			if (callingUser?.isApproved) {
+				return { success: false };
+			}
+
 			const [row] = await db
 				.select({
 					id: waitlistSignup.id,
+					status: waitlistSignup.status,
 					inviteTokenExpiresAt: waitlistSignup.inviteTokenExpiresAt,
 					inviteRedeemedAt: waitlistSignup.inviteRedeemedAt,
 				})
@@ -46,8 +61,12 @@ export const protectedRouter = {
 				.where(eq(waitlistSignup.inviteToken, hash))
 				.limit(1);
 
+			// Re-check status here (not just token validity): an admin can reject
+			// someone after approving them, and the already-sent email link
+			// shouldn't still work even if its token hasn't expired yet.
 			if (
 				!row ||
+				row.status !== "approved" ||
 				row.inviteRedeemedAt ||
 				!row.inviteTokenExpiresAt ||
 				row.inviteTokenExpiresAt < new Date()
