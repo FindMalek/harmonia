@@ -1,10 +1,10 @@
+import { createHash } from "node:crypto";
 import { db } from "@harmonia/db";
-import { user, account } from "@harmonia/db/schema/auth";
+import { account, user } from "@harmonia/db/schema/auth";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { createHash } from "crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure, protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
 import { emailPreferencesRouter } from "./email-preferences";
 import { insightsRouter } from "./insights";
@@ -14,13 +14,13 @@ import { spotifyRouter } from "./spotify";
 import { tracksRouter } from "./tracks";
 
 export const protectedRouter = {
-	privateData: protectedProcedure.handler(({ context }) => {
+	privateData: approvedProcedure.handler(({ context }) => {
 		return {
 			message: "This is private",
 			user: context.session?.user,
 		};
 	}),
-	hasSpotifyLinked: protectedProcedure.handler(async ({ context }) => {
+	hasSpotifyLinked: approvedProcedure.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 		const rows = await db
 			.select({ userId: account.userId })
@@ -65,10 +65,9 @@ export const protectedRouter = {
 			// someone after approving them, and the already-sent email link
 			// shouldn't still work even if its token hasn't expired yet.
 			if (
-				!row ||
-				row.status !== "approved" ||
-				row.inviteRedeemedAt ||
-				!row.inviteTokenExpiresAt ||
+				row?.status !== "approved" ||
+				row?.inviteRedeemedAt ||
+				!row?.inviteTokenExpiresAt ||
 				row.inviteTokenExpiresAt < new Date()
 			) {
 				return { success: false };

@@ -1,19 +1,22 @@
+import { createHash, randomBytes } from "node:crypto";
 import {
 	waitlistAdminBulkIdsInput,
 	waitlistAdminListInput,
 	waitlistAdminListOutputSchema,
+	waitlistAdminResendInviteInput,
 	waitlistAdminUpdateStatusInput,
 } from "@harmonia/common/schemas";
 import { sendWaitlistApprovedEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-approved";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { createHash, randomBytes } from "crypto";
-import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
-import { z } from "zod";
-
 import { logger } from "@harmonia/logger";
+import { ORPCError } from "@orpc/server";
+import { and, count, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import { z } from "zod";
 import { adminProcedure } from "../../procedures";
+
+const RESEND_COOLDOWN_MS = 5 * 60 * 1000;
 
 function generateInviteToken() {
 	const raw = randomBytes(32).toString("hex");
@@ -22,8 +25,6 @@ function generateInviteToken() {
 	return { raw, hash, expiresAt };
 }
 
-// The poll-waitlist-approvals cron is the safety net if this fails —
-// don't let a Trigger.dev hiccup fail the admin's approve action.
 async function triggerApprovedEmailSafely(payload: {
 	waitlistId: number;
 	email: string;
@@ -92,6 +93,26 @@ export const adminWaitlistRouter = {
 		.handler(async ({ input }) => {
 			const { id, status, note } = input;
 
+			const [existing] = await db
+				.select({ status: waitlistSignup.status })
+				.from(waitlistSignup)
+				.where(eq(waitlistSignup.id, id));
+
+			if (!existing) {
+				return { success: false };
+			}
+
+			if (status === existing.status) {
+				if (note === undefined) {
+					return { success: true };
+				}
+				await db
+					.update(waitlistSignup)
+					.set({ note, updatedAt: new Date() })
+					.where(eq(waitlistSignup.id, id));
+				return { success: true };
+			}
+
 			const token = status === "approved" ? generateInviteToken() : undefined;
 
 			const [updated] = await db
@@ -105,12 +126,9 @@ export const adminWaitlistRouter = {
 								inviteToken: token.hash,
 								inviteTokenRaw: token.raw,
 								inviteTokenExpiresAt: token.expiresAt,
+								approvalEmailSentAt: null,
 							}
 						: {
-								// Moving away from approved invalidates any previously
-								// emailed invite link — redeemInvite also re-checks status,
-								// but clearing the token here means there's nothing left
-								// to redeem at all, not just a denied request.
 								inviteToken: null,
 								inviteTokenRaw: null,
 								inviteTokenExpiresAt: null,
@@ -134,13 +152,79 @@ export const adminWaitlistRouter = {
 			return { success: true };
 		}),
 
+	resendInvite: adminProcedure
+		.input(waitlistAdminResendInviteInput)
+		.output(z.object({ success: z.boolean() }))
+		.handler(async ({ input }) => {
+			const [row] = await db
+				.select({
+					id: waitlistSignup.id,
+					email: waitlistSignup.email,
+					status: waitlistSignup.status,
+					inviteRedeemedAt: waitlistSignup.inviteRedeemedAt,
+					approvalEmailSentAt: waitlistSignup.approvalEmailSentAt,
+				})
+				.from(waitlistSignup)
+				.where(eq(waitlistSignup.id, input.id));
+
+			if (!row) {
+				return { success: false };
+			}
+
+			if (row.status !== "approved" || row.inviteRedeemedAt) {
+				throw new ORPCError("BAD_REQUEST", {
+					message:
+						"Invite can only be resent for approved, unredeemed entries.",
+				});
+			}
+
+			if (
+				row.approvalEmailSentAt &&
+				Date.now() - row.approvalEmailSentAt.getTime() < RESEND_COOLDOWN_MS
+			) {
+				throw new ORPCError("TOO_MANY_REQUESTS", {
+					message: "Please wait a few minutes before resending the invite.",
+				});
+			}
+
+			const token = generateInviteToken();
+
+			const [updated] = await db
+				.update(waitlistSignup)
+				.set({
+					inviteToken: token.hash,
+					inviteTokenRaw: token.raw,
+					inviteTokenExpiresAt: token.expiresAt,
+					approvalEmailSentAt: null,
+					updatedAt: new Date(),
+				})
+				.where(
+					and(
+						eq(waitlistSignup.id, input.id),
+						eq(waitlistSignup.status, "approved"),
+						isNull(waitlistSignup.inviteRedeemedAt),
+					),
+				)
+				.returning({ id: waitlistSignup.id, email: waitlistSignup.email });
+
+			if (!updated) {
+				return { success: false };
+			}
+
+			await triggerApprovedEmailSafely({
+				waitlistId: updated.id,
+				email: updated.email,
+			});
+
+			return { success: true };
+		}),
+
 	bulkApprove: adminProcedure
 		.input(waitlistAdminBulkIdsInput)
 		.output(z.object({ approved: z.number() }))
 		.handler(async ({ input }) => {
 			const { ids } = input;
 
-			// Fetch only rows that aren't already approved so we generate tokens for each
 			const rows = await db
 				.select({ id: waitlistSignup.id, email: waitlistSignup.email })
 				.from(waitlistSignup)
@@ -156,11 +240,10 @@ export const adminWaitlistRouter = {
 
 			if (rows.length === 0) return { approved: 0 };
 
-			// Update each row with its own token (can't do a single set; tokens differ per row)
-			await Promise.all(
-				rows.map((row) => {
+			await db.transaction(async (tx) => {
+				for (const row of rows) {
 					const token = generateInviteToken();
-					return db
+					await tx
 						.update(waitlistSignup)
 						.set({
 							status: "approved",
@@ -168,11 +251,12 @@ export const adminWaitlistRouter = {
 							inviteToken: token.hash,
 							inviteTokenRaw: token.raw,
 							inviteTokenExpiresAt: token.expiresAt,
+							approvalEmailSentAt: null,
 							updatedAt: new Date(),
 						})
 						.where(eq(waitlistSignup.id, row.id));
-				}),
-			);
+				}
+			});
 
 			try {
 				await sendWaitlistApprovedEmailTask.batchTrigger(
@@ -201,8 +285,6 @@ export const adminWaitlistRouter = {
 				.set({
 					status: "rejected",
 					approvedAt: null,
-					// Invalidate any previously emailed invite link — see the
-					// matching comment in updateStatus.
 					inviteToken: null,
 					inviteTokenRaw: null,
 					inviteTokenExpiresAt: null,

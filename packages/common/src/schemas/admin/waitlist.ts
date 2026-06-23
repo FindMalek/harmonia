@@ -54,3 +54,10 @@ export const waitlistAdminBulkIdsInput = z.object({
 export type WaitlistAdminBulkIdsInput = z.infer<
 	typeof waitlistAdminBulkIdsInput
 >;
+
+export const waitlistAdminResendInviteInput = z.object({
+	id: z.number().int(),
+});
+export type WaitlistAdminResendInviteInput = z.infer<
+	typeof waitlistAdminResendInviteInput
+>;

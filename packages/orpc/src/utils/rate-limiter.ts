@@ -1,6 +1,7 @@
 /**
  * In-memory fixed-window rate limiter.
- * ponytail: single-process Map, fine for current traffic; swap for Redis if we ever run multiple API instances.
+ * ponytail: single-process Map, fine for current traffic; swap for Redis before
+ * running multiple API instances — limits are not shared across processes.
  */
 
 interface RateLimitConfig {

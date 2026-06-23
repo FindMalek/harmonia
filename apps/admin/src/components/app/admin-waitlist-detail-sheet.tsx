@@ -5,6 +5,7 @@ import {
 	Badge,
 	Button,
 	Icons,
+	Input,
 	ScrollArea,
 	Separator,
 	Sheet,
@@ -15,6 +16,7 @@ import {
 	SheetTitle,
 } from "@harmonia/ui";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
 
 const STATUS_VARIANTS = {
 	pending: "secondary",
@@ -39,7 +41,7 @@ function DetailRow({
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
 	return (
-		<p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+		<p className="mb-2 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest">
 			{children}
 		</p>
 	);
@@ -51,6 +53,12 @@ type AdminWaitlistDetailSheetProps = {
 	onOpenChange: (open: boolean) => void;
 	onApprove: (id: number) => void;
 	onReject: (id: number) => void;
+	onResendInvite: (id: number) => void;
+	onSaveNote: (
+		id: number,
+		status: WaitlistAdminItem["status"],
+		note: string,
+	) => void;
 	isActionLoading: boolean;
 };
 
@@ -60,8 +68,19 @@ export function AdminWaitlistDetailSheet({
 	onOpenChange,
 	onApprove,
 	onReject,
+	onResendInvite,
+	onSaveNote,
 	isActionLoading,
 }: AdminWaitlistDetailSheetProps) {
+	const [noteDraft, setNoteDraft] = useState("");
+
+	useEffect(() => {
+		setNoteDraft(item?.note ?? "");
+	}, [item]);
+
+	const canResend =
+		item?.status === "approved" && item.inviteRedeemedAt === null;
+
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent className="flex flex-col gap-0 p-0 sm:max-w-[400px]">
@@ -76,7 +95,6 @@ export function AdminWaitlistDetailSheet({
 					<>
 						<ScrollArea className="flex-1">
 							<div className="space-y-5 px-5 py-4">
-								{/* Status */}
 								<div>
 									<SectionHeading>Status</SectionHeading>
 									<Badge variant={STATUS_VARIANTS[item.status]}>
@@ -86,20 +104,32 @@ export function AdminWaitlistDetailSheet({
 
 								<Separator />
 
-								{/* Contact */}
 								<div>
 									<SectionHeading>Contact</SectionHeading>
 									<DetailRow label="Email">{item.email}</DetailRow>
-									<DetailRow label="Note">
-										{item.note ?? (
-											<span className="text-muted-foreground">—</span>
-										)}
-									</DetailRow>
+									<div className="space-y-2 py-1.5">
+										<span className="text-muted-foreground text-xs">Note</span>
+										<Input
+											value={noteDraft}
+											onChange={(e) => setNoteDraft(e.target.value)}
+											placeholder="Internal note…"
+											className="h-8 text-xs"
+										/>
+										<Button
+											size="sm"
+											variant="outline"
+											disabled={isActionLoading}
+											onClick={() =>
+												onSaveNote(item.id, item.status, noteDraft)
+											}
+										>
+											Save note
+										</Button>
+									</div>
 								</div>
 
 								<Separator />
 
-								{/* Timeline */}
 								<div>
 									<SectionHeading>Timeline</SectionHeading>
 									<DetailRow label="Signed up">
@@ -136,8 +166,6 @@ export function AdminWaitlistDetailSheet({
 
 								<Separator />
 
-								{/* Identity check — the Spotify account isn't required to share
-								    the waitlist email, so surface who actually claimed the invite. */}
 								<div>
 									<SectionHeading>Redeemed by</SectionHeading>
 									<DetailRow label="Spotify account">
@@ -161,30 +189,46 @@ export function AdminWaitlistDetailSheet({
 							</div>
 						</ScrollArea>
 
-						{item.status !== "approved" && (
+						{(item.status !== "approved" || canResend) && (
 							<SheetFooter className="border-t px-5 py-4">
-								<div className="flex w-full gap-2">
-									<Button
-										size="sm"
-										onClick={() => onApprove(item.id)}
-										disabled={isActionLoading}
-										isLoading={isActionLoading}
-										className="flex-1"
-									>
-										<Icons.circleCheck />
-										Approve
-									</Button>
-									{item.status !== "rejected" && (
+								<div className="flex w-full flex-col gap-2">
+									{item.status !== "approved" && (
+										<div className="flex w-full gap-2">
+											<Button
+												size="sm"
+												onClick={() => onApprove(item.id)}
+												disabled={isActionLoading}
+												isLoading={isActionLoading}
+												className="flex-1"
+											>
+												<Icons.circleCheck />
+												Approve
+											</Button>
+											{item.status !== "rejected" && (
+												<Button
+													size="sm"
+													variant="destructive"
+													onClick={() => onReject(item.id)}
+													disabled={isActionLoading}
+													isLoading={isActionLoading}
+													className="flex-1"
+												>
+													<Icons.x />
+													Reject
+												</Button>
+											)}
+										</div>
+									)}
+									{canResend && (
 										<Button
 											size="sm"
-											variant="destructive"
-											onClick={() => onReject(item.id)}
+											variant="outline"
+											onClick={() => onResendInvite(item.id)}
 											disabled={isActionLoading}
 											isLoading={isActionLoading}
-											className="flex-1"
+											className="w-full"
 										>
-											<Icons.x />
-											Reject
+											Resend invite
 										</Button>
 									)}
 								</div>

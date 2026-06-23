@@ -11,9 +11,9 @@ import {
 } from "@harmonia/ui";
 import {
 	type ColumnDef,
-	type RowSelectionState,
 	flexRender,
 	getCoreRowModel,
+	type RowSelectionState,
 	useReactTable,
 } from "@tanstack/react-table";
 

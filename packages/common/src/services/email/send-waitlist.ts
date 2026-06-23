@@ -1,3 +1,4 @@
+import { buildWaitlistStatusUrl } from "@harmonia/common/utils/waitlist-token";
 import { db } from "@harmonia/db";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
 import {
@@ -36,7 +37,7 @@ function getDashboardWaitingUrl(email: string): string | null {
 	if (!dashboardUrl) {
 		return null;
 	}
-	return `${dashboardUrl}/waiting?email=${encodeURIComponent(email)}`;
+	return buildWaitlistStatusUrl(dashboardUrl, email);
 }
 
 export async function sendWaitlistConfirmationNotification({

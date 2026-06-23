@@ -15,7 +15,7 @@ export default async function OnboardingLayout({
 		redirect("/login");
 	}
 
-	// Approval gating happens in middleware.ts before this layout ever renders.
+	// Approval gating happens in proxy.ts before this layout ever renders.
 
 	if (session.user.hasCompletedOnboarding) {
 		redirect(DASHBOARD_ROUTES.overview.path);

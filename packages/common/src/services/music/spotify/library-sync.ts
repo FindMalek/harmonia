@@ -1,8 +1,8 @@
 import type {
 	SpotifyLibraryStats,
+	SpotifyPlaylistTrackItem,
 	SpotifySavedTracksResponse,
 } from "@harmonia/common/schemas";
-import type { SpotifyPlaylistTrackItem } from "@harmonia/common/schemas";
 import type { SyncProgress } from "@harmonia/common/types";
 import { conflictValue, db } from "@harmonia/db";
 import {

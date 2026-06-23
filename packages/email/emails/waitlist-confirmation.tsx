@@ -75,7 +75,8 @@ export function WaitlistConfirmationEmail({
 }
 
 WaitlistConfirmationEmail.PreviewProps = {
-	waitingUrl: "http://127.0.0.1:3003/waiting?email=you@example.com",
+	waitingUrl:
+		"http://127.0.0.1:3003/waiting?token=eyJlbWFpbCI6InlvdUBleGFtcGxlLmNvbSIsImV4cCI6OTk5OTk5OTk5OTk5fQ.example",
 } satisfies WaitlistConfirmationEmailProps;
 
 export default WaitlistConfirmationEmail;

@@ -1,9 +1,9 @@
-import { serverClient } from "@/shared/api/orpc-server";
-import { getServerSession } from "@/shared/api/session.server";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { cn, HarmoniaBrandHeader, Icons } from "@harmonia/ui";
 import { redirect } from "next/navigation";
 import { Fragment } from "react";
+import { serverClient } from "@/shared/api/orpc-server";
+import { getServerSession } from "@/shared/api/session.server";
 
 const STEPS = ["Signed up", "Under review", "Approved"] as const;
 
@@ -62,7 +62,7 @@ function WaitingShell({ children }: { children: React.ReactNode }) {
 export default async function WaitingPage({
 	searchParams,
 }: {
-	searchParams: Promise<{ email?: string; reason?: string }>;
+	searchParams: Promise<{ token?: string; reason?: string }>;
 }) {
 	const session = await getServerSession();
 
@@ -74,10 +74,10 @@ export default async function WaitingPage({
 		redirect(DASHBOARD_ROUTES.onboarding.introduction.path);
 	}
 
-	const { email, reason } = await searchParams;
+	const { token, reason } = await searchParams;
 
-	if (email) {
-		const result = await serverClient.waitlist.status({ email });
+	if (token) {
+		const result = await serverClient.waitlist.status({ token });
 
 		if (result.status === "pending") {
 			return (
@@ -88,7 +88,7 @@ export default async function WaitingPage({
 							<br />
 							the waitlist.
 						</h1>
-						<p className="mt-6 text-muted-foreground text-base leading-relaxed">
+						<p className="mt-6 text-base text-muted-foreground leading-relaxed">
 							You're <strong>#{result.queuePosition}</strong> in line. We'll
 							email you the moment your spot is ready.
 						</p>
@@ -107,7 +107,7 @@ export default async function WaitingPage({
 						<h1 className="font-semibold text-3xl text-foreground leading-tight tracking-tight sm:text-5xl md:text-6xl">
 							You're in.
 						</h1>
-						<p className="mt-6 text-muted-foreground text-base leading-relaxed">
+						<p className="mt-6 text-base text-muted-foreground leading-relaxed">
 							Check your inbox for the email with your sign-in link.
 						</p>
 						<div className="mt-10">
@@ -125,7 +125,7 @@ export default async function WaitingPage({
 						<h1 className="font-semibold text-3xl text-foreground leading-tight tracking-tight sm:text-5xl md:text-6xl">
 							Not this time.
 						</h1>
-						<p className="mt-6 text-muted-foreground text-base leading-relaxed">
+						<p className="mt-6 text-base text-muted-foreground leading-relaxed">
 							This email isn't on the active waitlist. Contact us if you think
 							that's a mistake.
 						</p>
@@ -144,7 +144,7 @@ export default async function WaitingPage({
 					<br />
 					the waitlist.
 				</h1>
-				<p className="mt-6 text-muted-foreground text-base leading-relaxed">
+				<p className="mt-6 text-base text-muted-foreground leading-relaxed">
 					{reason === "invalid_invite"
 						? "That invite link has expired or was already used. We'll send a fresh one if you're still waiting on approval."
 						: "We'll send you an email as soon as your spot is ready. No action needed on your end."}

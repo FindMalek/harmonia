@@ -51,7 +51,7 @@ async function main() {
 		if (existing[0].role !== "admin") {
 			await db
 				.update(user)
-				.set({ role: "admin", isApproved: true })
+				.set({ role: "admin" })
 				.where(eq(user.email, ADMIN_EMAIL));
 			console.info(`Updated ${ADMIN_EMAIL} → role: admin`);
 		} else {
@@ -71,7 +71,7 @@ async function main() {
 			email: ADMIN_EMAIL,
 			emailVerified: true,
 			hasCompletedOnboarding: false,
-			isApproved: true,
+			isApproved: false,
 			role: "admin",
 			createdAt: now,
 			updatedAt: now,

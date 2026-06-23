@@ -73,9 +73,11 @@ export function AdminWaitlistContent() {
 	);
 
 	// Selection is scoped to the current page/filter — drop it when any change
+	const waitlistFilterKey = `${page}|${pageSize}|${status}|${q ?? ""}`;
 	useEffect(() => {
+		void waitlistFilterKey;
 		setRowSelection({});
-	}, [page, pageSize, status, q]);
+	}, [waitlistFilterKey]);
 
 	// orpc's query keys are [path, meta] tuples — invalidating with this matches
 	// every cached variation (any page/status/search) of admin.waitlist.*
@@ -114,6 +116,13 @@ export function AdminWaitlistContent() {
 		}),
 	);
 
+	const { mutate: resendInvite, isPending: isResending } = useMutation(
+		orpc.admin.waitlist.resendInvite.mutationOptions({
+			onSuccess: () => invalidateWaitlist(),
+			onError: toastError,
+		}),
+	);
+
 	const handleApprove = useCallback(
 		(id: number) => updateStatus({ id, status: "approved" }),
 		[updateStatus],
@@ -123,6 +132,20 @@ export function AdminWaitlistContent() {
 		(id: number) => updateStatus({ id, status: "rejected" }),
 		[updateStatus],
 	);
+
+	const handleResendInvite = useCallback(
+		(id: number) => resendInvite({ id }),
+		[resendInvite],
+	);
+
+	const handleSaveNote = useCallback(
+		(id: number, status: WaitlistAdminItem["status"], note: string) =>
+			updateStatus({ id, status, note }),
+		[updateStatus],
+	);
+
+	const canResendInvite = (item: WaitlistAdminItem) =>
+		item.status === "approved" && !item.inviteRedeemedAt;
 
 	const selectedIds = Object.keys(rowSelection)
 		.filter((id) => rowSelection[id])
@@ -209,6 +232,14 @@ export function AdminWaitlistContent() {
 									},
 								]
 							: []),
+						...(canResendInvite(row.original)
+							? [
+									{
+										label: "Resend invite",
+										onClick: () => handleResendInvite(row.original.id),
+									},
+								]
+							: []),
 					]}
 				/>
 			),
@@ -283,7 +314,9 @@ export function AdminWaitlistContent() {
 				onOpenChange={setIsSheetOpen}
 				onApprove={handleApprove}
 				onReject={handleReject}
-				isActionLoading={isActionLoading}
+				onResendInvite={handleResendInvite}
+				onSaveNote={handleSaveNote}
+				isActionLoading={isActionLoading || isResending}
 			/>
 		</div>
 	);

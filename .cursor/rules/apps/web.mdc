@@ -9,7 +9,13 @@ alwaysApply: false
 
 ## Purpose
 
-Public-facing marketing/landing pages. No authenticated routes. Minimal JavaScript.
+Public-facing marketing/landing pages and waitlist signup. No authenticated routes. Minimal JavaScript.
+
+## Waitlist
+
+- Landing page waitlist form → `orpc.waitlist.signup` (public)
+- Confirmation email links to `/waiting?token=...` (HMAC-signed; no raw email in URL)
+- `/login` redirects to dashboard login for returning approved users
 
 ## Conventions
 

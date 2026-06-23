@@ -35,6 +35,14 @@ export function AdminLoginForm() {
 					return;
 				}
 
+				const session = await authClient.getSession();
+				const role = session.data?.user?.role;
+				if (role !== "admin") {
+					await authClient.signOut();
+					toast.error("You do not have permission to access this area.");
+					return;
+				}
+
 				router.push("/");
 				router.refresh();
 			} catch {

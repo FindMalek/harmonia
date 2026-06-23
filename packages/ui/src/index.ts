@@ -77,7 +77,6 @@ export {
 export { Label } from "./components/ui/label";
 export { Progress } from "./components/ui/progress";
 export { ScrollArea, ScrollBar } from "./components/ui/scroll-area";
-export { Separator } from "./components/ui/separator";
 export {
 	Select,
 	SelectContent,
@@ -90,6 +89,7 @@ export {
 	SelectTrigger,
 	SelectValue,
 } from "./components/ui/select";
+export { Separator } from "./components/ui/separator";
 export {
 	Sheet,
 	SheetClose,

@@ -1,7 +1,7 @@
 import { getSpotifyLibraryStats, syncLibraryTracks } from "@harmonia/common";
 import {
-	type SyncProgressEvent,
 	emptyInput,
+	type SyncProgressEvent,
 	spotifyLibraryStatsSchema,
 	syncProgressEventSchema,
 } from "@harmonia/common/schemas";
@@ -11,10 +11,10 @@ import { user } from "@harmonia/db/schema/auth";
 import { eventIterator } from "@orpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure } from "../../procedures";
 
 export const spotifyRouter = {
-	libraryStats: protectedProcedure
+	libraryStats: approvedProcedure
 		.input(emptyInput)
 		.output(spotifyLibraryStatsSchema)
 		.handler(async ({ context }) => {
@@ -22,7 +22,7 @@ export const spotifyRouter = {
 			return getSpotifyLibraryStats(userId);
 		}),
 
-	streamSyncLibrary: protectedProcedure
+	streamSyncLibrary: approvedProcedure
 		.input(emptyInput)
 		.output(eventIterator(syncProgressEventSchema))
 		.handler(async function* ({ context }) {
@@ -76,7 +76,7 @@ export const spotifyRouter = {
 			}
 		}),
 
-	syncLibrary: protectedProcedure
+	syncLibrary: approvedProcedure
 		.input(emptyInput)
 		.output(
 			z.object({
@@ -91,7 +91,7 @@ export const spotifyRouter = {
 			return result;
 		}),
 
-	finalizeOnboarding: protectedProcedure
+	finalizeOnboarding: approvedProcedure
 		.input(emptyInput)
 		.output(z.object({ success: z.literal(true) }))
 		.handler(async ({ context }) => {

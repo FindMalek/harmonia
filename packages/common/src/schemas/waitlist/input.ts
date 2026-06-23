@@ -8,6 +8,6 @@ export const waitlistSignupInput = z.object({
 export type WaitlistSignupInput = z.infer<typeof waitlistSignupInput>;
 
 export const waitlistStatusInput = z.object({
-	email: z.string().trim().email(),
+	token: z.string().min(1),
 });
 export type WaitlistStatusInput = z.infer<typeof waitlistStatusInput>;

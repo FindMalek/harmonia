@@ -1,13 +1,13 @@
+import type { SyncProgressEvent } from "@harmonia/common/schemas";
+import type { SyncPhase } from "@harmonia/common/types";
+import type { QueryClient } from "@tanstack/react-query";
+import type { Dispatch, SetStateAction } from "react";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
 	ONBOARDING_SYNC_INITIAL_BACKOFF_MS,
 	ONBOARDING_SYNC_MAX_ATTEMPTS,
 	ONBOARDING_SYNC_MAX_BACKOFF_MS,
 } from "@/shared/lib/constants";
-import type { SyncProgressEvent } from "@harmonia/common/schemas";
-import type { SyncPhase } from "@harmonia/common/types";
-import type { QueryClient } from "@tanstack/react-query";
-import type { Dispatch, SetStateAction } from "react";
 
 function delayAbortable(ms: number, signal: AbortSignal): Promise<void> {
 	return new Promise((resolve, reject) => {

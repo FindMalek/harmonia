@@ -32,6 +32,26 @@ const columns: ColumnDef<AdminUserItem>[] = [
 			),
 	},
 	{
+		accessorKey: "isApproved",
+		header: "Approved",
+		cell: ({ row }) =>
+			row.original.isApproved ? (
+				<Badge variant="default">Yes</Badge>
+			) : (
+				<Badge variant="secondary">No</Badge>
+			),
+	},
+	{
+		accessorKey: "banned",
+		header: "Banned",
+		cell: ({ row }) =>
+			row.original.banned ? (
+				<Badge variant="destructive">Yes</Badge>
+			) : (
+				<span className="text-muted-foreground text-sm">—</span>
+			),
+	},
+	{
 		accessorKey: "createdAt",
 		header: "Joined",
 		cell: ({ row }) => format(new Date(row.original.createdAt), "d MMM yyyy"),

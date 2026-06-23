@@ -1,0 +1,64 @@
+---
+description: Admin app conventions — internal waitlist/user management, separate auth
+globs:
+  - "apps/admin/**"
+alwaysApply: false
+---
+
+# Admin App (`apps/admin`)
+
+## Purpose
+
+Internal tool for waitlist approval, user lookup, and platform stats. Port **3004**.
+
+## Auth (separate from dashboard)
+
+- Email/password via Better Auth at **`/api/admin-auth`** (not `/api/auth`)
+- Session cookie prefix: `harmonia-admin` (dashboard uses `harmonia-dashboard`)
+- Signing into admin **does not** sign you into the dashboard
+- Layout gate: `role === "admin"` in `(admin)/layout.tsx`
+- API gate: `adminProcedure` resolves `context.adminSession` only
+
+```typescript
+// apps/admin/src/shared/api/auth-client.ts
+createAuthClient({
+  baseURL: env.NEXT_PUBLIC_HARMONIA_API_URL,
+  basePath: "/api/admin-auth",
+  plugins: [adminClient()],
+});
+```
+
+## Directory Structure
+
+```
+apps/admin/src/
+  app/(admin)/          # gated routes (overview, waitlist, users)
+  app/login/
+  components/app/       # admin-* feature components
+  components/layout/    # sidebar, providers
+  shared/api/           # orpc, auth-client, session.server
+  lib/env.ts            # env re-export only
+```
+
+## Pages
+
+| Route | Purpose |
+|-------|---------|
+| `/login` | Email/password sign-in; non-admins are rejected after auth |
+| `/` | Stats overview (users, tracks, waitlist, pipeline) |
+| `/waitlist` | Paginated waitlist; approve/reject/resend invite; notes |
+| `/users` | Read-only user list with role, approval, banned badges |
+
+## Data Fetching
+
+- TanStack Query v5 via `orpc.admin.*` from `@/shared/api/orpc`
+- Invalidate with `orpc.admin.waitlist.key()` / `orpc.admin.stats.key()`
+
+## Local Setup
+
+```bash
+pnpm db:seed    # requires HARMONIA_ADMIN_PASSWORD in .env
+pnpm dev:admin  # needs API on :3002
+```
+
+Default seed email: `admin@harmonia.com` (override with `HARMONIA_ADMIN_EMAIL`).

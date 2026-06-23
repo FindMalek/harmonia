@@ -5,6 +5,7 @@ import {
 	waitlistStatusOutputSchema,
 } from "@harmonia/common/schemas";
 import { sendWaitlistConfirmationEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-confirmation";
+import { verifyWaitlistStatusToken } from "@harmonia/common/utils/waitlist-token";
 import { db } from "@harmonia/db";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
 import { logger } from "@harmonia/logger";
@@ -76,14 +77,19 @@ export const waitlistRouter = {
 			openapi: {
 				method: "GET",
 				path: "/waitlist/status",
-				summary: "Check waitlist status by email",
+				summary: "Check waitlist status by signed token",
 				tags: ["waitlist"],
 			},
 		})
 		.input(waitlistStatusInput)
 		.output(waitlistStatusOutputSchema)
 		.handler(async ({ input }) => {
-			const email = input.email.toLowerCase().trim();
+			const verified = verifyWaitlistStatusToken(input.token);
+			if (!verified) {
+				return { status: null, queuePosition: null };
+			}
+
+			const email = verified.email;
 			const [row] = await db
 				.select({
 					status: waitlistSignup.status,

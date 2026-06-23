@@ -7,6 +7,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
 
+export type AuthVariant = "dashboard" | "admin";
+
 /**
  * Environment config required for auth initialization
  */
@@ -23,22 +25,33 @@ export type AuthEnvConfig = {
 	VERCEL_PROJECT_PRODUCTION_URL?: string;
 };
 
-/**
- * Factory function to create a Better Auth instance
- * Uses dependency injection to avoid circular dependencies
- *
- * @param database - Drizzle database instance
- * @param envConfig - Environment config for auth
- * @returns Better Auth instance
- */
-export function createAuth(
-	database: Parameters<typeof drizzleAdapter>[0],
-	envConfig: AuthEnvConfig,
-) {
-	const spotifyClientId = envConfig.HARMONIA_SPOTIFY_CLIENT_ID;
-	const spotifyClientSecret = envConfig.HARMONIA_SPOTIFY_CLIENT_SECRET;
-	const spotifyEnabled = !!spotifyClientId && !!spotifyClientSecret;
+function buildCrossSubDomainCookies(envConfig: AuthEnvConfig) {
+	if (!envConfig.VERCEL) {
+		return undefined;
+	}
+	try {
+		const hostname = new URL(envConfig.NEXT_PUBLIC_HARMONIA_API_URL).hostname;
+		const parts = hostname.split(".");
+		if (parts.length < 2) {
+			return undefined;
+		}
+		const domain = parts.slice(-2).join(".");
+		return { enabled: true as const, domain };
+	} catch {
+		return undefined;
+	}
+}
 
+function buildAuthAdvanced(envConfig: AuthEnvConfig, variant: AuthVariant) {
+	const crossSubDomainCookies = buildCrossSubDomainCookies(envConfig);
+	return {
+		cookiePrefix:
+			variant === "dashboard" ? "harmonia-dashboard" : "harmonia-admin",
+		...(crossSubDomainCookies ? { crossSubDomainCookies } : {}),
+	};
+}
+
+function buildTrustedOriginsList(envConfig: AuthEnvConfig) {
 	const originConfig = [
 		envConfig.NEXT_PUBLIC_HARMONIA_API_URL,
 		envConfig.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
@@ -47,15 +60,46 @@ export function createAuth(
 		envConfig.VERCEL_PROJECT_PRODUCTION_URL,
 	].filter((origin): origin is string => origin !== undefined);
 
-	const trustedOrigins = buildTrustedOrigins(
+	return buildTrustedOrigins(
 		originConfig,
 		!!envConfig.VERCEL,
 		envConfig.NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN,
 	);
+}
+
+const sharedUserFields = {
+	additionalFields: {
+		hasCompletedOnboarding: {
+			type: "boolean" as const,
+			required: false,
+			defaultValue: false,
+			input: false,
+		},
+		isApproved: {
+			type: "boolean" as const,
+			required: false,
+			defaultValue: false,
+			input: false,
+		},
+	},
+};
+
+/**
+ * Dashboard auth: Spotify OAuth + dashboard session cookie.
+ */
+export function createDashboardAuth(
+	database: Parameters<typeof drizzleAdapter>[0],
+	envConfig: AuthEnvConfig,
+) {
+	const spotifyClientId = envConfig.HARMONIA_SPOTIFY_CLIENT_ID;
+	const spotifyClientSecret = envConfig.HARMONIA_SPOTIFY_CLIENT_SECRET;
+	const spotifyEnabled = !!spotifyClientId && !!spotifyClientSecret;
 
 	return betterAuth({
 		baseURL: envConfig.NEXT_PUBLIC_HARMONIA_API_URL,
+		basePath: "/api/auth",
 		secret: envConfig.HARMONIA_BETTER_AUTH_SECRET,
+		advanced: buildAuthAdvanced(envConfig, "dashboard"),
 		database: drizzleAdapter(database, {
 			provider: "pg",
 			schema,
@@ -79,23 +123,8 @@ export function createAuth(
 				},
 			},
 		},
-		user: {
-			additionalFields: {
-				hasCompletedOnboarding: {
-					type: "boolean",
-					required: false,
-					defaultValue: false,
-					input: false,
-				},
-				isApproved: {
-					type: "boolean",
-					required: false,
-					defaultValue: false,
-					input: false,
-				},
-			},
-		},
-		trustedOrigins,
+		user: sharedUserFields,
+		trustedOrigins: buildTrustedOriginsList(envConfig),
 		emailAndPassword: {
 			enabled: true,
 		},
@@ -122,23 +151,55 @@ export function createAuth(
 	});
 }
 
-export type Auth = ReturnType<typeof createAuth>;
-
 /**
- * Singleton auth instance
- * Must be initialized by calling initializeAuth() before use
- * This is initialized by @harmonia/core at app startup
+ * Admin auth: email/password only + separate session cookie.
  */
+export function createAdminAuth(
+	database: Parameters<typeof drizzleAdapter>[0],
+	envConfig: AuthEnvConfig,
+) {
+	return betterAuth({
+		baseURL: envConfig.NEXT_PUBLIC_HARMONIA_API_URL,
+		basePath: "/api/admin-auth",
+		secret: envConfig.HARMONIA_BETTER_AUTH_SECRET,
+		advanced: buildAuthAdvanced(envConfig, "admin"),
+		database: drizzleAdapter(database, {
+			provider: "pg",
+			schema,
+		}),
+		user: sharedUserFields,
+		trustedOrigins: buildTrustedOriginsList(envConfig),
+		emailAndPassword: {
+			enabled: true,
+		},
+		socialProviders: {},
+		plugins: [nextCookies(), admin({ defaultRole: "user" })],
+	});
+}
+
+/** @deprecated Use createDashboardAuth — kept for backwards compatibility */
+export function createAuth(
+	database: Parameters<typeof drizzleAdapter>[0],
+	envConfig: AuthEnvConfig,
+) {
+	return createDashboardAuth(database, envConfig);
+}
+
+export type DashboardAuth = ReturnType<typeof createDashboardAuth>;
+export type AdminAuth = ReturnType<typeof createAdminAuth>;
+export type Auth = DashboardAuth;
+
+export let dashboardAuth: DashboardAuth;
+export let adminAuth: AdminAuth;
+
+/** Alias for dashboardAuth */
 export let auth: Auth;
 
-/**
- * Initialize the auth singleton
- * Called by core initialization module
- * @internal
- */
 export function initializeAuth(
-	database: Parameters<typeof createAuth>[0],
+	database: Parameters<typeof createDashboardAuth>[0],
 	envConfig: AuthEnvConfig,
 ): void {
-	auth = createAuth(database, envConfig);
+	dashboardAuth = createDashboardAuth(database, envConfig);
+	adminAuth = createAdminAuth(database, envConfig);
+	auth = dashboardAuth;
 }

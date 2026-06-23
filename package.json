@@ -33,6 +33,7 @@
 		"format": "biome format --write .",
 		"fix:all": "biome check --write --unsafe . || true",
 		"check-types": "turbo check-types",
+		"test": "turbo test",
 		"dev:native": "turbo -F native dev",
 		"db:migrate:direct": "pnpm exec drizzle-kit migrate --config=packages/db/drizzle.config.ts",
 		"db:mark-migrations-applied": "turbo -F @harmonia/db db:mark-migrations-applied",

@@ -33,7 +33,7 @@ export async function getAdminServerSession(): Promise<AdminSession | null> {
 		const cookie = headersList.get("cookie");
 
 		const res = await fetch(
-			`${env.NEXT_PUBLIC_HARMONIA_API_URL}/api/auth/get-session`,
+			`${env.NEXT_PUBLIC_HARMONIA_API_URL}/api/admin-auth/get-session`,
 			{
 				headers: cookie ? { cookie } : undefined,
 				credentials: "include",

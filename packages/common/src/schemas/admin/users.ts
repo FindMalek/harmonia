@@ -13,6 +13,8 @@ export const adminUserItemSchema = z.object({
 	email: z.string(),
 	emailVerified: z.boolean(),
 	role: z.string().nullable(),
+	isApproved: z.boolean(),
+	banned: z.boolean(),
 	createdAt: z.date(),
 });
 export type AdminUserItem = z.infer<typeof adminUserItemSchema>;

@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 
 export const authClient = createAuthClient({
 	baseURL: env.NEXT_PUBLIC_HARMONIA_API_URL,
+	basePath: "/api/admin-auth",
 	plugins: [adminClient()],
 	sessionOptions: {
 		refetchOnWindowFocus: false,

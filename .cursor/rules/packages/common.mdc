@@ -12,6 +12,9 @@ alwaysApply: false
 ```
 src/
   schemas/{entity}/   index.ts, input.ts, output.ts, enum.ts
+  utils/
+    waitlist-token.ts   HMAC sign/verify for waitlist status URLs (uses HARMONIA_BETTER_AUTH_SECRET)
+    waitlist-gate.ts    pure proxy gate decision (resolveWaitlistGate)
   services/
     brain/            classifier, embeddings, clustering, cluster-metadata, playlist-generator, track-matcher
     music/            spotify sync, lyrics fetching
@@ -21,6 +24,13 @@ src/
     stages/           sync, lyrics, classify, embed, cluster, generate, match
   types/              pipeline progress types
 ```
+
+Run tests: `pnpm --filter @harmonia/common test`
+
+## Waitlist Utilities
+
+- **`waitlist-token.ts`** — `signWaitlistStatusToken(email)` / `verifyWaitlistStatusToken(token)`; 90-day TTL; used by confirmation email URL and `orpc.waitlist.status`
+- **`waitlist-gate.ts`** — `resolveWaitlistGate({ session, inviteCookie, pathname })` for dashboard `proxy.ts`
 
 ## Service Patterns
 

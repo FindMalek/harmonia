@@ -12,7 +12,7 @@ export default function InviteExpiredPage() {
 						<br />
 						has expired.
 					</h1>
-					<p className="mt-6 text-muted-foreground text-base leading-relaxed">
+					<p className="mt-6 text-base text-muted-foreground leading-relaxed">
 						This invite link is no longer valid. Please contact us if you think
 						this is a mistake.
 					</p>

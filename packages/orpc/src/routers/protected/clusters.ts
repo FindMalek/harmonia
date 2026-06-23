@@ -9,10 +9,10 @@ import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure } from "../../procedures";
 
 export const clustersRouter = {
-	list: protectedProcedure
+	list: approvedProcedure
 		.input(emptyInput)
 		.output(z.array(clusterListItemSchema))
 		.handler(async ({ context }) => {
@@ -27,7 +27,7 @@ export const clustersRouter = {
 			return clusters;
 		}),
 
-	getById: protectedProcedure
+	getById: approvedProcedure
 		.input(clusterGetByIdInput)
 		.output(z.union([clusterGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {

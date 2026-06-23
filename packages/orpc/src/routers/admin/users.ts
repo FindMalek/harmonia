@@ -28,6 +28,8 @@ export const adminUsersRouter = {
 						email: user.email,
 						emailVerified: user.emailVerified,
 						role: user.role,
+						isApproved: user.isApproved,
+						banned: user.banned,
 						createdAt: user.createdAt,
 					})
 					.from(user)
@@ -41,7 +43,10 @@ export const adminUsersRouter = {
 			const total = totalRows[0]?.total ?? 0;
 
 			return {
-				items,
+				items: items.map((item) => ({
+					...item,
+					banned: item.banned ?? false,
+				})),
 				total,
 				page,
 				pageSize,

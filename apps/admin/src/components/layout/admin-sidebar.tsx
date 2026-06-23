@@ -37,7 +37,7 @@ export function AdminSidebar() {
 	}
 
 	return (
-		<Sidebar collapsible="none" className="h-svh sticky top-0">
+		<Sidebar collapsible="none" className="sticky top-0 h-svh">
 			<SidebarHeader className="h-14 justify-center border-b">
 				<div className="flex items-center gap-2.5 px-2">
 					<div className="flex size-7 shrink-0 items-center justify-center bg-primary text-primary-foreground">
@@ -45,7 +45,7 @@ export function AdminSidebar() {
 					</div>
 					<div className="leading-none">
 						<p className="font-semibold text-sm">Harmonia</p>
-						<p className="text-muted-foreground text-[10px]">Admin Panel</p>
+						<p className="text-[10px] text-muted-foreground">Admin Panel</p>
 					</div>
 				</div>
 			</SidebarHeader>

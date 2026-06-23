@@ -3,6 +3,7 @@ import { ORPCError } from "@orpc/server";
 
 import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { o } from "./os";
+import { assertUserApproved } from "./utils/approval-gate";
 
 export { o };
 
@@ -20,6 +21,18 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
+
+const requireApproved = o.middleware(async ({ context, next }) => {
+	const userId = context.session?.user?.id;
+	if (!userId) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+
+	await assertUserApproved(userId);
+	return next();
+});
+
+export const approvedProcedure = protectedProcedure.use(requireApproved);
 
 const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 	const cronSecret =
@@ -44,17 +57,19 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 
 export const cronOrAuthProcedure = publicProcedure.use(requireCronOrAuth);
 
-const requireAdmin = o.middleware(async ({ context, next }) => {
-	const user = context.session?.user;
-	if (!user) {
+const requireAdminAuth = o.middleware(async ({ context, next }) => {
+	const adminUser = context.adminSession?.user;
+	if (!adminUser) {
 		throw new ORPCError("UNAUTHORIZED");
 	}
-	// better-auth's admin plugin adds `role` at runtime; its type isn't
-	// threaded through auth.api.getSession()'s inferred return type.
-	if (!("role" in user) || user.role !== "admin") {
+	if (!("role" in adminUser) || adminUser.role !== "admin") {
 		throw new ORPCError("FORBIDDEN");
 	}
-	return next();
+	return next({
+		context: {
+			adminSession: context.adminSession,
+		},
+	});
 });
 
-export const adminProcedure = protectedProcedure.use(requireAdmin);
+export const adminProcedure = publicProcedure.use(requireAdminAuth);

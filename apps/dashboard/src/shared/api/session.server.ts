@@ -1,6 +1,6 @@
-import { env } from "@/lib/env";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { env } from "@/lib/env";
 
 const sessionSchema = z.object({
 	user: z.object({

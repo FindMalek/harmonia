@@ -1,6 +1,11 @@
+import { env } from "@harmonia/env/web";
 import { HarmoniaBrandHeader } from "@harmonia/ui";
+import type { Route } from "next";
+import Link from "next/link";
 
 import { WaitlistForm } from "@/components/waitlist-form";
+
+const dashboardLoginUrl = `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:3003"}/login`;
 
 export default function WaitlistPage() {
 	return (
@@ -52,6 +57,16 @@ export default function WaitlistPage() {
 						<p className="text-muted-foreground text-xs leading-snug">
 							Early access is limited to 25 users—we'll invite gradually as
 							spots open.
+						</p>
+
+						<p className="text-muted-foreground text-xs">
+							Already approved?{" "}
+							<Link
+								href={dashboardLoginUrl as Route}
+								className="text-foreground underline underline-offset-2"
+							>
+								Sign in with Spotify
+							</Link>
 						</p>
 					</div>
 				</div>

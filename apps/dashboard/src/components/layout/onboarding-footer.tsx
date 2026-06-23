@@ -1,14 +1,14 @@
 "use client";
 
-import { client } from "@/shared/api/orpc";
-import { queryKeys } from "@/shared/api/query-keys";
-import { useOnboardingController } from "@/shared/lib/onboarding/controller.hook";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Button, buttonVariants, cn } from "@harmonia/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { client } from "@/shared/api/orpc";
+import { queryKeys } from "@/shared/api/query-keys";
+import { useOnboardingController } from "@/shared/lib/onboarding/controller.hook";
 
 export function OnboardingFooter() {
 	const router = useRouter();
