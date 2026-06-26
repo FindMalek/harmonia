@@ -30,13 +30,9 @@ export async function POST(req: NextRequest) {
 		);
 	}
 
-	if (!apiEnv.HARMONIA_RESEND_API_KEY) {
-		logger.error("Missing HARMONIA_RESEND_API_KEY for webhook verification");
-		return NextResponse.json(
-			{ error: "API key is not configured" },
-			{ status: 500 },
-		);
-	}
+	// Signature verification only needs the webhook secret; the Resend API key
+	// is optional here (inbound webhook ingestion is independent of outbound
+	// send configuration).
 	const event = verifyResendWebhookEvent({
 		apiKey: apiEnv.HARMONIA_RESEND_API_KEY,
 		webhookSecret,
