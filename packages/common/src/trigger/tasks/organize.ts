@@ -106,8 +106,11 @@ export const organizePipeline = task({
 		try {
 			await updateRun(runId, { status: "running", startedAt: new Date() });
 
-			await syncStageTask.triggerAndWait({ userId, runId });
-			await lyricsStageTask.triggerAndWait({ userId, runId });
+			const syncRun = await syncStageTask.triggerAndWait({ userId, runId });
+			const lyricsRun = await lyricsStageTask.triggerAndWait({
+				userId,
+				runId,
+			});
 			const classifyRun = await classifyStageTask.triggerAndWait({
 				userId,
 				runId,
@@ -116,17 +119,30 @@ export const organizePipeline = task({
 				userId,
 				runId,
 			});
-			await clusterStageTask.triggerAndWait({ userId, runId });
+			const clusterRun = await clusterStageTask.triggerAndWait({
+				userId,
+				runId,
+			});
 			const generateRun = await generateStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
-			await matchStageTask.triggerAndWait({ userId, runId });
+			const matchRun = await matchStageTask.triggerAndWait({
+				userId,
+				runId,
+			});
 
+			// Any stage that resolved with ok:false (exhausted retries, no
+			// throw) is a hard failure of the run and must not be surfaced as
+			// a clean success.
 			const stageFailures: string[] = [];
+			if (!syncRun.ok) stageFailures.push("sync");
+			if (!lyricsRun.ok) stageFailures.push("lyrics");
 			if (!classifyRun.ok) stageFailures.push("classify");
 			if (!embedRun.ok) stageFailures.push("embed");
+			if (!clusterRun.ok) stageFailures.push("cluster");
 			if (!generateRun.ok) stageFailures.push("generate");
+			if (!matchRun.ok) stageFailures.push("match");
 
 			const outcome = assessRunOutcome({
 				classify: classifyRun.ok ? classifyRun.output : undefined,
