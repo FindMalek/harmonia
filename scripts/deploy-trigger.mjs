@@ -51,6 +51,11 @@ const child = spawn("npx", args, {
 	cwd: root,
 });
 
+child.on("error", (err) => {
+	console.error("Failed to start Trigger.dev deploy:", err);
+	process.exit(1);
+});
+
 child.on("exit", (code) => {
 	process.exit(code ?? 1);
 });
