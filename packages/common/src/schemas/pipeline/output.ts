@@ -1,9 +1,11 @@
 import { z } from "zod";
 
+import { pipelineStatusEnum } from "./enum";
+
 export const pipelineRunListItemSchema = z.object({
 	id: z.number(),
 	userId: z.string(),
-	status: z.string(),
+	status: pipelineStatusEnum,
 	currentStage: z.string().nullable(),
 	/** Stage-specific shapes (SyncProgress, LyricsProgress, etc.) — see @harmonia/common/types */
 	progress: z.record(z.string(), z.unknown()).nullable(),
@@ -41,7 +43,7 @@ export const pipelineStatusEventSchema = z.discriminatedUnion("event", [
 	z.object({
 		event: z.literal("progress"),
 		runId: z.number(),
-		status: z.string(),
+		status: pipelineStatusEnum,
 		currentStage: z.string().nullable(),
 		progress: z.unknown(),
 		startedAt: z.date().nullable(),
@@ -50,6 +52,13 @@ export const pipelineStatusEventSchema = z.discriminatedUnion("event", [
 		event: z.literal("completed"),
 		runId: z.number(),
 		progress: z.unknown(),
+		completedAt: z.date().nullable(),
+	}),
+	z.object({
+		event: z.literal("partial"),
+		runId: z.number(),
+		progress: z.unknown(),
+		error: z.string().nullable(),
 		completedAt: z.date().nullable(),
 	}),
 	z.object({

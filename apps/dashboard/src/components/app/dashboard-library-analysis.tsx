@@ -1,11 +1,11 @@
 "use client";
 
+import { Progress, Skeleton } from "@harmonia/ui";
 import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
 	usePipelineController,
 	usePipelineProgress,
 } from "@/shared/lib/pipeline/controller.hook";
-import { Progress, Skeleton } from "@harmonia/ui";
 
 function DashboardLibraryAnalysisProgressSkeleton() {
 	return <Skeleton className="h-1 w-full" />;
@@ -15,7 +15,10 @@ export function DashboardLibraryAnalysis() {
 	const { runs } = usePipelineController();
 	const hasCompletedRun =
 		runs.data?.some(
-			(r) => r.status === "completed" || r.status === "running",
+			(r) =>
+				r.status === "completed" ||
+				r.status === "running" ||
+				r.status === "partial",
 		) ?? false;
 	const activeRunId = useOrganizeStore((s) => s.activeRunId);
 	const { liveProgress: ctxLiveProgress } = usePipelineProgress();

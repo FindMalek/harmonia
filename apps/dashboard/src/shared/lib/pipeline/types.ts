@@ -1,3 +1,11 @@
+export type PipelineRunStatus =
+	| "pending"
+	| "running"
+	| "completed"
+	| "partial"
+	| "failed"
+	| "cancelled";
+
 export type PipelineProgressStage = {
 	processed?: number;
 	total?: number;
@@ -10,7 +18,7 @@ export type PipelineProgressStage = {
 };
 
 export type PipelineStreamState = {
-	status: string | null;
+	status: PipelineRunStatus | null;
 	currentStage: string | null;
 	progress: Record<string, PipelineProgressStage>;
 	startedAt: Date | null;

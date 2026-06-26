@@ -118,6 +118,16 @@ export const pipelineRouter = {
 						};
 						return;
 					}
+					if (run.status === "partial") {
+						yield {
+							event: "partial" as const,
+							runId: run.id,
+							progress: run.progress ?? {},
+							error: run.error,
+							completedAt: run.completedAt,
+						};
+						return;
+					}
 					if (run.status === "failed") {
 						yield {
 							event: "failed" as const,

@@ -10,6 +10,7 @@ import type {
 import { db } from "@harmonia/db";
 import {
 	type PipelineProgress,
+	type PipelineStatus,
 	pipelineRun,
 } from "@harmonia/db/schema/pipeline-run";
 import { logger } from "@harmonia/logger";
@@ -34,6 +35,7 @@ export async function checkCancelled(
 		throw new PipelineCancelledError();
 	}
 }
+
 import {
 	classifyTracksBatch,
 	embedTracksBatch,
@@ -47,7 +49,7 @@ import { fetchLyricsForPendingTracks, syncLibraryTracks } from "../music";
 export async function updateRun(
 	runId: number,
 	data: {
-		status?: string;
+		status?: PipelineStatus;
 		currentStage?: string | null;
 		progress?: PipelineProgress;
 		error?: string;

@@ -9,6 +9,31 @@ import {
 
 import { user } from "./auth";
 
+/**
+ * Canonical pipeline run lifecycle — single source of truth.
+ *
+ * The DB column is plain `text` (no enum type, to keep migrations cheap), but
+ * its TS type is narrowed here so every read/write is type-checked against the
+ * valid set. `@harmonia/common/schemas/pipeline/enum.ts` derives its Zod enum
+ * from these values.
+ *
+ * - `pending`   : run row created, task not yet picked up
+ * - `running`   : task executing a stage
+ * - `completed` : every stage produced expected output
+ * - `partial`   : finished but with significant data loss (re-run recommended)
+ * - `failed`    : a stage threw an unrecoverable error
+ * - `cancelled` : user cancelled via `pipeline.cancel`
+ */
+export const PIPELINE_STATUS_VALUES = [
+	"pending",
+	"running",
+	"completed",
+	"partial",
+	"failed",
+	"cancelled",
+] as const;
+export type PipelineStatus = (typeof PIPELINE_STATUS_VALUES)[number];
+
 /** Pipeline stage progress. Typed definitions live in @harmonia/common/types. */
 export type PipelineProgress = {
 	sync?: { total: number; done: boolean };
@@ -32,7 +57,7 @@ export const pipelineRun = pgTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		status: text("status").notNull().default("pending"),
+		status: text("status").$type<PipelineStatus>().notNull().default("pending"),
 		currentStage: text("current_stage"),
 		progress: jsonb("progress").$type<PipelineProgress>().default({}),
 		error: text("error"),

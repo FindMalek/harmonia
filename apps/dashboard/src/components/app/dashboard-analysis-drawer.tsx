@@ -14,6 +14,10 @@ import {
 import { cn } from "@/lib/utils";
 import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
 import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";
+import type {
+	PipelineProgressStage,
+	PipelineRunStatus,
+} from "@/shared/lib/pipeline/types";
 
 const STAGES = [
 	{ id: "sync", label: "Syncing library" },
@@ -24,26 +28,57 @@ const STAGES = [
 	{ id: "generate", label: "Generating playlists" },
 ] as const;
 
+type StageId = (typeof STAGES)[number]["id"];
+
+/** Stages that produce measurable output — used to flag no-op stages on a partial run. */
+function stageProducedNothing(
+	stageId: string,
+	progress: Record<string, PipelineProgressStage> | undefined,
+): boolean {
+	const prog = progress?.[stageId];
+	switch (stageId) {
+		case "classify":
+			return !prog?.classified;
+		case "embed":
+			return !prog?.embedded;
+		case "cluster":
+			return !prog?.clusters;
+		case "generate":
+			return !prog?.playlists && !prog?.tracksOrganized;
+		default:
+			return false;
+	}
+}
+
 export function DashboardAnalysisDrawer() {
 	const {
 		isAnalysisDrawerOpen,
 		setIsAnalysisDrawerOpen,
 		activeRunId,
 		cancelMutation,
+		organizeMutation,
 	} = useOrganizeController();
 
 	const { snapshot: streamState, connectionState } = usePipelineProgress();
 	const cancelPipeline = cancelMutation;
+	const rerunPipeline = organizeMutation;
 
 	const isConnecting =
 		connectionState === "hydrating" ||
 		(streamState.status === null && activeRunId != null);
 
+	const isPartial = streamState.status === "partial";
+	const isFailed = streamState.status === "failed";
+
 	// Calculate overall progress percentage
 	const getProgressPercentage = (): number | null => {
 		if (isConnecting) return null;
-		if (streamState.status === "completed") return 100;
-		if (streamState.status === "failed") return 100;
+		if (
+			streamState.status === "completed" ||
+			streamState.status === "partial" ||
+			streamState.status === "failed"
+		)
+			return 100;
 
 		let percentage = 0;
 		const stageIndex = STAGES.findIndex(
@@ -89,7 +124,16 @@ export function DashboardAnalysisDrawer() {
 			(s) => s.id === streamState.currentStage,
 		);
 		const isStageDone =
-			streamState.status === "completed" || stageIndex < currentIndex;
+			streamState.status === "completed" ||
+			streamState.status === "partial" ||
+			stageIndex < currentIndex;
+
+		// On a partial run, a stage that produced nothing was effectively skipped
+		// because an upstream stage failed — surface that honestly instead of
+		// claiming "Completed".
+		if (isPartial && stageProducedNothing(stageId, streamState.progress)) {
+			return "Skipped — low upstream coverage";
+		}
 
 		if (!prog) {
 			if (isStageDone) return "Completed";
@@ -139,8 +183,18 @@ export function DashboardAnalysisDrawer() {
 		}
 	};
 
-	const getStageIcon = (stageId: string) => {
-		if (streamState.status === "completed") {
+	const getStageIcon = (stageId: StageId) => {
+		const status: PipelineRunStatus | null = streamState.status;
+
+		if (status === "completed") {
+			return <Icons.check className="h-5 w-5 text-white" />;
+		}
+
+		// Partial run: warn on stages that produced nothing, check the rest.
+		if (status === "partial") {
+			if (stageProducedNothing(stageId, streamState.progress)) {
+				return <Icons.alertTriangle className="h-5 w-5 text-yellow-600" />;
+			}
 			return <Icons.check className="h-5 w-5 text-white" />;
 		}
 
@@ -149,6 +203,17 @@ export function DashboardAnalysisDrawer() {
 			(s) => s.id === streamState.currentStage,
 		);
 
+		// Failed run: the stage that was current when it failed is the culprit.
+		if (status === "failed") {
+			if (stageIndex < currentIndex) {
+				return <Icons.check className="h-5 w-5 text-white" />;
+			}
+			if (stageIndex === currentIndex) {
+				return <Icons.alertTriangle className="h-5 w-5 text-destructive" />;
+			}
+			return <Icons.circle className="h-5 w-5 text-muted-foreground" />;
+		}
+
 		if (stageIndex < currentIndex) {
 			return <Icons.check className="h-5 w-5 text-white" />;
 		}
@@ -156,6 +221,10 @@ export function DashboardAnalysisDrawer() {
 			return <Icons.spinner className="h-5 w-5 animate-spin text-primary" />;
 		}
 		return <Icons.circle className="h-5 w-5 text-muted-foreground" />;
+	};
+
+	const handleRerun = () => {
+		rerunPipeline.mutate({});
 	};
 
 	return (
@@ -187,6 +256,14 @@ export function DashboardAnalysisDrawer() {
 											Running...
 										</div>
 									)}
+									{isPartial && (
+										<div className="mb-1 text-sm text-yellow-600">
+											Finished with low coverage
+										</div>
+									)}
+									{isFailed && (
+										<div className="mb-1 text-destructive text-sm">Failed</div>
+									)}
 								</div>
 
 								<Progress
@@ -196,6 +273,35 @@ export function DashboardAnalysisDrawer() {
 										progressPercent === null && "animate-pulse opacity-60",
 									)}
 								/>
+
+								{(isPartial || isFailed) && streamState.error && (
+									<div
+										role="alert"
+										className={cn(
+											"flex items-start gap-2 border-l-2 px-3 py-2 text-xs",
+											isPartial
+												? "border-yellow-600 text-yellow-600"
+												: "border-destructive text-destructive",
+										)}
+									>
+										<Icons.alertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+										<div className="space-y-1">
+											<div className="font-medium">
+												{isPartial
+													? "Analysis finished with reduced coverage"
+													: "Analysis failed"}
+											</div>
+											<div className="text-muted-foreground">
+												{streamState.error}
+											</div>
+											{isPartial && (
+												<div className="text-muted-foreground">
+													Re-running the analysis is recommended.
+												</div>
+											)}
+										</div>
+									</div>
+								)}
 							</div>
 
 							<div className="space-y-4 pt-4">
@@ -212,14 +318,19 @@ export function DashboardAnalysisDrawer() {
 												(s) => s.id === streamState.currentStage,
 											);
 										const isCompleted =
-											streamState.status === "completed" || isPast;
+											streamState.status === "completed" ||
+											streamState.status === "partial" ||
+											isPast;
+										const isWarned =
+											isPartial &&
+											stageProducedNothing(stage.id, streamState.progress);
 
 										return (
 											<div
 												key={stage.id}
 												className={cn(
 													"flex items-start gap-4 pb-4 transition-opacity duration-300",
-													isCurrent || isCompleted
+													isCurrent || isCompleted || isWarned
 														? "opacity-100"
 														: "opacity-40",
 												)}
@@ -254,6 +365,20 @@ export function DashboardAnalysisDrawer() {
 								}}
 							>
 								{cancelPipeline.isPending ? "Cancelling…" : "Cancel analysis"}
+							</Button>
+						)}
+						{(isPartial || isFailed) && (
+							<Button
+								variant="default"
+								size="xl"
+								disabled={rerunPipeline.isPending}
+								onClick={handleRerun}
+							>
+								{rerunPipeline.isPending
+									? "Starting…"
+									: isPartial
+										? "Re-run analysis"
+										: "Try again"}
 							</Button>
 						)}
 					</DrawerFooter>
