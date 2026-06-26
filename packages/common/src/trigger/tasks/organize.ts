@@ -30,8 +30,17 @@ function assessRunOutcome(args: {
 	classify: { classified: number; total: number } | undefined;
 	embed: { embedded: number; total: number } | undefined;
 	generate: { playlists: number; tracksOrganized: number } | undefined;
+	/** Stage coordinator tasks that resolved with `ok: false` (exhausted retries). */
+	stageFailures: readonly string[];
 }): { status: "completed" | "partial"; error: string | null } {
 	const reasons: string[] = [];
+
+	// A stage that hard-failed (returned ok:false without throwing) is always
+	// degraded, regardless of the coverage numbers — otherwise a failed stage
+	// could be surfaced as a clean success.
+	if (args.stageFailures.length > 0) {
+		reasons.push(`stage failure: ${args.stageFailures.join(", ")}`);
+	}
 
 	const classify = args.classify;
 	if (classify && classify.total > 0) {
@@ -114,10 +123,16 @@ export const organizePipeline = task({
 			});
 			await matchStageTask.triggerAndWait({ userId, runId });
 
+			const stageFailures: string[] = [];
+			if (!classifyRun.ok) stageFailures.push("classify");
+			if (!embedRun.ok) stageFailures.push("embed");
+			if (!generateRun.ok) stageFailures.push("generate");
+
 			const outcome = assessRunOutcome({
 				classify: classifyRun.ok ? classifyRun.output : undefined,
 				embed: embedRun.ok ? embedRun.output : undefined,
 				generate: generateRun.ok ? generateRun.output : undefined,
+				stageFailures,
 			});
 
 			await updateRun(runId, {
@@ -135,10 +150,15 @@ export const organizePipeline = task({
 			}
 
 			try {
-				await sendOrganizeCompleteEmailTask.trigger({
-					userId,
-					runId,
-				});
+				// Only notify on a clean completion — a partial run is not a
+				// success and should not trigger the "completed successfully"
+				// email (a degraded-run notification is a separate concern).
+				if (outcome.status === "completed") {
+					await sendOrganizeCompleteEmailTask.trigger({
+						userId,
+						runId,
+					});
+				}
 			} catch (emailErr) {
 				logger.warn(
 					{

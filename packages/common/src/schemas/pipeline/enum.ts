@@ -15,7 +15,7 @@ export const pipelineStatusEnum = z.enum(PIPELINE_STATUS_VALUES);
 export type PipelineStatusZod = z.infer<typeof pipelineStatusEnum>;
 
 /** Statuses that mean the run is done and the client should stop polling. */
-export const TERMINAL_PIPELINE_STATUSES: ReadonlySet<PipelineStatus> = new Set([
+export const TERMINAL_PIPELINE_STATUSES: ReadonlySet<string> = new Set([
 	"completed",
 	"partial",
 	"failed",
@@ -23,7 +23,7 @@ export const TERMINAL_PIPELINE_STATUSES: ReadonlySet<PipelineStatus> = new Set([
 ]);
 
 /** Statuses that represent a worse-than-`completed` outcome. */
-export const DEGRADED_PIPELINE_STATUSES: ReadonlySet<PipelineStatus> = new Set([
+export const DEGRADED_PIPELINE_STATUSES: ReadonlySet<string> = new Set([
 	"partial",
 	"failed",
 ]);
@@ -31,15 +31,11 @@ export const DEGRADED_PIPELINE_STATUSES: ReadonlySet<PipelineStatus> = new Set([
 export function isTerminalPipelineStatus(
 	status: string | null | undefined,
 ): status is PipelineStatus {
-	return (
-		status != null && TERMINAL_PIPELINE_STATUSES.has(status as PipelineStatus)
-	);
+	return status != null && TERMINAL_PIPELINE_STATUSES.has(status);
 }
 
 export function isDegradedPipelineStatus(
 	status: string | null | undefined,
 ): status is PipelineStatus {
-	return (
-		status != null && DEGRADED_PIPELINE_STATUSES.has(status as PipelineStatus)
-	);
+	return status != null && DEGRADED_PIPELINE_STATUSES.has(status);
 }
