@@ -53,7 +53,7 @@ function assessRunOutcome(args: {
 			const pct = Math.round(coverage * 100);
 			reasons.push(
 				embed.embedded === 0
-					? "embedding failed (0 of pending tracks compared)"
+					? `embedding failed (0 of ${embed.total} classified tracks compared)`
 					: `only ${pct}% of classified tracks were embedded`,
 			);
 		}
@@ -124,7 +124,7 @@ export const organizePipeline = task({
 				status: outcome.status,
 				currentStage: null,
 				completedAt: new Date(),
-				...(outcome.error !== null && { error: outcome.error }),
+				error: outcome.error,
 			});
 
 			if (outcome.status === "partial") {

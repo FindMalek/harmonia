@@ -32,7 +32,7 @@ type StageId = (typeof STAGES)[number]["id"];
 
 /** Stages that produce measurable output — used to flag no-op stages on a partial run. */
 function stageProducedNothing(
-	stageId: string,
+	stageId: StageId,
 	progress: Record<string, PipelineProgressStage> | undefined,
 ): boolean {
 	const prog = progress?.[stageId];
@@ -116,7 +116,7 @@ export function DashboardAnalysisDrawer() {
 
 	const progressPercent = getProgressPercentage();
 
-	const getStageSubtext = (stageId: string) => {
+	const getStageSubtext = (stageId: StageId) => {
 		const prog = streamState.progress?.[stageId];
 
 		const stageIndex = STAGES.findIndex((s) => s.id === stageId);

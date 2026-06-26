@@ -52,7 +52,7 @@ export async function updateRun(
 		status?: PipelineStatus;
 		currentStage?: string | null;
 		progress?: PipelineProgress;
-		error?: string;
+		error?: string | null;
 		startedAt?: Date;
 		completedAt?: Date;
 	},
