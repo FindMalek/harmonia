@@ -4,9 +4,8 @@ import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
-
 import Clustering from "density-clustering";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 
 import {
 	CLUSTER_EPSILON,
@@ -38,7 +37,11 @@ export async function runClustering(
 
 	stats.totalTracks = tracks.length;
 
-	const embeddings = tracks.map((t) => t.embedding as number[]);
+	// L2-normalise embeddings in-memory so DBSCAN's Euclidean distance is
+	// equivalent to cosine distance (the metric text-embedding-3-small is
+	// designed for). The DB column stores raw vectors; we never mutate it —
+	// normalisation is a read-time transform local to clustering.
+	const embeddings = tracks.map((t) => l2Normalize(t.embedding as number[]));
 
 	if (embeddings.length < CLUSTER_MIN_POINTS) {
 		logger.info(
@@ -80,6 +83,10 @@ export async function runClustering(
 		CLUSTER_MIN_POINTS,
 	);
 
+	// Sanity log: clusters/tracks ratio + size spread. Makes regressions in
+	// cluster granularity immediately visible in Trigger.dev logs (issue #111).
+	logClusterSanity(userId, stats.totalTracks, finalClusters);
+
 	await db.delete(cluster).where(eq(cluster.userId, userId));
 
 	const defaultGenreDomainId = await ensureDefaultGenreDomain();
@@ -95,8 +102,11 @@ export async function runClustering(
 
 		const size = clusterTracksForUser.length;
 
+		// Centroid is the mean of the member embeddings in the SAME normalised
+		// space the cluster was formed in, so downstream cosine matching against
+		// `cluster.centroid` (track-matcher) is consistent with how clusters group.
 		const centroid = computeCentroid(
-			clusterTracksForUser.map((t) => t.embedding as number[]),
+			indices.map((i) => embeddings[i] as number[]),
 		);
 
 		const avgValence = average(
@@ -221,13 +231,22 @@ function splitLargeClusters(
 			minPoints,
 		) as number[][];
 
-		if (subClusters.length <= 1) {
-			result.push(indices);
+		// First attempt: re-run DBSCAN at a tighter epsilon on the mega-cluster.
+		if (subClusters.length > 1) {
+			for (const sub of subClusters) {
+				result.push(sub.map((si) => indices[si] as number));
+			}
 			continue;
 		}
 
-		for (const sub of subClusters) {
-			result.push(sub.map((si) => indices[si] as number));
+		// Fallback: DBSCAN couldn't split the mega-cluster (everything is a
+		// single dense blob at the tighter epsilon). Previously this gave up and
+		// kept the whole mega-cluster — yielding one giant playlist (issue #111).
+		// Instead, force-split by k-means into enough parts to get under maxSize.
+		const k = Math.max(2, Math.ceil(indices.length / maxSize));
+		const kmeansClusters = kmeans(subEmbeddings, k);
+		for (const sub of kmeansClusters) {
+			if (sub.length > 0) result.push(sub.map((si) => indices[si] as number));
 		}
 	}
 
@@ -256,6 +275,160 @@ function euclideanDistance(a: number[], b: number[]): number {
 		sum += diff * diff;
 	}
 	return Math.sqrt(sum);
+}
+
+/**
+ * Scale a vector to unit length. For unit vectors, Euclidean distance is
+ * equivalent to cosine distance (‖a−b‖² = 2 − 2·cos(θ)), which is the metric
+ * `text-embedding-3-small` is designed to be compared with. A zero vector is
+ * returned unchanged (cannot be normalised).
+ */
+function l2Normalize(vector: number[]): number[] {
+	let norm = 0;
+	for (let i = 0; i < vector.length; i++) {
+		const c = vector[i] ?? 0;
+		norm += c * c;
+	}
+	norm = Math.sqrt(norm);
+	if (norm === 0) return vector.slice();
+	const out = new Array<number>(vector.length);
+	for (let i = 0; i < vector.length; i++) {
+		out[i] = (vector[i] ?? 0) / norm;
+	}
+	return out;
+}
+
+/**
+ * Deterministic k-means used only as a fallback to force-split a mega-cluster
+ * DBSCAN couldn't separate (issue #111). Seeding is k-means++-style farthest-
+ * first (no RNG) so clustering stays reproducible run-to-run.
+ *
+ * Operates on already-normalised vectors; Euclidean assignment is therefore
+ * cosine-consistent. Returns arrays of indices into the input `vectors`.
+ */
+function kmeans(vectors: number[][], k: number, iterations = 12): number[][] {
+	const n = vectors.length;
+	if (n === 0) return [];
+	const effectiveK = Math.min(k, n);
+
+	const firstVector = vectors[0];
+	if (!firstVector) return [];
+
+	// --- k-means++ seeding (deterministic: first point, then farthest-first) ---
+	const centroids: number[][] = [firstVector];
+	const nearest = vectors.map((v) => euclideanDistance(v, firstVector) ** 2);
+	while (centroids.length < effectiveK) {
+		let pick = 0;
+		let best = -1;
+		for (let i = 0; i < n; i++) {
+			const dist = nearest[i] ?? 0;
+			if (dist > best) {
+				best = dist;
+				pick = i;
+			}
+		}
+		const chosen = vectors[pick];
+		if (!chosen) break;
+		centroids.push(chosen);
+		for (let i = 0; i < n; i++) {
+			const v = vectors[i];
+			if (!v) continue;
+			const d = euclideanDistance(v, chosen) ** 2;
+			if (d < (nearest[i] ?? Number.POSITIVE_INFINITY)) nearest[i] = d;
+		}
+	}
+
+	const dim = (centroids[0] ?? firstVector).length;
+	const assign: number[] = new Array<number>(n).fill(0);
+
+	// --- Lloyd iterations ---
+	for (let iter = 0; iter < iterations; iter++) {
+		let changed = false;
+		for (let i = 0; i < n; i++) {
+			const v = vectors[i];
+			if (!v) continue;
+			let bestIdx = 0;
+			let bestDist = Number.POSITIVE_INFINITY;
+			for (let c = 0; c < centroids.length; c++) {
+				const centroid = centroids[c];
+				if (!centroid) continue;
+				const d = euclideanDistance(v, centroid);
+				if (d < bestDist) {
+					bestDist = d;
+					bestIdx = c;
+				}
+			}
+			if ((assign[i] ?? 0) !== bestIdx) {
+				assign[i] = bestIdx;
+				changed = true;
+			}
+		}
+
+		// Recompute centroids; skip empty clusters.
+		const sums: number[][] = centroids.map(() =>
+			new Array<number>(dim).fill(0),
+		);
+		const counts: number[] = new Array<number>(centroids.length).fill(0);
+		for (let i = 0; i < n; i++) {
+			const c = assign[i] ?? 0;
+			const v = vectors[i];
+			if (!v) continue;
+			counts[c] = (counts[c] ?? 0) + 1;
+			const sum = sums[c];
+			if (!sum) continue;
+			for (let d = 0; d < v.length; d++) {
+				sum[d] = (sum[d] ?? 0) + (v[d] ?? 0);
+			}
+		}
+		for (let c = 0; c < centroids.length; c++) {
+			const count = counts[c] ?? 0;
+			if (count === 0) continue;
+			const sum = sums[c];
+			if (!sum) continue;
+			centroids[c] = sum.map((s) => s / count);
+		}
+
+		if (!changed && iter > 0) break;
+	}
+
+	const buckets: number[][] = centroids.map(() => []);
+	for (let i = 0; i < n; i++) {
+		const c = assign[i] ?? 0;
+		buckets[c]?.push(i);
+	}
+	return buckets.filter((b) => b.length > 0);
+}
+
+/**
+ * Emit a clusters/tracks ratio + size spread so clustering granularity
+ * regressions are visible in Trigger.dev logs (issue #111 acceptance).
+ */
+function logClusterSanity(
+	userId: string,
+	totalTracks: number,
+	clusters: number[][],
+): void {
+	if (clusters.length === 0) {
+		logger.warn(
+			{ userId, totalTracks, clusters: 0, ratio: 0 },
+			"Clustering sanity: 0 clusters produced",
+		);
+		return;
+	}
+	const sizes = clusters.map((c) => c.length).sort((a, b) => a - b);
+	const ratio = Number((clusters.length / totalTracks).toFixed(4));
+	logger.info(
+		{
+			userId,
+			totalTracks,
+			clusters: clusters.length,
+			ratio,
+			minSize: sizes[0],
+			medianSize: sizes[Math.floor(sizes.length / 2)],
+			maxSize: sizes[sizes.length - 1],
+		},
+		"Clustering sanity: clusters/tracks ratio",
+	);
 }
 
 function average(values: Array<number | null>): number | null {
