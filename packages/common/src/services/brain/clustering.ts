@@ -327,6 +327,9 @@ function kmeans(vectors: number[][], k: number, iterations = 12): number[][] {
 				pick = i;
 			}
 		}
+		// If every remaining point coincides with an existing centroid, stop
+		// adding centroids — duplicates would only yield empty clusters.
+		if (best <= 1e-9) break;
 		const chosen = vectors[pick];
 		if (!chosen) break;
 		centroids.push(chosen);
@@ -339,7 +342,10 @@ function kmeans(vectors: number[][], k: number, iterations = 12): number[][] {
 	}
 
 	const dim = (centroids[0] ?? firstVector).length;
-	const assign: number[] = new Array<number>(n).fill(0);
+	// Initialise to -1 so the first assignment is always detected as a change,
+	// making the convergence check reliable (a 0-init hides points whose best
+	// centroid is index 0 on the first pass).
+	const assign: number[] = new Array<number>(n).fill(-1);
 
 	// --- Lloyd iterations ---
 	for (let iter = 0; iter < iterations; iter++) {
@@ -358,7 +364,7 @@ function kmeans(vectors: number[][], k: number, iterations = 12): number[][] {
 					bestIdx = c;
 				}
 			}
-			if ((assign[i] ?? 0) !== bestIdx) {
+			if (assign[i] !== bestIdx) {
 				assign[i] = bestIdx;
 				changed = true;
 			}
@@ -370,7 +376,8 @@ function kmeans(vectors: number[][], k: number, iterations = 12): number[][] {
 		);
 		const counts: number[] = new Array<number>(centroids.length).fill(0);
 		for (let i = 0; i < n; i++) {
-			const c = assign[i] ?? 0;
+			const c = assign[i];
+			if (c === undefined || c < 0) continue;
 			const v = vectors[i];
 			if (!v) continue;
 			counts[c] = (counts[c] ?? 0) + 1;
@@ -388,12 +395,13 @@ function kmeans(vectors: number[][], k: number, iterations = 12): number[][] {
 			centroids[c] = sum.map((s) => s / count);
 		}
 
-		if (!changed && iter > 0) break;
+		if (!changed) break;
 	}
 
 	const buckets: number[][] = centroids.map(() => []);
 	for (let i = 0; i < n; i++) {
-		const c = assign[i] ?? 0;
+		const c = assign[i];
+		if (c === undefined || c < 0) continue;
 		buckets[c]?.push(i);
 	}
 	return buckets.filter((b) => b.length > 0);
