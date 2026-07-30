@@ -39,6 +39,40 @@ export const myStageTask = task({
 3. Add export to `packages/common/package.json` exports map
 4. Add `.triggerAndWait()` call in `packages/common/src/trigger/tasks/organize.ts`
 
+## Fan-Out Stages (embed, classify, lyrics)
+
+Stage tasks that fan out per-track work split into a coordinator task and a queued worker task, chunked and re-joined with `batchTriggerAndWait`:
+
+```typescript
+const embedWorkerQueue = queue({ name: "organize-embed-worker", concurrencyLimit: EMBED_WORKER_QUEUE_CONCURRENCY });
+
+export const embedWorkerTask = task({
+  id: "organize-worker-embed",
+  queue: embedWorkerQueue, // concurrency limit lives on the worker task
+  run: async ({ userId, runId, trackIds }: { userId: string; runId: number; trackIds: string[] }) => { ... },
+});
+
+// Coordinator: chunk pending ids, fan out, re-aggregate
+const batchResult = await embedWorkerTask.batchTriggerAndWait(
+  chunks.map((trackIds) => ({
+    payload: { userId, runId, trackIds },
+    options: {
+      idempotencyKey: workerIdempotencyKey("embed-worker", runId, trackIds),
+      idempotencyKeyTTL: "24h",
+    },
+  })),
+);
+for (const run of batchResult.runs) {
+  if (run.ok) embedded += run.output.embedded; else failedWorkers++;
+}
+```
+
+Reuse this coordinator/worker split (see `stages/classify.ts`, `stages/lyrics.ts`) rather than inventing a new fan-out pattern per stage.
+
+## Logging
+
+Import `logger` from `@harmonia/logger` in every task — never the Trigger.dev SDK's own logger.
+
 ## Env Key Mapping
 
 `HARMONIA_TRIGGER_SECRET_KEY` → `TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs` (for the worker) and `scripts/with-root-env.mjs` (for the API process).

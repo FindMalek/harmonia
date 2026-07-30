@@ -58,6 +58,12 @@ Returning approved users reach `/login` without an invite cookie. Invite flow: e
 - Always co-locate a skeleton: `export function DashboardXyzSkeleton() { ... }`
 - Extract inline components out of page files into `components/app/`
 
+## Loading States
+
+- **RSC prefetch boundaries** (server component wraps a client fetcher): `<Suspense fallback={<XSkeleton />}>` — see `app/(dashboard)/page.tsx` wrapping `DashboardLibraryStatsWrapper`.
+- **Client components using `useQuery`**: manual guard, not `useSuspenseQuery` — `if (isLoading) return <XSkeleton />;` / `if (!data) return <XSkeleton />;` (see `dashboard-insights-content.tsx`). Do not introduce `useSuspenseQuery` inside already-client-rendered trees.
+- No barrel `index.ts` under `components/app/` or `components/shared/` — import each component from its direct file path.
+
 ## Data Fetching
 
 - Server state: TanStack Query v5 via `orpc` client (`@/shared/api/orpc`)
