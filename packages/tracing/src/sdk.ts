@@ -18,10 +18,10 @@ import {
 } from "@opentelemetry/semantic-conventions";
 import { getInstrumentations } from "./instrumentations";
 import {
-	type OTLPExporterConfig,
 	createOTLPLogExporter,
 	createOTLPMetricExporter,
 	createOTLPTraceExporter,
+	type OTLPExporterConfig,
 } from "./otlp-exporter";
 
 export interface TracingConfig {

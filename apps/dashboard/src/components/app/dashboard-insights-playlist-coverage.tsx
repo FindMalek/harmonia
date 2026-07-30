@@ -12,7 +12,7 @@ type Coverage = {
 export function DashboardInsightsPlaylistCoverageSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-32" />
 			</div>
 			<div className="flex items-center gap-5">

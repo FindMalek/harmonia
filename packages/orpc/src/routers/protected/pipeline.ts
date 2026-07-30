@@ -20,10 +20,10 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { eventIterator } from "@orpc/server";
 import { and, count, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure } from "../../procedures";
 
 export const pipelineRouter = {
-	getAll: protectedProcedure
+	getAll: approvedProcedure
 		.input(emptyInput)
 		.output(z.array(pipelineRunListItemSchema))
 		.handler(async ({ context }) => {
@@ -38,7 +38,7 @@ export const pipelineRouter = {
 			return runs;
 		}),
 
-	getById: protectedProcedure
+	getById: approvedProcedure
 		.input(pipelineGetByIdInput)
 		.output(z.union([pipelineGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -53,7 +53,7 @@ export const pipelineRouter = {
 			return run ?? null;
 		}),
 
-	cancel: protectedProcedure
+	cancel: approvedProcedure
 		.input(pipelineGetByIdInput)
 		.output(z.object({ cancelled: z.boolean() }))
 		.handler(async ({ input, context }) => {
@@ -76,7 +76,7 @@ export const pipelineRouter = {
 			return { cancelled: updated.length > 0 };
 		}),
 
-	streamStatus: protectedProcedure
+	streamStatus: approvedProcedure
 		.input(pipelineStreamStatusInput)
 		.output(eventIterator(pipelineStatusEventSchema))
 		.handler(async function* ({ input, context, signal }) {
@@ -164,7 +164,7 @@ export const pipelineRouter = {
 			}
 		}),
 
-	stats: protectedProcedure
+	stats: approvedProcedure
 		.input(emptyInput)
 		.output(pipelineStatsOutputSchema)
 		.handler(async ({ context }) => {
@@ -212,7 +212,7 @@ export const pipelineRouter = {
 			};
 		}),
 
-	clearAnalysis: protectedProcedure
+	clearAnalysis: approvedProcedure
 		.input(emptyInput)
 		.output(pipelineClearAnalysisOutputSchema)
 		.handler(async ({ context }) => {

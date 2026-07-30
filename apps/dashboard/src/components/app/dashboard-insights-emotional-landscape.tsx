@@ -17,7 +17,7 @@ const QUADRANTS: { key: keyof Landscape; label: string; sub: string }[] = [
 export function DashboardInsightsEmotionalLandscapeSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-36" />
 			</div>
 			<div className="grid grid-cols-2 gap-px bg-border">
@@ -43,10 +43,10 @@ export function DashboardInsightsEmotionalLandscape({
 			<div className="grid grid-cols-2 gap-px border border-border bg-border">
 				{QUADRANTS.map(({ key, label, sub }) => (
 					<div key={key} className="flex flex-col gap-1.5 bg-background p-3.5">
-						<span className="font-mono text-[9px] uppercase leading-tight tracking-[0.5px] text-muted-foreground">
+						<span className="font-mono text-[9px] text-muted-foreground uppercase leading-tight tracking-[0.5px]">
 							{label}
 						</span>
-						<span className="text-sm text-primary">
+						<span className="text-primary text-sm">
 							{landscape[key].toLocaleString()}
 						</span>
 						<span className="font-mono text-[9px] text-muted-foreground">

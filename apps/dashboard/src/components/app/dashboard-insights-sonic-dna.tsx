@@ -25,7 +25,7 @@ type VisibleFeature = { key: keyof SonicDna; label: string; value: number };
 export function DashboardInsightsSonicDnaSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-24" />
 			</div>
 			<div className="flex flex-col gap-3.5">

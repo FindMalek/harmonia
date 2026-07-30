@@ -3,19 +3,25 @@ import {
 	Container,
 	Heading,
 	Preview,
+	Section,
 	Text,
 } from "@react-email/components";
 import { Footer } from "../components/footer";
 import { Logo } from "../components/logo";
 import {
+	Button,
 	EmailThemeProvider,
 	getEmailInlineStyles,
 	getEmailThemeClasses,
 } from "../components/theme";
 
-export type WaitlistConfirmationEmailProps = Record<string, never>;
+export type WaitlistConfirmationEmailProps = {
+	waitingUrl: string;
+};
 
-export function WaitlistConfirmationEmail() {
+export function WaitlistConfirmationEmail({
+	waitingUrl = "http://127.0.0.1:3003/waiting",
+}: WaitlistConfirmationEmailProps) {
 	const themeClasses = getEmailThemeClasses();
 	const lightStyles = getEmailInlineStyles("light");
 
@@ -57,6 +63,10 @@ export function WaitlistConfirmationEmail() {
 						<strong>first 3 months free</strong> once you're approved.
 					</Text>
 
+					<Section className="mt-[40px] mb-[40px] text-center">
+						<Button href={waitingUrl}>Check your status</Button>
+					</Section>
+
 					<Footer complianceText="You are receiving this email because you joined the Harmonia waitlist." />
 				</Container>
 			</Body>
@@ -64,7 +74,9 @@ export function WaitlistConfirmationEmail() {
 	);
 }
 
-WaitlistConfirmationEmail.PreviewProps =
-	{} satisfies WaitlistConfirmationEmailProps;
+WaitlistConfirmationEmail.PreviewProps = {
+	waitingUrl:
+		"http://127.0.0.1:3003/waiting?token=eyJlbWFpbCI6InlvdUBleGFtcGxlLmNvbSIsImV4cCI6OTk5OTk5OTk5OTk5fQ.example",
+} satisfies WaitlistConfirmationEmailProps;
 
 export default WaitlistConfirmationEmail;

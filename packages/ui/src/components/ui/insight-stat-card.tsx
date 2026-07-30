@@ -21,14 +21,14 @@ function InsightStatCard({
 			{...props}
 		>
 			<div className="flex items-center justify-between">
-				<span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+				<span className="text-[9px] text-muted-foreground uppercase tracking-widest">
 					{label}
 				</span>
 				{index && (
 					<span className="text-[9px] text-muted-foreground/60">{index}</span>
 				)}
 			</div>
-			<span className="text-[22px] leading-none text-foreground">
+			<span className="text-[22px] text-foreground leading-none">
 				{typeof value === "number" ? value.toLocaleString() : value}
 			</span>
 		</div>
@@ -52,8 +52,8 @@ function InsightSectionCard({
 			)}
 			{...props}
 		>
-			<div className="border-b border-border pb-3">
-				<span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+			<div className="border-border border-b pb-3">
+				<span className="text-[11px] text-muted-foreground uppercase tracking-widest">
 					{title}
 				</span>
 			</div>

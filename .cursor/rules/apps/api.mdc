@@ -11,15 +11,26 @@ alwaysApply: false
 
 ```
 apps/api/src/app/api/
-  [[...rest]]/route.ts   — catch-all for oRPC + OpenAPI
-  auth/[...all]/route.ts — Better Auth handlers
+  [[...rest]]/route.ts        — catch-all for oRPC + OpenAPI
+  auth/[...all]/route.ts      — dashboard Better Auth (/api/auth)
+  admin-auth/[...all]/route.ts — admin Better Auth (/api/admin-auth)
 ```
 
-No other route files. All business logic lives in `packages/orpc/src/routers/`.
+Business logic lives in `packages/orpc/src/routers/`. Auth route handlers share `apps/api/src/lib/auth-route.ts` (CORS wrapper).
+
+## Auth Endpoints
+
+| Path | Instance | Cookie prefix | Used by |
+|------|----------|---------------|---------|
+| `/api/auth/*` | `dashboardAuth` | `harmonia-dashboard` | Dashboard (Spotify OAuth) |
+| `/api/admin-auth/*` | `adminAuth` | `harmonia-admin` | Admin (email/password) |
+
+Both share the same Postgres `user` / `session` tables but issue **separate session cookies**.
 
 ## Key Patterns
 
-- CORS headers applied globally in `[[...rest]]/route.ts` — never add per-route CORS
+- CORS headers applied globally in `[[...rest]]/route.ts` — never add per-route CORS elsewhere
+- CORS allowlist includes web, dashboard, admin, and API URLs (`apps/api/src/lib/cors.ts`)
 - Errors serialised via `payload.ts` — never expose raw stack traces in production
 - OpenTelemetry flushed before response on Vercel (`tracing.flushTelemetry()`)
 

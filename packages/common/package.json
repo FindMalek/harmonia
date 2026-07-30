@@ -4,7 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "tsc --noEmit"
+		"build": "tsc --noEmit",
+		"test": "vitest run"
 	},
 	"exports": {
 		".": {
@@ -88,6 +89,12 @@
 		"./utils/routes": {
 			"default": "./src/utils/routes.ts"
 		},
+		"./utils/waitlist-token": {
+			"default": "./src/utils/waitlist-token.ts"
+		},
+		"./utils/waitlist-gate": {
+			"default": "./src/utils/waitlist-gate.ts"
+		},
 		"./constants": {
 			"default": "./src/constants/index.ts"
 		}
@@ -111,6 +118,7 @@
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
 		"@types/density-clustering": "^1.3.3",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"vitest": "^3.2.4"
 	}
 }

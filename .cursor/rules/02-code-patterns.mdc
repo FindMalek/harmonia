@@ -11,20 +11,26 @@ alwaysApply: false
 ## oRPC Procedure Hierarchy
 
 ```
-publicProcedure            — no auth required
-  └── protectedProcedure   — requires active session (context.session.user.id)
-        └── cronOrAuthProcedure — accepts session OR HARMONIA_CRON_SECRET header
+publicProcedure              — no auth; rate-limited
+  ├── protectedProcedure     — dashboard session (context.session)
+  │     └── approvedProcedure — dashboard session + DB isApproved + !banned
+  ├── adminProcedure         — admin session only (context.adminSession, role=admin)
+  └── cronOrAuthProcedure    — session OR HARMONIA_CRON_SECRET header
 ```
+
+- **`approvedProcedure`**: use for all dashboard data routes (tracks, pipeline, playlists, etc.)
+- **`protectedProcedure`**: only for pre-approval flows (`redeemInvite`)
+- **`adminProcedure`**: all `admin.*` routes; never reads dashboard session
 
 ## Adding an oRPC Route
 
 1. Add Zod schemas to `packages/common/src/schemas/{entity}/`
-2. Add handler in `packages/orpc/src/routers/protected/` or `public/`
+2. Add handler in `packages/orpc/src/routers/{public|protected|admin}/`
 3. Export from that router's `index.ts`
 
 ```typescript
 export const playlistsRouter = {
-  list: protectedProcedure
+  list: approvedProcedure
     .input(playlistListInput)
     .output(z.array(playlistListItemSchema))
     .handler(async ({ context }) => {

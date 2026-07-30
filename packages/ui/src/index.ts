@@ -57,6 +57,18 @@ export {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
+export {
+	Field,
+	FieldContent,
+	FieldDescription,
+	FieldError,
+	FieldGroup,
+	FieldLabel,
+	FieldLegend,
+	FieldSeparator,
+	FieldSet,
+	FieldTitle,
+} from "./components/ui/field";
 export { Input } from "./components/ui/input";
 export {
 	InsightSectionCard,
@@ -65,14 +77,54 @@ export {
 export { Label } from "./components/ui/label";
 export { Progress } from "./components/ui/progress";
 export { ScrollArea, ScrollBar } from "./components/ui/scroll-area";
+export {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectScrollDownButton,
+	SelectScrollUpButton,
+	SelectSeparator,
+	SelectTrigger,
+	SelectValue,
+} from "./components/ui/select";
 export { Separator } from "./components/ui/separator";
 export {
 	Sheet,
+	SheetClose,
 	SheetContent,
 	SheetDescription,
+	SheetFooter,
 	SheetHeader,
 	SheetTitle,
+	SheetTrigger,
 } from "./components/ui/sheet";
+export {
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupAction,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarInset,
+	SidebarMenu,
+	SidebarMenuAction,
+	SidebarMenuBadge,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSkeleton,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
+	SidebarProvider,
+	SidebarRail,
+	SidebarSeparator,
+	SidebarTrigger,
+	useSidebar,
+} from "./components/ui/sidebar";
 export { Skeleton } from "./components/ui/skeleton";
 export { Toaster } from "./components/ui/sonner";
 export { Spinner } from "./components/ui/spinner";

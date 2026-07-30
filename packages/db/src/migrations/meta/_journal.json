@@ -120,6 +120,34 @@
 			"when": 1781563259654,
 			"tag": "0016_absurd_sinister_six",
 			"breakpoints": true
+		},
+		{
+			"idx": 17,
+			"version": "7",
+			"when": 1781613082174,
+			"tag": "0017_watery_arachne",
+			"breakpoints": true
+		},
+		{
+			"idx": 18,
+			"version": "7",
+			"when": 1782079678586,
+			"tag": "0018_lively_shocker",
+			"breakpoints": true
+		},
+		{
+			"idx": 19,
+			"version": "7",
+			"when": 1782080455729,
+			"tag": "0019_stormy_mystique",
+			"breakpoints": true
+		},
+		{
+			"idx": 20,
+			"version": "7",
+			"when": 1782081000000,
+			"tag": "0020_grandfather_user_approval",
+			"breakpoints": true
 		}
 	]
 }

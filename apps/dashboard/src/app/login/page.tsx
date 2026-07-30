@@ -9,6 +9,9 @@ export default async function LoginPage() {
 	const session = await getServerSession();
 
 	if (session?.user) {
+		if (!session.user.isApproved) {
+			redirect("/waiting" as Route);
+		}
 		if (!session.user.hasCompletedOnboarding) {
 			redirect(DASHBOARD_ROUTES.onboarding.introduction.path as Route);
 		} else {

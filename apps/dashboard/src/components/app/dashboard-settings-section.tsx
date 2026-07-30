@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
 import { Icons, Separator } from "@harmonia/ui";
 import type * as React from "react";
+import { cn } from "@/lib/utils";
 
 export function DashboardSettingsSection({
 	label,
