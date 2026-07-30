@@ -1,16 +1,37 @@
-import { Button, Icons } from "@harmonia/ui";
+import { Badge, Button, Icons } from "@harmonia/ui";
+import { formatDistanceToNow } from "date-fns";
 
 export function DashboardPlaylistDetailActions({
 	spotifyPlaylistId,
+	exportedAt,
 	exportPending,
 	onExport,
 }: {
 	spotifyPlaylistId: string | null;
+	exportedAt: Date | null;
 	exportPending: boolean;
 	onExport: () => void;
 }) {
+	const isExported = spotifyPlaylistId !== null;
+
 	return (
 		<div className="flex flex-col gap-2">
+			{isExported ? (
+				<div className="flex items-center justify-between gap-2">
+					<Badge
+						variant="outline"
+						className="border-[#1DB954]/40 text-[#1DB954]"
+					>
+						<Icons.circleCheck className="size-3" />
+						Exported
+					</Badge>
+					{exportedAt ? (
+						<span className="text-muted-foreground text-xs">
+							Synced {formatDistanceToNow(exportedAt, { addSuffix: true })}
+						</span>
+					) : null}
+				</div>
+			) : null}
 			{spotifyPlaylistId ? (
 				<a
 					href={`https://open.spotify.com/playlist/${spotifyPlaylistId}`}
@@ -32,10 +53,12 @@ export function DashboardPlaylistDetailActions({
 				{exportPending ? (
 					<>
 						<Icons.spinner className="mr-2 size-4 animate-spin" />
-						Creating...
+						{isExported ? "Updating..." : "Exporting..."}
 					</>
+				) : isExported ? (
+					"Update in Spotify"
 				) : (
-					"Create Spotify Playlist"
+					"Export to Spotify"
 				)}
 			</Button>
 		</div>

@@ -1,5 +1,6 @@
 import type { playlistListItemSchema } from "@harmonia/common/schemas";
 import {
+	Badge,
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbList,
@@ -35,9 +36,20 @@ export function DashboardPlaylistsListRow({
 			)}
 		>
 			<div className="flex items-center justify-between gap-3">
-				<p className="text-muted-foreground text-xs uppercase tracking-wide">
-					{playlist.trackCount} tracks
-				</p>
+				<div className="flex items-center gap-2">
+					<p className="text-muted-foreground text-xs uppercase tracking-wide">
+						{playlist.trackCount} tracks
+					</p>
+					{playlist.spotifyPlaylistId ? (
+						<Badge
+							variant="outline"
+							className="border-[#1DB954]/40 text-[#1DB954]"
+							aria-label="Exported to Spotify"
+						>
+							<Icons.circleCheck className="size-3" />
+						</Badge>
+					) : null}
+				</div>
 				<span
 					className="flex size-11 shrink-0 items-center justify-end text-muted-foreground"
 					aria-hidden

@@ -44,6 +44,7 @@ export function DashboardPlaylistDetail({
 
 			<DashboardPlaylistDetailActions
 				spotifyPlaylistId={playlist.spotifyPlaylistId}
+				exportedAt={playlist.exportedAt}
 				exportPending={exportPending}
 				onExport={onExport}
 			/>
