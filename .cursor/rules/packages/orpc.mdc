@@ -65,6 +65,20 @@ const { data } = useQuery(orpc.playlists.list.queryOptions());
 const { mutate } = useMutation(orpc.admin.waitlist.updateStatus.mutationOptions({ onError: toastError }));
 ```
 
+## Error Handling
+
+Throw `ORPCError` directly from handlers/middleware with a typed code — never a bare `Error`:
+
+```typescript
+import { ORPCError } from "@orpc/server";
+
+if (!row || row.banned || !row.isApproved) {
+  throw new ORPCError("FORBIDDEN");
+}
+```
+
+Codes in use: `UNAUTHORIZED`, `FORBIDDEN`, `BAD_REQUEST`, `TOO_MANY_REQUESTS`, `INTERNAL_SERVER_ERROR`. Domain errors that originate in `@harmonia/common` services (e.g. `PipelineCancelledError`) stay plain `Error` subclasses there — only the oRPC layer translates into `ORPCError`.
+
 ## Rate Limiting
 
 - Applied globally via `rateLimitMiddleware` on `publicProcedure`

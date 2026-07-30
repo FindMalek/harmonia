@@ -133,6 +133,21 @@ Never use `as SomeType` or `as unknown as SomeType` casts. Rely on TypeScript's 
 - If two types don't align structurally, fix the type definition rather than casting around it.
 - The only accepted `as` uses are temporary escape hatches for genuine pgvector / jsonb raw-SQL constraints, documented with an explicit comment explaining why narrowing is impossible.
 
+## Indexed Access (`noUncheckedIndexedAccess`)
+
+`array[0]` and destructured array elements are typed `T | undefined`. Never silence this with `!` or `.at()` — the repo has zero non-null assertions and zero `.at()` calls. Use one of:
+
+```typescript
+// Aggregate/lookup queries: optional-chain into a default
+const total = rows[0]?.count ?? 0;
+
+// Single-row selects expected to exist: destructure, then guard
+const [row] = await db.select().from(user).where(eq(user.id, userId));
+if (!row || row.banned || !row.isApproved) {
+  throw new ORPCError("FORBIDDEN");
+}
+```
+
 ## No Comments Rule
 
 No comments unless the WHY is non-obvious: a hidden constraint, a workaround for a specific bug, behaviour that would surprise a reader. One line max — if it needs more, it belongs in the relevant `.cursor/rules/*.mdc` doc, not the code.

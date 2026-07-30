@@ -27,6 +27,19 @@ export const myTable = pgTable("my_table", {
 - Always add indexes for foreign keys and common filter columns
 - Export from `packages/db/src/schema/index.ts`
 
+### Vector Columns (pgvector)
+
+```typescript
+// packages/db/src/schema/track.ts
+embedding: vector("embedding", { dimensions: 1536 }),
+// ...
+(table) => [
+  index("track_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+]
+```
+
+Use `hnsw` with `vector_cosine_ops` — matches the cosine-distance clustering in `services/brain/clustering.ts`. Do not switch to `ivfflat`/`vector_l2_ops` without updating the distance operator used by the consuming query.
+
 ## Query Patterns
 
 ```typescript
@@ -85,3 +98,7 @@ Always run `pnpm db:push` after schema changes in development.
 When adding new user-owned tables under `packages/db/src/schema/`, extend `TABLES_TO_TRUNCATE` in `packages/db/scripts/db-reset.ts`.
 
 **Waitlist approval gate:** migration `0020_grandfather_user_approval.sql` sets `is_approved = true` for all existing users when deploying the closed-beta gate to a database that already has accounts. Run `pnpm db:migrate` in production after that deploy.
+
+### Hand-Written Migrations
+
+Data-seed or non-schema migrations (e.g. `0003_seed_genre_domain.sql`) are written by hand and share a numeric prefix with the adjacent `drizzle-kit generate` file — they are **not** added to `meta/_journal.json`, so `drizzle-kit migrate` never runs them automatically. If the target DB already has the underlying schema (e.g. it was set up via `db:push`), `db:migrate` will fail with "relation already exists"; run `pnpm db:mark-migrations-applied` first to backfill `drizzle.__drizzle_migrations` from the journal, then apply hand-written files manually.

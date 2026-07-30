@@ -28,6 +28,7 @@ All files use **kebab-case**.
 - Export: `DashboardLibraryAnalysis`
 - Always co-locate a skeleton: `DashboardLibraryAnalysisSkeleton`
 - `"use client"` only when browser APIs, event handlers, or hooks are used
+- Props: `type Props = { ... }` — never `interface Props`
 
 ## Schema Naming (Zod)
 
@@ -36,6 +37,7 @@ All files use **kebab-case**.
 - Inferred types: `type PlaylistGetById = z.infer<typeof playlistGetByIdOutputSchema>`
 - Enums: `{entity}{Field}Enum` — e.g. `pipelineStatusEnum`
 - Metadata schemas: `{entity}MetadataSchema` — e.g. `playlistMetadataSchema`
+- Use Zod v4 top-level string formats — `z.email()`, `z.url()`, `z.uuid()` — not the `z.string().email()` chain form
 
 ## Import Aliases
 
