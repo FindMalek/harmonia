@@ -135,4 +135,4 @@ Never use `as SomeType` or `as unknown as SomeType` casts. Rely on TypeScript's 
 
 ## No Comments Rule
 
-No comments unless the WHY is non-obvious: a hidden constraint, a workaround for a specific bug, behaviour that would surprise a reader.
+No comments unless the WHY is non-obvious: a hidden constraint, a workaround for a specific bug, behaviour that would surprise a reader. One line max — if it needs more, it belongs in the relevant `.cursor/rules/*.mdc` doc, not the code.

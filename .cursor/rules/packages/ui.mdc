@@ -39,3 +39,22 @@ Do NOT use `<Card>` for settings sections, stat blocks, or metadata rows.
 - Copy-paste shadcn component source into app directories — extend via props instead
 - Use native `<button>`, `<input>`, `<a>` when a shadcn equivalent exists
 - Use inline styles — Tailwind utilities only
+- Use `Dialog` for destructive confirmation — use `AlertDialog`
+- Nest `Card` inside `Card`
+- Reach for ad-hoc hex colors — use theme tokens (`bg-background`, `text-muted-foreground`, `border-border`, `ring-ring`)
+- Ship empty/loading/error states without a designed treatment (`Skeleton`, `Alert`, `ErrorState`)
+
+## Reach For This First
+
+| Use case | Components |
+|---|---|
+| Settings page | `Tabs` + `Card` + `Form` |
+| Data table / CRUD | `Table` + `DropdownMenu` + `Sheet` + `AlertDialog` |
+| Detail page | header + `Badge` + `Separator` + `Card` |
+| Global search | `Command` + `Dialog` |
+| Mobile nav / filters | `Sheet` |
+
+## Gotchas
+
+- `Avatar` has no `size` prop — size via Tailwind (`className="h-6 w-6"`), not a variant.
+- `Tooltip` needs a `TooltipProvider` ancestor for shared `delayDuration`/skip-delay behavior across adjacent tooltips — wrap once at the app root layout, not per-component.
