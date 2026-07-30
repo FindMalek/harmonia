@@ -28,6 +28,12 @@ type PipelineRunProbe =
 	| { kind: "missing" }
 	| { kind: "error"; err: unknown };
 
+// Single narrowing point for the SSE payload's `unknown` progress field, instead of
+// repeating the same cast at every event branch below.
+function asProgressRecord(progress: unknown): Record<string, PipelineProgressStage> {
+	return (progress as Record<string, PipelineProgressStage> | null) ?? {};
+}
+
 async function probePipelineRun(id: number): Promise<PipelineRunProbe> {
 	try {
 		const row = await client.pipeline.getById({ id });
@@ -170,15 +176,12 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								...s,
 								status: data.status,
 								currentStage: data.currentStage,
-								progress: data.progress as Record<
-									string,
-									PipelineProgressStage
-								>,
+								progress: asProgressRecord(data.progress),
 								startedAt: data.startedAt,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(
-									data.progress as Record<string, PipelineProgressStage>,
+									asProgressRecord(data.progress),
 								),
 							);
 						} else if (data.event === "completed") {
@@ -186,15 +189,12 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								...s,
 								status: "completed",
 								currentStage: null,
-								progress: data.progress as Record<
-									string,
-									PipelineProgressStage
-								>,
+								progress: asProgressRecord(data.progress),
 								completedAt: data.completedAt,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(
-									data.progress as Record<string, PipelineProgressStage>,
+									asProgressRecord(data.progress),
 								),
 							);
 							setConnectionState("idle");
@@ -205,16 +205,13 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								...s,
 								status: "partial",
 								currentStage: null,
-								progress: data.progress as Record<
-									string,
-									PipelineProgressStage
-								>,
+								progress: asProgressRecord(data.progress),
 								completedAt: data.completedAt,
 								error: data.error ?? null,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(
-									data.progress as Record<string, PipelineProgressStage>,
+									asProgressRecord(data.progress),
 								),
 							);
 							setConnectionState("idle");
@@ -225,16 +222,13 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								...s,
 								status: "failed",
 								currentStage: null,
-								progress: data.progress as Record<
-									string,
-									PipelineProgressStage
-								>,
+								progress: asProgressRecord(data.progress),
 								completedAt: data.completedAt,
 								error: data.error ?? "Unknown error",
 							}));
 							setLiveProgress(
 								deriveLiveProgress(
-									data.progress as Record<string, PipelineProgressStage>,
+									asProgressRecord(data.progress),
 								),
 							);
 							setConnectionState("idle");
