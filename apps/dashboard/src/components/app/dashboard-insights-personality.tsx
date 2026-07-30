@@ -15,9 +15,9 @@ function eraDigits(era: string): string {
 
 function KvRow({ label, value }: { label: string; value: string | null }) {
 	return (
-		<div className="flex items-center justify-between border-b border-border py-3 last:border-b-0">
+		<div className="flex items-center justify-between border-border border-b py-3 last:border-b-0">
 			<span className="text-[11px] text-muted-foreground">{label}</span>
-			<span className="capitalize text-foreground text-sm">{value ?? "—"}</span>
+			<span className="text-foreground text-sm capitalize">{value ?? "—"}</span>
 		</div>
 	);
 }
@@ -25,13 +25,13 @@ function KvRow({ label, value }: { label: string; value: string | null }) {
 export function DashboardInsightsPersonalitySkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-32" />
 			</div>
 			{[1, 2, 3].map((i) => (
 				<div
 					key={i}
-					className="flex items-center justify-between border-b border-border pb-3 last:border-b-0"
+					className="flex items-center justify-between border-border border-b pb-3 last:border-b-0"
 				>
 					<Skeleton className="h-2 w-24" />
 					<Skeleton className="h-4 w-20" />
@@ -60,7 +60,7 @@ export function DashboardInsightsPersonality({
 
 			{eraDistribution.length > 0 && (
 				<div className="flex flex-col gap-2">
-					<span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+					<span className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
 						Era Distribution
 					</span>
 					<div className="flex h-12 items-end gap-1">
@@ -81,7 +81,7 @@ export function DashboardInsightsPersonality({
 								className="flex-1 text-center font-mono text-[9px] text-muted-foreground"
 							>
 								{eraDigits(era)}
-								<span className="text-[6px] align-top">s</span>
+								<span className="align-top text-[6px]">s</span>
 							</span>
 						))}
 					</div>

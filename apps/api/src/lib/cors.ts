@@ -13,6 +13,7 @@ export async function getCorsHeaders(
 		apiEnv.NEXT_PUBLIC_HARMONIA_API_URL,
 		apiEnv.NEXT_PUBLIC_HARMONIA_WEB_URL,
 		apiEnv.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
+		apiEnv.NEXT_PUBLIC_HARMONIA_ADMIN_URL,
 	]) {
 		if (url) {
 			try {

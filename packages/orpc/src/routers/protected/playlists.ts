@@ -11,8 +11,8 @@ import {
 	playlistUpdateOutputSchema,
 } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
-import { cluster } from "@harmonia/db/schema/cluster";
 import type { ClusterMeta } from "@harmonia/db/schema/cluster";
+import { cluster } from "@harmonia/db/schema/cluster";
 import {
 	playlist,
 	playlistClusters,
@@ -21,10 +21,10 @@ import {
 import { track } from "@harmonia/db/schema/track";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure } from "../../procedures";
 
 export const playlistsRouter = {
-	list: protectedProcedure
+	list: approvedProcedure
 		.input(emptyInput)
 		.output(z.array(playlistListItemSchema))
 		.handler(async ({ context }) => {
@@ -39,7 +39,7 @@ export const playlistsRouter = {
 			return playlists;
 		}),
 
-	getById: protectedProcedure
+	getById: approvedProcedure
 		.input(playlistGetByIdInput)
 		.output(z.union([playlistGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -87,7 +87,7 @@ export const playlistsRouter = {
 			};
 		}),
 
-	update: protectedProcedure
+	update: approvedProcedure
 		.input(playlistUpdateInput)
 		.output(z.union([playlistUpdateOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -109,7 +109,7 @@ export const playlistsRouter = {
 			return updated ?? null;
 		}),
 
-	export: protectedProcedure
+	export: approvedProcedure
 		.input(playlistExportInput)
 		.output(z.union([playlistExportOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {
@@ -118,7 +118,7 @@ export const playlistsRouter = {
 			return result;
 		}),
 
-	exportAll: protectedProcedure
+	exportAll: approvedProcedure
 		.input(emptyInput)
 		.output(playlistExportAllOutputSchema)
 		.handler(async ({ context }) => {

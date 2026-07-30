@@ -14,6 +14,11 @@ apps/dashboard/src/
   app/(dashboard)/        # authenticated routes
   app/(onboarding)/       # onboarding flow
   app/login/
+  app/waiting/          # waitlist status (signed token in URL)
+  app/invite-expired/
+  app/api/invite/       # sets harmonia_invite cookie from email link
+  app/api/redeem-invite/
+  proxy.ts              # waitlist approval gate (Next.js 16 proxy)
   hooks/                  # cross-cutting client hooks (prefix use-, co-locate only when owned by one component)
   components/
     app/                  # feature-specific (prefixed dashboard-{feature}-{role})
@@ -33,6 +38,18 @@ apps/dashboard/src/
     utils.ts              # cn() only
     env.ts                # env re-export only
 ```
+
+## Waitlist Gating
+
+Access control is enforced in two layers:
+
+1. **`apps/dashboard/src/proxy.ts`** — page-level gate via `resolveWaitlistGate()` from `@harmonia/common/utils/waitlist-gate`
+   - Unapproved users → `/waiting`
+   - Unauthenticated without invite → web app or `/waiting`
+   - `/login`, `/waiting`, invite routes excluded from matcher
+2. **`approvedProcedure`** (oRPC) — API-level gate; unapproved sessions cannot call data routes even if proxy is bypassed
+
+Returning approved users reach `/login` without an invite cookie. Invite flow: email link → `/api/invite/[token]` → cookie → Spotify OAuth → `/api/redeem-invite` → `user.isApproved = true`.
 
 ## Component Conventions
 

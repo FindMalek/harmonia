@@ -10,7 +10,7 @@ type Props = {
 export function DashboardInsightsMoodVibeSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-28" />
 			</div>
 			<div className="flex flex-col gap-3">
@@ -41,7 +41,7 @@ export function DashboardInsightsMoodVibe({
 				<div className="flex flex-col gap-3">
 					{moodDistribution.map(({ mood, percentage }) => (
 						<div key={mood} className="flex items-center gap-3">
-							<span className="w-[100px] shrink-0 truncate text-[11px] lowercase text-muted-foreground">
+							<span className="w-[100px] shrink-0 truncate text-[11px] text-muted-foreground lowercase">
 								{mood}
 							</span>
 							<div className="h-2 flex-1 border border-border bg-muted">
@@ -63,7 +63,7 @@ export function DashboardInsightsMoodVibe({
 					{topVibes.map((vibe) => (
 						<span
 							key={vibe}
-							className="border border-border bg-muted px-2.5 py-1.5 text-[11px] lowercase text-foreground"
+							className="border border-border bg-muted px-2.5 py-1.5 text-[11px] text-foreground lowercase"
 						>
 							<span className="text-accent">#</span>
 							{vibe}

@@ -1,7 +1,7 @@
 "use client";
 
-import { orpc } from "@/shared/api/orpc";
 import { useQuery } from "@tanstack/react-query";
+import { orpc } from "@/shared/api/orpc";
 import { useClustersStore } from "./store";
 
 export function useClustersController() {

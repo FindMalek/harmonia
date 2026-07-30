@@ -83,3 +83,5 @@ pnpm db:nuke      # dev: Docker volume wipe + db:push (guards: localhost:5433)
 Always run `pnpm db:push` after schema changes in development.
 
 When adding new user-owned tables under `packages/db/src/schema/`, extend `TABLES_TO_TRUNCATE` in `packages/db/scripts/db-reset.ts`.
+
+**Waitlist approval gate:** migration `0020_grandfather_user_approval.sql` sets `is_approved = true` for all existing users when deploying the closed-beta gate to a database that already has accounts. Run `pnpm db:migrate` in production after that deploy.

@@ -1,7 +1,6 @@
 "use client";
 
-import { Button, cn } from "@harmonia/ui";
-import { Icons } from "@harmonia/ui";
+import { Button, cn, Icons } from "@harmonia/ui";
 
 import { CopyableError } from "./copyable-error";
 

@@ -1,7 +1,7 @@
 import {
+	dehydrate,
 	HydrationBoundary,
 	QueryClient,
-	dehydrate,
 } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";

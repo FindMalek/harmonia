@@ -1,10 +1,10 @@
 "use client";
 
-import { env } from "@/lib/env";
-import { authClient } from "@/shared/api/auth-client";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Button, Icons } from "@harmonia/ui";
 import { useState } from "react";
+import { env } from "@/lib/env";
+import { authClient } from "@/shared/api/auth-client";
 
 export function AuthSpotifySignInButton() {
 	const [isLoading, setIsLoading] = useState(false);

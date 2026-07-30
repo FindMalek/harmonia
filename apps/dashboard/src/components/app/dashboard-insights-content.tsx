@@ -1,8 +1,5 @@
 "use client";
 
-import { ErrorState } from "@/components/shared/error-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { useInsightsController } from "@/shared/lib/insights/controller.hook";
 import {
 	DashboardInsightsEmotionalLandscape,
 	DashboardInsightsEmotionalLandscapeSkeleton,
@@ -39,6 +36,9 @@ import {
 	DashboardInsightsStatsGrid,
 	DashboardInsightsStatsGridSkeleton,
 } from "@/components/app/dashboard-insights-stats-grid";
+import { ErrorState } from "@/components/shared/error-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { useInsightsController } from "@/shared/lib/insights/controller.hook";
 
 function InsightsSkeleton() {
 	return (

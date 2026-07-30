@@ -4,8 +4,8 @@ import * as React from "react";
 import {
 	type DayButton,
 	DayPicker,
-	type Locale,
 	getDefaultClassNames,
+	type Locale,
 } from "react-day-picker";
 
 import { cn } from "../../lib/utils";

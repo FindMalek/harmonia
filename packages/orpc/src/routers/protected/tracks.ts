@@ -19,10 +19,10 @@ import {
 	or,
 } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure } from "../../procedures";
 
 export const tracksRouter = {
-	list: protectedProcedure
+	list: approvedProcedure
 		.input(tracksListInput)
 		.output(tracksListOutputSchema)
 		.handler(async ({ input, context }) => {
@@ -95,7 +95,7 @@ export const tracksRouter = {
 			};
 		}),
 
-	getById: protectedProcedure
+	getById: approvedProcedure
 		.input(trackGetByIdInput)
 		.output(z.union([trackGetByIdOutputSchema, z.null()]))
 		.handler(async ({ input, context }) => {

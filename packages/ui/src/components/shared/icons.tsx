@@ -35,6 +35,7 @@ import {
 	IconInfoCircle,
 	IconLayoutSidebar,
 	IconLoader,
+	IconLogout,
 	IconMinus,
 	IconMoon,
 	IconMusic,
@@ -46,6 +47,8 @@ import {
 	IconStack2,
 	IconSun,
 	IconTrash,
+	IconUser,
+	IconUsers,
 	IconX,
 } from "@tabler/icons-react";
 import type * as React from "react";
@@ -104,6 +107,9 @@ export const Icons = {
 	settings: IconSettings,
 	chart: IconChartBar,
 	home: IconHome,
+	user: IconUser,
+	users: IconUsers,
+	logout: IconLogout,
 
 	// Loading / pipeline states
 	checkCircle: IconCircleCheck,
