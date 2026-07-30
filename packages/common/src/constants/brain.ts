@@ -32,15 +32,6 @@ export const CLUSTER_EPSILON = 0.3;
 export const CLUSTER_MIN_SIZE = 20;
 export const CLUSTER_MAX_SIZE = 80;
 
-/**
- * Safety cap on `splitLargeClusters`' recursive re-split of oversized buckets
- * (a DBSCAN sub-cluster or k-means bucket can itself still exceed
- * CLUSTER_MAX_SIZE). Bounds recursion on pathological input instead of
- * looping indefinitely; a bucket that's still oversized after this many
- * rounds is accepted as-is.
- */
-export const CLUSTER_MAX_SPLIT_DEPTH = 4;
-
 export const TRACK_MATCH_SIMILARITY_THRESHOLD = 0.7;
 
 export const GROQ_RATE_LIMIT_FALLBACK_DELAY_MS = 45_000;
