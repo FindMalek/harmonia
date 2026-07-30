@@ -14,6 +14,7 @@ Rules are maintained in `.cursor/rules/` as the single source of truth — all a
 @.cursor/rules/apps/api.mdc
 @.cursor/rules/apps/dashboard.mdc
 @.cursor/rules/apps/web.mdc
+@.cursor/rules/apps/admin.mdc
 
 ### Packages
 

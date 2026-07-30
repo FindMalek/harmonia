@@ -1,9 +1,7 @@
 "use client";
 
+import { Button, cn, Icons } from "@harmonia/ui";
 import { toast } from "sonner";
-
-import { Button, cn } from "@harmonia/ui";
-import { Icons } from "@harmonia/ui";
 
 type CopyableErrorProps = {
 	text: string;

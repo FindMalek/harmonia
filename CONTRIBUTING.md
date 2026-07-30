@@ -42,14 +42,30 @@ For Trigger.dev background jobs, fill in `HARMONIA_TRIGGER_SECRET_KEY` and `HARM
 ```bash
 pnpm dev:api        # API + Trigger.dev worker (most common)
 pnpm dev:ad         # API + dashboard + Trigger.dev
-pnpm dev:all        # all three apps + Trigger.dev
+pnpm dev:admin      # admin app only (port 3004; API must be running)
+pnpm dev:ada        # API + dashboard + admin + Trigger.dev
+pnpm dev:all        # all apps + Trigger.dev
 pnpm dev:web        # web app only
 ```
+
+### Admin dashboard (local)
+
+```bash
+# In .env — required for db:seed
+HARMONIA_ADMIN_PASSWORD="changeme123!"
+
+pnpm db:push
+pnpm db:seed        # creates admin@harmonia.com (override with HARMONIA_ADMIN_EMAIL)
+pnpm dev:ada        # API + dashboard + admin
+```
+
+Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login). Admin auth uses `/api/admin-auth` and is **separate** from dashboard Spotify sessions.
 
 ### Quality checks
 
 ```bash
 pnpm check-types    # TypeScript across all packages
+pnpm test           # vitest (@harmonia/common + @harmonia/orpc)
 pnpm check          # Biome check + fix
 pnpm lint           # Biome lint + fix
 pnpm format         # Biome format + fix
@@ -72,7 +88,20 @@ pnpm db:push        # push schema to local Postgres
 pnpm db:studio      # open Drizzle Studio UI
 pnpm db:generate    # generate migration files
 pnpm db:migrate     # apply migrations (production)
+pnpm db:seed        # seed local admin user (requires HARMONIA_ADMIN_PASSWORD)
 ```
+
+## Waitlist & Access Control
+
+Harmonia runs a closed beta:
+
+1. **Web** (`:3001`) — public waitlist signup
+2. **Admin** (`:3004`) — approve/reject; sends invite email
+3. **Dashboard** (`:3003`) — Spotify login + invite redemption → `user.isApproved = true`
+
+Gating is enforced at **both** the dashboard proxy (`apps/dashboard/src/proxy.ts`) and the API (`approvedProcedure`). Admin and dashboard use **separate auth cookies** — logging into admin does not log you into the dashboard.
+
+After deploying the approval gate to an existing database, run `pnpm db:migrate` to apply the grandfather migration for existing users.
 
 ## Creating a Branch
 

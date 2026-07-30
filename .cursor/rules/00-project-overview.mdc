@@ -7,22 +7,23 @@ alwaysApply: true
 
 ## What is Harmonia
 
-Harmonia is an AI-powered music organization app. It syncs a user's Spotify library, classifies tracks with LLMs, clusters them by embedding similarity, and auto-generates playlists. It is a **pnpm + Turborepo monorepo** with three Next.js 15 (App Router) apps and shared packages.
+Harmonia is an AI-powered music organization app. It syncs a user's Spotify library, classifies tracks with LLMs, clusters them by embedding similarity, and auto-generates playlists. It is a **pnpm + Turborepo monorepo** with four Next.js (App Router) apps and shared packages.
 
 ## Monorepo Structure
 
 ### Applications
 
-- `apps/api` (`api`): Next.js API server (port 3002) — oRPC, Better Auth, Trigger.dev webhook
-- `apps/dashboard` (`dashboard`): Next.js merchant dashboard (port 3003) — authenticated user UI
-- `apps/web` (`web`): Next.js web app (port 3001) — public-facing pages
+- `apps/api` (`api`): Next.js API server (port 3002) — oRPC, Better Auth (dashboard + admin), Trigger.dev webhook
+- `apps/dashboard` (`dashboard`): Next.js user dashboard (port 3003) — Spotify OAuth, waitlist-gated
+- `apps/web` (`web`): Next.js web app (port 3001) — public waitlist signup
+- `apps/admin` (`admin`): Internal admin dashboard (port 3004) — email/password, waitlist approval
 
 ### Packages
 
-- `packages/auth`: Better Auth singleton + Spotify OAuth config
+- `packages/auth`: Better Auth factories — separate dashboard (Spotify) and admin (email/password) instances
 - `packages/common`: Shared schemas, types, services, Trigger.dev task definitions
 - `packages/config`: Shared `tsconfig.base.json`
-- `packages/core`: Initialises auth; re-exports singleton for the whole monorepo
+- `packages/core`: Initialises DB + `dashboardAuth` / `adminAuth`; re-exports `auth` as dashboard alias
 - `packages/db`: Drizzle ORM schema + migrations + DB client
 - `packages/env`: Zod-validated env presets (never use `process.env` directly)
 - `packages/logger`: Pino structured logger
@@ -38,8 +39,12 @@ Run all commands from the repository root.
 ```bash
 pnpm dev:api          # API + Trigger.dev worker
 pnpm dev:ad           # API + dashboard + Trigger.dev
-pnpm dev:all          # all three apps + Trigger.dev
+pnpm dev:admin        # admin app only (port 3004)
+pnpm dev:ada          # API + dashboard + admin + Trigger.dev
+pnpm dev:all          # all apps + Trigger.dev
 pnpm dev:web          # web app only
+
+pnpm db:seed          # seed admin user (requires HARMONIA_ADMIN_PASSWORD)
 
 pnpm db:push          # push Drizzle schema to local Postgres
 pnpm db:studio        # open Drizzle Studio UI
@@ -52,6 +57,7 @@ pnpm db:nuke          # Docker volume wipe + db:push (local Postgres on 5433)
 pnpm trigger:dev      # start Trigger.dev worker alone
 pnpm deps:sync        # update all deps to latest + syncpack fix
 pnpm check-types      # tsc --noEmit across all packages
+pnpm test             # vitest in @harmonia/common and @harmonia/orpc
 pnpm check            # Biome check + fix
 pnpm lint             # Biome lint + fix
 pnpm format           # Biome format + fix
@@ -74,7 +80,7 @@ pnpm format           # Biome format + fix
 - API layer: `oRPC`
 - ORM: `drizzle-orm`
 - Background jobs: `@trigger.dev/sdk`
-- Auth: `better-auth` + Spotify OAuth
+- Auth: `better-auth` — dual instances (dashboard Spotify OAuth + admin email/password)
 
 ## Git commits
 

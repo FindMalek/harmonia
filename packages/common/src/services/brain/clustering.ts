@@ -4,9 +4,8 @@ import { cluster, clusterTracks } from "@harmonia/db/schema/cluster";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
-
 import Clustering from "density-clustering";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 
 import {
 	CLUSTER_EPSILON,

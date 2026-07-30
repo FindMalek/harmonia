@@ -191,6 +191,6 @@ export const logger: Logger = new Proxy({} as Logger, {
 	},
 });
 
-export { PrettyFormatter, createConsoleLogger, getLogger, isNodeEnvironment };
+export { createConsoleLogger, getLogger, isNodeEnvironment, PrettyFormatter };
 
 export default logger;

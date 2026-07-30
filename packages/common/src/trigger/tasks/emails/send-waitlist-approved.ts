@@ -14,7 +14,8 @@ export const sendWaitlistApprovedEmailTask = task({
 		// Terminal non-error outcomes (already_sent, suppressed) are not retried.
 		if (
 			result.reason === "send_failed" ||
-			result.reason === "provider_not_configured"
+			result.reason === "provider_not_configured" ||
+			result.reason === "token_missing"
 		) {
 			throw new Error(
 				`Failed to send waitlist approved email: ${result.reason}`,

@@ -52,5 +52,5 @@ const { client, link } = createORPCClientUtils({
 	},
 });
 
-export { link, client };
+export { client, link };
 export const orpc = createTanstackQueryUtils(client);

@@ -211,7 +211,7 @@ export async function sendWaitlistConfirmationEmail(
 ): Promise<SendResult> {
 	const config = resolveConfig(input.config);
 	const resend = createResend(config);
-	const html = await render(WaitlistConfirmationEmail());
+	const html = await render(WaitlistConfirmationEmail(input.props));
 
 	const { data, error } = await resend.emails.send(
 		{

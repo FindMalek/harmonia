@@ -1,5 +1,6 @@
 {
-	"enabledPlugins": {
-		"ponytail@ponytail": true
-	}
+  "enabledPlugins": {
+    "ponytail@ponytail": true,
+    "drawio@365-skills": true
+  }
 }

@@ -9,7 +9,13 @@ export const user = pgTable("user", {
 	hasCompletedOnboarding: boolean("has_completed_onboarding")
 		.default(false)
 		.notNull(),
+	// ponytail: false by default; set to true on invite redemption — run `UPDATE "user" SET is_approved=true` after db:push to grandfather existing users
+	isApproved: boolean("is_approved").default(false).notNull(),
 	image: text("image"),
+	role: text("role").default("user"),
+	banned: boolean("banned").default(false),
+	banReason: text("ban_reason"),
+	banExpires: timestamp("ban_expires"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
@@ -29,6 +35,9 @@ export const session = pgTable(
 			.notNull(),
 		ipAddress: text("ip_address"),
 		userAgent: text("user_agent"),
+		impersonatedBy: text("impersonated_by").references(() => user.id, {
+			onDelete: "set null",
+		}),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),

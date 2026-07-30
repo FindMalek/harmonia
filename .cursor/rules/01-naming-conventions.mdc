@@ -39,7 +39,7 @@ All files use **kebab-case**.
 
 ## Import Aliases
 
-Within each app (`api`, `dashboard`, `web`), use `@/*` for local imports:
+Within each app (`api`, `dashboard`, `web`, `admin`), use `@/*` for local imports:
 ```typescript
 import { Button } from "@/components/ui/button";
 import { useDashboardPipelineBootstrap } from "@/hooks/use-dashboard-pipeline-bootstrap";
@@ -50,7 +50,7 @@ Across packages, use workspace package names:
 import { db } from "@harmonia/db";
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
-import { auth } from "@harmonia/core";
+import { dashboardAuth, adminAuth } from "@harmonia/core";
 import { logger } from "@harmonia/logger";
 ```
 

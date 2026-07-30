@@ -24,7 +24,7 @@ const CHART_COLORS = [
 export function DashboardInsightsGenreBreakdownSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-32" />
 			</div>
 			<div className="flex flex-col items-center gap-5">
@@ -33,7 +33,7 @@ export function DashboardInsightsGenreBreakdownSkeleton() {
 					{[1, 2, 3, 4].map((i) => (
 						<div
 							key={i}
-							className="flex justify-between border-b border-border pb-2 last:border-b-0 last:pb-0"
+							className="flex justify-between border-border border-b pb-2 last:border-b-0 last:pb-0"
 						>
 							<Skeleton className="h-2 w-24" />
 							<Skeleton className="h-2 w-8" />
@@ -90,10 +90,10 @@ export function DashboardInsightsGenreBreakdown({
 						</PieChart>
 					</ChartContainer>
 					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-						<span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+						<span className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">
 							Genres
 						</span>
-						<span className="mt-0.5 text-sm text-foreground">
+						<span className="mt-0.5 text-foreground text-sm">
 							{genreBreakdown.length}
 						</span>
 					</div>
@@ -103,7 +103,7 @@ export function DashboardInsightsGenreBreakdown({
 					{genreBreakdown.map((g, i) => (
 						<div
 							key={g.name}
-							className="flex items-center justify-between border-b border-border py-2 text-[11px] last:border-b-0 last:pb-0"
+							className="flex items-center justify-between border-border border-b py-2 text-[11px] last:border-b-0 last:pb-0"
 						>
 							<div className="flex items-center gap-2.5">
 								<span

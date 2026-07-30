@@ -8,10 +8,10 @@ import { db } from "@harmonia/db";
 import { userEmailPreferences } from "@harmonia/db/schema/user-email-preferences";
 import { eq } from "drizzle-orm";
 
-import { protectedProcedure } from "../../procedures";
+import { approvedProcedure } from "../../procedures";
 
 export const emailPreferencesRouter = {
-	get: protectedProcedure
+	get: approvedProcedure
 		.input(emptyInput)
 		.output(emailPreferencesOutputSchema)
 		.handler(async ({ context }) => {
@@ -26,7 +26,7 @@ export const emailPreferencesRouter = {
 				unsubscribedAt: prefs.unsubscribedAt ?? null,
 			};
 		}),
-	update: protectedProcedure
+	update: approvedProcedure
 		.input(emailPreferencesUpdateInput)
 		.output(emailPreferencesOutputSchema)
 		.handler(async ({ input, context }) => {
