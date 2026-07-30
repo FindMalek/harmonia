@@ -3,6 +3,7 @@ import { PIPELINE_HYDRATION_STALE_MS } from "@/shared/lib/constants";
 import type {
 	LivePipelineProgress,
 	PipelineProgressStage,
+	PipelineRunStatus,
 	PipelineStreamState,
 } from "./types";
 
@@ -34,7 +35,7 @@ export const EMPTY_SNAPSHOT: PipelineStreamState = {
 };
 
 export function snapshotFromRun(run: {
-	status: string;
+	status: PipelineRunStatus;
 	currentStage: string | null;
 	progress: Record<string, unknown> | null;
 	error: string | null;

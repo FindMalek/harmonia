@@ -15,7 +15,10 @@ export function DashboardLibraryAnalysis() {
 	const { runs } = usePipelineController();
 	const hasCompletedRun =
 		runs.data?.some(
-			(r) => r.status === "completed" || r.status === "running",
+			(r) =>
+				r.status === "completed" ||
+				r.status === "running" ||
+				r.status === "partial",
 		) ?? false;
 	const activeRunId = useOrganizeStore((s) => s.activeRunId);
 	const { liveProgress: ctxLiveProgress } = usePipelineProgress();
