@@ -8,21 +8,25 @@ alwaysApply: false
 # Package Index
 
 ## `@harmonia/auth`
-Better Auth singleton + Spotify OAuth config. Import auth from `@harmonia/core` (not directly from this package).
+Dual Better Auth instances: `createDashboardAuth()` (Spotify OAuth, `/api/auth`) and `createAdminAuth()` (email/password, `/api/admin-auth`). Import from `@harmonia/core` as `dashboardAuth`, `adminAuth`, or `auth` (dashboard alias).
 
 ## `@harmonia/common`
 Shared schemas, types, services, Trigger.dev task definitions. The bulk of business logic.
-- `src/schemas/` — Zod input/output schemas per domain
+- `src/schemas/` — Zod input/output schemas per domain (including `admin/`, `waitlist/`)
+- `src/utils/waitlist-token.ts` — HMAC tokens for waitlist status URLs
+- `src/utils/waitlist-gate.ts` — pure proxy gate decision logic
 - `src/services/brain/` — LLM classification, embeddings, clustering, playlist generation
 - `src/services/music/` — Spotify sync, lyrics fetching
 - `src/services/organize/` — pipeline orchestration + DB helpers (`updateRun`, `updateStageProgress`, `checkCancelled`)
-- `src/trigger/tasks/` — Trigger.dev task definitions (parent + 7 stage tasks)
+- `src/trigger/tasks/` — Trigger.dev task definitions (parent + stage tasks + email tasks)
+
+Run tests: `pnpm --filter @harmonia/common test`
 
 ## `@harmonia/config`
 Shared `tsconfig.base.json`. No runtime code.
 
 ## `@harmonia/core`
-Lazy initialization of auth and DB singletons. Re-exports `auth` and `db` for the whole monorepo.
+Lazy initialization of DB + `dashboardAuth` / `adminAuth`. Re-exports `auth` as dashboard alias.
 
 ## `@harmonia/db`
 Drizzle ORM schema, migrations, and DB client. Auto-detects driver: `.neon.tech` URL → serverless, otherwise → `pg`.
@@ -33,6 +37,7 @@ Zod-validated environment variable presets. **Always import from here, never `pr
 - `@harmonia/env/presets/api` — API app preset
 - `@harmonia/env/presets/web` — web app preset
 - `@harmonia/env/presets/dashboard` — dashboard app preset
+- `@harmonia/env/presets/admin` — admin app preset
 
 ## `@harmonia/logger`
 Pino structured logger. `import { logger } from "@harmonia/logger"`.

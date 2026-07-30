@@ -11,9 +11,11 @@
 		"./server": "./src/server.ts",
 		"./web": "./src/web.ts",
 		"./dashboard": "./src/dashboard.ts",
+		"./admin": "./src/admin.ts",
 		"./base": "./src/base.ts",
 		"./presets": "./src/presets/index.ts",
 		"./presets/api": "./src/presets/api.ts",
+		"./presets/admin": "./src/presets/admin.ts",
 		"./presets/dashboard": "./src/presets/dashboard.ts",
 		"./presets/web": "./src/presets/web.ts",
 		"./presets/db": "./src/presets/db.ts"

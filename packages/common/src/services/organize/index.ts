@@ -1,9 +1,8 @@
+export { incrementStageProgress } from "./progress";
 export {
+	checkCancelled,
+	PipelineCancelledError,
 	runOrganizeForUser,
 	updateRun,
-	checkCancelled,
 	updateStageProgress,
-	PipelineCancelledError,
 } from "./run-organize";
-
-export { incrementStageProgress } from "./progress";

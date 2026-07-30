@@ -8,9 +8,9 @@ type Props = {
 
 function KvRow({ label, value }: { label: string; value: string | null }) {
 	return (
-		<div className="flex items-center justify-between border-b border-border py-3 last:border-b-0">
+		<div className="flex items-center justify-between border-border border-b py-3 last:border-b-0">
 			<span className="text-[11px] text-muted-foreground">{label}</span>
-			<span className="capitalize text-foreground text-sm">{value ?? "—"}</span>
+			<span className="text-foreground text-sm capitalize">{value ?? "—"}</span>
 		</div>
 	);
 }
@@ -24,13 +24,13 @@ function energyLabel(energy: number): string {
 export function DashboardInsightsListeningSkeleton() {
 	return (
 		<div className="flex flex-col gap-5 border border-border bg-background p-5">
-			<div className="border-b border-border pb-3">
+			<div className="border-border border-b pb-3">
 				<Skeleton className="h-2 w-32" />
 			</div>
 			{[1, 2, 3].map((i) => (
 				<div
 					key={i}
-					className="flex items-center justify-between border-b border-border pb-3 last:border-b-0"
+					className="flex items-center justify-between border-border border-b pb-3 last:border-b-0"
 				>
 					<Skeleton className="h-2 w-28" />
 					<Skeleton className="h-4 w-24" />
@@ -72,7 +72,7 @@ export function DashboardInsightsListening({
 							style={{ left: `${energy * 100}%` }}
 						/>
 					</div>
-					<div className="flex justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+					<div className="flex justify-between font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
 						<span>Low</span>
 						<span>High</span>
 					</div>

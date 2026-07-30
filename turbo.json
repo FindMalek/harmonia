@@ -9,6 +9,7 @@
 		"HARMONIA_BETTER_AUTH_SECRET",
 		"NEXT_PUBLIC_HARMONIA_WEB_URL",
 		"NEXT_PUBLIC_HARMONIA_DASHBOARD_URL",
+		"NEXT_PUBLIC_HARMONIA_ADMIN_URL",
 		"HARMONIA_SPOTIFY_CLIENT_ID",
 		"HARMONIA_SPOTIFY_CLIENT_SECRET",
 		"HARMONIA_OPENAI_API_KEY",
@@ -39,6 +40,7 @@
 		"HARMONIA_BETTER_AUTH_SECRET",
 		"NEXT_PUBLIC_HARMONIA_WEB_URL",
 		"NEXT_PUBLIC_HARMONIA_DASHBOARD_URL",
+		"NEXT_PUBLIC_HARMONIA_ADMIN_URL",
 		"HARMONIA_SPOTIFY_CLIENT_ID",
 		"HARMONIA_SPOTIFY_CLIENT_SECRET",
 		"HARMONIA_OPENAI_API_KEY",
@@ -73,6 +75,9 @@
 		"check-types": {
 			"dependsOn": ["^check-types"]
 		},
+		"test": {
+			"dependsOn": ["^test"]
+		},
 		"dev": {
 			"cache": false,
 			"persistent": true
@@ -104,6 +109,9 @@
 			"cache": false
 		},
 		"db:nuke": {
+			"cache": false
+		},
+		"db:seed": {
 			"cache": false
 		}
 	}

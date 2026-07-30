@@ -14,10 +14,14 @@
 		},
 		"./utils/headers": {
 			"default": "./src/utils/headers.ts"
+		},
+		"./utils/rate-limiter": {
+			"default": "./src/utils/rate-limiter.ts"
 		}
 	},
 	"scripts": {
-		"build": "tsc --noEmit"
+		"build": "tsc --noEmit",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@harmonia/common": "workspace:*",
@@ -34,6 +38,7 @@
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"vitest": "^3.2.4"
 	}
 }

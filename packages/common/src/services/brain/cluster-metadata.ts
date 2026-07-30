@@ -1,21 +1,20 @@
 import { createGroq } from "@ai-sdk/groq";
+import { clusterMetadataSchema } from "@harmonia/common/schemas";
 import { getLlmTags } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import {
-	cluster,
 	type ClusterMeta,
+	cluster,
 	clusterTracks,
 } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
-import { Output, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
-
-import { clusterMetadataSchema } from "@harmonia/common/schemas";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 
 export async function generateClusterMetadata(userId: string): Promise<number> {

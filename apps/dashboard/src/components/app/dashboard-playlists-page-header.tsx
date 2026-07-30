@@ -1,7 +1,5 @@
 "use client";
 
-import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
-import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 import {
 	Button,
 	DropdownMenu,
@@ -10,6 +8,8 @@ import {
 	DropdownMenuTrigger,
 	Icons,
 } from "@harmonia/ui";
+import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
+import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 import { PageHeader } from "../shared/page-header";
 
 export function DashboardPlaylistsPageHeader({

@@ -1,3 +1,32 @@
+/** Admin app routes (internal tool) */
+export const ADMIN_ROUTES = {
+	overview: {
+		path: "/",
+		label: "Overview",
+		icon: "home",
+		isNav: true,
+	},
+	waitlist: {
+		path: "/waitlist",
+		label: "Waitlist",
+		icon: "users",
+		isNav: true,
+	},
+	users: {
+		path: "/users",
+		label: "Users",
+		icon: "person",
+		isNav: true,
+	},
+} as const;
+
+export type AdminRoutes = typeof ADMIN_ROUTES;
+export type AdminRouteKey = keyof AdminRoutes;
+
+export const ADMIN_NAV_ITEMS = Object.entries(ADMIN_ROUTES)
+	.filter(([, route]) => route.isNav)
+	.map(([key, route]) => ({ key, ...route }));
+
 /** Web app routes (marketing, landing, etc.) */
 export const WEB_ROUTES = {
 	home: {

@@ -15,9 +15,9 @@
 
 | Layer | Technology |
 |---|---|
-| Apps | Next.js 15 (App Router), React 19 |
+| Apps | Next.js 16 (App Router), React 19 |
 | API | oRPC (type-safe RPC + OpenAPI) |
-| Auth | Better Auth + Spotify OAuth |
+| Auth | Better Auth — dual instances (dashboard Spotify + admin email/password) |
 | Database | PostgreSQL + Drizzle ORM (Neon in production) |
 | Background jobs | Trigger.dev v4 |
 | LLM | Groq (`llama-3.3-70b-versatile` classify; `gpt-oss-120b` playlist/cluster) |
@@ -31,20 +31,22 @@
 ```
 apps/
   api         Next.js API server (port 3002)
-  dashboard   Authenticated user dashboard (port 3003)
-  web         Public-facing pages (port 3001)
+  dashboard   User dashboard — Spotify OAuth, waitlist-gated (port 3003)
+  web         Public waitlist signup (port 3001)
+  admin       Internal admin — waitlist approval (port 3004)
 
 packages/
-  auth        Better Auth + Spotify OAuth
-  common      Schemas, services, Trigger.dev tasks
+  auth        Dual Better Auth factories (dashboard + admin)
+  common      Schemas, services, Trigger.dev tasks, waitlist utilities
   config      Shared TypeScript config
-  core        Auth/DB singletons
+  core        Auth/DB singletons (dashboardAuth, adminAuth)
   db          Drizzle schema + migrations
   env         Zod-validated environment variables
   logger      Pino structured logging
   orpc        oRPC routers, procedures, context
   tracing     OpenTelemetry
   ui          shadcn/ui component library
+  email       React Email templates + Resend
 ```
 
 ## Getting Started
@@ -62,15 +64,62 @@ pnpm dev:api             # start API + Trigger.dev worker
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full setup guide.
 
+## Waitlist flow
+
+```text
+Web signup → confirmation email (/waiting?token=...)
+     ↓
+Admin approves → invite email (/api/invite/{token})
+     ↓
+Spotify OAuth → redeem invite → user.isApproved = true → onboarding → dashboard
+```
+
+Returning approved users sign in at dashboard `/login` without an invite link.
+
+## Admin dashboard (local)
+
+```bash
+# Add to .env:
+HARMONIA_ADMIN_PASSWORD="changeme123!"
+
+pnpm db:push
+pnpm db:seed              # admin@harmonia.com (override: HARMONIA_ADMIN_EMAIL)
+pnpm dev:admin            # admin only (port 3004) — needs API on :3002
+# or
+pnpm dev:ada              # API + dashboard + admin (ports 3002/3003/3004)
+```
+
+Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login).
+
+| Page | Purpose |
+|------|---------|
+| `/` | Platform stats |
+| `/waitlist` | Approve, reject, resend invite, notes |
+| `/users` | User list (role, approval, banned) |
+
+**Auth isolation:** Admin uses `/api/admin-auth` (`harmonia-admin` cookie). Dashboard uses `/api/auth` (`harmonia-dashboard` cookie). Signing into one does not sign you into the other.
+
+## Testing
+
+```bash
+pnpm test                 # vitest in @harmonia/common + @harmonia/orpc
+pnpm check-types          # TypeScript
+pnpm check                # Biome
+```
+
 ## Environment Variables
 
 All variables are prefixed `HARMONIA_` (server) or `NEXT_PUBLIC_HARMONIA_` (client). Copy `.env.example` and fill in:
 
 - `HARMONIA_DATABASE_URL` — local: `postgresql://postgres:password@localhost:5433/harmonia`
-- `HARMONIA_SPOTIFY_CLIENT_ID` / `HARMONIA_SPOTIFY_CLIENT_SECRET` — from Spotify Developer Dashboard
-- `HARMONIA_OPENAI_API_KEY` — for embeddings
-- `HARMONIA_GROQ_API_KEY` — for LLM classification and playlist generation
-- `HARMONIA_TRIGGER_SECRET_KEY` / `HARMONIA_TRIGGER_PROJECT_REF` — from [cloud.trigger.dev](https://cloud.trigger.dev)
+- `HARMONIA_ADMIN_PASSWORD` — required for `pnpm db:seed`
+- `HARMONIA_SPOTIFY_CLIENT_ID` / `HARMONIA_SPOTIFY_CLIENT_SECRET` — Spotify Developer Dashboard
+- `HARMONIA_RESEND_API_KEY` / `HARMONIA_EMAIL_FROM` — waitlist emails
+- `HARMONIA_OPENAI_API_KEY` — embeddings
+- `HARMONIA_GROQ_API_KEY` — LLM classification and playlist generation
+- `HARMONIA_TRIGGER_SECRET_KEY` / `HARMONIA_TRIGGER_PROJECT_REF` — [cloud.trigger.dev](https://cloud.trigger.dev)
+
+**Production note:** API rate limits are in-memory per process. Use Redis (or similar) before running multiple API instances.
 
 ## Contributing
 

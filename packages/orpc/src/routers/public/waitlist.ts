@@ -1,12 +1,15 @@
 import {
 	waitlistSignupInput,
 	waitlistSignupOutputSchema,
+	waitlistStatusInput,
+	waitlistStatusOutputSchema,
 } from "@harmonia/common/schemas";
 import { sendWaitlistConfirmationEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-confirmation";
+import { verifyWaitlistStatusToken } from "@harmonia/common/utils/waitlist-token";
 import { db } from "@harmonia/db";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
 import { logger } from "@harmonia/logger";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, count, eq, isNull, lt } from "drizzle-orm";
 
 import { publicProcedure } from "../../procedures";
 
@@ -67,5 +70,55 @@ export const waitlistRouter = {
 			}
 
 			return { success: true };
+		}),
+
+	status: publicProcedure
+		.meta({
+			openapi: {
+				method: "GET",
+				path: "/waitlist/status",
+				summary: "Check waitlist status by signed token",
+				tags: ["waitlist"],
+			},
+		})
+		.input(waitlistStatusInput)
+		.output(waitlistStatusOutputSchema)
+		.handler(async ({ input }) => {
+			const verified = verifyWaitlistStatusToken(input.token);
+			if (!verified) {
+				return { status: null, queuePosition: null };
+			}
+
+			const email = verified.email;
+			const [row] = await db
+				.select({
+					status: waitlistSignup.status,
+					createdAt: waitlistSignup.createdAt,
+				})
+				.from(waitlistSignup)
+				.where(eq(waitlistSignup.email, email));
+
+			if (!row) {
+				return { status: null, queuePosition: null };
+			}
+
+			if (row.status !== "pending") {
+				return { status: row.status, queuePosition: null };
+			}
+
+			const aheadRows = await db
+				.select({ ahead: count() })
+				.from(waitlistSignup)
+				.where(
+					and(
+						eq(waitlistSignup.status, "pending"),
+						lt(waitlistSignup.createdAt, row.createdAt),
+					),
+				);
+
+			return {
+				status: row.status,
+				queuePosition: (aheadRows[0]?.ahead ?? 0) + 1,
+			};
 		}),
 };

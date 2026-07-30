@@ -1,6 +1,5 @@
 import type { Icon } from "@harmonia/ui";
-import { Icons } from "@harmonia/ui";
-import { Button, cn } from "@harmonia/ui";
+import { Button, cn, Icons } from "@harmonia/ui";
 
 type EmptyStateProps = {
 	icon?: Icon;

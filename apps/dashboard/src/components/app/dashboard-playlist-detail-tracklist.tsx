@@ -1,6 +1,6 @@
 import { DashboardPlaylistDetailSectionLabel } from "./dashboard-playlist-detail-section-label";
-import { DashboardPlaylistDetailTrackRow } from "./dashboard-playlist-detail-track-row";
 import type { DashboardPlaylistDetailTrackRowTrack } from "./dashboard-playlist-detail-track-row";
+import { DashboardPlaylistDetailTrackRow } from "./dashboard-playlist-detail-track-row";
 
 export function DashboardPlaylistDetailTracklist({
 	tracks,
