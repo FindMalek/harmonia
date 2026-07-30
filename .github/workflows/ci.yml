@@ -1,5 +1,12 @@
 # Runs on every push/PR: install, lint, typecheck+build, and test — in parallel jobs
 # so a failure in one (e.g. lint) doesn't block visibility into the others.
+#
+# build/test use Turborepo's remote cache (Vercel) when TURBO_TOKEN is set, so
+# unchanged packages skip re-building/re-testing entirely. Requires:
+#   - repo secret TURBO_TOKEN: a Vercel access token (vercel.com/account/tokens)
+#   - repo variable TURBO_TEAM: findmalek-team
+# Without them, turbo silently falls back to no remote cache (still correct,
+# just slower — every run rebuilds from scratch).
 
 name: CI
 
@@ -34,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SKIP_ENV_VALIDATION: "true"
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,6 +68,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SKIP_ENV_VALIDATION: "true"
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
