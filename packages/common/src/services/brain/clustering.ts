@@ -43,7 +43,9 @@ export async function runClustering(
 	// equivalent to cosine distance (the metric text-embedding-3-small is
 	// designed for). The DB column stores raw vectors; we never mutate it —
 	// normalisation is a read-time transform local to clustering.
-	const embeddings = tracks.map((t) => l2Normalize(requireEmbedding(t.embedding)));
+	const embeddings = tracks.map((t) =>
+		l2Normalize(requireEmbedding(t.embedding)),
+	);
 
 	if (embeddings.length < CLUSTER_MIN_POINTS) {
 		logger.info(
@@ -238,7 +240,10 @@ function splitLargeClusters(
 		const candidates =
 			subClusters.length > 1
 				? subClusters.map((sub) => sub.map((si) => indices[si] as number))
-				: kmeans(subEmbeddings, Math.max(2, Math.ceil(indices.length / maxSize)))
+				: kmeans(
+						subEmbeddings,
+						Math.max(2, Math.ceil(indices.length / maxSize)),
+					)
 						.filter((sub) => sub.length > 0)
 						.map((sub) => sub.map((si) => indices[si] as number));
 
@@ -248,7 +253,13 @@ function splitLargeClusters(
 			continue;
 		}
 		result.push(
-			...splitLargeClusters(candidates, embeddings, maxSize, minPoints, depth + 1),
+			...splitLargeClusters(
+				candidates,
+				embeddings,
+				maxSize,
+				minPoints,
+				depth + 1,
+			),
 		);
 	}
 

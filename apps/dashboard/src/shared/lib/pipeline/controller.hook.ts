@@ -30,7 +30,9 @@ type PipelineRunProbe =
 
 // Single narrowing point for the SSE payload's `unknown` progress field, instead of
 // repeating the same cast at every event branch below.
-function asProgressRecord(progress: unknown): Record<string, PipelineProgressStage> {
+function asProgressRecord(
+	progress: unknown,
+): Record<string, PipelineProgressStage> {
 	return (progress as Record<string, PipelineProgressStage> | null) ?? {};
 }
 
@@ -180,9 +182,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								startedAt: data.startedAt,
 							}));
 							setLiveProgress(
-								deriveLiveProgress(
-									asProgressRecord(data.progress),
-								),
+								deriveLiveProgress(asProgressRecord(data.progress)),
 							);
 						} else if (data.event === "completed") {
 							setSnapshot((s) => ({
@@ -193,9 +193,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								completedAt: data.completedAt,
 							}));
 							setLiveProgress(
-								deriveLiveProgress(
-									asProgressRecord(data.progress),
-								),
+								deriveLiveProgress(asProgressRecord(data.progress)),
 							);
 							setConnectionState("idle");
 							invalidatePipeline();
@@ -210,9 +208,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								error: data.error ?? null,
 							}));
 							setLiveProgress(
-								deriveLiveProgress(
-									asProgressRecord(data.progress),
-								),
+								deriveLiveProgress(asProgressRecord(data.progress)),
 							);
 							setConnectionState("idle");
 							invalidatePipeline();
@@ -227,9 +223,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								error: data.error ?? "Unknown error",
 							}));
 							setLiveProgress(
-								deriveLiveProgress(
-									asProgressRecord(data.progress),
-								),
+								deriveLiveProgress(asProgressRecord(data.progress)),
 							);
 							setConnectionState("idle");
 							invalidatePipeline();

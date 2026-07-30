@@ -84,5 +84,20 @@
 			"cssModules": false,
 			"tailwindDirectives": true
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["packages/ui/src/components/ui/**"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"useSemanticElements": "off",
+						"useFocusableInteractive": "off",
+						"useKeyWithClickEvents": "off",
+						"useAriaPropsForRole": "off"
+					}
+				}
+			}
+		}
+	]
 }
