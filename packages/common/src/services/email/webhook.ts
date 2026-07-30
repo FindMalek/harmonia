@@ -26,12 +26,18 @@ export function verifyResendWebhookEvent({
 	payload,
 	headers,
 }: {
-	apiKey: string;
+	apiKey?: string;
 	webhookSecret: string;
 	payload: string;
 	headers: { id: string; timestamp: string; signature: string };
 }): ResendWebhookEvent | null {
-	const resend = new Resend(apiKey);
+	// Signature verification is a pure HMAC-SHA256 check that only needs the
+	// webhook secret + headers — the Resend API key is not used for the crypto.
+	// However, the SDK constructor throws at runtime if no key is supplied
+	// (constructor arg or RESEND_API_KEY env), so pass a non-empty placeholder
+	// when the real send key isn't configured. The placeholder is never sent
+	// over the wire: webhooks.verify performs no HTTP request.
+	const resend = new Resend(apiKey ?? "re_dummy_verify_only");
 
 	let verifiedPayload: unknown;
 	try {
