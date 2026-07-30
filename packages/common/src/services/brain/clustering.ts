@@ -10,6 +10,7 @@ import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import {
 	CLUSTER_EPSILON,
 	CLUSTER_MAX_SIZE,
+	CLUSTER_MAX_SPLIT_DEPTH,
 	CLUSTER_MIN_POINTS,
 	CLUSTER_MIN_SIZE,
 } from "../../constants/brain";
@@ -41,7 +42,7 @@ export async function runClustering(
 	// equivalent to cosine distance (the metric text-embedding-3-small is
 	// designed for). The DB column stores raw vectors; we never mutate it —
 	// normalisation is a read-time transform local to clustering.
-	const embeddings = tracks.map((t) => l2Normalize(t.embedding as number[]));
+	const embeddings = tracks.map((t) => l2Normalize(requireEmbedding(t.embedding)));
 
 	if (embeddings.length < CLUSTER_MIN_POINTS) {
 		logger.info(
@@ -209,6 +210,7 @@ function splitLargeClusters(
 	embeddings: number[][],
 	maxSize: number,
 	minPoints: number,
+	depth = 0,
 ): number[][] {
 	const result: number[][] = [];
 
@@ -232,25 +234,43 @@ function splitLargeClusters(
 		) as number[][];
 
 		// First attempt: re-run DBSCAN at a tighter epsilon on the mega-cluster.
-		if (subClusters.length > 1) {
-			for (const sub of subClusters) {
-				result.push(sub.map((si) => indices[si] as number));
-			}
+		// Fallback: DBSCAN couldn't split it (single dense blob at the tighter
+		// epsilon) — force-split by k-means into enough parts to get under maxSize.
+		const candidates =
+			subClusters.length > 1
+				? subClusters.map((sub) => sub.map((si) => indices[si] as number))
+				: kmeans(subEmbeddings, Math.max(2, Math.ceil(indices.length / maxSize)))
+						.filter((sub) => sub.length > 0)
+						.map((sub) => sub.map((si) => indices[si] as number));
+
+		// Neither DBSCAN nor k-means guarantees every resulting bucket is under
+		// maxSize (a sub-cluster can itself be a mega-cluster; k-means buckets
+		// can be imbalanced) — issue #111's original bug. Recursively re-split
+		// any bucket still oversized, bounded so pathological input (e.g.
+		// near-identical embeddings that never separate) can't recurse forever.
+		if (depth >= CLUSTER_MAX_SPLIT_DEPTH) {
+			result.push(...candidates);
 			continue;
 		}
-
-		// Fallback: DBSCAN couldn't split the mega-cluster (everything is a
-		// single dense blob at the tighter epsilon). Previously this gave up and
-		// kept the whole mega-cluster — yielding one giant playlist (issue #111).
-		// Instead, force-split by k-means into enough parts to get under maxSize.
-		const k = Math.max(2, Math.ceil(indices.length / maxSize));
-		const kmeansClusters = kmeans(subEmbeddings, k);
-		for (const sub of kmeansClusters) {
-			if (sub.length > 0) result.push(sub.map((si) => indices[si] as number));
-		}
+		result.push(
+			...splitLargeClusters(candidates, embeddings, maxSize, minPoints, depth + 1),
+		);
 	}
 
 	return result;
+}
+
+/**
+ * Narrows `track.embedding` (nullable in the column type) to `number[]`.
+ * Callers only ever pass rows from a query filtered by `isNotNull(track.embedding)`,
+ * so a null here means that invariant broke — fail loudly instead of silently
+ * casting past it.
+ */
+function requireEmbedding(embedding: number[] | null): number[] {
+	if (!embedding) {
+		throw new Error("Expected non-null track.embedding after isNotNull filter");
+	}
+	return embedding;
 }
 
 function computeCentroid(vectors: number[][]): number[] {
