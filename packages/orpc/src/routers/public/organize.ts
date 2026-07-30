@@ -9,8 +9,32 @@ import { user } from "@harmonia/db/schema/auth";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { logger } from "@harmonia/logger";
 import { ORPCError } from "@orpc/server";
+import { and, eq } from "drizzle-orm";
 
 import { cronOrAuthProcedure } from "../../procedures";
+
+const RUNNING_CONSTRAINT_NAME = "pipeline_run_one_running_per_user";
+
+function isAlreadyRunningConflict(err: unknown): boolean {
+	return (
+		typeof err === "object" &&
+		err !== null &&
+		"code" in err &&
+		(err as { code?: unknown }).code === "23505" &&
+		"constraint" in err &&
+		(err as { constraint?: unknown }).constraint === RUNNING_CONSTRAINT_NAME
+	);
+}
+
+async function findRunningRunId(userId: string): Promise<number | null> {
+	const [existing] = await db
+		.select({ id: pipelineRun.id })
+		.from(pipelineRun)
+		.where(
+			and(eq(pipelineRun.userId, userId), eq(pipelineRun.status, "running")),
+		);
+	return existing?.id ?? null;
+}
 
 /**
  * Organize pipeline: syncs Spotify, fetches lyrics, classifies, embeds, clusters, generates playlists.
@@ -44,17 +68,41 @@ export const organizeRouter = {
 					});
 				}
 				try {
-					const [run] = await db
-						.insert(pipelineRun)
-						.values({
-							userId: context.userId,
-							status: "running",
-							currentStage: "sync",
-							startedAt: new Date(),
-						})
-						.returning({ id: pipelineRun.id });
+					let run: { id: number };
+					try {
+						const [inserted] = await db
+							.insert(pipelineRun)
+							.values({
+								userId: context.userId,
+								status: "running",
+								currentStage: "sync",
+								startedAt: new Date(),
+							})
+							.returning({ id: pipelineRun.id });
 
-					if (!run) throw new Error("Failed to create run record");
+						if (!inserted) throw new Error("Failed to create run record");
+						run = inserted;
+					} catch (insertErr) {
+						if (isAlreadyRunningConflict(insertErr)) {
+							const existingRunId = await findRunningRunId(context.userId);
+							logger.info(
+								{ userId: context.userId, existingRunId },
+								"organize.run skipped — a run is already in progress for this user",
+							);
+							return {
+								success: true,
+								results: [
+									{
+										userId: context.userId,
+										runId: existingRunId ?? -1,
+										status: "skipped",
+										error: "A pipeline run is already in progress",
+									},
+								],
+							};
+						}
+						throw insertErr;
+					}
 
 					try {
 						await organizePipeline.trigger({
@@ -93,23 +141,43 @@ export const organizeRouter = {
 			const results: Array<{
 				userId: string;
 				runId: number;
-				status: "completed" | "failed";
+				status: "completed" | "failed" | "skipped";
 				error?: string;
 			}> = [];
 
 			for (const { id } of users) {
 				try {
-					const [run] = await db
-						.insert(pipelineRun)
-						.values({
-							userId: id,
-							status: "running",
-							currentStage: "sync",
-							startedAt: new Date(),
-						})
-						.returning({ id: pipelineRun.id });
+					let run: { id: number };
+					try {
+						const [inserted] = await db
+							.insert(pipelineRun)
+							.values({
+								userId: id,
+								status: "running",
+								currentStage: "sync",
+								startedAt: new Date(),
+							})
+							.returning({ id: pipelineRun.id });
 
-					if (!run) throw new Error("Failed to create run record");
+						if (!inserted) throw new Error("Failed to create run record");
+						run = inserted;
+					} catch (insertErr) {
+						if (isAlreadyRunningConflict(insertErr)) {
+							const existingRunId = await findRunningRunId(id);
+							logger.info(
+								{ userId: id, existingRunId },
+								"organize.run skipped for user — a run is already in progress",
+							);
+							results.push({
+								userId: id,
+								runId: existingRunId ?? -1,
+								status: "skipped",
+								error: "A pipeline run is already in progress",
+							});
+							continue;
+						}
+						throw insertErr;
+					}
 
 					try {
 						await organizePipeline.trigger({

@@ -17,6 +17,7 @@ export {
 	embedStageTask,
 	embedWorkerTask,
 } from "@harmonia/common/trigger/tasks/stages/embed";
+export { exportStageTask } from "@harmonia/common/trigger/tasks/stages/export";
 export { generateStageTask } from "@harmonia/common/trigger/tasks/stages/generate";
 export {
 	lyricsStageTask,

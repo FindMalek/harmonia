@@ -3,7 +3,7 @@ import { z } from "zod";
 export const organizeRunResultSchema = z.object({
 	userId: z.string(),
 	runId: z.number(),
-	status: z.enum(["completed", "partial", "failed", "cancelled"]),
+	status: z.enum(["completed", "partial", "failed", "cancelled", "skipped"]),
 	error: z.string().optional(),
 });
 export type OrganizeRunResult = z.infer<typeof organizeRunResultSchema>;

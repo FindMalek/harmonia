@@ -41,6 +41,8 @@ export type ClusterProgress = {
 export type GenerateProgress = {
 	playlists: number;
 	tracksOrganized: number;
+	/** Playlist IDs created or updated in place this run (see #158) — export candidates. */
+	updatedPlaylistIds?: number[];
 };
 
 export type PipelineProgress = {
