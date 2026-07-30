@@ -169,7 +169,7 @@ export async function generatePlaylists(
 					const updated = await updateExistingPlaylist({
 						playlistId: matchedPlaylistId,
 						clusterId: c.id,
-						meta: c.metadata as ClusterMeta | null,
+						meta: c.metadata,
 						trackRows,
 						oldTrackIds:
 							existingTrackSetsByPlaylist.get(matchedPlaylistId) ?? new Set(),
@@ -187,7 +187,7 @@ export async function generatePlaylists(
 					userId,
 					clusterId: c.id,
 					genreDomainId: c.genreDomainId,
-					meta: c.metadata as ClusterMeta | null,
+					meta: c.metadata,
 					trackRows,
 				});
 				if (created) {
@@ -278,12 +278,15 @@ async function updateExistingPlaylist(args: {
 			// The cluster this playlist maps to is always this run's fresh
 			// cluster row — last run's playlistClusters row already cascade-
 			// deleted when runClustering() wiped last run's cluster table.
-			await tx.insert(playlistClusters).values({
-				playlistId,
-				clusterId,
-				position: 0,
-				weight: 1.0,
-			});
+			// Upsert defensively: harmless if the row is already unique, but
+			// keeps this idempotent against any future retry path.
+			await tx
+				.insert(playlistClusters)
+				.values({ playlistId, clusterId, position: 0, weight: 1.0 })
+				.onConflictDoUpdate({
+					target: [playlistClusters.playlistId, playlistClusters.clusterId],
+					set: { position: 0, weight: 1.0 },
+				});
 
 			// No positional diff: nothing in the app lets a user reorder tracks
 			// within a Harmonia playlist (ordering is always algorithmic, via
