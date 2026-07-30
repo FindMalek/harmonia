@@ -2,6 +2,7 @@ export {
 	fetchLyricsForPendingTracks,
 	fetchLyricsForTrackIds,
 } from "./lyrics/fetch-lyrics";
+export { autoExportUpdatedPlaylists } from "./spotify/auto-export";
 export { getUserSpotifyAccessToken } from "./spotify/client";
 export {
 	exportAllPlaylists,

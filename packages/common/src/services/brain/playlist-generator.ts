@@ -18,16 +18,47 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
 import { generateText, Output } from "ai";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
+import {
+	jaccardSimilarity,
+	matchClustersToPlaylists,
+} from "./playlist-matcher";
+
+// Below this track-overlap similarity, a cluster is treated as unrelated to
+// any existing playlist and gets a brand new one instead of an update.
+const PLAYLIST_MATCH_THRESHOLD = 0.5;
+
+// Below this track-overlap similarity between a matched playlist's old and
+// new track set, regenerate the LLM name/description — the content changed
+// enough that the old name may no longer fit. At or above it, keep the
+// existing name (avoids repeatedly re-naming a barely-changed playlist, and
+// saves the LLM call).
+const PLAYLIST_METADATA_REGEN_THRESHOLD = 0.8;
+
+type TrackRow = {
+	id: string;
+	name: string;
+	artistNames: string | null;
+	llmMood: string | null;
+	llmTags: unknown;
+};
+
+// GenerateProgress declares updatedPlaylistIds optional (other producers of
+// this shape may omit it); this function always populates it.
+type GenerateResult = GenerateProgress & { updatedPlaylistIds: number[] };
 
 export async function generatePlaylists(
 	userId: string,
-	onProgress?: (progress: GenerateProgress) => Promise<void>,
-): Promise<GenerateProgress> {
-	const stats: GenerateProgress = { playlists: 0, tracksOrganized: 0 };
+	onProgress?: (progress: GenerateResult) => Promise<void>,
+): Promise<GenerateResult> {
+	const stats: GenerateResult = {
+		playlists: 0,
+		tracksOrganized: 0,
+		updatedPlaylistIds: [],
+	};
 
 	if (!env.HARMONIA_GROQ_API_KEY) {
 		logger.warn(
@@ -47,16 +78,44 @@ export async function generatePlaylists(
 		return stats;
 	}
 
-	await db
-		.delete(playlist)
+	// Existing Harmonia playlists + their current track membership, so new
+	// clusters can be matched against them instead of every run recreating
+	// everything from scratch (issue #158). Fetched up front, before any
+	// per-cluster LLM/DB work, since matching needs the full picture at once.
+	const existingPlaylistRows = await db
+		.select({ id: playlist.id })
+		.from(playlist)
 		.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)));
 
-	const genLimit = pLimit(5);
+	const existingTrackSetsByPlaylist = new Map<number, Set<string>>();
+	for (const p of existingPlaylistRows) {
+		existingTrackSetsByPlaylist.set(p.id, new Set());
+	}
+	if (existingPlaylistRows.length > 0) {
+		const existingTrackRows = await db
+			.select({
+				playlistId: playlistTracks.playlistId,
+				trackId: playlistTracks.trackId,
+			})
+			.from(playlistTracks)
+			.where(
+				inArray(
+					playlistTracks.playlistId,
+					existingPlaylistRows.map((p) => p.id),
+				),
+			);
+		for (const row of existingTrackRows) {
+			existingTrackSetsByPlaylist.get(row.playlistId)?.add(row.trackId);
+		}
+	}
 
-	await Promise.all(
+	// Fetch each cluster's track rows up front (parallelized) so matching can
+	// run before the per-cluster generation loop decides create vs. update.
+	const fetchLimit = pLimit(5);
+	const clusterTrackRows = await Promise.all(
 		clusters.map((c) =>
-			genLimit(async () => {
-				const trackRows = await db
+			fetchLimit(async () => {
+				const rows = await db
 					.select({
 						id: track.id,
 						name: track.name,
@@ -68,156 +127,353 @@ export async function generatePlaylists(
 					.innerJoin(track, eq(track.id, clusterTracks.trackId))
 					.where(eq(clusterTracks.clusterId, c.id))
 					.orderBy(clusterTracks.position);
+				return { clusterId: c.id, rows };
+			}),
+		),
+	);
+	const trackRowsByClusterId = new Map(
+		clusterTrackRows.map((c) => [c.clusterId, c.rows]),
+	);
 
+	const matches = matchClustersToPlaylists(
+		clusters
+			.map((c, clusterIndex) => ({
+				clusterIndex,
+				trackIds: new Set(
+					(trackRowsByClusterId.get(c.id) ?? []).map((t) => t.id),
+				),
+			}))
+			.filter((c) => c.trackIds.size > 0),
+		existingPlaylistRows.map((p) => ({
+			playlistId: p.id,
+			trackIds: existingTrackSetsByPlaylist.get(p.id) ?? new Set(),
+		})),
+		PLAYLIST_MATCH_THRESHOLD,
+	);
+	const matchedPlaylistIdByClusterIndex = new Map(
+		matches.map((m) => [m.clusterIndex, m.playlistId]),
+	);
+
+	const genLimit = pLimit(5);
+
+	await Promise.all(
+		clusters.map((c, clusterIndex) =>
+			genLimit(async () => {
+				const trackRows = trackRowsByClusterId.get(c.id) ?? [];
 				if (trackRows.length === 0) return;
 
-				const meta = c.metadata as ClusterMeta | null;
+				const matchedPlaylistId =
+					matchedPlaylistIdByClusterIndex.get(clusterIndex);
 
-				const sampleTracks = trackRows.slice(0, 8).map((t) => {
-					const artists = parseJsonStringArray(t.artistNames);
-					return `${t.name} by ${artists.join(", ")}`;
-				});
-
-				const moods: string[] = [];
-				const themes: string[] = [];
-				const vibes: string[] = [];
-				for (const t of trackRows) {
-					if (t.llmMood) moods.push(t.llmMood);
-					const tags = getLlmTags(t.llmTags);
-					if (tags.themes) themes.push(...tags.themes);
-					if (tags.vibe) vibes.push(...tags.vibe);
+				if (matchedPlaylistId !== undefined) {
+					const updated = await updateExistingPlaylist({
+						playlistId: matchedPlaylistId,
+						clusterId: c.id,
+						meta: c.metadata,
+						trackRows,
+						oldTrackIds:
+							existingTrackSetsByPlaylist.get(matchedPlaylistId) ?? new Set(),
+					});
+					if (updated) {
+						stats.playlists++;
+						stats.tracksOrganized += trackRows.length;
+						stats.updatedPlaylistIds.push(matchedPlaylistId);
+						await onProgress?.(stats);
+					}
+					return;
 				}
 
-				try {
-					const generated = await pRetry(
-						async () => {
-							const clusterInfo: Record<string, string | number> = {
-								mood: meta
-									? meta.dominantMood
-									: [...new Set(moods)].slice(0, 5).join(", "),
-								topThemes:
-									[...new Set(themes)].slice(0, 5).join(", ") || "various",
-								topVibes:
-									[...new Set(vibes)].slice(0, 5).join(", ") || "various",
-								trackCount: trackRows.length,
-								sampleTracks: sampleTracks.join("; "),
-							};
-							if (meta?.themeSummary) clusterInfo.theme = meta.themeSummary;
-							if (meta?.dominantEnergy)
-								clusterInfo.energy = meta.dominantEnergy;
-							if (meta?.suggestedArchetype)
-								clusterInfo.archetype = meta.suggestedArchetype;
-
-							const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
-							const { output } = await generateText({
-								model: groq("openai/gpt-oss-120b"),
-								output: Output.object({ schema: playlistMetadataSchema }),
-								temperature: 0,
-								prompt: llml({
-									role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
-									clusterInfo,
-									generate: [
-										"name: a creative, evocative playlist name (2-4 words, no generic names like 'My Playlist')",
-										"description: one short sentence (10-15 words max) capturing the vibe — no filler phrases",
-										"taxonomy: mood | situation | genre | hybrid",
-										"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
-									],
-								}),
-							});
-							return output;
-						},
-						{
-							retries: 2,
-							minTimeout: 2000,
-							onFailedAttempt: (error) => {
-								logger.warn(
-									{ clusterId: c.id, attempt: error.attemptNumber },
-									"Playlist metadata generation failed, retrying",
-								);
-							},
-						},
-					);
-
-					const tags = [
-						...new Set(meta?.topVibes?.length ? meta.topVibes : vibes),
-					]
-						.slice(0, 3)
-						.map((t) => t.toLowerCase());
-
-					const [inserted] = await db
-						.insert(playlist)
-						.values({
-							userId,
-							name: generated.name,
-							aiGeneratedName: generated.name,
-							description: generated.description,
-							theme: meta?.themeSummary ?? null,
-							taxonomy: generated.taxonomy,
-							genreDomainId: c.genreDomainId,
-							coverColor: generated.coverColor,
-							tags: tags.length > 0 ? tags : null,
-							trackCount: trackRows.length,
-							isGenerated: true,
-							updatedAt: new Date(),
-						})
-						.returning({ id: playlist.id });
-
-					if (!inserted) return;
-
-					await db.insert(playlistClusters).values({
-						playlistId: inserted.id,
-						clusterId: c.id,
-						position: 0,
-						weight: 1.0,
-					});
-
-					const orderedTracks = orderTracksByEnergy(trackRows);
-
-					const trackValues = orderedTracks.map((t, position) => ({
-						playlistId: inserted.id,
-						trackId: t.id,
-						position,
-					}));
-
-					if (trackValues.length > 0) {
-						const batchSize = 100;
-						for (let i = 0; i < trackValues.length; i += batchSize) {
-							await db
-								.insert(playlistTracks)
-								.values(trackValues.slice(i, i + batchSize));
-						}
-					}
-
+				const created = await createNewPlaylist({
+					userId,
+					clusterId: c.id,
+					genreDomainId: c.genreDomainId,
+					meta: c.metadata,
+					trackRows,
+				});
+				if (created) {
 					stats.playlists++;
-					stats.tracksOrganized += trackValues.length;
+					stats.tracksOrganized += trackRows.length;
 					await onProgress?.(stats);
-				} catch (err) {
-					logger.error(
-						{
-							clusterId: c.id,
-							error: err instanceof Error ? err.message : String(err),
-						},
-						"Failed to generate playlist for cluster",
-					);
 				}
 			}),
 		),
 	);
 
 	logger.info(
-		{ userId, playlists: stats.playlists },
+		{
+			userId,
+			playlists: stats.playlists,
+			updated: stats.updatedPlaylistIds.length,
+			created: stats.playlists - stats.updatedPlaylistIds.length,
+		},
 		"Completed playlist generation",
 	);
 
 	return stats;
 }
 
-function orderTracksByEnergy(
-	tracks: Array<{
-		id: string;
-		llmTags: unknown;
-	}>,
-): typeof tracks {
+async function updateExistingPlaylist(args: {
+	playlistId: number;
+	clusterId: number;
+	meta: ClusterMeta | null;
+	trackRows: TrackRow[];
+	oldTrackIds: Set<string>;
+}): Promise<boolean> {
+	const { playlistId, clusterId, meta, trackRows, oldTrackIds } = args;
+
+	const newTrackIds = new Set(trackRows.map((t) => t.id));
+	const similarity = jaccardSimilarity(oldTrackIds, newTrackIds);
+
+	// Identical membership (order-only differences aside) — nothing changed,
+	// skip the write entirely so an unchanged playlist doesn't get touched
+	// (and doesn't trigger a needless Spotify re-export downstream).
+	if (similarity === 1) return false;
+
+	const shouldRegenerateMetadata =
+		similarity < PLAYLIST_METADATA_REGEN_THRESHOLD;
+
+	let generatedMetadata: {
+		name: string;
+		description: string;
+		taxonomy: string;
+		coverColor: string;
+	} | null = null;
+
+	if (shouldRegenerateMetadata) {
+		try {
+			generatedMetadata = await generatePlaylistMetadata(meta, trackRows);
+		} catch (err) {
+			logger.error(
+				{
+					playlistId,
+					clusterId,
+					error: err instanceof Error ? err.message : String(err),
+				},
+				"Failed to regenerate playlist metadata during update; keeping existing name",
+			);
+		}
+	}
+
+	const orderedTracks = orderTracksByEnergy(trackRows);
+	const tags = deriveTags(meta, trackRows);
+
+	try {
+		await db.transaction(async (tx) => {
+			await tx
+				.update(playlist)
+				.set({
+					trackCount: orderedTracks.length,
+					...(generatedMetadata && {
+						name: generatedMetadata.name,
+						aiGeneratedName: generatedMetadata.name,
+						description: generatedMetadata.description,
+						theme: meta?.themeSummary ?? null,
+						taxonomy: generatedMetadata.taxonomy,
+						coverColor: generatedMetadata.coverColor,
+						tags: tags.length > 0 ? tags : null,
+					}),
+				})
+				.where(eq(playlist.id, playlistId));
+
+			// The cluster this playlist maps to is always this run's fresh
+			// cluster row — last run's playlistClusters row already cascade-
+			// deleted when runClustering() wiped last run's cluster table.
+			// Upsert defensively: harmless if the row is already unique, but
+			// keeps this idempotent against any future retry path.
+			await tx
+				.insert(playlistClusters)
+				.values({ playlistId, clusterId, position: 0, weight: 1.0 })
+				.onConflictDoUpdate({
+					target: [playlistClusters.playlistId, playlistClusters.clusterId],
+					set: { position: 0, weight: 1.0 },
+				});
+
+			// No positional diff: nothing in the app lets a user reorder tracks
+			// within a Harmonia playlist (ordering is always algorithmic, via
+			// orderTracksByEnergy), so a full replace is equivalent to a diff
+			// here and considerably simpler.
+			await tx
+				.delete(playlistTracks)
+				.where(eq(playlistTracks.playlistId, playlistId));
+
+			if (orderedTracks.length > 0) {
+				const batchSize = 100;
+				for (let i = 0; i < orderedTracks.length; i += batchSize) {
+					await tx.insert(playlistTracks).values(
+						orderedTracks.slice(i, i + batchSize).map((t, position) => ({
+							playlistId,
+							trackId: t.id,
+							position: i + position,
+						})),
+					);
+				}
+			}
+		});
+	} catch (err) {
+		logger.error(
+			{
+				playlistId,
+				clusterId,
+				error: err instanceof Error ? err.message : String(err),
+			},
+			"Failed to update existing playlist for cluster",
+		);
+		return false;
+	}
+
+	return true;
+}
+
+async function createNewPlaylist(args: {
+	userId: string;
+	clusterId: number;
+	genreDomainId: number;
+	meta: ClusterMeta | null;
+	trackRows: TrackRow[];
+}): Promise<boolean> {
+	const { userId, clusterId, genreDomainId, meta, trackRows } = args;
+
+	try {
+		const generated = await generatePlaylistMetadata(meta, trackRows);
+		const tags = deriveTags(meta, trackRows);
+		const orderedTracks = orderTracksByEnergy(trackRows);
+
+		const [inserted] = await db
+			.insert(playlist)
+			.values({
+				userId,
+				name: generated.name,
+				aiGeneratedName: generated.name,
+				description: generated.description,
+				theme: meta?.themeSummary ?? null,
+				taxonomy: generated.taxonomy,
+				genreDomainId,
+				coverColor: generated.coverColor,
+				tags: tags.length > 0 ? tags : null,
+				trackCount: orderedTracks.length,
+				isGenerated: true,
+				updatedAt: new Date(),
+			})
+			.returning({ id: playlist.id });
+
+		if (!inserted) return false;
+
+		await db.insert(playlistClusters).values({
+			playlistId: inserted.id,
+			clusterId,
+			position: 0,
+			weight: 1.0,
+		});
+
+		if (orderedTracks.length > 0) {
+			const batchSize = 100;
+			for (let i = 0; i < orderedTracks.length; i += batchSize) {
+				await db.insert(playlistTracks).values(
+					orderedTracks.slice(i, i + batchSize).map((t, position) => ({
+						playlistId: inserted.id,
+						trackId: t.id,
+						position: i + position,
+					})),
+				);
+			}
+		}
+
+		return true;
+	} catch (err) {
+		logger.error(
+			{
+				clusterId,
+				error: err instanceof Error ? err.message : String(err),
+			},
+			"Failed to generate playlist for cluster",
+		);
+		return false;
+	}
+}
+
+function deriveTags(meta: ClusterMeta | null, trackRows: TrackRow[]): string[] {
+	const vibes: string[] = [];
+	for (const t of trackRows) {
+		const tags = getLlmTags(t.llmTags);
+		if (tags.vibe) vibes.push(...tags.vibe);
+	}
+	return [...new Set(meta?.topVibes?.length ? meta.topVibes : vibes)]
+		.slice(0, 3)
+		.map((t) => t.toLowerCase());
+}
+
+async function generatePlaylistMetadata(
+	meta: ClusterMeta | null,
+	trackRows: TrackRow[],
+): Promise<{
+	name: string;
+	description: string;
+	taxonomy: string;
+	coverColor: string;
+}> {
+	const sampleTracks = trackRows.slice(0, 8).map((t) => {
+		const artists = parseJsonStringArray(t.artistNames);
+		return `${t.name} by ${artists.join(", ")}`;
+	});
+
+	const moods: string[] = [];
+	const themes: string[] = [];
+	const vibes: string[] = [];
+	for (const t of trackRows) {
+		if (t.llmMood) moods.push(t.llmMood);
+		const tags = getLlmTags(t.llmTags);
+		if (tags.themes) themes.push(...tags.themes);
+		if (tags.vibe) vibes.push(...tags.vibe);
+	}
+
+	return pRetry(
+		async () => {
+			const clusterInfo: Record<string, string | number> = {
+				mood: meta
+					? meta.dominantMood
+					: [...new Set(moods)].slice(0, 5).join(", "),
+				topThemes: [...new Set(themes)].slice(0, 5).join(", ") || "various",
+				topVibes: [...new Set(vibes)].slice(0, 5).join(", ") || "various",
+				trackCount: trackRows.length,
+				sampleTracks: sampleTracks.join("; "),
+			};
+			if (meta?.themeSummary) clusterInfo.theme = meta.themeSummary;
+			if (meta?.dominantEnergy) clusterInfo.energy = meta.dominantEnergy;
+			if (meta?.suggestedArchetype)
+				clusterInfo.archetype = meta.suggestedArchetype;
+
+			const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
+			const { output } = await generateText({
+				model: groq("openai/gpt-oss-120b"),
+				output: Output.object({ schema: playlistMetadataSchema }),
+				temperature: 0,
+				prompt: llml({
+					role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
+					clusterInfo,
+					generate: [
+						"name: a creative, evocative playlist name (2-4 words, no generic names like 'My Playlist')",
+						"description: one short sentence (10-15 words max) capturing the vibe — no filler phrases",
+						"taxonomy: mood | situation | genre | hybrid",
+						"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
+					],
+				}),
+			});
+			return output;
+		},
+		{
+			retries: 2,
+			minTimeout: 2000,
+			onFailedAttempt: (error) => {
+				logger.warn(
+					{ attempt: error.attemptNumber },
+					"Playlist metadata generation failed, retrying",
+				);
+			},
+		},
+	);
+}
+
+function orderTracksByEnergy(tracks: TrackRow[]): TrackRow[] {
 	const energyMap: Record<string, number> = {
 		"very low": 1,
 		low: 2,

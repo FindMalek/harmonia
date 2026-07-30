@@ -10,6 +10,7 @@ import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
 import { classifyStageTask } from "./stages/classify";
 import { clusterStageTask } from "./stages/cluster";
 import { embedStageTask } from "./stages/embed";
+import { exportStageTask } from "./stages/export";
 import { generateStageTask } from "./stages/generate";
 import { lyricsStageTask } from "./stages/lyrics";
 import { matchStageTask } from "./stages/match";
@@ -132,6 +133,22 @@ export const organizePipeline = task({
 				runId,
 			});
 
+			// Only playlists actually touched this run (created/updated by
+			// generate, or appended to by match) are candidates for auto-export —
+			// autoExportUpdatedPlaylists further restricts this to playlists the
+			// user has already manually exported at least once.
+			const touchedPlaylistIds = [
+				...new Set([
+					...(generateRun.ok ? generateRun.output.updatedPlaylistIds : []),
+					...(matchRun.ok ? matchRun.output.touchedPlaylistIds : []),
+				]),
+			];
+			const exportRun = await exportStageTask.triggerAndWait({
+				userId,
+				runId,
+				playlistIds: touchedPlaylistIds,
+			});
+
 			// Any stage that resolved with ok:false (exhausted retries, no
 			// throw) is a hard failure of the run and must not be surfaced as
 			// a clean success.
@@ -143,6 +160,7 @@ export const organizePipeline = task({
 			if (!clusterRun.ok) stageFailures.push("cluster");
 			if (!generateRun.ok) stageFailures.push("generate");
 			if (!matchRun.ok) stageFailures.push("match");
+			if (!exportRun.ok) stageFailures.push("export");
 
 			const outcome = assessRunOutcome({
 				classify: classifyRun.ok ? classifyRun.output : undefined,

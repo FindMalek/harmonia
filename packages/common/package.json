@@ -35,6 +35,9 @@
 		"./trigger/tasks/stages/match": {
 			"default": "./src/trigger/tasks/stages/match.ts"
 		},
+		"./trigger/tasks/stages/export": {
+			"default": "./src/trigger/tasks/stages/export.ts"
+		},
 		"./trigger/tasks/emails/send-organize-complete": {
 			"default": "./src/trigger/tasks/emails/send-organize-complete.ts"
 		},

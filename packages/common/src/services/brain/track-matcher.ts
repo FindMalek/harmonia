@@ -11,9 +11,14 @@ import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
 import { TRACK_MATCH_SIMILARITY_THRESHOLD } from "../../constants/brain";
 
+export type TrackMatchResult = {
+	matched: number;
+	touchedPlaylistIds: number[];
+};
+
 export async function matchNewTracksToPlaylists(
 	userId: string,
-): Promise<number> {
+): Promise<TrackMatchResult> {
 	const playlists = await db
 		.select({
 			id: playlist.id,
@@ -30,7 +35,7 @@ export async function matchNewTracksToPlaylists(
 			{ userId },
 			"No playlists with centroids; skipping track matching",
 		);
-		return 0;
+		return { matched: 0, touchedPlaylistIds: [] };
 	}
 
 	const existingAssignments = await db
@@ -60,10 +65,11 @@ export async function matchNewTracksToPlaylists(
 
 	if (tracksToMatch.length === 0) {
 		logger.info({ userId }, "No unassigned tracks to match");
-		return 0;
+		return { matched: 0, touchedPlaylistIds: [] };
 	}
 
 	let matched = 0;
+	const touchedPlaylistIds = new Set<number>();
 
 	for (const t of tracksToMatch) {
 		const embedding = t.embedding as number[];
@@ -104,22 +110,20 @@ export async function matchNewTracksToPlaylists(
 				.onConflictDoNothing();
 
 			matched++;
+			touchedPlaylistIds.add(bestPlaylistId);
 		}
 	}
 
-	if (matched > 0) {
-		const playlistIds = [...new Set(playlists.map((p) => p.id))];
-		for (const pid of playlistIds) {
-			const [countResult] = await db
-				.select({ count: sql<number>`COUNT(*)` })
-				.from(playlistTracks)
-				.where(eq(playlistTracks.playlistId, pid));
+	for (const pid of touchedPlaylistIds) {
+		const [countResult] = await db
+			.select({ count: sql<number>`COUNT(*)` })
+			.from(playlistTracks)
+			.where(eq(playlistTracks.playlistId, pid));
 
-			await db
-				.update(playlist)
-				.set({ trackCount: countResult?.count ?? 0 })
-				.where(eq(playlist.id, pid));
-		}
+		await db
+			.update(playlist)
+			.set({ trackCount: countResult?.count ?? 0 })
+			.where(eq(playlist.id, pid));
 	}
 
 	logger.info(
@@ -127,7 +131,7 @@ export async function matchNewTracksToPlaylists(
 		"Completed track-to-playlist matching",
 	);
 
-	return matched;
+	return { matched, touchedPlaylistIds: [...touchedPlaylistIds] };
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {

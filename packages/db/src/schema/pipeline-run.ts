@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
 	index,
 	jsonb,
@@ -5,6 +6,7 @@ import {
 	serial,
 	text,
 	timestamp,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
@@ -68,5 +70,9 @@ export const pipelineRun = pgTable(
 	(table) => [
 		index("pipeline_run_user_id_idx").on(table.userId),
 		index("pipeline_run_status_idx").on(table.status),
+		// At most one "running" row per user — prevents overlapping triggers from racing to update the same playlists.
+		uniqueIndex("pipeline_run_one_running_per_user")
+			.on(table.userId)
+			.where(sql`${table.status} = 'running'`),
 	],
 );
