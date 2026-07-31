@@ -1,0 +1,1 @@
+ALTER TABLE "playlist" ADD COLUMN "auto_sync_enabled" boolean DEFAULT true NOT NULL;

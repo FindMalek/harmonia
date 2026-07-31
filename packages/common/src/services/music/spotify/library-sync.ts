@@ -23,6 +23,7 @@ import {
 	fetchAllSavedTracks,
 	fetchAllUserPlaylists,
 	fetchPlaylistItems,
+	getSpotifyAccount,
 	getUserSpotifyAccessToken,
 } from "./client";
 import {
@@ -159,6 +160,9 @@ export async function syncLibraryTracks(
 
 	logger.info({ userId }, "Starting syncLibraryTracks from Spotify");
 
+	const spotifyAccount = await getSpotifyAccount(userId);
+	const spotifyUserId = spotifyAccount?.accountId ?? null;
+
 	const trackIds = new Set<string>();
 	const albumNames = new Set<string>();
 	const artistNames = new Set<string>();
@@ -288,6 +292,14 @@ export async function syncLibraryTracks(
 						return;
 					}
 				}
+
+				// Followed (non-owned) playlists are cached above for snapshot
+				// purposes but excluded here: clustering should only draw from
+				// Liked Songs + playlists the user actually owns, not playlists
+				// they merely follow (#167).
+				const isOwned =
+					spotifyUserId !== null && playlist.owner?.id === spotifyUserId;
+				if (!isOwned) return;
 
 				const info = extractTrackInfo(items);
 				for (const id of info.trackIds) trackIds.add(id);

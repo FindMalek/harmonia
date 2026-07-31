@@ -12,10 +12,14 @@ export function DashboardPlaylistDetail({
 	playlist,
 	exportPending,
 	onExport,
+	autoSyncPending,
+	onToggleAutoSync,
 }: {
 	playlist: PlaylistGetByIdOutput;
 	exportPending: boolean;
 	onExport: () => void;
+	autoSyncPending: boolean;
+	onToggleAutoSync: (checked: boolean) => void;
 }) {
 	const themesLine = playlist.themes?.join(", ") ?? null;
 
@@ -45,6 +49,9 @@ export function DashboardPlaylistDetail({
 			<DashboardPlaylistDetailActions
 				spotifyPlaylistId={playlist.spotifyPlaylistId}
 				exportedAt={playlist.exportedAt}
+				autoSyncEnabled={playlist.autoSyncEnabled}
+				autoSyncPending={autoSyncPending}
+				onToggleAutoSync={onToggleAutoSync}
 				exportPending={exportPending}
 				onExport={onExport}
 			/>

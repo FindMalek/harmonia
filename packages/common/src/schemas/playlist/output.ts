@@ -26,6 +26,7 @@ export const playlistListItemSchema = z.object({
 	isGenerated: z.boolean(),
 	spotifyPlaylistId: z.string().nullable(),
 	exportedAt: z.date().nullable(),
+	autoSyncEnabled: z.boolean(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
