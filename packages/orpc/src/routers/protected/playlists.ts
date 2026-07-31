@@ -8,6 +8,8 @@ import {
 	playlistGetByIdOutputSchema,
 	playlistListInput,
 	playlistListOutputSchema,
+	playlistTracksInput,
+	playlistTracksOutputSchema,
 	playlistUpdateInput,
 	playlistUpdateOutputSchema,
 } from "@harmonia/common/schemas";
@@ -20,7 +22,8 @@ import {
 	playlistTracks,
 } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
-import { and, desc, eq, ilike, lt } from "drizzle-orm";
+import { ORPCError } from "@orpc/server";
+import { and, desc, eq, gt, ilike, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure } from "../../procedures";
 
@@ -48,7 +51,7 @@ export const playlistsRouter = {
 
 			const hasMore = items.length > input.limit;
 			const page = hasMore ? items.slice(0, input.limit) : items;
-			const nextCursor = hasMore ? (page.at(-1)?.id ?? null) : null;
+			const nextCursor = hasMore ? (page[page.length - 1]?.id ?? null) : null;
 
 			return { items: page, nextCursor };
 		}),
@@ -66,7 +69,40 @@ export const playlistsRouter = {
 
 			if (!result) return null;
 
-			const tracks = await db
+			const [clusterRow] = await db
+				.select({ metadata: cluster.metadata })
+				.from(playlistClusters)
+				.innerJoin(cluster, eq(cluster.id, playlistClusters.clusterId))
+				.where(eq(playlistClusters.playlistId, input.id))
+				.limit(1);
+
+			const meta = clusterRow?.metadata as ClusterMeta | null;
+
+			return {
+				...result,
+				mood: meta?.dominantMood ?? null,
+				energy: meta?.dominantEnergy ?? null,
+				themes: meta?.topThemes ?? null,
+			};
+		}),
+
+	getTracks: approvedProcedure
+		.input(playlistTracksInput)
+		.output(playlistTracksOutputSchema)
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+
+			const [owned] = await db
+				.select({ id: playlist.id })
+				.from(playlist)
+				.where(
+					and(eq(playlist.id, input.playlistId), eq(playlist.userId, userId)),
+				);
+			if (!owned) {
+				throw new ORPCError("NOT_FOUND", { message: "Playlist not found" });
+			}
+
+			const rows = await db
 				.select({
 					id: track.id,
 					name: track.name,
@@ -80,25 +116,30 @@ export const playlistsRouter = {
 				})
 				.from(playlistTracks)
 				.innerJoin(track, eq(track.id, playlistTracks.trackId))
-				.where(eq(playlistTracks.playlistId, input.id))
-				.orderBy(playlistTracks.position);
+				.where(
+					and(
+						eq(playlistTracks.playlistId, input.playlistId),
+						input.cursor != null
+							? gt(playlistTracks.position, input.cursor)
+							: undefined,
+						input.search
+							? or(
+									ilike(track.name, `%${input.search}%`),
+									ilike(track.artistNames, `%${input.search}%`),
+								)
+							: undefined,
+					),
+				)
+				.orderBy(playlistTracks.position)
+				.limit(input.limit + 1);
 
-			const [clusterRow] = await db
-				.select({ metadata: cluster.metadata })
-				.from(playlistClusters)
-				.innerJoin(cluster, eq(cluster.id, playlistClusters.clusterId))
-				.where(eq(playlistClusters.playlistId, input.id))
-				.limit(1);
+			const hasMore = rows.length > input.limit;
+			const page = hasMore ? rows.slice(0, input.limit) : rows;
+			const nextCursor = hasMore
+				? (page[page.length - 1]?.position ?? null)
+				: null;
 
-			const meta = clusterRow?.metadata as ClusterMeta | null;
-
-			return {
-				...result,
-				tracks,
-				mood: meta?.dominantMood ?? null,
-				energy: meta?.dominantEnergy ?? null,
-				themes: meta?.topThemes ?? null,
-			};
+			return { items: page, nextCursor };
 		}),
 
 	update: approvedProcedure

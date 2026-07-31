@@ -6,7 +6,7 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
+import { useDeferredValue, useRef } from "react";
 import { toast } from "sonner";
 import { toastError } from "@/shared/api/error-handler";
 import { orpc } from "@/shared/api/orpc";
@@ -14,18 +14,17 @@ import { queryKeys } from "@/shared/api/query-keys";
 import { usePlaylistsStore } from "./store";
 
 const PLAYLISTS_PAGE_SIZE = 20;
+const PLAYLIST_TRACKS_PAGE_SIZE = 50;
 
 export function usePlaylistsController(updateOnSuccess?: () => void) {
 	const store = usePlaylistsStore();
 	const queryClient = useQueryClient();
-	const deferredSearch = useDeferredValue(store.search.trim());
 
 	const list = useInfiniteQuery(
 		orpc.playlists.list.infiniteOptions({
 			input: (cursor: number | null) => ({
 				cursor,
 				limit: PLAYLISTS_PAGE_SIZE,
-				search: deferredSearch || undefined,
 			}),
 			initialPageParam: null,
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -89,5 +88,40 @@ export function usePlaylistsController(updateOnSuccess?: () => void) {
 		exportMutation,
 		exportAllMutation,
 		updateMutation,
+	};
+}
+
+export function usePlaylistTracksController(playlistId: number) {
+	const store = usePlaylistsStore();
+
+	// The store's trackSearch only actually resets in the page's effect
+	// cleanup, which fires *after* this hook re-renders with the new
+	// playlistId — without this, the first render/query for a newly-viewed
+	// playlist would briefly use the previous playlist's search term.
+	const prevPlaylistIdRef = useRef(playlistId);
+	const isNewPlaylist = prevPlaylistIdRef.current !== playlistId;
+	prevPlaylistIdRef.current = playlistId;
+	const trackSearch = isNewPlaylist ? "" : store.trackSearch;
+
+	const deferredSearch = useDeferredValue(trackSearch.trim());
+
+	const tracks = useInfiniteQuery({
+		...orpc.playlists.getTracks.infiniteOptions({
+			input: (cursor: number | null) => ({
+				playlistId,
+				cursor,
+				limit: PLAYLIST_TRACKS_PAGE_SIZE,
+				search: deferredSearch || undefined,
+			}),
+			initialPageParam: null,
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		}),
+		enabled: playlistId > 0,
+	});
+
+	return {
+		tracks,
+		trackSearch,
+		setTrackSearch: store.setTrackSearch,
 	};
 }

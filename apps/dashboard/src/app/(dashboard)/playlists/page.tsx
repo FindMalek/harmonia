@@ -16,7 +16,7 @@ import { useScrollFlags } from "@/hooks/use-scroll-flags";
 import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 
 export default function PlaylistsPage() {
-	const { list, search } = usePlaylistsController();
+	const { list } = usePlaylistsController();
 	const {
 		data,
 		isLoading,
@@ -29,7 +29,7 @@ export default function PlaylistsPage() {
 	} = list;
 
 	const scrollContainerRef = useDashboardScrollContainer();
-	const { scrolled, showBackToTop } = useScrollFlags(scrollContainerRef, {
+	const { showBackToTop } = useScrollFlags(scrollContainerRef, {
 		collapseAt: 24,
 		backToTopAt: 400,
 	});
@@ -46,10 +46,7 @@ export default function PlaylistsPage() {
 	if (isError) {
 		return (
 			<div className="space-y-8">
-				<DashboardPlaylistsPageHeader
-					hasPlaylists={false}
-					scrolled={scrolled}
-				/>
+				<DashboardPlaylistsPageHeader hasPlaylists={false} />
 				<ErrorState
 					message={
 						error instanceof Error ? error.message : "Failed to load playlists"
@@ -63,46 +60,29 @@ export default function PlaylistsPage() {
 	if (isLoading) {
 		return (
 			<div className="space-y-8">
-				<DashboardPlaylistsPageHeader
-					hasPlaylists={false}
-					scrolled={scrolled}
-				/>
+				<DashboardPlaylistsPageHeader hasPlaylists={false} />
 				<DashboardPlaylistsListSkeleton />
 			</div>
 		);
 	}
 
-	const hasAnyPlaylists = playlists.length > 0 || search.length > 0;
-
 	return (
 		<div className="space-y-8">
-			<DashboardPlaylistsPageHeader
-				hasPlaylists={hasAnyPlaylists}
-				scrolled={scrolled}
-			/>
+			<DashboardPlaylistsPageHeader hasPlaylists={Boolean(playlists.length)} />
 
 			{playlists.length === 0 ? (
-				search ? (
-					<EmptyState
-						icon={Icons.search}
-						title="No matching playlists"
-						description="Try a different search."
-						variant="card"
-					/>
-				) : (
-					<EmptyState
-						icon={Icons.disc}
-						title="No playlists yet"
-						description="Run the pipeline to generate playlists from your library."
-						action={{
-							label: "Run Pipeline",
-							onClick: () => {
-								window.location.href = DASHBOARD_ROUTES.overview.path;
-							},
-						}}
-						variant="card"
-					/>
-				)
+				<EmptyState
+					icon={Icons.disc}
+					title="No playlists yet"
+					description="Run the pipeline to generate playlists from your library."
+					action={{
+						label: "Run Pipeline",
+						onClick: () => {
+							window.location.href = DASHBOARD_ROUTES.overview.path;
+						},
+					}}
+					variant="card"
+				/>
 			) : (
 				<div className="divide-y divide-border">
 					{playlists.map((pl) => (

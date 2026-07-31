@@ -6,7 +6,14 @@ import {
 	DashboardPlaylistDetailNotFound,
 	DashboardPlaylistDetailSkeleton,
 } from "@/components/app/dashboard-playlist-detail";
-import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
+import { ScrollToTopButton } from "@/components/shared/scroll-to-top-button";
+import { useDashboardScrollContainer } from "@/hooks/use-dashboard-scroll-container";
+import { useInfiniteScrollSentinel } from "@/hooks/use-infinite-scroll-sentinel";
+import { useScrollFlags } from "@/hooks/use-scroll-flags";
+import {
+	usePlaylistsController,
+	usePlaylistTracksController,
+} from "@/shared/lib/playlists/controller.hook";
 
 export default function PlaylistDetailPage({
 	params,
@@ -18,11 +25,37 @@ export default function PlaylistDetailPage({
 
 	const { setSelectedPlaylist, detail, exportMutation, updateMutation } =
 		usePlaylistsController();
+	const { tracks, trackSearch, setTrackSearch } =
+		usePlaylistTracksController(playlistId);
 
 	useEffect(() => {
 		setSelectedPlaylist(playlistId);
-		return () => setSelectedPlaylist(null);
-	}, [playlistId, setSelectedPlaylist]);
+		return () => {
+			setSelectedPlaylist(null);
+			setTrackSearch("");
+		};
+	}, [playlistId, setSelectedPlaylist, setTrackSearch]);
+
+	const scrollContainerRef = useDashboardScrollContainer();
+	const { scrolled, showBackToTop } = useScrollFlags(scrollContainerRef, {
+		collapseAt: 24,
+		backToTopAt: 400,
+	});
+
+	const {
+		data,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+		isLoading: tracksLoading,
+	} = tracks;
+	const tracksSentinelRef = useInfiniteScrollSentinel({
+		rootRef: scrollContainerRef,
+		hasNextPage,
+		isFetchingNextPage,
+		fetchNextPage,
+	});
+	const trackItems = data?.pages.flatMap((page) => page.items) ?? [];
 
 	const { data: playlist, isLoading, isError } = detail;
 
@@ -35,14 +68,27 @@ export default function PlaylistDetailPage({
 	}
 
 	return (
-		<DashboardPlaylistDetail
-			playlist={playlist}
-			exportPending={exportMutation.isPending}
-			onExport={() => exportMutation.mutate({ id: playlist.id })}
-			autoSyncPending={updateMutation.isPending}
-			onToggleAutoSync={(checked) =>
-				updateMutation.mutate({ id: playlist.id, autoSyncEnabled: checked })
-			}
-		/>
+		<>
+			<DashboardPlaylistDetail
+				playlist={playlist}
+				exportPending={exportMutation.isPending}
+				onExport={() => exportMutation.mutate({ id: playlist.id })}
+				autoSyncPending={updateMutation.isPending}
+				onToggleAutoSync={(checked) =>
+					updateMutation.mutate({ id: playlist.id, autoSyncEnabled: checked })
+				}
+				tracks={trackItems}
+				tracksLoading={tracksLoading}
+				hasNextTracksPage={hasNextPage}
+				tracksSentinelRef={tracksSentinelRef}
+				scrolled={scrolled}
+				trackSearch={trackSearch}
+				onTrackSearchChange={setTrackSearch}
+			/>
+			<ScrollToTopButton
+				visible={showBackToTop}
+				containerRef={scrollContainerRef}
+			/>
+		</>
 	);
 }
