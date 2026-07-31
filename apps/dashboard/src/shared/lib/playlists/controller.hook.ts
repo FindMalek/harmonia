@@ -1,17 +1,36 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
+import { useDeferredValue } from "react";
 import { toast } from "sonner";
 import { toastError } from "@/shared/api/error-handler";
 import { orpc } from "@/shared/api/orpc";
 import { queryKeys } from "@/shared/api/query-keys";
 import { usePlaylistsStore } from "./store";
 
+const PLAYLISTS_PAGE_SIZE = 20;
+
 export function usePlaylistsController(updateOnSuccess?: () => void) {
 	const store = usePlaylistsStore();
 	const queryClient = useQueryClient();
+	const deferredSearch = useDeferredValue(store.search.trim());
 
-	const list = useQuery(orpc.playlists.list.queryOptions({ input: {} }));
+	const list = useInfiniteQuery(
+		orpc.playlists.list.infiniteOptions({
+			input: (cursor: number | null) => ({
+				cursor,
+				limit: PLAYLISTS_PAGE_SIZE,
+				search: deferredSearch || undefined,
+			}),
+			initialPageParam: null,
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		}),
+	);
 
 	const detail = useQuery({
 		...orpc.playlists.getById.queryOptions({

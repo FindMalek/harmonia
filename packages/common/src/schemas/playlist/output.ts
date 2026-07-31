@@ -38,6 +38,12 @@ export const playlistListItemSchema = z.object({
 });
 export type PlaylistListItem = z.infer<typeof playlistListItemSchema>;
 
+export const playlistListOutputSchema = z.object({
+	items: z.array(playlistListItemSchema),
+	nextCursor: z.number().nullable(),
+});
+export type PlaylistListOutput = z.infer<typeof playlistListOutputSchema>;
+
 const playlistTrackItemSchema = z.object({
 	id: z.string(),
 	name: z.string(),
