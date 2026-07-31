@@ -8,6 +8,7 @@ import {
 	Icons,
 	Skeleton,
 } from "@harmonia/ui";
+import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { Fragment } from "react";
 import type { z } from "zod";
@@ -36,18 +37,21 @@ export function DashboardPlaylistsListRow({
 			)}
 		>
 			<div className="flex items-center justify-between gap-3">
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					<p className="text-muted-foreground text-xs uppercase tracking-wide">
 						{playlist.trackCount} tracks
 					</p>
 					{playlist.spotifyPlaylistId ? (
-						<Badge
-							variant="outline"
-							className="border-primary/40 text-primary"
-							aria-label="Exported to Spotify"
-						>
+						<Badge variant="outline" className="border-primary/40 text-primary">
 							<Icons.circleCheck className="size-3" />
+							Exported
 						</Badge>
+					) : null}
+					{playlist.spotifyPlaylistId && playlist.exportedAt ? (
+						<span className="text-muted-foreground text-xs">
+							Synced{" "}
+							{formatDistanceToNow(playlist.exportedAt, { addSuffix: true })}
+						</span>
 					) : null}
 				</div>
 				<span
