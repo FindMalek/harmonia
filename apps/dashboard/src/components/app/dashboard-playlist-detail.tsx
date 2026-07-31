@@ -48,6 +48,7 @@ export function DashboardPlaylistDetail({
 
 			<DashboardPlaylistDetailActions
 				spotifyPlaylistId={playlist.spotifyPlaylistId}
+				exportedAt={playlist.exportedAt}
 				autoSyncEnabled={playlist.autoSyncEnabled}
 				autoSyncPending={autoSyncPending}
 				onToggleAutoSync={onToggleAutoSync}

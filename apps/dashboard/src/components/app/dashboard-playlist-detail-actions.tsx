@@ -1,7 +1,9 @@
-import { Button, Icons, Switch } from "@harmonia/ui";
+import { Badge, Button, Icons, Switch } from "@harmonia/ui";
+import { formatDistanceToNow } from "date-fns";
 
 export function DashboardPlaylistDetailActions({
 	spotifyPlaylistId,
+	exportedAt,
 	autoSyncEnabled,
 	autoSyncPending,
 	onToggleAutoSync,
@@ -9,21 +11,37 @@ export function DashboardPlaylistDetailActions({
 	onExport,
 }: {
 	spotifyPlaylistId: string | null;
+	exportedAt: Date | null;
 	autoSyncEnabled: boolean;
 	autoSyncPending: boolean;
 	onToggleAutoSync: (checked: boolean) => void;
 	exportPending: boolean;
 	onExport: () => void;
 }) {
+	const isExported = Boolean(spotifyPlaylistId);
+
 	return (
 		<div className="flex flex-col gap-2">
+			{isExported ? (
+				<div className="flex items-center justify-between gap-2">
+					<Badge variant="outline" className="border-primary/40 text-primary">
+						<Icons.circleCheck className="size-3" />
+						Exported
+					</Badge>
+					{exportedAt ? (
+						<span className="text-muted-foreground text-xs">
+							Synced {formatDistanceToNow(exportedAt, { addSuffix: true })}
+						</span>
+					) : null}
+				</div>
+			) : null}
 			{spotifyPlaylistId ? (
 				<a
 					href={`https://open.spotify.com/playlist/${spotifyPlaylistId}`}
 					target="_blank"
 					rel="noreferrer"
 				>
-					<Button className="w-full bg-[#1DB954] font-bold text-black uppercase tracking-widest hover:bg-[#1ed760]">
+					<Button className="w-full bg-primary font-bold text-primary-foreground uppercase tracking-widest hover:bg-primary/90">
 						Open in Spotify
 						<Icons.externalLink className="ml-2 size-4" />
 					</Button>
@@ -38,10 +56,12 @@ export function DashboardPlaylistDetailActions({
 				{exportPending ? (
 					<>
 						<Icons.spinner className="mr-2 size-4 animate-spin" />
-						Creating...
+						{isExported ? "Updating..." : "Exporting..."}
 					</>
+				) : isExported ? (
+					"Update in Spotify"
 				) : (
-					"Create Spotify Playlist"
+					"Export to Spotify"
 				)}
 			</Button>
 			{spotifyPlaylistId ? (
