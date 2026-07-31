@@ -72,6 +72,8 @@ export const pipelineRun = pgTable(
 		startedAt: timestamp("started_at"),
 		completedAt: timestamp("completed_at"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
+		// Last heartbeat from a client actively watching this run (manual path only) — null/stale means send the completion email, recent means they're still here and can see it themselves.
+		lastClientSeenAt: timestamp("last_client_seen_at"),
 	},
 	(table) => [
 		index("pipeline_run_user_id_idx").on(table.userId),

@@ -276,6 +276,12 @@ export function DashboardAnalysisDrawer() {
 									)}
 								/>
 
+								{streamState.status === "running" && (
+									<p className="text-muted-foreground text-xs">
+										You can close this window — we'll email you when it's done.
+									</p>
+								)}
+
 								{(isPartial || isFailed) && streamState.error && (
 									<Alert variant={isPartial ? "warning" : "destructive"}>
 										<Icons.alertTriangle />

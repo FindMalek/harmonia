@@ -1,0 +1,1 @@
+ALTER TABLE "pipeline_run" ADD COLUMN "last_client_seen_at" timestamp;

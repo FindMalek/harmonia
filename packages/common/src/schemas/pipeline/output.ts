@@ -39,6 +39,13 @@ export type PipelineClearAnalysisOutput = z.infer<
 	typeof pipelineClearAnalysisOutputSchema
 >;
 
+export const pipelineHeartbeatOutputSchema = z.object({
+	ok: z.boolean(),
+});
+export type PipelineHeartbeatOutput = z.infer<
+	typeof pipelineHeartbeatOutputSchema
+>;
+
 export const pipelineStatusEventSchema = z.discriminatedUnion("event", [
 	z.object({
 		event: z.literal("progress"),

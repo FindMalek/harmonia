@@ -11,3 +11,8 @@ export const pipelineStreamStatusInput = z.object({
 export type PipelineStreamStatusInput = z.infer<
 	typeof pipelineStreamStatusInput
 >;
+
+export const pipelineHeartbeatInput = z.object({
+	id: z.number(),
+});
+export type PipelineHeartbeatInput = z.infer<typeof pipelineHeartbeatInput>;
