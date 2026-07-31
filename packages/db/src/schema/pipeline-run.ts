@@ -48,7 +48,12 @@ export type PipelineProgress = {
 	classify?: { classified: number; total: number; pending: number };
 	embed?: { embedded: number; total: number; pending: number };
 	cluster?: { clusters: number; noise: number; totalTracks: number };
-	generate?: { playlists: number; tracksOrganized: number };
+	generate?: {
+		playlists: number;
+		tracksOrganized: number;
+		updatedPlaylistIds?: number[];
+		createdPlaylists?: Array<{ id: number; name: string }>;
+	};
 	export?: Record<string, unknown>;
 };
 
@@ -60,6 +65,7 @@ export const pipelineRun = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
 		status: text("status").$type<PipelineStatus>().notNull().default("pending"),
+		triggeredBy: text("triggered_by").$type<"user" | "cron">(),
 		currentStage: text("current_stage"),
 		progress: jsonb("progress").$type<PipelineProgress>().default({}),
 		error: text("error"),

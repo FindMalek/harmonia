@@ -48,7 +48,10 @@ type TrackRow = {
 
 // GenerateProgress declares updatedPlaylistIds optional (other producers of
 // this shape may omit it); this function always populates it.
-type GenerateResult = GenerateProgress & { updatedPlaylistIds: number[] };
+type GenerateResult = GenerateProgress & {
+	updatedPlaylistIds: number[];
+	createdPlaylists: Array<{ id: number; name: string }>;
+};
 
 export async function generatePlaylists(
 	userId: string,
@@ -58,6 +61,7 @@ export async function generatePlaylists(
 		playlists: 0,
 		tracksOrganized: 0,
 		updatedPlaylistIds: [],
+		createdPlaylists: [],
 	};
 
 	if (!env.HARMONIA_GROQ_API_KEY) {
@@ -193,6 +197,7 @@ export async function generatePlaylists(
 				if (created) {
 					stats.playlists++;
 					stats.tracksOrganized += trackRows.length;
+					stats.createdPlaylists.push(created);
 					await onProgress?.(stats);
 				}
 			}),
@@ -204,7 +209,7 @@ export async function generatePlaylists(
 			userId,
 			playlists: stats.playlists,
 			updated: stats.updatedPlaylistIds.length,
-			created: stats.playlists - stats.updatedPlaylistIds.length,
+			created: stats.createdPlaylists.length,
 		},
 		"Completed playlist generation",
 	);
@@ -330,7 +335,7 @@ async function createNewPlaylist(args: {
 	genreDomainId: number;
 	meta: ClusterMeta | null;
 	trackRows: TrackRow[];
-}): Promise<boolean> {
+}): Promise<{ id: number; name: string } | null> {
 	const { userId, clusterId, genreDomainId, meta, trackRows } = args;
 
 	try {
@@ -356,7 +361,7 @@ async function createNewPlaylist(args: {
 			})
 			.returning({ id: playlist.id });
 
-		if (!inserted) return false;
+		if (!inserted) return null;
 
 		await db.insert(playlistClusters).values({
 			playlistId: inserted.id,
@@ -378,7 +383,7 @@ async function createNewPlaylist(args: {
 			}
 		}
 
-		return true;
+		return { id: inserted.id, name: generated.name };
 	} catch (err) {
 		logger.error(
 			{
@@ -387,7 +392,7 @@ async function createNewPlaylist(args: {
 			},
 			"Failed to generate playlist for cluster",
 		);
-		return false;
+		return null;
 	}
 }
 

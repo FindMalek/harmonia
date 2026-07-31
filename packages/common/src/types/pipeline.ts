@@ -43,6 +43,8 @@ export type GenerateProgress = {
 	tracksOrganized: number;
 	/** Existing playlist IDs updated in place this run (see #158) — export candidates. Excludes newly created playlists. */
 	updatedPlaylistIds?: number[];
+	/** Brand new playlists created this run (see #168's weekly digest). */
+	createdPlaylists?: Array<{ id: number; name: string }>;
 };
 
 export type PipelineProgress = {

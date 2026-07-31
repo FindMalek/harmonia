@@ -12,7 +12,10 @@ export const sendOrganizeCompleteEmailTask = task({
 	retry: { maxAttempts: 2, minTimeoutInMs: 2000, factor: 2 },
 	run: async ({ userId, runId }: { userId: string; runId: number }) => {
 		const [run] = await db
-			.select({ progress: pipelineRun.progress })
+			.select({
+				progress: pipelineRun.progress,
+				triggeredBy: pipelineRun.triggeredBy,
+			})
 			.from(pipelineRun)
 			.where(and(eq(pipelineRun.id, runId), eq(pipelineRun.userId, userId)));
 
@@ -26,11 +29,22 @@ export const sendOrganizeCompleteEmailTask = task({
 		const playlistsCreated = generate?.playlists ?? 0;
 		const tracksOrganized = generate?.tracksOrganized ?? 0;
 
+		// Manual runs ("Analyze My Music") keep the plain completion email.
+		// Only the scheduled weekly cron run gets the fuller digest (#168) —
+		// track-level detail is deliberately out of scope here, see #169.
+		const isDigest = run.triggeredBy === "cron";
+
 		const result = await sendOrganizeCompleteNotification({
 			userId,
 			runId,
 			playlistsCreated,
 			tracksOrganized,
+			digest: isDigest
+				? {
+						updatedPlaylists: generate?.updatedPlaylistIds?.length ?? 0,
+						createdPlaylists: generate?.createdPlaylists ?? [],
+					}
+				: undefined,
 		});
 
 		if (!result.ok) {

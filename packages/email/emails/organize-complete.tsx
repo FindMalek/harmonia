@@ -22,12 +22,20 @@ export type OrganizeCompleteEmailProps = {
 		name: string;
 		trackCount?: number | null;
 	}>;
+	/** Present only for the weekly cron digest variant (#168); manual runs omit this. */
+	digest?: {
+		createdCount: number;
+		updatedCount: number;
+		tracksOrganized: number;
+		newPlaylistNames: string[];
+	};
 };
 
 export function OrganizeCompleteEmail({
 	dashboardPlaylistsUrl = "http://127.0.0.1:3003/playlists",
 	recipientName,
 	topPlaylists = [],
+	digest,
 }: OrganizeCompleteEmailProps) {
 	const themeClasses = getEmailThemeClasses();
 	const lightStyles = getEmailInlineStyles("light");
@@ -39,7 +47,13 @@ export function OrganizeCompleteEmail({
 	const remainingPlaylists = playlistItems.length - 5;
 
 	return (
-		<EmailThemeProvider preview={<Preview>Your playlists are ready</Preview>}>
+		<EmailThemeProvider
+			preview={
+				<Preview>
+					{digest ? "Your weekly playlist digest" : "Your playlists are ready"}
+				</Preview>
+			}
+		>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
 				style={lightStyles.body}
@@ -57,17 +71,38 @@ export function OrganizeCompleteEmail({
 						className={`mt-[24px] mb-[8px] text-center font-normal font-serif text-[21px] ${themeClasses.heading}`}
 						style={{ color: lightStyles.text.color }}
 					>
-						Your playlists are ready, {safeName}
+						{digest
+							? `Your weekly digest, ${safeName}`
+							: `Your playlists are ready, ${safeName}`}
 					</Heading>
 					<Text
 						className={`mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.mutedText}`}
 						style={{ color: lightStyles.mutedText.color }}
 					>
-						Your latest organize run has completed. Everything is synced and
-						ready to listen in your dashboard.
+						{digest
+							? `This week: ${digest.createdCount} new playlist${digest.createdCount === 1 ? "" : "s"}, ${digest.updatedCount} playlist${digest.updatedCount === 1 ? "" : "s"} updated, ${digest.tracksOrganized} tracks organized.`
+							: "Your latest organize run has completed. Everything is synced and ready to listen in your dashboard."}
 					</Text>
 
-					{playlistItems.length > 0 &&
+					{digest &&
+						digest.newPlaylistNames.length > 0 &&
+						digest.newPlaylistNames.map((name, index) => (
+							<Section
+								key={`${name}-${index}`}
+								className={`border-t border-solid py-[10px] ${themeClasses.border}`}
+								style={{ borderColor: lightStyles.container.borderColor }}
+							>
+								<Text
+									className={`m-0 font-medium text-[14px] ${themeClasses.text}`}
+									style={{ color: lightStyles.text.color }}
+								>
+									{index + 1}. {name}
+								</Text>
+							</Section>
+						))}
+
+					{!digest &&
+						playlistItems.length > 0 &&
 						playlistItems.slice(0, 5).map((playlist, index) => (
 							<Section
 								key={`${playlist.name}-${index}`}

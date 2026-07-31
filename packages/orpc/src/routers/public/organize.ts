@@ -43,7 +43,10 @@ type InsertRunResult =
  * narrow but real race), the constraint has cleared — retry the insert
  * instead of dropping a valid request as "skipped".
  */
-async function insertRunOrSkip(userId: string): Promise<InsertRunResult> {
+async function insertRunOrSkip(
+	userId: string,
+	triggeredBy: "user" | "cron",
+): Promise<InsertRunResult> {
 	for (let attempt = 0; attempt < MAX_INSERT_ATTEMPTS; attempt++) {
 		try {
 			const [inserted] = await db
@@ -51,6 +54,7 @@ async function insertRunOrSkip(userId: string): Promise<InsertRunResult> {
 				.values({
 					userId,
 					status: "running",
+					triggeredBy,
 					currentStage: "sync",
 					startedAt: new Date(),
 				})
@@ -106,7 +110,7 @@ export const organizeRouter = {
 					});
 				}
 				try {
-					const insertResult = await insertRunOrSkip(context.userId);
+					const insertResult = await insertRunOrSkip(context.userId, "user");
 
 					if (insertResult.kind === "skipped") {
 						logger.info(
@@ -169,7 +173,7 @@ export const organizeRouter = {
 
 			for (const { id } of users) {
 				try {
-					const insertResult = await insertRunOrSkip(id);
+					const insertResult = await insertRunOrSkip(id, "cron");
 
 					if (insertResult.kind === "skipped") {
 						logger.info(

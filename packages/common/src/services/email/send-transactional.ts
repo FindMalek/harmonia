@@ -50,11 +50,16 @@ export async function sendOrganizeCompleteNotification({
 	runId,
 	playlistsCreated,
 	tracksOrganized,
+	digest,
 }: {
 	userId: string;
 	runId: number;
 	playlistsCreated: number;
 	tracksOrganized: number;
+	digest?: {
+		updatedPlaylists: number;
+		createdPlaylists: Array<{ id: number; name: string }>;
+	};
 }) {
 	const config = buildSendConfig();
 	if (!config) {
@@ -120,6 +125,14 @@ export async function sendOrganizeCompleteNotification({
 			dashboardPlaylistsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
 			recipientName: userRow.name,
 			topPlaylists: await getRecentGeneratedPlaylists(userId),
+			digest: digest
+				? {
+						createdCount: digest.createdPlaylists.length,
+						updatedCount: digest.updatedPlaylists,
+						tracksOrganized,
+						newPlaylistNames: digest.createdPlaylists.map((p) => p.name),
+					}
+				: undefined,
 		},
 	});
 

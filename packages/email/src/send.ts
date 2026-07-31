@@ -105,7 +105,9 @@ export async function sendOrganizeCompleteEmail(
 			from: config.from,
 			to: [input.to],
 			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: "Your playlists are ready",
+			subject: input.props.digest
+				? "Your weekly playlist digest"
+				: "Your playlists are ready",
 			html,
 			tags: [{ name: "category", value: "organize_complete" }],
 		},
