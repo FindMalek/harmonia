@@ -42,7 +42,13 @@ export default function PlaylistDetailPage({
 		{ collapseAt: 24, backToTopAt: 400 },
 	);
 
-	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = tracks;
+	const {
+		data,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+		isLoading: tracksLoading,
+	} = tracks;
 	const tracksSentinelRef = useInfiniteScrollSentinel({
 		rootRef: scrollContainerRef,
 		hasNextPage,
@@ -72,6 +78,7 @@ export default function PlaylistDetailPage({
 					updateMutation.mutate({ id: playlist.id, autoSyncEnabled: checked })
 				}
 				tracks={trackItems}
+				tracksLoading={tracksLoading}
 				hasNextTracksPage={hasNextPage}
 				tracksSentinelRef={tracksSentinelRef}
 				scrolled={scrolled}

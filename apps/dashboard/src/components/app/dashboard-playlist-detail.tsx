@@ -20,6 +20,7 @@ export function DashboardPlaylistDetail({
 	autoSyncPending,
 	onToggleAutoSync,
 	tracks,
+	tracksLoading,
 	hasNextTracksPage,
 	tracksSentinelRef,
 	scrolled,
@@ -32,6 +33,7 @@ export function DashboardPlaylistDetail({
 	autoSyncPending: boolean;
 	onToggleAutoSync: (checked: boolean) => void;
 	tracks: PlaylistTrackItem[];
+	tracksLoading: boolean;
 	hasNextTracksPage: boolean;
 	tracksSentinelRef: RefObject<HTMLDivElement | null>;
 	scrolled: boolean;
@@ -69,6 +71,7 @@ export function DashboardPlaylistDetail({
 
 			<DashboardPlaylistDetailTracklist
 				tracks={tracks}
+				isLoading={tracksLoading}
 				hasNextPage={hasNextTracksPage}
 				sentinelRef={tracksSentinelRef}
 			/>
