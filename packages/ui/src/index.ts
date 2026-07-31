@@ -9,6 +9,12 @@ export type { Icon } from "./components/shared/icons";
 export { Icons } from "./components/shared/icons";
 export { ModeToggle } from "./components/shared/mode-toggle";
 export { UserMenu } from "./components/shared/user-menu";
+export {
+	Alert,
+	AlertAction,
+	AlertDescription,
+	AlertTitle,
+} from "./components/ui/alert";
 export { Badge, badgeVariants } from "./components/ui/badge";
 export {
 	Breadcrumb,

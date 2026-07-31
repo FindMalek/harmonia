@@ -8,6 +8,11 @@ import { env } from "@/lib/env";
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
 		onError: (error, query) => {
+			// Background-polling queries (pipeline run/stats refetchInterval)
+			// retry themselves on their own cadence — a toast per failed poll is
+			// noise, not signal, since the next interval just tries again.
+			if (query.meta?.silent) return;
+
 			const message = error.message;
 			const fullText = `Error: ${message}`;
 			toast.error(fullText, {

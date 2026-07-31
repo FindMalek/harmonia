@@ -13,6 +13,7 @@ export function pipelineGetAllQueryOptions() {
 		staleTime: PIPELINE_HYDRATION_STALE_MS,
 		refetchOnMount: false,
 		refetchOnWindowFocus: false,
+		meta: { silent: true },
 	};
 }
 
@@ -22,6 +23,7 @@ export function pipelineStatsQueryOptions() {
 		staleTime: PIPELINE_HYDRATION_STALE_MS,
 		refetchOnMount: false,
 		refetchOnWindowFocus: false,
+		meta: { silent: true },
 	};
 }
 

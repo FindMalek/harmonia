@@ -1,7 +1,6 @@
 "use client";
 
 import { Providers } from "@harmonia/ui";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { queryClient } from "@/shared/api/orpc";
 
@@ -11,9 +10,8 @@ export default function AppProviders({
 	children: React.ReactNode;
 }) {
 	return (
-		<Providers queryClient={queryClient}>
+		<Providers queryClient={queryClient} toasterPosition="top-center">
 			{children}
-			{/* <ReactQueryDevtools /> */}
 		</Providers>
 	);
 }
