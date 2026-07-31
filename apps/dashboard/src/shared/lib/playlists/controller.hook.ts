@@ -14,18 +14,17 @@ import { queryKeys } from "@/shared/api/query-keys";
 import { usePlaylistsStore } from "./store";
 
 const PLAYLISTS_PAGE_SIZE = 20;
+const PLAYLIST_TRACKS_PAGE_SIZE = 50;
 
 export function usePlaylistsController(updateOnSuccess?: () => void) {
 	const store = usePlaylistsStore();
 	const queryClient = useQueryClient();
-	const deferredSearch = useDeferredValue(store.search.trim());
 
 	const list = useInfiniteQuery(
 		orpc.playlists.list.infiniteOptions({
 			input: (cursor: number | null) => ({
 				cursor,
 				limit: PLAYLISTS_PAGE_SIZE,
-				search: deferredSearch || undefined,
 			}),
 			initialPageParam: null,
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -89,5 +88,30 @@ export function usePlaylistsController(updateOnSuccess?: () => void) {
 		exportMutation,
 		exportAllMutation,
 		updateMutation,
+	};
+}
+
+export function usePlaylistTracksController(playlistId: number) {
+	const store = usePlaylistsStore();
+	const deferredSearch = useDeferredValue(store.trackSearch.trim());
+
+	const tracks = useInfiniteQuery({
+		...orpc.playlists.getTracks.infiniteOptions({
+			input: (cursor: number | null) => ({
+				playlistId,
+				cursor,
+				limit: PLAYLIST_TRACKS_PAGE_SIZE,
+				search: deferredSearch || undefined,
+			}),
+			initialPageParam: null,
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		}),
+		enabled: playlistId > 0,
+	});
+
+	return {
+		tracks,
+		trackSearch: store.trackSearch,
+		setTrackSearch: store.setTrackSearch,
 	};
 }

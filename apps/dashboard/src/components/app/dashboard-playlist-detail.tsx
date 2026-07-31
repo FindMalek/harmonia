@@ -1,10 +1,15 @@
 "use client";
 
-import type { PlaylistGetByIdOutput } from "@harmonia/common/schemas";
+import type {
+	PlaylistGetByIdOutput,
+	PlaylistTrackItem,
+} from "@harmonia/common/schemas";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Skeleton } from "@harmonia/ui";
+import type { RefObject } from "react";
 import { DashboardDetailBackLink } from "@/components/shared/dashboard-detail-back-link";
 import { DashboardPlaylistDetailActions } from "./dashboard-playlist-detail-actions";
+import { DashboardPlaylistDetailHeader } from "./dashboard-playlist-detail-header";
 import { DashboardPlaylistDetailMetadata } from "./dashboard-playlist-detail-metadata";
 import { DashboardPlaylistDetailTracklist } from "./dashboard-playlist-detail-tracklist";
 
@@ -14,30 +19,36 @@ export function DashboardPlaylistDetail({
 	onExport,
 	autoSyncPending,
 	onToggleAutoSync,
+	tracks,
+	hasNextTracksPage,
+	tracksSentinelRef,
+	scrolled,
+	trackSearch,
+	onTrackSearchChange,
 }: {
 	playlist: PlaylistGetByIdOutput;
 	exportPending: boolean;
 	onExport: () => void;
 	autoSyncPending: boolean;
 	onToggleAutoSync: (checked: boolean) => void;
+	tracks: PlaylistTrackItem[];
+	hasNextTracksPage: boolean;
+	tracksSentinelRef: RefObject<HTMLDivElement | null>;
+	scrolled: boolean;
+	trackSearch: string;
+	onTrackSearchChange: (value: string) => void;
 }) {
 	const themesLine = playlist.themes?.join(", ") ?? null;
 
 	return (
 		<div className="flex flex-col gap-6">
-			<DashboardDetailBackLink
-				href={DASHBOARD_ROUTES.playlists.path}
-				label="Playlists"
+			<DashboardPlaylistDetailHeader
+				name={playlist.name}
+				description={playlist.description}
+				scrolled={scrolled}
+				trackSearch={trackSearch}
+				onTrackSearchChange={onTrackSearchChange}
 			/>
-
-			<div className="flex flex-col gap-1">
-				<h1 className="font-bold text-2xl tracking-tight">{playlist.name}</h1>
-				{playlist.description ? (
-					<p className="text-muted-foreground text-sm">
-						{playlist.description}
-					</p>
-				) : null}
-			</div>
 
 			<DashboardPlaylistDetailMetadata
 				trackCount={playlist.trackCount}
@@ -56,7 +67,11 @@ export function DashboardPlaylistDetail({
 				onExport={onExport}
 			/>
 
-			<DashboardPlaylistDetailTracklist tracks={playlist.tracks} />
+			<DashboardPlaylistDetailTracklist
+				tracks={tracks}
+				hasNextPage={hasNextTracksPage}
+				sentinelRef={tracksSentinelRef}
+			/>
 		</div>
 	);
 }
