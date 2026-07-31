@@ -29,10 +29,10 @@ export default function PlaylistsPage() {
 	} = list;
 
 	const scrollContainerRef = useDashboardScrollContainer();
-	const { showBackToTop } = useScrollFlags(scrollContainerRef, {
-		collapseAt: 24,
-		backToTopAt: 400,
-	});
+	const { showBackToTop, scrollDirection } = useScrollFlags(
+		scrollContainerRef,
+		{ collapseAt: 24, backToTopAt: 400 },
+	);
 
 	const sentinelRef = useInfiniteScrollSentinel({
 		rootRef: scrollContainerRef,
@@ -95,6 +95,7 @@ export default function PlaylistsPage() {
 
 			<ScrollToTopButton
 				visible={showBackToTop}
+				scrollDirection={scrollDirection}
 				containerRef={scrollContainerRef}
 			/>
 		</div>

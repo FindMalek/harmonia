@@ -37,10 +37,10 @@ export default function PlaylistDetailPage({
 	}, [playlistId, setSelectedPlaylist, setTrackSearch]);
 
 	const scrollContainerRef = useDashboardScrollContainer();
-	const { scrolled, showBackToTop } = useScrollFlags(scrollContainerRef, {
-		collapseAt: 24,
-		backToTopAt: 400,
-	});
+	const { scrolled, showBackToTop, scrollDirection } = useScrollFlags(
+		scrollContainerRef,
+		{ collapseAt: 24, backToTopAt: 400 },
+	);
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = tracks;
 	const tracksSentinelRef = useInfiniteScrollSentinel({
@@ -80,6 +80,7 @@ export default function PlaylistDetailPage({
 			/>
 			<ScrollToTopButton
 				visible={showBackToTop}
+				scrollDirection={scrollDirection}
 				containerRef={scrollContainerRef}
 			/>
 		</>
