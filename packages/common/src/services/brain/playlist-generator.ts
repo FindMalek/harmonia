@@ -1,4 +1,5 @@
 import { createGroq } from "@ai-sdk/groq";
+import type { PlaylistMetadata } from "@harmonia/common/schemas";
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
@@ -88,13 +89,7 @@ export async function generatePlaylists(
 		.from(playlist)
 		.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)));
 
-	// Shared across every cluster processed this run (including untouched
-	// existing playlists) so no two playlists land on the same or a
-	// near-duplicate name — issue #112. Safe without locking: the only
-	// await in the check-then-add path is the LLM call itself, and nothing
-	// touches this set between a call resolving and its continuation
-	// registering the chosen name, so no other cluster's continuation can
-	// interleave in between (JS only yields at await points).
+	// Shared across every cluster processed this run so no two playlists land on the same/near-duplicate name (#112).
 	const usedPlaylistNames = new Set(
 		existingPlaylistRows.map((p) => normalizePlaylistName(p.name)),
 	);
@@ -254,12 +249,7 @@ async function updateExistingPlaylist(args: {
 	const shouldRegenerateMetadata =
 		similarity < PLAYLIST_METADATA_REGEN_THRESHOLD;
 
-	let generatedMetadata: {
-		name: string;
-		description: string;
-		taxonomy: string;
-		coverColor: string;
-	} | null = null;
+	let generatedMetadata: PlaylistMetadata | null = null;
 
 	if (shouldRegenerateMetadata) {
 		try {
@@ -440,30 +430,15 @@ function deriveTags(meta: ClusterMeta | null, trackRows: TrackRow[]): string[] {
 		.map((t) => t.toLowerCase());
 }
 
-// Bound on retrying a colliding name — one extra attempt with an explicit
-// avoid-list is enough to break most collisions without adding real latency;
-// a name that still collides after this is accepted rather than looped on.
-const MAX_NAME_COLLISION_RETRIES = 1;
+// Bound on retrying a colliding playlist name before accepting it as-is (#112).
+const MAX_NAME_COLLISION_RETRIES = 2;
 
-/**
- * Wraps generatePlaylistMetadata with a check against every other playlist
- * name already chosen this run (or existing beforehand) — issue #112.
- * Temperature alone reduces collisions but multiple clusters are named
- * concurrently, so two independent LLM calls can still land on the same
- * name. Safe to mutate `usedPlaylistNames` here without locking: the only
- * `await` in this function is the LLM call, and nothing else touches the
- * set between it resolving and this function registering the chosen name.
- */
+/** Retries generatePlaylistMetadata against an avoid-list until the name doesn't collide with another playlist chosen this run (#112). */
 async function generateUniquePlaylistMetadata(
 	meta: ClusterMeta | null,
 	trackRows: TrackRow[],
 	usedPlaylistNames: Set<string>,
-): Promise<{
-	name: string;
-	description: string;
-	taxonomy: string;
-	coverColor: string;
-}> {
+): Promise<PlaylistMetadata> {
 	const avoidNames: string[] = [];
 
 	for (let attempt = 0; attempt <= MAX_NAME_COLLISION_RETRIES; attempt++) {
@@ -498,12 +473,7 @@ async function generatePlaylistMetadata(
 	meta: ClusterMeta | null,
 	trackRows: TrackRow[],
 	avoidNames: string[] = [],
-): Promise<{
-	name: string;
-	description: string;
-	taxonomy: string;
-	coverColor: string;
-}> {
+): Promise<PlaylistMetadata> {
 	const sampleTracks = trackRows.slice(0, 8).map((t) => {
 		const artists = parseJsonStringArray(t.artistNames);
 		return `${t.name} by ${artists.join(", ")}`;
@@ -542,11 +512,7 @@ async function generatePlaylistMetadata(
 			const { output } = await generateText({
 				model: groq("openai/gpt-oss-120b"),
 				output: Output.object({ schema: playlistMetadataSchema }),
-				// 0.8, not 0: temperature 0 is deterministic, so clusters with similar
-				// mood/energy metadata always produced the same name (issue #112 —
-				// "midnight" everywhere). taxonomy/coverColor stay schema-constrained
-				// regardless of temperature, so this only adds variety where it's
-				// wanted.
+				// Not 0: temperature 0 made similar clusters always name "midnight" etc (#112).
 				temperature: 0.8,
 				prompt: llml({
 					role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
