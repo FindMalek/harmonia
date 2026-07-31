@@ -1,4 +1,5 @@
 import { createGroq } from "@ai-sdk/groq";
+import type { PlaylistMetadata } from "@harmonia/common/schemas";
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
@@ -26,6 +27,7 @@ import {
 	jaccardSimilarity,
 	matchClustersToPlaylists,
 } from "./playlist-matcher";
+import { normalizePlaylistName } from "./playlist-naming";
 
 // Below this track-overlap similarity, a cluster is treated as unrelated to
 // any existing playlist and gets a brand new one instead of an update.
@@ -83,9 +85,14 @@ export async function generatePlaylists(
 	// everything from scratch (issue #158). Fetched up front, before any
 	// per-cluster LLM/DB work, since matching needs the full picture at once.
 	const existingPlaylistRows = await db
-		.select({ id: playlist.id })
+		.select({ id: playlist.id, name: playlist.name })
 		.from(playlist)
 		.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)));
+
+	// Shared across every cluster processed this run so no two playlists land on the same/near-duplicate name (#112).
+	const usedPlaylistNames = new Set(
+		existingPlaylistRows.map((p) => normalizePlaylistName(p.name)),
+	);
 
 	const existingTrackSetsByPlaylist = new Map<number, Set<string>>();
 	for (const p of existingPlaylistRows) {
@@ -173,6 +180,7 @@ export async function generatePlaylists(
 						trackRows,
 						oldTrackIds:
 							existingTrackSetsByPlaylist.get(matchedPlaylistId) ?? new Set(),
+						usedPlaylistNames,
 					});
 					if (updated) {
 						stats.playlists++;
@@ -189,6 +197,7 @@ export async function generatePlaylists(
 					genreDomainId: c.genreDomainId,
 					meta: c.metadata,
 					trackRows,
+					usedPlaylistNames,
 				});
 				if (created) {
 					stats.playlists++;
@@ -218,8 +227,16 @@ async function updateExistingPlaylist(args: {
 	meta: ClusterMeta | null;
 	trackRows: TrackRow[];
 	oldTrackIds: Set<string>;
+	usedPlaylistNames: Set<string>;
 }): Promise<boolean> {
-	const { playlistId, clusterId, meta, trackRows, oldTrackIds } = args;
+	const {
+		playlistId,
+		clusterId,
+		meta,
+		trackRows,
+		oldTrackIds,
+		usedPlaylistNames,
+	} = args;
 
 	const newTrackIds = new Set(trackRows.map((t) => t.id));
 	const similarity = jaccardSimilarity(oldTrackIds, newTrackIds);
@@ -232,16 +249,15 @@ async function updateExistingPlaylist(args: {
 	const shouldRegenerateMetadata =
 		similarity < PLAYLIST_METADATA_REGEN_THRESHOLD;
 
-	let generatedMetadata: {
-		name: string;
-		description: string;
-		taxonomy: string;
-		coverColor: string;
-	} | null = null;
+	let generatedMetadata: PlaylistMetadata | null = null;
 
 	if (shouldRegenerateMetadata) {
 		try {
-			generatedMetadata = await generatePlaylistMetadata(meta, trackRows);
+			generatedMetadata = await generateUniquePlaylistMetadata(
+				meta,
+				trackRows,
+				usedPlaylistNames,
+			);
 		} catch (err) {
 			logger.error(
 				{
@@ -330,11 +346,23 @@ async function createNewPlaylist(args: {
 	genreDomainId: number;
 	meta: ClusterMeta | null;
 	trackRows: TrackRow[];
+	usedPlaylistNames: Set<string>;
 }): Promise<boolean> {
-	const { userId, clusterId, genreDomainId, meta, trackRows } = args;
+	const {
+		userId,
+		clusterId,
+		genreDomainId,
+		meta,
+		trackRows,
+		usedPlaylistNames,
+	} = args;
 
 	try {
-		const generated = await generatePlaylistMetadata(meta, trackRows);
+		const generated = await generateUniquePlaylistMetadata(
+			meta,
+			trackRows,
+			usedPlaylistNames,
+		);
 		const tags = deriveTags(meta, trackRows);
 		const orderedTracks = orderTracksByEnergy(trackRows);
 
@@ -402,15 +430,50 @@ function deriveTags(meta: ClusterMeta | null, trackRows: TrackRow[]): string[] {
 		.map((t) => t.toLowerCase());
 }
 
+// Bound on retrying a colliding playlist name before accepting it as-is (#112).
+const MAX_NAME_COLLISION_RETRIES = 2;
+
+/** Retries generatePlaylistMetadata against an avoid-list until the name doesn't collide with another playlist chosen this run (#112). */
+async function generateUniquePlaylistMetadata(
+	meta: ClusterMeta | null,
+	trackRows: TrackRow[],
+	usedPlaylistNames: Set<string>,
+): Promise<PlaylistMetadata> {
+	const avoidNames: string[] = [];
+
+	for (let attempt = 0; attempt <= MAX_NAME_COLLISION_RETRIES; attempt++) {
+		const result = await generatePlaylistMetadata(meta, trackRows, avoidNames);
+		const normalized = normalizePlaylistName(result.name);
+
+		if (!usedPlaylistNames.has(normalized)) {
+			usedPlaylistNames.add(normalized);
+			return result;
+		}
+
+		if (attempt < MAX_NAME_COLLISION_RETRIES) {
+			logger.warn(
+				{ name: result.name },
+				"Generated playlist name collided with an existing one; retrying with an avoid-list",
+			);
+			avoidNames.push(result.name);
+		} else {
+			// Exhausted retries — accept it. A repeated name is a worse-but-rare
+			// outcome, not worth blocking generation over.
+			usedPlaylistNames.add(normalized);
+			return result;
+		}
+	}
+
+	// Unreachable given the loop bounds above, but keeps TypeScript satisfied
+	// without a non-null assertion.
+	throw new Error("generateUniquePlaylistMetadata: exhausted retry loop");
+}
+
 async function generatePlaylistMetadata(
 	meta: ClusterMeta | null,
 	trackRows: TrackRow[],
-): Promise<{
-	name: string;
-	description: string;
-	taxonomy: string;
-	coverColor: string;
-}> {
+	avoidNames: string[] = [],
+): Promise<PlaylistMetadata> {
 	const sampleTracks = trackRows.slice(0, 8).map((t) => {
 		const artists = parseJsonStringArray(t.artistNames);
 		return `${t.name} by ${artists.join(", ")}`;
@@ -441,17 +504,26 @@ async function generatePlaylistMetadata(
 			if (meta?.dominantEnergy) clusterInfo.energy = meta.dominantEnergy;
 			if (meta?.suggestedArchetype)
 				clusterInfo.archetype = meta.suggestedArchetype;
+			if (avoidNames.length > 0) {
+				clusterInfo.namesToAvoid = avoidNames.join(", ");
+			}
 
 			const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
 			const { output } = await generateText({
 				model: groq("openai/gpt-oss-120b"),
 				output: Output.object({ schema: playlistMetadataSchema }),
-				temperature: 0,
+				// Not 0: temperature 0 made similar clusters always name "midnight" etc (#112).
+				temperature: 0.8,
 				prompt: llml({
 					role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
 					clusterInfo,
 					generate: [
-						"name: a creative, evocative playlist name (2-4 words, no generic names like 'My Playlist')",
+						"name: a creative, evocative playlist name (2-4 words) drawn from the specific sample tracks and mood below — no generic names like 'My Playlist', and avoid overused stock words like 'midnight', 'vibes', 'dreams', 'chill' unless a sample track title genuinely justifies it",
+						...(avoidNames.length > 0
+							? [
+									"This is a retry: the previous name collided with one already used this run (listed in namesToAvoid) — pick a meaningfully different name and style, not a small variation on it",
+								]
+							: []),
 						"description: one short sentence (10-15 words max) capturing the vibe — no filler phrases",
 						"taxonomy: mood | situation | genre | hybrid",
 						"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
