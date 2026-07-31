@@ -93,10 +93,16 @@ export const playlistsRouter = {
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
-			const updates: { name?: string; description?: string } = {};
+			const updates: {
+				name?: string;
+				description?: string;
+				autoSyncEnabled?: boolean;
+			} = {};
 			if (input.name !== undefined) updates.name = input.name;
 			if (input.description !== undefined)
 				updates.description = input.description;
+			if (input.autoSyncEnabled !== undefined)
+				updates.autoSyncEnabled = input.autoSyncEnabled;
 
 			if (Object.keys(updates).length === 0) return null;
 

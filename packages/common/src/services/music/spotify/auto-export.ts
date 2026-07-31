@@ -1,7 +1,7 @@
 import { db } from "@harmonia/db";
 import { playlist } from "@harmonia/db/schema/playlist";
 import { logger } from "@harmonia/logger";
-import { and, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 
 import { exportPlaylistToSpotify } from "./export";
 
@@ -13,7 +13,8 @@ export type AutoExportResult = {
 /**
  * Pushes this run's playlist changes to Spotify automatically — but ONLY for
  * playlists the user has already manually exported at least once
- * (`spotifyPlaylistId` set). A playlist the user has never exported is left
+ * (`spotifyPlaylistId` set) AND that haven't been switched to manual sync
+ * (`autoSyncEnabled`, #166). A playlist the user has never exported is left
  * database-only; exporting is what opts a playlist into ongoing automatic
  * updates, not something this pipeline decides on its own. Never creates a
  * new Spotify playlist — `exportPlaylistToSpotify` only takes the
@@ -35,6 +36,7 @@ export async function autoExportUpdatedPlaylists(
 			and(
 				inArray(playlist.id, [...touchedPlaylistIds]),
 				isNotNull(playlist.spotifyPlaylistId),
+				eq(playlist.autoSyncEnabled, true),
 			),
 		);
 
