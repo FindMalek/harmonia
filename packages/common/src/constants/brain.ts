@@ -2,8 +2,7 @@ export const EMBEDDING_MODEL = "text-embedding-3-small";
 export const EMBEDDING_BATCH_SIZE = 256;
 export const EMBEDDING_CONCURRENCY = 3;
 
-export const CLASSIFICATION_LLM_MODEL =
-	"meta-llama/llama-4-scout-17b-16e-instruct";
+export const CLASSIFICATION_LLM_MODEL = "llama-3.3-70b-versatile";
 export const CLASSIFICATION_BATCH_SIZE = 6;
 export const CLASSIFICATION_CONCURRENCY = 1;
 export const CLASSIFICATION_MAX_OUTPUT_TOKENS = 8192;
