@@ -1,3 +1,4 @@
+import type { CreatedPlaylist } from "@harmonia/common/schemas";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
@@ -5,6 +6,7 @@ import { playlist } from "@harmonia/db/schema/playlist";
 import {
 	sendFeedback3DayEmail,
 	sendOrganizeCompleteEmail,
+	sendOrganizeWeeklyDigestEmail,
 	sendWelcomeEmail,
 } from "@harmonia/email/send";
 import { env } from "@harmonia/env/server";
@@ -50,16 +52,11 @@ export async function sendOrganizeCompleteNotification({
 	runId,
 	playlistsCreated,
 	tracksOrganized,
-	digest,
 }: {
 	userId: string;
 	runId: number;
 	playlistsCreated: number;
 	tracksOrganized: number;
-	digest?: {
-		updatedPlaylists: number;
-		createdPlaylists: Array<{ id: number; name: string }>;
-	};
 }) {
 	const config = buildSendConfig();
 	if (!config) {
@@ -125,14 +122,6 @@ export async function sendOrganizeCompleteNotification({
 			dashboardPlaylistsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
 			recipientName: userRow.name,
 			topPlaylists: await getRecentGeneratedPlaylists(userId),
-			digest: digest
-				? {
-						createdCount: digest.createdPlaylists.length,
-						updatedCount: digest.updatedPlaylists,
-						tracksOrganized,
-						newPlaylistNames: digest.createdPlaylists.map((p) => p.name),
-					}
-				: undefined,
 		},
 	});
 
@@ -164,6 +153,130 @@ export async function sendOrganizeCompleteNotification({
 			userId,
 			runId,
 			templateKey: "organize_complete",
+			providerMessageId: result.emailId,
+		},
+		"Email delivery sent",
+	);
+
+	return { ok: true, reason: "sent" as const };
+}
+
+export async function sendOrganizeWeeklyDigestNotification({
+	userId,
+	runId,
+	createdPlaylists,
+	updatedPlaylists,
+	tracksOrganized,
+}: {
+	userId: string;
+	runId: number;
+	createdPlaylists: CreatedPlaylist[];
+	updatedPlaylists: number;
+	tracksOrganized: number;
+}) {
+	const config = buildSendConfig();
+	if (!config) {
+		logger.warn(
+			{ userId, runId },
+			"Skipping weekly digest email because email provider config is missing",
+		);
+		return { ok: false, reason: "provider_not_configured" as const };
+	}
+
+	const userRow = await getUserForEmail(userId);
+	if (!userRow) {
+		return { ok: false, reason: "user_not_found" as const };
+	}
+
+	const idempotencyKey = `organize-weekly-digest/${runId}`;
+	const policy = await evaluateEmailPolicy({
+		userId,
+		email: userRow.email,
+		templateKey: "organize_weekly_digest",
+	});
+	if (!policy.allowed || !userRow.email) {
+		await reserveEmailDelivery({
+			userId,
+			email: userRow.email ?? "unknown",
+			templateKey: "organize_weekly_digest",
+			idempotencyKey,
+			metadata: { runId, policyReason: policy.reason },
+		});
+		await markEmailDelivery({
+			idempotencyKey,
+			status: "skipped",
+			skipReason: policy.reason,
+		});
+		logger.info(
+			{
+				userId,
+				runId,
+				templateKey: "organize_weekly_digest",
+				reason: policy.reason,
+			},
+			"Email delivery skipped",
+		);
+		return { ok: false, reason: policy.reason };
+	}
+
+	const reservation = await reserveEmailDelivery({
+		userId,
+		email: userRow.email,
+		templateKey: "organize_weekly_digest",
+		idempotencyKey,
+		metadata: {
+			runId,
+			createdCount: createdPlaylists.length,
+			updatedPlaylists,
+			tracksOrganized,
+		},
+	});
+	if (!reservation.created) {
+		return { ok: true, reason: "already_sent" as const };
+	}
+
+	const result = await sendOrganizeWeeklyDigestEmail({
+		config,
+		to: userRow.email,
+		idempotencyKey,
+		props: {
+			dashboardPlaylistsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.playlists.path}`,
+			recipientName: userRow.name,
+			createdCount: createdPlaylists.length,
+			updatedCount: updatedPlaylists,
+			tracksOrganized,
+			newPlaylistNames: createdPlaylists.map((p) => p.name),
+		},
+	});
+
+	if (!result.ok) {
+		await markEmailDelivery({
+			idempotencyKey,
+			status: "failed",
+			error: result.error,
+		});
+		logger.warn(
+			{
+				userId,
+				runId,
+				templateKey: "organize_weekly_digest",
+				error: result.error,
+			},
+			"Email delivery failed",
+		);
+		return { ok: false, reason: "send_failed" as const, error: result.error };
+	}
+
+	await markEmailDelivery({
+		idempotencyKey,
+		status: "sent",
+		providerMessageId: result.emailId,
+	});
+	logger.info(
+		{
+			userId,
+			runId,
+			templateKey: "organize_weekly_digest",
 			providerMessageId: result.emailId,
 		},
 		"Email delivery sent",

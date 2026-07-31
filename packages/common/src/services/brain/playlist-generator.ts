@@ -1,4 +1,5 @@
 import { createGroq } from "@ai-sdk/groq";
+import type { CreatedPlaylist } from "@harmonia/common/schemas";
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
@@ -50,7 +51,7 @@ type TrackRow = {
 // this shape may omit it); this function always populates it.
 type GenerateResult = GenerateProgress & {
 	updatedPlaylistIds: number[];
-	createdPlaylists: Array<{ id: number; name: string }>;
+	createdPlaylists: CreatedPlaylist[];
 };
 
 export async function generatePlaylists(
@@ -335,7 +336,7 @@ async function createNewPlaylist(args: {
 	genreDomainId: number;
 	meta: ClusterMeta | null;
 	trackRows: TrackRow[];
-}): Promise<{ id: number; name: string } | null> {
+}): Promise<CreatedPlaylist | null> {
 	const { userId, clusterId, genreDomainId, meta, trackRows } = args;
 
 	try {

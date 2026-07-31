@@ -15,6 +15,10 @@ import {
 	type OrganizeCompleteEmailProps,
 } from "../emails/organize-complete";
 import {
+	OrganizeWeeklyDigestEmail,
+	type OrganizeWeeklyDigestEmailProps,
+} from "../emails/organize-weekly-digest";
+import {
 	WaitlistApprovedEmail,
 	type WaitlistApprovedEmailProps,
 } from "../emails/waitlist-approved";
@@ -37,6 +41,13 @@ type SendOrganizeCompleteInput = {
 	config: SendEmailConfig;
 	to: string;
 	props: OrganizeCompleteEmailProps;
+	idempotencyKey: string;
+};
+
+type SendOrganizeWeeklyDigestInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: OrganizeWeeklyDigestEmailProps;
 	idempotencyKey: string;
 };
 
@@ -105,11 +116,35 @@ export async function sendOrganizeCompleteEmail(
 			from: config.from,
 			to: [input.to],
 			replyTo: config.replyTo ? [config.replyTo] : undefined,
-			subject: input.props.digest
-				? "Your weekly playlist digest"
-				: "Your playlists are ready",
+			subject: "Your playlists are ready",
 			html,
 			tags: [{ name: "category", value: "organize_complete" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendOrganizeWeeklyDigestEmail(
+	input: SendOrganizeWeeklyDigestInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(OrganizeWeeklyDigestEmail(input.props));
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject: "Your weekly playlist digest",
+			html,
+			tags: [{ name: "category", value: "organize_weekly_digest" }],
 		},
 		{ idempotencyKey: input.idempotencyKey },
 	);

@@ -1,3 +1,5 @@
+import type { CreatedPlaylist } from "../schemas";
+
 /**
  * Stage-specific progress types for the Organize pipeline.
  * Each stage reports its own shape; PipelineProgress aggregates them.
@@ -44,7 +46,7 @@ export type GenerateProgress = {
 	/** Existing playlist IDs updated in place this run (see #158) — export candidates. Excludes newly created playlists. */
 	updatedPlaylistIds?: number[];
 	/** Brand new playlists created this run (see #168's weekly digest). */
-	createdPlaylists?: Array<{ id: number; name: string }>;
+	createdPlaylists?: CreatedPlaylist[];
 };
 
 export type PipelineProgress = {

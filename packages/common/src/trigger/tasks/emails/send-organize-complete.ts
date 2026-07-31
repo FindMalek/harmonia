@@ -4,7 +4,10 @@ import { logger } from "@harmonia/logger";
 import { task } from "@trigger.dev/sdk";
 import { and, eq } from "drizzle-orm";
 
-import { sendOrganizeCompleteNotification } from "../../../services/email";
+import {
+	sendOrganizeCompleteNotification,
+	sendOrganizeWeeklyDigestNotification,
+} from "../../../services/email";
 import { scheduleFeedback3DayEmailTask } from "./schedule-feedback-3day";
 
 export const sendOrganizeCompleteEmailTask = task({
@@ -29,23 +32,22 @@ export const sendOrganizeCompleteEmailTask = task({
 		const playlistsCreated = generate?.playlists ?? 0;
 		const tracksOrganized = generate?.tracksOrganized ?? 0;
 
-		// Manual runs ("Analyze My Music") keep the plain completion email.
-		// Only the scheduled weekly cron run gets the fuller digest (#168) —
-		// track-level detail is deliberately out of scope here, see #169.
-		const isDigest = run.triggeredBy === "cron";
-
-		const result = await sendOrganizeCompleteNotification({
-			userId,
-			runId,
-			playlistsCreated,
-			tracksOrganized,
-			digest: isDigest
-				? {
-						updatedPlaylists: generate?.updatedPlaylistIds?.length ?? 0,
+		// Manual runs keep the plain completion email; only the scheduled weekly cron run gets the digest (#168, #169).
+		const result =
+			run.triggeredBy === "cron"
+				? await sendOrganizeWeeklyDigestNotification({
+						userId,
+						runId,
 						createdPlaylists: generate?.createdPlaylists ?? [],
-					}
-				: undefined,
-		});
+						updatedPlaylists: generate?.updatedPlaylistIds?.length ?? 0,
+						tracksOrganized,
+					})
+				: await sendOrganizeCompleteNotification({
+						userId,
+						runId,
+						playlistsCreated,
+						tracksOrganized,
+					});
 
 		if (!result.ok) {
 			logger.warn(

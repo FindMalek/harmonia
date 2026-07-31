@@ -10,6 +10,12 @@ export const playlistMetadataSchema = z.object({
 });
 export type PlaylistMetadata = z.infer<typeof playlistMetadataSchema>;
 
+export const createdPlaylistSchema = z.object({
+	id: z.number(),
+	name: z.string(),
+});
+export type CreatedPlaylist = z.infer<typeof createdPlaylistSchema>;
+
 export const playlistListItemSchema = z.object({
 	id: z.number(),
 	userId: z.string(),
