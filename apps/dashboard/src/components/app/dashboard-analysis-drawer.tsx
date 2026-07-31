@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	Alert,
+	AlertDescription,
 	Button,
 	Drawer,
 	DrawerContent,
@@ -258,7 +260,7 @@ export function DashboardAnalysisDrawer() {
 									)}
 									{isPartial && (
 										<div className="mb-1 text-sm text-yellow-600">
-											Finished with low coverage
+											Low coverage
 										</div>
 									)}
 									{isFailed && (
@@ -275,32 +277,13 @@ export function DashboardAnalysisDrawer() {
 								/>
 
 								{(isPartial || isFailed) && streamState.error && (
-									<div
-										role="alert"
-										className={cn(
-											"flex items-start gap-2 border-l-2 px-3 py-2 text-xs",
-											isPartial
-												? "border-yellow-600 text-yellow-600"
-												: "border-destructive text-destructive",
-										)}
-									>
-										<Icons.alertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-										<div className="space-y-1">
-											<div className="font-medium">
-												{isPartial
-													? "Analysis finished with reduced coverage"
-													: "Analysis failed"}
-											</div>
-											<div className="text-muted-foreground">
-												{streamState.error}
-											</div>
-											{isPartial && (
-												<div className="text-muted-foreground">
-													Re-running the analysis is recommended.
-												</div>
-											)}
-										</div>
-									</div>
+									<Alert variant={isPartial ? "warning" : "destructive"}>
+										<Icons.alertTriangle />
+										<AlertDescription>
+											{streamState.error}
+											{isPartial && " Re-running is recommended."}
+										</AlertDescription>
+									</Alert>
 								)}
 							</div>
 
