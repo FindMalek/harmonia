@@ -114,15 +114,7 @@ export const rateLimiters = {
 		windowMs: 60 * 1000,
 		keyPrefix: "ratelimit:strict",
 	}),
-	/**
-	 * Authenticated default — 300 requests/min. This is one shared bucket
-	 * per user across every oRPC call (see getIdentifier), not per-endpoint,
-	 * so normal dashboard usage — several parallel queries per page load,
-	 * live-progress polling, navigating around — adds up fast. 30/min (then
-	 * 120/min) both still tripped during completely normal interactive use,
-	 * not abuse. This is generous on purpose: a real per-endpoint policy is
-	 * tracked in #34; this just needs to stop getting in the way meanwhile.
-	 */
+	/** Authenticated default — one shared bucket per user across all oRPC calls, not per-endpoint (see #34 for a real per-endpoint policy). */
 	standard: new RateLimiter({
 		max: 300,
 		windowMs: 60 * 1000,
