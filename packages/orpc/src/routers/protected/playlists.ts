@@ -6,7 +6,8 @@ import {
 	playlistExportOutputSchema,
 	playlistGetByIdInput,
 	playlistGetByIdOutputSchema,
-	playlistListItemSchema,
+	playlistListInput,
+	playlistListOutputSchema,
 	playlistUpdateInput,
 	playlistUpdateOutputSchema,
 } from "@harmonia/common/schemas";
@@ -19,24 +20,37 @@ import {
 	playlistTracks,
 } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ilike, lt } from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure } from "../../procedures";
 
 export const playlistsRouter = {
 	list: approvedProcedure
-		.input(emptyInput)
-		.output(z.array(playlistListItemSchema))
-		.handler(async ({ context }) => {
+		.input(playlistListInput)
+		.output(playlistListOutputSchema)
+		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
 
-			const playlists = await db
+			const items = await db
 				.select()
 				.from(playlist)
-				.where(eq(playlist.userId, userId))
-				.orderBy(desc(playlist.createdAt));
+				.where(
+					and(
+						eq(playlist.userId, userId),
+						input.cursor != null ? lt(playlist.id, input.cursor) : undefined,
+						input.search
+							? ilike(playlist.name, `%${input.search}%`)
+							: undefined,
+					),
+				)
+				.orderBy(desc(playlist.id))
+				.limit(input.limit + 1);
 
-			return playlists;
+			const hasMore = items.length > input.limit;
+			const page = hasMore ? items.slice(0, input.limit) : items;
+			const nextCursor = hasMore ? (page.at(-1)?.id ?? null) : null;
+
+			return { items: page, nextCursor };
 		}),
 
 	getById: approvedProcedure
