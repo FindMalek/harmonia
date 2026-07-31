@@ -16,7 +16,7 @@ export default function PlaylistDetailPage({
 	const { id } = use(params);
 	const playlistId = Number(id);
 
-	const { setSelectedPlaylist, detail, exportMutation } =
+	const { setSelectedPlaylist, detail, exportMutation, updateMutation } =
 		usePlaylistsController();
 
 	useEffect(() => {
@@ -39,6 +39,10 @@ export default function PlaylistDetailPage({
 			playlist={playlist}
 			exportPending={exportMutation.isPending}
 			onExport={() => exportMutation.mutate({ id: playlist.id })}
+			autoSyncPending={updateMutation.isPending}
+			onToggleAutoSync={(checked) =>
+				updateMutation.mutate({ id: playlist.id, autoSyncEnabled: checked })
+			}
 		/>
 	);
 }

@@ -155,6 +155,13 @@
 			"when": 1785414495470,
 			"tag": "0021_tearful_kabuki",
 			"breakpoints": true
+		},
+		{
+			"idx": 22,
+			"version": "7",
+			"when": 1785490018642,
+			"tag": "0022_lovely_shaman",
+			"breakpoints": true
 		}
 	]
 }
