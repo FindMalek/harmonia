@@ -12,16 +12,13 @@ export function DashboardPlaylistDetailActions({
 	exportPending: boolean;
 	onExport: () => void;
 }) {
-	const isExported = spotifyPlaylistId !== null;
+	const isExported = Boolean(spotifyPlaylistId);
 
 	return (
 		<div className="flex flex-col gap-2">
 			{isExported ? (
 				<div className="flex items-center justify-between gap-2">
-					<Badge
-						variant="outline"
-						className="border-[#1DB954]/40 text-[#1DB954]"
-					>
+					<Badge variant="outline" className="border-primary/40 text-primary">
 						<Icons.circleCheck className="size-3" />
 						Exported
 					</Badge>
@@ -38,7 +35,7 @@ export function DashboardPlaylistDetailActions({
 					target="_blank"
 					rel="noreferrer"
 				>
-					<Button className="w-full bg-[#1DB954] font-bold text-black uppercase tracking-widest hover:bg-[#1ed760]">
+					<Button className="w-full bg-primary font-bold text-primary-foreground uppercase tracking-widest hover:bg-primary/90">
 						Open in Spotify
 						<Icons.externalLink className="ml-2 size-4" />
 					</Button>

@@ -43,7 +43,7 @@ export function DashboardPlaylistsListRow({
 					{playlist.spotifyPlaylistId ? (
 						<Badge
 							variant="outline"
-							className="border-[#1DB954]/40 text-[#1DB954]"
+							className="border-primary/40 text-primary"
 							aria-label="Exported to Spotify"
 						>
 							<Icons.circleCheck className="size-3" />
