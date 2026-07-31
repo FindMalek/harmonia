@@ -20,7 +20,7 @@
 | Auth | Better Auth — dual instances (dashboard Spotify + admin email/password) |
 | Database | PostgreSQL + Drizzle ORM (Neon in production) |
 | Background jobs | Trigger.dev v4 |
-| LLM | Groq (`llama-3.3-70b-versatile` classify; `gpt-oss-120b` playlist/cluster) |
+| LLM | Groq (`gpt-oss-20b` classify; `gpt-oss-120b` playlist/cluster) |
 | Embeddings | OpenAI `text-embedding-3-small` |
 | Clustering | DBSCAN (`density-clustering`) |
 | Monorepo | pnpm + Turborepo |
