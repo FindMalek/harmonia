@@ -21,6 +21,7 @@ export {
 	sendWaitlistApprovedNotification,
 	sendWaitlistConfirmationNotification,
 } from "./send-waitlist";
+export { wasStillWatching } from "./watching";
 export {
 	processResendWebhookEvent,
 	type ResendWebhookEvent,

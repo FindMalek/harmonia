@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import {
 	sendOrganizeCompleteNotification,
 	sendOrganizeWeeklyDigestNotification,
+	wasStillWatching,
 } from "../../../services/email";
 import { scheduleFeedback3DayEmailTask } from "./schedule-feedback-3day";
 
@@ -40,18 +41,25 @@ export const sendOrganizeCompleteEmailTask = task({
 		const tracksOrganized = generate?.tracksOrganized ?? 0;
 		const isCron = run.triggeredBy === "cron";
 
-		const stillWatching =
-			!isCron &&
-			run.lastClientSeenAt !== null &&
-			run.completedAt !== null &&
-			run.completedAt.getTime() - run.lastClientSeenAt.getTime() <
-				MANUAL_EMAIL_AWAY_THRESHOLD_MS;
+		const stillWatching = wasStillWatching({
+			triggeredBy: run.triggeredBy,
+			completedAt: run.completedAt,
+			lastClientSeenAt: run.lastClientSeenAt,
+			awayThresholdMs: MANUAL_EMAIL_AWAY_THRESHOLD_MS,
+		});
 
 		if (stillWatching) {
 			logger.info(
 				{ userId, runId },
 				"Skipping organize completion email — user was still watching when the run finished",
 			);
+			// Still an ok:true outcome (matches the already_sent path below) — the
+			// 3-day feedback follow-up should fire regardless of whether the
+			// completion email itself was needed.
+			await scheduleFeedback3DayEmailTask.trigger({
+				userId,
+				campaignKey: `organize-run-${runId}`,
+			});
 			return { ok: true, reason: "user_still_watching" as const };
 		}
 
