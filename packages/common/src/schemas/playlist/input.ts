@@ -9,6 +9,7 @@ export const playlistUpdateInput = z.object({
 	id: z.number(),
 	name: z.string().optional(),
 	description: z.string().optional(),
+	autoSyncEnabled: z.boolean().optional(),
 });
 export type PlaylistUpdateInput = z.infer<typeof playlistUpdateInput>;
 

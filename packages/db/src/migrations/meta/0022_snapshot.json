@@ -1,5 +1,5 @@
 {
-	"id": "3f9326cf-c458-4561-8268-1de524566fc4",
+	"id": "7c695760-0510-44bc-a84d-f42d3f846621",
 	"prevId": "4d61a681-01cf-46fd-830d-e23f262d0d72",
 	"version": "7",
 	"dialect": "postgresql",
@@ -1094,12 +1094,6 @@
 					"notNull": true,
 					"default": "'pending'"
 				},
-				"triggered_by": {
-					"name": "triggered_by",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false
-				},
 				"current_stage": {
 					"name": "current_stage",
 					"type": "text",
@@ -1299,6 +1293,13 @@
 					"type": "timestamp",
 					"primaryKey": false,
 					"notNull": false
+				},
+				"auto_sync_enabled": {
+					"name": "auto_sync_enabled",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
 				},
 				"created_at": {
 					"name": "created_at",

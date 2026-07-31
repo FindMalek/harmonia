@@ -114,9 +114,9 @@ export const rateLimiters = {
 		windowMs: 60 * 1000,
 		keyPrefix: "ratelimit:strict",
 	}),
-	/** Authenticated default — 30 requests/min */
+	/** Authenticated default — one shared bucket per user across all oRPC calls, not per-endpoint (see #34 for a real per-endpoint policy). */
 	standard: new RateLimiter({
-		max: 30,
+		max: 300,
 		windowMs: 60 * 1000,
 		keyPrefix: "ratelimit:standard",
 	}),

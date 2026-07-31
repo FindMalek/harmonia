@@ -154,4 +154,21 @@ if (!row || row.banned || !row.isApproved) {
 
 ## No Comments Rule
 
-No comments unless the WHY is non-obvious: a hidden constraint, a workaround for a specific bug, behaviour that would surprise a reader. One line max — if it needs more, it belongs in the relevant `.cursor/rules/*.mdc` doc, not the code.
+Default to no comment. Add one only when the WHY is genuinely non-obvious from
+the code itself: a hidden constraint, a workaround for a specific bug,
+behavior that would surprise a reader. Never comment WHAT the code does —
+that's what naming is for.
+
+Hard limits:
+
+- **One line, always.** No multi-line comment blocks, no wrapped paragraphs
+  above a function or a field. If it doesn't fit on one line, cut it down
+  until it does — don't wrap it instead.
+- If the reasoning genuinely can't compress to one line, it belongs in the
+  relevant `.cursor/rules/*.mdc` doc, not the code. Code comments point at a
+  local, single-spot reason; anything broader (a convention, a pattern, a
+  design decision affecting multiple call sites) is a rule doc's job.
+- Never restate the name of the thing being commented, never describe normal
+  control flow, never leave a comment a reviewer would delete without asking.
+- When in doubt, don't write it. A missing comment costs nothing; a bad one
+  gets copy-pasted forever.
