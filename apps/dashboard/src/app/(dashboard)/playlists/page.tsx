@@ -2,7 +2,6 @@
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Icons } from "@harmonia/ui";
-import { useEffect, useRef } from "react";
 import {
 	DashboardPlaylistsListRow,
 	DashboardPlaylistsListSkeleton,
@@ -12,6 +11,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { ScrollToTopButton } from "@/components/shared/scroll-to-top-button";
 import { useDashboardScrollContainer } from "@/hooks/use-dashboard-scroll-container";
+import { useInfiniteScrollSentinel } from "@/hooks/use-infinite-scroll-sentinel";
 import { useScrollFlags } from "@/hooks/use-scroll-flags";
 import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 
@@ -34,24 +34,12 @@ export default function PlaylistsPage() {
 		backToTopAt: 400,
 	});
 
-	const sentinelRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const sentinel = sentinelRef.current;
-		const root = scrollContainerRef.current;
-		if (!sentinel || !root) return;
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
-					fetchNextPage();
-				}
-			},
-			{ root, rootMargin: "200px" },
-		);
-		observer.observe(sentinel);
-		return () => observer.disconnect();
-	}, [scrollContainerRef, hasNextPage, isFetchingNextPage, fetchNextPage]);
+	const sentinelRef = useInfiniteScrollSentinel({
+		rootRef: scrollContainerRef,
+		hasNextPage,
+		isFetchingNextPage,
+		fetchNextPage,
+	});
 
 	const playlists = data?.pages.flatMap((page) => page.items) ?? [];
 
