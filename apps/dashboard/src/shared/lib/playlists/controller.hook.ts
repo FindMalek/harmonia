@@ -6,7 +6,7 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
+import { useDeferredValue, useRef } from "react";
 import { toast } from "sonner";
 import { toastError } from "@/shared/api/error-handler";
 import { orpc } from "@/shared/api/orpc";
@@ -93,7 +93,17 @@ export function usePlaylistsController(updateOnSuccess?: () => void) {
 
 export function usePlaylistTracksController(playlistId: number) {
 	const store = usePlaylistsStore();
-	const deferredSearch = useDeferredValue(store.trackSearch.trim());
+
+	// The store's trackSearch only actually resets in the page's effect
+	// cleanup, which fires *after* this hook re-renders with the new
+	// playlistId — without this, the first render/query for a newly-viewed
+	// playlist would briefly use the previous playlist's search term.
+	const prevPlaylistIdRef = useRef(playlistId);
+	const isNewPlaylist = prevPlaylistIdRef.current !== playlistId;
+	prevPlaylistIdRef.current = playlistId;
+	const trackSearch = isNewPlaylist ? "" : store.trackSearch;
+
+	const deferredSearch = useDeferredValue(trackSearch.trim());
 
 	const tracks = useInfiniteQuery({
 		...orpc.playlists.getTracks.infiniteOptions({
@@ -111,7 +121,7 @@ export function usePlaylistTracksController(playlistId: number) {
 
 	return {
 		tracks,
-		trackSearch: store.trackSearch,
+		trackSearch,
 		setTrackSearch: store.setTrackSearch,
 	};
 }
