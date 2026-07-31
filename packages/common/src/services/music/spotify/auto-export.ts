@@ -10,17 +10,7 @@ export type AutoExportResult = {
 	failed: number;
 };
 
-/**
- * Pushes this run's playlist changes to Spotify automatically — but ONLY for
- * playlists the user has already manually exported at least once
- * (`spotifyPlaylistId` set) AND that haven't been switched to manual sync
- * (`autoSyncEnabled`, #166). A playlist the user has never exported is left
- * database-only; exporting is what opts a playlist into ongoing automatic
- * updates, not something this pipeline decides on its own. Never creates a
- * new Spotify playlist — `exportPlaylistToSpotify` only takes the
- * update-in-place branch here, by construction (only already-exported
- * playlists are passed in).
- */
+/** Auto-syncs only playlists already exported at least once with autoSyncEnabled still on (#166); never creates a new Spotify playlist. */
 export async function autoExportUpdatedPlaylists(
 	userId: string,
 	touchedPlaylistIds: readonly number[],

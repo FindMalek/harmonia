@@ -36,9 +36,7 @@ export const playlist = pgTable(
 		isGenerated: boolean("is_generated").default(false).notNull(),
 		spotifyPlaylistId: text("spotify_playlist_id"),
 		exportedAt: timestamp("exported_at"),
-		// Default true: every already-exported playlist keeps auto-updating on
-		// Spotify exactly as before this column existed (#166) — opt-out, not
-		// opt-in.
+		// Default true: opt-out, not opt-in — existing exported playlists keep auto-updating (#166).
 		autoSyncEnabled: boolean("auto_sync_enabled").default(true).notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
