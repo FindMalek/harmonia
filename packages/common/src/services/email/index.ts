@@ -14,6 +14,7 @@ export { sendMarketingFeatureUpdate } from "./send-marketing";
 export {
 	sendFeedback3DayNotification,
 	sendOrganizeCompleteNotification,
+	sendOrganizeWeeklyDigestNotification,
 	sendWelcomeNotification,
 } from "./send-transactional";
 export {

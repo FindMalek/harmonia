@@ -1,5 +1,8 @@
 import { createGroq } from "@ai-sdk/groq";
-import type { PlaylistMetadata } from "@harmonia/common/schemas";
+import type {
+	CreatedPlaylist,
+	PlaylistMetadata,
+} from "@harmonia/common/schemas";
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import type { GenerateProgress } from "@harmonia/common/types";
 import { getLlmTags } from "@harmonia/common/types";
@@ -50,7 +53,10 @@ type TrackRow = {
 
 // GenerateProgress declares updatedPlaylistIds optional (other producers of
 // this shape may omit it); this function always populates it.
-type GenerateResult = GenerateProgress & { updatedPlaylistIds: number[] };
+type GenerateResult = GenerateProgress & {
+	updatedPlaylistIds: number[];
+	createdPlaylists: CreatedPlaylist[];
+};
 
 export async function generatePlaylists(
 	userId: string,
@@ -60,6 +66,7 @@ export async function generatePlaylists(
 		playlists: 0,
 		tracksOrganized: 0,
 		updatedPlaylistIds: [],
+		createdPlaylists: [],
 	};
 
 	if (!env.HARMONIA_GROQ_API_KEY) {
@@ -202,6 +209,7 @@ export async function generatePlaylists(
 				if (created) {
 					stats.playlists++;
 					stats.tracksOrganized += trackRows.length;
+					stats.createdPlaylists.push(created);
 					await onProgress?.(stats);
 				}
 			}),
@@ -213,7 +221,7 @@ export async function generatePlaylists(
 			userId,
 			playlists: stats.playlists,
 			updated: stats.updatedPlaylistIds.length,
-			created: stats.playlists - stats.updatedPlaylistIds.length,
+			created: stats.createdPlaylists.length,
 		},
 		"Completed playlist generation",
 	);
@@ -347,7 +355,7 @@ async function createNewPlaylist(args: {
 	meta: ClusterMeta | null;
 	trackRows: TrackRow[];
 	usedPlaylistNames: Set<string>;
-}): Promise<boolean> {
+}): Promise<CreatedPlaylist | null> {
 	const {
 		userId,
 		clusterId,
@@ -384,7 +392,7 @@ async function createNewPlaylist(args: {
 			})
 			.returning({ id: playlist.id });
 
-		if (!inserted) return false;
+		if (!inserted) return null;
 
 		await db.insert(playlistClusters).values({
 			playlistId: inserted.id,
@@ -406,7 +414,7 @@ async function createNewPlaylist(args: {
 			}
 		}
 
-		return true;
+		return { id: inserted.id, name: generated.name };
 	} catch (err) {
 		logger.error(
 			{
@@ -415,7 +423,7 @@ async function createNewPlaylist(args: {
 			},
 			"Failed to generate playlist for cluster",
 		);
-		return false;
+		return null;
 	}
 }
 

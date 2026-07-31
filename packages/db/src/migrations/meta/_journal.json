@@ -162,6 +162,13 @@
 			"when": 1785490018642,
 			"tag": "0022_lovely_shaman",
 			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "7",
+			"when": 1785494533956,
+			"tag": "0023_wooden_husk",
+			"breakpoints": true
 		}
 	]
 }

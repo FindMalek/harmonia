@@ -40,6 +40,10 @@ export const playlistsRouter = {
 };
 ```
 
+## Reuse Schema-Inferred Types
+
+Before writing an inline object type/interface for a shape that already has a Zod schema in `packages/common/src/schemas/{entity}/`, check whether that schema's inferred type already covers it — use `z.infer<typeof someSchema>` (exported as a named type) instead of redeclaring the shape by hand. Only write a fresh inline type when no matching schema exists yet; if the shape is reused or worth validating, add the schema first.
+
 ## Drizzle Query Patterns
 
 ```typescript

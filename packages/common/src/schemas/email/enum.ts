@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const emailTemplateKeyEnum = z.enum([
 	"organize_complete",
+	"organize_weekly_digest",
 	"welcome",
 	"feedback_3day",
 	"marketing_feature_update",

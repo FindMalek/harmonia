@@ -10,6 +10,7 @@ export type EmailTemplateCategory =
 
 const TEMPLATE_CATEGORIES: Record<EmailTemplateKey, EmailTemplateCategory> = {
 	organize_complete: "transactional",
+	organize_weekly_digest: "transactional",
 	welcome: "transactional",
 	feedback_3day: "feedback",
 	marketing_feature_update: "product_update",

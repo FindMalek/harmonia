@@ -1,0 +1,1 @@
+ALTER TABLE "pipeline_run" ADD COLUMN "triggered_by" text;
