@@ -114,9 +114,15 @@ export const rateLimiters = {
 		windowMs: 60 * 1000,
 		keyPrefix: "ratelimit:strict",
 	}),
-	/** Authenticated default — 30 requests/min */
+	/**
+	 * Authenticated default — 120 requests/min. This is one shared bucket
+	 * per user across every oRPC call (see getIdentifier), not per-endpoint,
+	 * so normal dashboard usage — several parallel queries per page load,
+	 * live-progress polling, navigating around — adds up fast. 30/min was
+	 * tripping on completely normal interactive use, not abuse.
+	 */
 	standard: new RateLimiter({
-		max: 30,
+		max: 120,
 		windowMs: 60 * 1000,
 		keyPrefix: "ratelimit:standard",
 	}),
