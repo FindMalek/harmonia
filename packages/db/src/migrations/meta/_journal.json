@@ -169,6 +169,13 @@
 			"when": 1785494533956,
 			"tag": "0023_wooden_husk",
 			"breakpoints": true
+		},
+		{
+			"idx": 24,
+			"version": "7",
+			"when": 1785506519835,
+			"tag": "0024_glamorous_brother_voodoo",
+			"breakpoints": true
 		}
 	]
 }

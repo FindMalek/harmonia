@@ -82,9 +82,50 @@ function sleep(ms: number) {
 	return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
+const HEARTBEAT_INTERVAL_MS = 20_000;
+
+/** Tells the server this client is still watching runId, so the completion email (only sent if nobody's watching) can skip. */
+function useRunHeartbeat(activeRunId: number | null) {
+	useEffect(() => {
+		if (activeRunId === null) return;
+
+		let intervalId: ReturnType<typeof setInterval> | null = null;
+
+		const runId = activeRunId;
+		function sendHeartbeat() {
+			void client.pipeline.heartbeat({ id: runId }).catch(() => {});
+		}
+
+		function start() {
+			if (intervalId !== null) return;
+			sendHeartbeat();
+			intervalId = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
+		}
+		function stop() {
+			if (intervalId !== null) {
+				clearInterval(intervalId);
+				intervalId = null;
+			}
+		}
+		function onVisibilityChange() {
+			if (document.visibilityState === "visible") start();
+			else stop();
+		}
+
+		if (document.visibilityState === "visible") start();
+		document.addEventListener("visibilitychange", onVisibilityChange);
+
+		return () => {
+			stop();
+			document.removeEventListener("visibilitychange", onVisibilityChange);
+		};
+	}, [activeRunId]);
+}
+
 export function usePipelineProgressDrive(): PipelineProgressContextValue {
 	const activeRunId = useOrganizeStore((s) => s.activeRunId);
 	const queryClient = useQueryClient();
+	useRunHeartbeat(activeRunId);
 	const [snapshot, setSnapshot] = useState<PipelineStreamState>(EMPTY_SNAPSHOT);
 	const [connectionState, setConnectionState] =
 		useState<PipelineConnectionState>("idle");

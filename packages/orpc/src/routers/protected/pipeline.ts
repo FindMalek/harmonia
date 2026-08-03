@@ -7,6 +7,8 @@ import {
 	pipelineClearAnalysisOutputSchema,
 	pipelineGetByIdInput,
 	pipelineGetByIdOutputSchema,
+	pipelineHeartbeatInput,
+	pipelineHeartbeatOutputSchema,
 	pipelineRunListItemSchema,
 	pipelineStatsOutputSchema,
 	pipelineStatusEventSchema,
@@ -74,6 +76,26 @@ export const pipelineRouter = {
 				.returning({ id: pipelineRun.id });
 
 			return { cancelled: updated.length > 0 };
+		}),
+
+	heartbeat: approvedProcedure
+		.input(pipelineHeartbeatInput)
+		.output(pipelineHeartbeatOutputSchema)
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const updated = await db
+				.update(pipelineRun)
+				.set({ lastClientSeenAt: new Date() })
+				.where(
+					and(
+						eq(pipelineRun.id, input.id),
+						eq(pipelineRun.userId, userId),
+						eq(pipelineRun.status, "running"),
+					),
+				)
+				.returning({ id: pipelineRun.id });
+
+			return { ok: updated.length > 0 };
 		}),
 
 	streamStatus: approvedProcedure
