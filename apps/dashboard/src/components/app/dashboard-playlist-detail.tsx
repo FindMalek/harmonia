@@ -3,6 +3,7 @@
 import type {
 	PlaylistGetByIdOutput,
 	PlaylistTrackItem,
+	PlaylistTrackSort,
 } from "@harmonia/common/schemas";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { Skeleton } from "@harmonia/ui";
@@ -26,6 +27,8 @@ export function DashboardPlaylistDetail({
 	scrolled,
 	trackSearch,
 	onTrackSearchChange,
+	trackSort,
+	onTrackSortChange,
 }: {
 	playlist: PlaylistGetByIdOutput;
 	exportPending: boolean;
@@ -39,6 +42,8 @@ export function DashboardPlaylistDetail({
 	scrolled: boolean;
 	trackSearch: string;
 	onTrackSearchChange: (value: string) => void;
+	trackSort: PlaylistTrackSort;
+	onTrackSortChange: (value: PlaylistTrackSort) => void;
 }) {
 	const themesLine = playlist.themes?.join(", ") ?? null;
 
@@ -50,6 +55,8 @@ export function DashboardPlaylistDetail({
 				scrolled={scrolled}
 				trackSearch={trackSearch}
 				onTrackSearchChange={onTrackSearchChange}
+				trackSort={trackSort}
+				onTrackSortChange={onTrackSortChange}
 			/>
 
 			<DashboardPlaylistDetailMetadata

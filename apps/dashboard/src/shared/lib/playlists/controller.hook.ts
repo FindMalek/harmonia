@@ -25,6 +25,7 @@ export function usePlaylistsController(updateOnSuccess?: () => void) {
 			input: (cursor: number | null) => ({
 				cursor,
 				limit: PLAYLISTS_PAGE_SIZE,
+				sort: store.sort,
 			}),
 			initialPageParam: null,
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -112,6 +113,7 @@ export function usePlaylistTracksController(playlistId: number) {
 				cursor,
 				limit: PLAYLIST_TRACKS_PAGE_SIZE,
 				search: deferredSearch || undefined,
+				sort: store.trackSort,
 			}),
 			initialPageParam: null,
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -123,5 +125,7 @@ export function usePlaylistTracksController(playlistId: number) {
 		tracks,
 		trackSearch,
 		setTrackSearch: store.setTrackSearch,
+		trackSort: store.trackSort,
+		setTrackSort: store.setTrackSort,
 	};
 }
