@@ -26,11 +26,13 @@ import { and, eq, inArray } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
+import { getLatestPlaylistTrackIds } from "../music/spotify/playlist-cache";
 import {
 	jaccardSimilarity,
 	matchClustersToPlaylists,
 } from "./playlist-matcher";
 import { normalizePlaylistName } from "./playlist-naming";
+import { diffManualSpotifyEdits } from "./spotify-reconcile";
 
 // Below this track-overlap similarity, a cluster is treated as unrelated to
 // any existing playlist and gets a brand new one instead of an update.
@@ -106,8 +108,10 @@ export async function generatePlaylists(
 	);
 
 	const existingTrackSetsByPlaylist = new Map<number, Set<string>>();
+	const spotifyPlaylistIdByPlaylistId = new Map<number, string | null>();
 	for (const p of existingPlaylistRows) {
 		existingTrackSetsByPlaylist.set(p.id, new Set());
+		spotifyPlaylistIdByPlaylistId.set(p.id, p.spotifyPlaylistId);
 	}
 	if (existingPlaylistRows.length > 0) {
 		const existingTrackRows = await db
@@ -211,7 +215,10 @@ export async function generatePlaylists(
 
 				if (matchedPlaylistId !== undefined) {
 					const updated = await updateExistingPlaylist({
+						userId,
 						playlistId: matchedPlaylistId,
+						spotifyPlaylistId:
+							spotifyPlaylistIdByPlaylistId.get(matchedPlaylistId) ?? null,
 						clusterId: c.id,
 						meta: c.metadata,
 						trackRows,
@@ -259,8 +266,76 @@ export async function generatePlaylists(
 	return stats;
 }
 
-async function updateExistingPlaylist(args: {
+/**
+ * Adjusts a cluster's track rows so a manual edit the user made directly on
+ * Spotify since the last export survives this run: tracks manually removed
+ * are excluded even if clustering would still place them here, and tracks
+ * manually added are preserved even though clustering doesn't know about
+ * them (#159). No-op if the playlist was never exported or hasn't been
+ * synced yet (getLatestPlaylistTrackIds returns null).
+ */
+async function reconcileManualSpotifyEdits(args: {
+	userId: string;
 	playlistId: number;
+	spotifyPlaylistId: string | null;
+	clusterTrackRows: TrackRow[];
+	oldTrackIds: Set<string>;
+}): Promise<TrackRow[]> {
+	const {
+		userId,
+		playlistId,
+		spotifyPlaylistId,
+		clusterTrackRows,
+		oldTrackIds,
+	} = args;
+
+	if (!spotifyPlaylistId) return clusterTrackRows;
+
+	const liveTrackIds = await getLatestPlaylistTrackIds(
+		userId,
+		spotifyPlaylistId,
+	);
+	if (!liveTrackIds) return clusterTrackRows;
+
+	const { added, removed } = diffManualSpotifyEdits(oldTrackIds, liveTrackIds);
+	if (added.length === 0 && removed.length === 0) return clusterTrackRows;
+
+	const removedSet = new Set(removed);
+	let trackRows = clusterTrackRows.filter((t) => !removedSet.has(t.id));
+
+	const clusterTrackIds = new Set(trackRows.map((t) => t.id));
+	const missingAdded = added.filter((id) => !clusterTrackIds.has(id));
+	if (missingAdded.length > 0) {
+		const addedRows = await db
+			.select({
+				id: track.id,
+				name: track.name,
+				artistNames: track.artistNames,
+				llmMood: track.llmMood,
+				llmTags: track.llmTags,
+			})
+			.from(track)
+			.where(inArray(track.id, missingAdded));
+		trackRows = [...trackRows, ...addedRows];
+	}
+
+	logger.info(
+		{
+			playlistId,
+			spotifyPlaylistId,
+			manuallyAdded: missingAdded.length,
+			manuallyRemoved: removed.length,
+		},
+		"Reconciled manual Spotify edits into playlist regeneration",
+	);
+
+	return trackRows;
+}
+
+async function updateExistingPlaylist(args: {
+	userId: string;
+	playlistId: number;
+	spotifyPlaylistId: string | null;
 	clusterId: number;
 	meta: ClusterMeta | null;
 	trackRows: TrackRow[];
@@ -268,13 +343,22 @@ async function updateExistingPlaylist(args: {
 	usedPlaylistNames: Set<string>;
 }): Promise<boolean> {
 	const {
+		userId,
 		playlistId,
+		spotifyPlaylistId,
 		clusterId,
 		meta,
-		trackRows,
 		oldTrackIds,
 		usedPlaylistNames,
 	} = args;
+
+	const trackRows = await reconcileManualSpotifyEdits({
+		userId,
+		playlistId,
+		spotifyPlaylistId,
+		clusterTrackRows: args.trackRows,
+		oldTrackIds,
+	});
 
 	const newTrackIds = new Set(trackRows.map((t) => t.id));
 	const similarity = jaccardSimilarity(oldTrackIds, newTrackIds);
