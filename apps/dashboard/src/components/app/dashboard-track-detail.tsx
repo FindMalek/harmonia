@@ -159,7 +159,7 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 				</div>
 				{hasTags ? (
 					<div className="flex flex-wrap gap-2">
-						{[...vibe, ...themes, ...topics].map((tag) => (
+						{[...new Set([...vibe, ...themes, ...topics])].map((tag) => (
 							<Tag key={tag} label={tag} />
 						))}
 					</div>
