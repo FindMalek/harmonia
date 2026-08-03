@@ -167,11 +167,14 @@ export async function runClustering(
 	return stats;
 }
 
-function mergeSmallClusters(
+// Exported for direct unit testing (issue #204) — pure, deterministic, no I/O.
+export function mergeSmallClusters(
 	clusters: number[][],
 	embeddings: number[][],
 	minSize: number,
 ): number[][] {
+	if (clusters.length <= 1) return clusters;
+
 	const large: number[][] = [];
 	const small: number[][] = [];
 
@@ -183,7 +186,39 @@ function mergeSmallClusters(
 		}
 	}
 
-	if (large.length === 0) return clusters;
+	if (large.length === 0) {
+		// No cluster reached minSize on its own (issue #204) — merge the two
+		// closest-by-centroid small clusters together and retry, so small
+		// clusters combine with whichever is musically nearest instead of
+		// every one of them shipping as an under-sized playlist. Bottoms out
+		// at a single cluster if the whole library is smaller than minSize,
+		// which is an inherent data limit, not a bug.
+		if (small.length <= 1) return clusters;
+
+		const smallCentroids = small.map((indices) =>
+			computeCentroid(indices.map((i) => embeddings[i] as number[])),
+		);
+		let bestI = 0;
+		let bestJ = 1;
+		let bestDist = Number.POSITIVE_INFINITY;
+		for (let i = 0; i < small.length; i++) {
+			for (let j = i + 1; j < small.length; j++) {
+				const dist = euclideanDistance(
+					smallCentroids[i] as number[],
+					smallCentroids[j] as number[],
+				);
+				if (dist < bestDist) {
+					bestDist = dist;
+					bestI = i;
+					bestJ = j;
+				}
+			}
+		}
+
+		const merged = [...(small[bestI] ?? []), ...(small[bestJ] ?? [])];
+		const rest = small.filter((_, idx) => idx !== bestI && idx !== bestJ);
+		return mergeSmallClusters([merged, ...rest], embeddings, minSize);
+	}
 
 	const centroids = large.map((indices) =>
 		computeCentroid(indices.map((i) => embeddings[i] as number[])),
@@ -208,7 +243,8 @@ function mergeSmallClusters(
 	return large;
 }
 
-function splitLargeClusters(
+// Exported for direct unit testing (issue #204) — pure, deterministic, no I/O.
+export function splitLargeClusters(
 	clusters: number[][],
 	embeddings: number[][],
 	maxSize: number,
@@ -249,7 +285,19 @@ function splitLargeClusters(
 
 		// Neither method guarantees every bucket is under maxSize, so re-split recursively.
 		if (depth >= MAX_SPLIT_DEPTH) {
-			result.push(...candidates);
+			// Retries are exhausted — force every remaining oversized bucket under
+			// the cap with a plain positional chunk (issue #204). Not centroid-
+			// aware, but a guaranteed size limit matters more than perfect
+			// grouping in this now-rare fallback path.
+			for (const bucket of candidates) {
+				if (bucket.length <= maxSize) {
+					result.push(bucket);
+					continue;
+				}
+				for (let i = 0; i < bucket.length; i += maxSize) {
+					result.push(bucket.slice(i, i + maxSize));
+				}
+			}
 			continue;
 		}
 		result.push(
