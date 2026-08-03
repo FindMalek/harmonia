@@ -2,11 +2,13 @@
 
 import type { PlaylistSort } from "@harmonia/common/schemas";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+	Button,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger,
+	Icons,
 } from "@harmonia/ui";
 
 const SORT_OPTIONS: Array<{ value: PlaylistSort; label: string }> = [
@@ -23,20 +25,29 @@ export function DashboardPlaylistsSortSelect({
 	onChange: (value: PlaylistSort) => void;
 }) {
 	return (
-		<Select
-			value={value}
-			onValueChange={(next) => onChange(next as PlaylistSort)}
-		>
-			<SelectTrigger className="w-44 rounded-none" aria-label="Sort playlists">
-				<SelectValue />
-			</SelectTrigger>
-			<SelectContent>
-				{SORT_OPTIONS.map((option) => (
-					<SelectItem key={option.value} value={option.value}>
-						{option.label}
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Button
+					type="button"
+					variant="outline"
+					className="size-11 shrink-0 rounded-none"
+					aria-label="Sort playlists"
+				>
+					<Icons.sort className="size-5 shrink-0" />
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end" className="min-w-48">
+				<DropdownMenuRadioGroup
+					value={value}
+					onValueChange={(next) => onChange(next as PlaylistSort)}
+				>
+					{SORT_OPTIONS.map((option) => (
+						<DropdownMenuRadioItem key={option.value} value={option.value}>
+							{option.label}
+						</DropdownMenuRadioItem>
+					))}
+				</DropdownMenuRadioGroup>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
