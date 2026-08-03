@@ -25,6 +25,7 @@ import { generateText, Output } from "ai";
 import { and, eq, inArray } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
+import { normalizeTrackTitle } from "../../utils/normalize-track-title";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 import { getLatestPlaylistTrackIds } from "../music/spotify/playlist-cache";
 import {
@@ -352,13 +353,14 @@ async function updateExistingPlaylist(args: {
 		usedPlaylistNames,
 	} = args;
 
-	const trackRows = await reconcileManualSpotifyEdits({
+	const reconciledTrackRows = await reconcileManualSpotifyEdits({
 		userId,
 		playlistId,
 		spotifyPlaylistId,
 		clusterTrackRows: args.trackRows,
 		oldTrackIds,
 	});
+	const trackRows = dedupeTracksBySongIdentity(reconciledTrackRows);
 
 	const newTrackIds = new Set(trackRows.map((t) => t.id));
 	const similarity = jaccardSimilarity(oldTrackIds, newTrackIds);
@@ -470,14 +472,8 @@ async function createNewPlaylist(args: {
 	trackRows: TrackRow[];
 	usedPlaylistNames: Set<string>;
 }): Promise<CreatedPlaylist | null> {
-	const {
-		userId,
-		clusterId,
-		genreDomainId,
-		meta,
-		trackRows,
-		usedPlaylistNames,
-	} = args;
+	const { userId, clusterId, genreDomainId, meta, usedPlaylistNames } = args;
+	const trackRows = dedupeTracksBySongIdentity(args.trackRows);
 
 	try {
 		const generated = await generateUniquePlaylistMetadata(
@@ -558,6 +554,30 @@ export function findPrunableOrphanedPlaylists(
 		.map((p) => p.id);
 	const exportedOrphanCount = orphaned.length - prunable.length;
 	return { prunable, exportedOrphanCount };
+}
+
+/**
+ * Drops same-song duplicates from a single playlist's track set — a
+ * duplicate library entry, or two near-identical versions that both landed
+ * in the same cluster despite #130's sync-time dedup, would otherwise mean
+ * hearing the same song twice in one playlist (#160). Keyed by normalized
+ * (title, primary artist); keeps the lexicographically smallest track ID per
+ * group for a deterministic result. This is per-playlist only — the same
+ * song can still appear across two different Harmonia playlists.
+ */
+export function dedupeTracksBySongIdentity(trackRows: TrackRow[]): TrackRow[] {
+	const canonicalByKey = new Map<string, TrackRow>();
+
+	for (const t of trackRows) {
+		const primaryArtist = parseJsonStringArray(t.artistNames)[0] ?? "";
+		const key = `${normalizeTrackTitle(t.name).toLowerCase()}|||${primaryArtist.toLowerCase()}`;
+		const existing = canonicalByKey.get(key);
+		if (!existing || t.id < existing.id) {
+			canonicalByKey.set(key, t);
+		}
+	}
+
+	return [...canonicalByKey.values()];
 }
 
 function deriveTags(meta: ClusterMeta | null, trackRows: TrackRow[]): string[] {

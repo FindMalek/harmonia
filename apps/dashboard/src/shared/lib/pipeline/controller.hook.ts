@@ -151,6 +151,12 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 
 		function invalidatePipeline() {
 			void queryClient.invalidateQueries({ queryKey: queryKeys.pipeline() });
+			// Playlists/clusters are written by the trigger job before the pipeline
+			// reaches a terminal state — without this the dashboard shows stale
+			// data until the user navigates away or hard-refreshes (#85). Only
+			// called from terminal transitions below, never on a "progress" tick.
+			void queryClient.invalidateQueries({ queryKey: queryKeys.playlists() });
+			void queryClient.invalidateQueries({ queryKey: queryKeys.clusters() });
 		}
 
 		function failRunNotFound() {

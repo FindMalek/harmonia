@@ -79,43 +79,42 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 				label="Playlists"
 			/>
 
-			<div className="flex flex-col items-start gap-4 sm:flex-row">
-				{track.albumImageUrl ? (
-					<Image
-						src={track.albumImageUrl}
-						alt=""
-						width={160}
-						height={160}
-						className="size-32 shrink-0 sm:size-40"
-						unoptimized
-					/>
-				) : (
-					<div className="size-32 shrink-0 bg-muted sm:size-40" />
-				)}
-				<div className="flex min-w-0 flex-1 flex-col gap-1">
-					<h1 className="font-bold text-2xl tracking-tight">{track.name}</h1>
-					<p className="text-muted-foreground">{artists.join(", ")}</p>
-					{track.albumName ? (
-						<p className="text-muted-foreground text-sm">{track.albumName}</p>
-					) : null}
-					<a
-						href={track.spotifyUri.replace(
-							"spotify:track:",
-							"https://open.spotify.com/track/",
-						)}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="mt-2"
-					>
-						<Button
-							variant="outline"
-							className="font-bold uppercase tracking-widest"
-						>
-							Open in Spotify
-							<Icons.externalLink className="ml-2 size-4" />
-						</Button>
-					</a>
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+				<div className="flex flex-col items-start gap-4 sm:flex-row">
+					{track.albumImageUrl ? (
+						<Image
+							src={track.albumImageUrl}
+							alt=""
+							width={224}
+							height={224}
+							className="size-44 shrink-0 sm:size-56"
+							unoptimized
+						/>
+					) : (
+						<div className="size-44 shrink-0 bg-muted sm:size-56" />
+					)}
+					<div className="flex min-w-0 flex-1 flex-col gap-1 sm:pt-2">
+						<h1 className="font-bold text-2xl tracking-tight">{track.name}</h1>
+						<p className="text-muted-foreground">{artists.join(", ")}</p>
+						{track.albumName ? (
+							<p className="text-muted-foreground text-sm">{track.albumName}</p>
+						) : null}
+					</div>
 				</div>
+				<a
+					href={track.spotifyUri.replace(
+						"spotify:track:",
+						"https://open.spotify.com/track/",
+					)}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="shrink-0"
+				>
+					<Button className="w-full bg-primary font-bold text-primary-foreground uppercase tracking-widest hover:bg-primary/90 sm:w-auto">
+						Open in Spotify
+						<Icons.externalLink className="ml-2 size-4" />
+					</Button>
+				</a>
 			</div>
 
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -288,7 +287,7 @@ export function DashboardTrackDetailSkeleton() {
 				<Skeleton className="h-px w-full" />
 			</div>
 			<div className="flex gap-4">
-				<Skeleton className="size-32 shrink-0 sm:size-40" />
+				<Skeleton className="size-44 shrink-0 sm:size-56" />
 				<div className="flex flex-1 flex-col gap-2">
 					<Skeleton className="h-8 w-64" />
 					<Skeleton className="h-4 w-48" />
