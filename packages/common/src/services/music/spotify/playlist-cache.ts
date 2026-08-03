@@ -84,6 +84,46 @@ export async function getCachedPlaylistItems(
 }
 
 /**
+ * Returns the track IDs from the most recently cached snapshot of a playlist,
+ * regardless of what that snapshot's ID is — used to read the *current* live
+ * Spotify state of a playlist (kept fresh by the library-sync stage that runs
+ * before playlist generation each pipeline run). Returns null if the playlist
+ * has never been synced yet.
+ */
+export async function getLatestPlaylistTrackIds(
+	userId: string,
+	playlistId: string,
+): Promise<Set<string> | null> {
+	const [snapshot] = await db
+		.select({ snapshotId: userPlaylistSnapshots.snapshotId })
+		.from(userPlaylistSnapshots)
+		.where(
+			and(
+				eq(userPlaylistSnapshots.userId, userId),
+				eq(userPlaylistSnapshots.playlistId, playlistId),
+			),
+		)
+		.limit(1);
+
+	if (!snapshot) {
+		return null;
+	}
+
+	const items = await db
+		.select({ trackId: userPlaylistSnapshotItems.trackId })
+		.from(userPlaylistSnapshotItems)
+		.where(
+			and(
+				eq(userPlaylistSnapshotItems.userId, userId),
+				eq(userPlaylistSnapshotItems.playlistId, playlistId),
+				eq(userPlaylistSnapshotItems.snapshotId, snapshot.snapshotId),
+			),
+		);
+
+	return new Set(items.map((i) => i.trackId));
+}
+
+/**
  * Stores playlist items in the cache. Deletes existing rows for (userId, playlistId) first.
  */
 export async function setCachedPlaylistItems(
