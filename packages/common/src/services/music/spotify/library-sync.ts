@@ -80,6 +80,33 @@ function normalizeTrack(t: {
 	};
 }
 
+/**
+ * Splits tracks into ones whose real "liked at" date is known (from
+ * Spotify's saved-tracks `added_at`) vs. unknown (track was only ever seen
+ * via a playlist scan, never in Liked Songs) — the two groups need different
+ * upsert conflict handling: known dates can safely overwrite a stale
+ * placeholder, unknown ones must never clobber an already-correct value with
+ * the insert-time default (#214). Pure, no I/O.
+ */
+export function partitionTracksByKnownLikedAt<T extends { id: string }>(
+	tracks: T[],
+	likedAtByTrackId: ReadonlyMap<string, Date>,
+): { withLikedAt: Array<T & { addedAt: Date }>; withoutLikedAt: T[] } {
+	const withLikedAt: Array<T & { addedAt: Date }> = [];
+	const withoutLikedAt: T[] = [];
+
+	for (const t of tracks) {
+		const addedAt = likedAtByTrackId.get(t.id);
+		if (addedAt) {
+			withLikedAt.push({ ...t, addedAt });
+		} else {
+			withoutLikedAt.push(t);
+		}
+	}
+
+	return { withLikedAt, withoutLikedAt };
+}
+
 export function extractTrackInfo(items: SpotifyPlaylistTrackItem[]): {
 	trackIds: Set<string>;
 	albumKeys: Set<string>;
@@ -167,6 +194,9 @@ export async function syncLibraryTracks(
 	const albumNames = new Set<string>();
 	const artistNames = new Set<string>();
 	const tracksMap = new Map<string, TrackForUpsert>();
+	// Real "liked at" date per track, from Spotify's saved-tracks added_at —
+	// only populated for tracks actually in Liked Songs (#214).
+	const likedAtByTrackId = new Map<string, Date>();
 
 	// 1. Saved tracks (progress per Spotify page)
 	let savedTracksTotalFromApi: number | undefined;
@@ -188,7 +218,10 @@ export async function syncLibraryTracks(
 				if (artistKey) artistNames.add(artistKey);
 			}
 			const normalized = normalizeTrack(t);
-			if (normalized) tracksMap.set(normalized.id, normalized);
+			if (normalized) {
+				tracksMap.set(normalized.id, normalized);
+				likedAtByTrackId.set(normalized.id, new Date(item.added_at));
+			}
 		}
 	};
 
@@ -390,8 +423,27 @@ export async function syncLibraryTracks(
 			});
 	}
 
-	for (let i = 0; i < tracks.length; i += TRACK_UPSERT_BATCH_SIZE) {
-		const batch = tracks.slice(i, i + TRACK_UPSERT_BATCH_SIZE);
+	// Tracks with a known real liked-at date self-heal a stale placeholder on
+	// every sync; tracks without one must never touch an existing row's
+	// addedAt with the insert-time default (#214).
+	const { withLikedAt, withoutLikedAt } = partitionTracksByKnownLikedAt(
+		tracks,
+		likedAtByTrackId,
+	);
+
+	for (let i = 0; i < withLikedAt.length; i += TRACK_UPSERT_BATCH_SIZE) {
+		const batch = withLikedAt.slice(i, i + TRACK_UPSERT_BATCH_SIZE);
+		await db
+			.insert(userTracks)
+			.values(batch.map((t) => ({ userId, trackId: t.id, addedAt: t.addedAt })))
+			.onConflictDoUpdate({
+				target: [userTracks.userId, userTracks.trackId],
+				set: { addedAt: conflictValue(userTracks.addedAt) },
+			});
+	}
+
+	for (let i = 0; i < withoutLikedAt.length; i += TRACK_UPSERT_BATCH_SIZE) {
+		const batch = withoutLikedAt.slice(i, i + TRACK_UPSERT_BATCH_SIZE);
 		await db
 			.insert(userTracks)
 			.values(batch.map((t) => ({ userId, trackId: t.id })))
