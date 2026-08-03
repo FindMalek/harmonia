@@ -4,10 +4,31 @@ import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
-import pRetry from "p-retry";
+import pRetry, { AbortError } from "p-retry";
 
 import { SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST } from "../../../constants/spotify";
-import { getUserSpotifyAccessToken, spotifyRequest } from "./client";
+import {
+	getUserSpotifyAccessToken,
+	SpotifyApiError,
+	spotifyRequest,
+} from "./client";
+
+/** Wraps spotifyRequest with retry, but a 404 (deleted playlist) is never transient — abort immediately instead of burning retries on it. */
+function retryableSpotifyRequest<T>(fn: () => Promise<T>): Promise<T> {
+	return pRetry(
+		async () => {
+			try {
+				return await fn();
+			} catch (err) {
+				if (err instanceof SpotifyApiError && err.status === 404) {
+					throw new AbortError(err);
+				}
+				throw err;
+			}
+		},
+		{ retries: 2, minTimeout: 1000 },
+	);
+}
 
 export async function exportPlaylistToSpotify(
 	userId: string,
@@ -59,13 +80,23 @@ export async function exportPlaylistToSpotify(
 	}
 
 	if (pl.spotifyPlaylistId) {
-		return updateExistingPlaylist(
-			accessToken,
-			pl.spotifyPlaylistId,
-			pl,
-			filteredUris,
-			playlistId,
-		);
+		try {
+			return await updateExistingPlaylist(
+				accessToken,
+				pl.spotifyPlaylistId,
+				pl,
+				filteredUris,
+				playlistId,
+			);
+		} catch (err) {
+			if (!(err instanceof SpotifyApiError) || err.status !== 404) {
+				throw err;
+			}
+			logger.warn(
+				{ playlistId, spotifyPlaylistId: pl.spotifyPlaylistId },
+				"Spotify playlist was deleted; creating a new one",
+			);
+		}
 	}
 
 	return createNewPlaylist(accessToken, userId, pl, filteredUris, playlistId);
@@ -78,22 +109,24 @@ async function createNewPlaylist(
 	trackUris: string[],
 	playlistId: number,
 ): Promise<{ spotifyPlaylistId: string; spotifyUrl: string }> {
-	const created = await pRetry(
-		() =>
-			spotifyRequest<SpotifyCreatePlaylistResponse>(
-				"/me/playlists",
-				accessToken,
-				{
-					method: "POST",
-					body: {
-						name: pl.name,
-						description: pl.description ?? "",
-						public: false,
-					},
+	const created = await retryableSpotifyRequest(() =>
+		spotifyRequest<SpotifyCreatePlaylistResponse>(
+			"/me/playlists",
+			accessToken,
+			{
+				method: "POST",
+				body: {
+					name: pl.name,
+					description: pl.description ?? "",
+					public: false,
 				},
-			),
-		{ retries: 2, minTimeout: 1000 },
+			},
+		),
 	);
+
+	if (!created) {
+		throw new Error("Spotify did not return a playlist after creation");
+	}
 
 	const spotifyPlaylistId = created.id;
 	const spotifyUrl = created.external_urls.spotify;
@@ -104,13 +137,11 @@ async function createNewPlaylist(
 		i += SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST
 	) {
 		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
-		await pRetry(
-			() =>
-				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-					method: "POST",
-					body: { uris: batch },
-				}),
-			{ retries: 2, minTimeout: 1000 },
+		await retryableSpotifyRequest(() =>
+			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+				method: "POST",
+				body: { uris: batch },
+			}),
 		);
 	}
 
@@ -137,27 +168,23 @@ async function updateExistingPlaylist(
 	trackUris: string[],
 	playlistId: number,
 ): Promise<{ spotifyPlaylistId: string; spotifyUrl: string }> {
-	await pRetry(
-		() =>
-			spotifyRequest(`/playlists/${spotifyPlaylistId}`, accessToken, {
-				method: "PUT",
-				body: {
-					name: pl.name,
-					description: pl.description ?? "",
-				},
-			}),
-		{ retries: 2, minTimeout: 1000 },
+	await retryableSpotifyRequest(() =>
+		spotifyRequest(`/playlists/${spotifyPlaylistId}`, accessToken, {
+			method: "PUT",
+			body: {
+				name: pl.name,
+				description: pl.description ?? "",
+			},
+		}),
 	);
 
-	await pRetry(
-		() =>
-			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-				method: "PUT",
-				body: {
-					uris: trackUris.slice(0, SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST),
-				},
-			}),
-		{ retries: 2, minTimeout: 1000 },
+	await retryableSpotifyRequest(() =>
+		spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+			method: "PUT",
+			body: {
+				uris: trackUris.slice(0, SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST),
+			},
+		}),
 	);
 
 	for (
@@ -166,13 +193,11 @@ async function updateExistingPlaylist(
 		i += SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST
 	) {
 		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
-		await pRetry(
-			() =>
-				spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
-					method: "POST",
-					body: { uris: batch },
-				}),
-			{ retries: 2, minTimeout: 1000 },
+		await retryableSpotifyRequest(() =>
+			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+				method: "POST",
+				body: { uris: batch },
+			}),
 		);
 	}
 
