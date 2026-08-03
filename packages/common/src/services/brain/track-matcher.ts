@@ -9,7 +9,10 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
-import { TRACK_MATCH_SIMILARITY_THRESHOLD } from "../../constants/brain";
+import {
+	CLUSTER_MAX_SIZE,
+	TRACK_MATCH_SIMILARITY_THRESHOLD,
+} from "../../constants/brain";
 
 export type TrackMatchResult = {
 	matched: number;
@@ -68,29 +71,35 @@ export async function matchNewTracksToPlaylists(
 		return { matched: 0, touchedPlaylistIds: [] };
 	}
 
+	// Tracked and updated as we go so a run that matches several tracks to the
+	// same playlist can't push it past CLUSTER_MAX_SIZE (#210) — this stage
+	// runs every pipeline run with no other size gate on incremental growth.
+	const trackCounts = new Map<number, number>();
+	for (const p of playlists) {
+		const [countResult] = await db
+			.select({ count: sql<number>`COUNT(*)` })
+			.from(playlistTracks)
+			.where(eq(playlistTracks.playlistId, p.id));
+		trackCounts.set(p.id, countResult?.count ?? 0);
+	}
+
 	let matched = 0;
 	const touchedPlaylistIds = new Set<number>();
 
 	for (const t of tracksToMatch) {
 		const embedding = t.embedding as number[];
-		let bestPlaylistId: number | null = null;
-		let bestSimilarity = -1;
+		const bestPlaylistId = pickBestPlaylistForTrack(
+			embedding,
+			playlists.map((p) => ({
+				id: p.id,
+				centroid: p.centroid as number[] | null,
+				trackCount: trackCounts.get(p.id) ?? 0,
+			})),
+			CLUSTER_MAX_SIZE,
+			TRACK_MATCH_SIMILARITY_THRESHOLD,
+		);
 
-		for (const p of playlists) {
-			const centroid = p.centroid as number[];
-			if (!centroid || centroid.length === 0) continue;
-
-			const similarity = cosineSimilarity(embedding, centroid);
-			if (similarity > bestSimilarity) {
-				bestSimilarity = similarity;
-				bestPlaylistId = p.id;
-			}
-		}
-
-		if (
-			bestPlaylistId !== null &&
-			bestSimilarity >= TRACK_MATCH_SIMILARITY_THRESHOLD
-		) {
+		if (bestPlaylistId !== null) {
 			const [maxPos] = await db
 				.select({
 					max: sql<number>`COALESCE(MAX(${playlistTracks.position}), -1)`,
@@ -111,6 +120,10 @@ export async function matchNewTracksToPlaylists(
 
 			matched++;
 			touchedPlaylistIds.add(bestPlaylistId);
+			trackCounts.set(
+				bestPlaylistId,
+				(trackCounts.get(bestPlaylistId) ?? 0) + 1,
+			);
 		}
 	}
 
@@ -132,6 +145,38 @@ export async function matchNewTracksToPlaylists(
 	);
 
 	return { matched, touchedPlaylistIds: [...touchedPlaylistIds] };
+}
+
+/**
+ * Picks the most similar playlist for a track's embedding, excluding any
+ * playlist already at maxSize (#210) and requiring the best similarity to
+ * clear similarityThreshold. Pure and DB-free so it's directly unit-testable.
+ */
+export function pickBestPlaylistForTrack(
+	embedding: number[],
+	candidates: Array<{
+		id: number;
+		centroid: number[] | null;
+		trackCount: number;
+	}>,
+	maxSize: number,
+	similarityThreshold: number,
+): number | null {
+	let bestPlaylistId: number | null = null;
+	let bestSimilarity = -1;
+
+	for (const candidate of candidates) {
+		if (!candidate.centroid || candidate.centroid.length === 0) continue;
+		if (candidate.trackCount >= maxSize) continue;
+
+		const similarity = cosineSimilarity(embedding, candidate.centroid);
+		if (similarity > bestSimilarity) {
+			bestSimilarity = similarity;
+			bestPlaylistId = candidate.id;
+		}
+	}
+
+	return bestSimilarity >= similarityThreshold ? bestPlaylistId : null;
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
