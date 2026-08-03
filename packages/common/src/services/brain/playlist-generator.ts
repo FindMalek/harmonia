@@ -92,7 +92,11 @@ export async function generatePlaylists(
 	// everything from scratch (issue #158). Fetched up front, before any
 	// per-cluster LLM/DB work, since matching needs the full picture at once.
 	const existingPlaylistRows = await db
-		.select({ id: playlist.id, name: playlist.name })
+		.select({
+			id: playlist.id,
+			name: playlist.name,
+			spotifyPlaylistId: playlist.spotifyPlaylistId,
+		})
 		.from(playlist)
 		.where(and(eq(playlist.userId, userId), eq(playlist.isGenerated, true)));
 
@@ -167,6 +171,32 @@ export async function generatePlaylists(
 	const matchedPlaylistIdByClusterIndex = new Map(
 		matches.map((m) => [m.clusterIndex, m.playlistId]),
 	);
+
+	// A playlist that no longer matches any current cluster is an orphan (#206)
+	// — clustering has moved on but nothing ever cleaned it up. Only prune ones
+	// never exported to Spotify; an already-exported orphan is left alone until
+	// there's a deliberate staleness UX, since deleting the Harmonia row
+	// wouldn't touch the real Spotify playlist the user may still be using.
+	const { prunable: prunablePlaylistIds, exportedOrphanCount } =
+		findPrunableOrphanedPlaylists(
+			existingPlaylistRows,
+			new Set(matches.map((m) => m.playlistId)),
+		);
+
+	if (prunablePlaylistIds.length > 0) {
+		await db.delete(playlist).where(inArray(playlist.id, prunablePlaylistIds));
+		logger.info(
+			{ userId, prunedCount: prunablePlaylistIds.length },
+			"Pruned orphaned playlists that no longer match any cluster and were never exported",
+		);
+	}
+
+	if (exportedOrphanCount > 0) {
+		logger.warn(
+			{ userId, exportedOrphanCount },
+			"Some exported playlists no longer match any current cluster; left untouched pending a staleness UX decision (#206)",
+		);
+	}
 
 	const genLimit = pLimit(5);
 
@@ -425,6 +455,25 @@ async function createNewPlaylist(args: {
 		);
 		return null;
 	}
+}
+
+/**
+ * Splits existing playlists into ones prunable now (no current cluster match
+ * and never exported to Spotify) vs. exported orphans, which are left alone
+ * pending a staleness UX decision (#206). Pure, no I/O.
+ */
+export function findPrunableOrphanedPlaylists(
+	existingPlaylists: Array<{ id: number; spotifyPlaylistId: string | null }>,
+	matchedPlaylistIds: ReadonlySet<number>,
+): { prunable: number[]; exportedOrphanCount: number } {
+	const orphaned = existingPlaylists.filter(
+		(p) => !matchedPlaylistIds.has(p.id),
+	);
+	const prunable = orphaned
+		.filter((p) => !p.spotifyPlaylistId)
+		.map((p) => p.id);
+	const exportedOrphanCount = orphaned.length - prunable.length;
+	return { prunable, exportedOrphanCount };
 }
 
 function deriveTags(meta: ClusterMeta | null, trackRows: TrackRow[]): string[] {
