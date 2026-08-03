@@ -28,7 +28,9 @@ export type SpotifyPlaylistTrackItem = {
 		uri?: string;
 		duration_ms?: number | null;
 		artists: Array<{ id?: string | null; name: string }>;
-		album: { id?: string | null; name: string } | null;
+		album: { id?: string | null; name: string; release_date?: string } | null;
+		explicit?: boolean;
+		popularity?: number;
 	} | null;
 };
 

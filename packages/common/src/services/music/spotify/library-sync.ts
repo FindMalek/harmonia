@@ -54,8 +54,13 @@ type TrackForUpsert = {
 	uri: string;
 	name: string;
 	artistNames: string;
+	artistIds: Array<string | null>;
 	albumName: string | null;
+	albumId: string | null;
 	albumImageUrl: string | null;
+	releaseDate: string | null;
+	explicit: boolean | null;
+	popularity: number | null;
 	durationMs: number | null;
 };
 
@@ -64,8 +69,15 @@ function normalizeTrack(t: {
 	name: string;
 	uri?: string;
 	duration_ms?: number | null;
-	artists?: Array<{ name: string }>;
-	album?: { name: string; images?: Array<{ url: string }> } | null;
+	explicit?: boolean;
+	popularity?: number;
+	artists?: Array<{ id?: string | null; name: string }>;
+	album?: {
+		id?: string | null;
+		name: string;
+		release_date?: string;
+		images?: Array<{ url: string }>;
+	} | null;
 }): TrackForUpsert | null {
 	if (!t?.id) return null;
 	return {
@@ -73,9 +85,14 @@ function normalizeTrack(t: {
 		uri: t.uri ?? `spotify:track:${t.id}`,
 		name: t.name,
 		artistNames: JSON.stringify((t.artists ?? []).map((a) => a.name)),
+		artistIds: (t.artists ?? []).map((a) => a.id ?? null),
 		albumName: t.album?.name ?? null,
+		albumId: t.album?.id ?? null,
 		albumImageUrl:
 			t.album?.images?.[2]?.url ?? t.album?.images?.[0]?.url ?? null,
+		releaseDate: t.album?.release_date ?? null,
+		explicit: t.explicit ?? null,
+		popularity: t.popularity ?? null,
 		durationMs: t.duration_ms ?? null,
 	};
 }
@@ -395,8 +412,13 @@ export async function syncLibraryTracks(
 		spotifyUri: t.uri,
 		name: t.name,
 		artistNames: t.artistNames,
+		artistIds: t.artistIds,
 		albumName: t.albumName,
+		albumId: t.albumId,
 		albumImageUrl: t.albumImageUrl,
+		releaseDate: t.releaseDate,
+		explicit: t.explicit,
+		popularity: t.popularity,
 		durationMs: t.durationMs,
 		spotifyGenres: null,
 		lyricsStatus: "pending" as const,
@@ -414,8 +436,13 @@ export async function syncLibraryTracks(
 					spotifyUri: conflictValue(track.spotifyUri),
 					name: conflictValue(track.name),
 					artistNames: conflictValue(track.artistNames),
+					artistIds: conflictValue(track.artistIds),
 					albumName: conflictValue(track.albumName),
+					albumId: conflictValue(track.albumId),
 					albumImageUrl: conflictValue(track.albumImageUrl),
+					releaseDate: conflictValue(track.releaseDate),
+					explicit: conflictValue(track.explicit),
+					popularity: conflictValue(track.popularity),
 					durationMs: conflictValue(track.durationMs),
 					spotifyGenres: conflictValue(track.spotifyGenres),
 					updatedAt: conflictValue(track.updatedAt),

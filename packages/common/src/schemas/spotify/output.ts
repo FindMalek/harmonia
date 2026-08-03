@@ -4,11 +4,15 @@ export const spotifyTrackSchema = z.object({
 	id: z.string(),
 	uri: z.string(),
 	name: z.string(),
-	artists: z.array(z.object({ name: z.string() })),
+	artists: z.array(z.object({ id: z.string().optional(), name: z.string() })),
 	album: z.object({
+		id: z.string().optional(),
 		name: z.string(),
+		release_date: z.string().optional(),
 	}),
 	duration_ms: z.number(),
+	explicit: z.boolean().optional(),
+	popularity: z.number().optional(),
 });
 export type SpotifyTrack = z.infer<typeof spotifyTrackSchema>;
 
