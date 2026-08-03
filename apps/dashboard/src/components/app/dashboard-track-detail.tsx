@@ -95,9 +95,47 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 					)}
 					<div className="flex min-w-0 flex-1 flex-col gap-1 sm:pt-2">
 						<h1 className="font-bold text-2xl tracking-tight">{track.name}</h1>
-						<p className="text-muted-foreground">{artists.join(", ")}</p>
+						<p className="inline-flex flex-wrap items-center gap-1 text-muted-foreground">
+							{artists.map((name, index) => {
+								const artistId = track.artistIds?.[index];
+								return (
+									<span key={`${name}-${index}`}>
+										{index > 0 ? ", " : ""}
+										{artistId ? (
+											<a
+												href={`https://open.spotify.com/artist/${artistId}`}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="hover:text-primary hover:underline"
+											>
+												{name}
+											</a>
+										) : (
+											name
+										)}
+									</span>
+								);
+							})}
+							{track.artistIds?.some(Boolean) ? (
+								<Icons.externalLink className="size-3" />
+							) : null}
+						</p>
 						{track.albumName ? (
-							<p className="text-muted-foreground text-sm">{track.albumName}</p>
+							track.albumId ? (
+								<a
+									href={`https://open.spotify.com/album/${track.albumId}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="inline-flex w-fit items-center gap-1 text-muted-foreground text-sm hover:text-primary hover:underline"
+								>
+									{track.albumName}
+									<Icons.externalLink className="size-3" />
+								</a>
+							) : (
+								<p className="text-muted-foreground text-sm">
+									{track.albumName}
+								</p>
+							)
 						) : null}
 					</div>
 				</div>
