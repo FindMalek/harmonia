@@ -1,6 +1,9 @@
 import type { PlaylistTrackItem } from "@harmonia/common/schemas";
 import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
+import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import type { Route } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 export type DashboardPlaylistDetailTrackRowTrack = PlaylistTrackItem;
 
@@ -14,7 +17,10 @@ export function DashboardPlaylistDetailTrackRow({
 	const artists = parseJsonStringArray(track.artistNames);
 
 	return (
-		<div className="flex items-center gap-4 border-b py-4 last:border-b-0">
+		<Link
+			href={DASHBOARD_ROUTES.tracks.children.detail.makePath(track.id) as Route}
+			className="flex items-center gap-4 border-b py-4 last:border-b-0 hover:bg-accent/50"
+		>
 			<span className="w-6 shrink-0 text-right text-muted-foreground text-xs">
 				{String(index + 1).padStart(2, "0")}
 			</span>
@@ -37,6 +43,6 @@ export function DashboardPlaylistDetailTrackRow({
 					{track.albumName ? ` • ${track.albumName}` : ""}
 				</p>
 			</div>
-		</div>
+		</Link>
 	);
 }

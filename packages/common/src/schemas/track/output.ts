@@ -40,6 +40,7 @@ export const trackGetByIdOutputSchema = z.object({
 	name: z.string(),
 	artistNames: z.string(),
 	albumName: z.string().nullable(),
+	albumImageUrl: z.string().nullable(),
 	durationMs: z.number().nullable(),
 	spotifyGenres: z.array(z.string()).nullable(),
 	genreDomainId: z.number().nullable(),
@@ -81,5 +82,11 @@ export const trackGetByIdOutputSchema = z.object({
 	updatedAt: z.date(),
 	clusterId: z.number().nullable(),
 	embedding: z.undefined().optional(),
+	genreDomainName: z.string().nullable(),
+	/** When the user saved this track on Spotify (userTracks.addedAt) — null if never in Liked Songs. */
+	likedAt: z.date().nullable(),
+	harmoniaPlaylists: z.array(z.object({ id: z.number(), name: z.string() })),
+	/** The user's own Spotify playlists (any, not just Harmonia's) that currently contain this track. */
+	spotifyPlaylists: z.array(z.object({ id: z.string(), name: z.string() })),
 });
 export type TrackGetByIdOutput = z.infer<typeof trackGetByIdOutputSchema>;
