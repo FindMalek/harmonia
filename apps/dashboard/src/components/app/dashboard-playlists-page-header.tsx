@@ -11,6 +11,7 @@ import {
 import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
 import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 import { PageHeader } from "../shared/page-header";
+import { DashboardPlaylistsSortSelect } from "./dashboard-playlists-sort-select";
 
 export function DashboardPlaylistsPageHeader({
 	hasPlaylists,
@@ -18,7 +19,11 @@ export function DashboardPlaylistsPageHeader({
 	hasPlaylists: boolean;
 }) {
 	const { organizeMutation } = useOrganizeController();
-	const { exportAllMutation: exportMutation } = usePlaylistsController();
+	const {
+		exportAllMutation: exportMutation,
+		sort,
+		setSort,
+	} = usePlaylistsController();
 	const isBusy = exportMutation.isPending || organizeMutation.isPending;
 
 	return (
@@ -27,43 +32,48 @@ export function DashboardPlaylistsPageHeader({
 				title="AI Playlists"
 				description="Generated from your taste."
 			/>
-			{hasPlaylists ? (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							type="button"
-							variant="default"
-							className="size-11 shrink-0 rounded-none"
-							disabled={isBusy}
-							aria-label="Playlist actions"
-						>
-							{isBusy ? (
-								<Icons.spinner className="size-5 shrink-0 animate-spin" />
-							) : (
-								<Icons.plus className="size-5 shrink-0" />
-							)}
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="min-w-48">
-						<DropdownMenuItem
-							disabled={exportMutation.isPending}
-							onSelect={() => {
-								exportMutation.mutate({});
-							}}
-						>
-							Send all to Spotify
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							disabled={organizeMutation.isPending}
-							onSelect={() => {
-								organizeMutation.mutate({});
-							}}
-						>
-							Run analysis again
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			) : null}
+			<div className="flex shrink-0 items-center gap-2">
+				{hasPlaylists ? (
+					<DashboardPlaylistsSortSelect value={sort} onChange={setSort} />
+				) : null}
+				{hasPlaylists ? (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								type="button"
+								variant="default"
+								className="size-11 shrink-0 rounded-none"
+								disabled={isBusy}
+								aria-label="Playlist actions"
+							>
+								{isBusy ? (
+									<Icons.spinner className="size-5 shrink-0 animate-spin" />
+								) : (
+									<Icons.plus className="size-5 shrink-0" />
+								)}
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="min-w-48">
+							<DropdownMenuItem
+								disabled={exportMutation.isPending}
+								onSelect={() => {
+									exportMutation.mutate({});
+								}}
+							>
+								Send all to Spotify
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								disabled={organizeMutation.isPending}
+								onSelect={() => {
+									organizeMutation.mutate({});
+								}}
+							>
+								Run analysis again
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				) : null}
+			</div>
 		</div>
 	);
 }

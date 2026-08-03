@@ -1,8 +1,10 @@
 "use client";
 
+import type { PlaylistTrackSort } from "@harmonia/common/schemas";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { cn, Icons, Input } from "@harmonia/ui";
 import { DashboardDetailBackLink } from "@/components/shared/dashboard-detail-back-link";
+import { DashboardPlaylistTracklistSortSelect } from "./dashboard-playlist-tracklist-sort-select";
 
 export function DashboardPlaylistDetailHeader({
 	name,
@@ -10,12 +12,16 @@ export function DashboardPlaylistDetailHeader({
 	scrolled,
 	trackSearch,
 	onTrackSearchChange,
+	trackSort,
+	onTrackSortChange,
 }: {
 	name: string;
 	description: string | null;
 	scrolled: boolean;
 	trackSearch: string;
 	onTrackSearchChange: (value: string) => void;
+	trackSort: PlaylistTrackSort;
+	onTrackSortChange: (value: PlaylistTrackSort) => void;
 }) {
 	return (
 		<div className="sticky -top-5 z-10 -mx-4 -mt-4 bg-background px-4 pt-4 pb-3">
@@ -52,6 +58,10 @@ export function DashboardPlaylistDetailHeader({
 						className="pl-9"
 					/>
 				</div>
+				<DashboardPlaylistTracklistSortSelect
+					value={trackSort}
+					onChange={onTrackSortChange}
+				/>
 			</div>
 		</div>
 	);

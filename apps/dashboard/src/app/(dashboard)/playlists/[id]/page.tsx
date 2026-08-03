@@ -25,7 +25,7 @@ export default function PlaylistDetailPage({
 
 	const { setSelectedPlaylist, detail, exportMutation, updateMutation } =
 		usePlaylistsController();
-	const { tracks, trackSearch, setTrackSearch } =
+	const { tracks, trackSearch, setTrackSearch, trackSort, setTrackSort } =
 		usePlaylistTracksController(playlistId);
 
 	useEffect(() => {
@@ -33,8 +33,9 @@ export default function PlaylistDetailPage({
 		return () => {
 			setSelectedPlaylist(null);
 			setTrackSearch("");
+			setTrackSort("default");
 		};
-	}, [playlistId, setSelectedPlaylist, setTrackSearch]);
+	}, [playlistId, setSelectedPlaylist, setTrackSearch, setTrackSort]);
 
 	const scrollContainerRef = useDashboardScrollContainer();
 	const { scrolled, showBackToTop, scrollDirection } = useScrollFlags(
@@ -84,6 +85,8 @@ export default function PlaylistDetailPage({
 				scrolled={scrolled}
 				trackSearch={trackSearch}
 				onTrackSearchChange={setTrackSearch}
+				trackSort={trackSort}
+				onTrackSortChange={setTrackSort}
 			/>
 			<ScrollToTopButton
 				visible={showBackToTop}
