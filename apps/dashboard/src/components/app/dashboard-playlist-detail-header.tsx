@@ -18,15 +18,12 @@ export function DashboardPlaylistDetailHeader({
 	onTrackSearchChange: (value: string) => void;
 }) {
 	return (
-		<div className="sticky top-0 z-10 -mx-4 -mt-4 bg-background px-4 pt-4 pb-3">
+		<div className="sticky -top-5 z-10 -mx-4 -mt-4 bg-background px-4 pt-4 pb-3">
 			<DashboardDetailBackLink
 				href={DASHBOARD_ROUTES.playlists.path}
 				label="Playlists"
 			/>
 
-			{/* ponytail: discrete collapse on a scrolled threshold, not a continuous
-			scroll-linked interpolation — add spring/transform interpolation if the
-			step transition ever feels abrupt. */}
 			<div
 				className={cn(
 					"overflow-hidden transition-all duration-200 ease-out",
