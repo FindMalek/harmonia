@@ -122,6 +122,17 @@ export type SpotifyRequestOptions = {
 	body?: unknown;
 };
 
+/** Thrown by spotifyRequest for non-ok responses; carries the HTTP status so callers can special-case e.g. 404 (deleted resource) without string-matching the message. */
+export class SpotifyApiError extends Error {
+	readonly status: number;
+
+	constructor(status: number, message: string) {
+		super(message);
+		this.name = "SpotifyApiError";
+		this.status = status;
+	}
+}
+
 /**
  * Unified Spotify API request helper. Handles auth, 429 retries, and error formatting.
  */
@@ -196,12 +207,20 @@ export async function spotifyRequest<T>(
 			bodyJson.error_description ?? bodyJson.error ?? response.statusText;
 		const summary =
 			typeof rawSummary === "string" ? rawSummary : JSON.stringify(rawSummary);
-		throw new Error(
+		throw new SpotifyApiError(
+			response.status,
 			`Spotify API error ${response.status} for ${path}: ${summary}`,
 		);
 	}
 
-	return (await response.json()) as T;
+	// Several Spotify endpoints (e.g. PUT /playlists/{id}) return 200/204 with
+	// an empty body — response.json() throws "Unexpected end of JSON input" on
+	// those, so read as text first and only parse when there's content.
+	const responseText = await response.text();
+	if (!responseText) {
+		return undefined as T;
+	}
+	return JSON.parse(responseText) as T;
 }
 
 function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
