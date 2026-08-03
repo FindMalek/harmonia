@@ -124,6 +124,10 @@ async function createNewPlaylist(
 		),
 	);
 
+	if (!created) {
+		throw new Error("Spotify did not return a playlist after creation");
+	}
+
 	const spotifyPlaylistId = created.id;
 	const spotifyUrl = created.external_urls.spotify;
 

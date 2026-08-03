@@ -141,7 +141,7 @@ export async function spotifyRequest<T>(
 	accessToken: string,
 	options: SpotifyRequestOptions = {},
 	retriesLeft = SPOTIFY_RATE_LIMIT_MAX_RETRIES,
-): Promise<T> {
+): Promise<T | undefined> {
 	const { method = "GET", body } = options;
 	const init: RequestInit = {
 		method,
@@ -218,13 +218,20 @@ export async function spotifyRequest<T>(
 	// those, so read as text first and only parse when there's content.
 	const responseText = await response.text();
 	if (!responseText) {
-		return undefined as T;
+		return undefined;
 	}
 	return JSON.parse(responseText) as T;
 }
 
-function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
-	return spotifyRequest<T>(path, accessToken, { method: "GET" });
+// GET endpoints used in this codebase always return a body (paginated list
+// responses) — fail loudly rather than silently propagating undefined if
+// that assumption is ever wrong, instead of an `as T` cast.
+async function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
+	const result = await spotifyRequest<T>(path, accessToken, { method: "GET" });
+	if (result === undefined) {
+		throw new Error(`Spotify GET ${path} returned an empty body`);
+	}
+	return result;
 }
 
 export function spotifyRelativePathFromNext(nextUrl: string): string {
