@@ -1,6 +1,5 @@
 import type { playlistListItemSchema } from "@harmonia/common/schemas";
 import {
-	Badge,
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbList,
@@ -37,29 +36,26 @@ export function DashboardPlaylistsListRow({
 			)}
 		>
 			<div className="flex items-center justify-between gap-3">
-				<div className="flex flex-wrap items-center gap-2">
-					<p className="text-muted-foreground text-xs uppercase tracking-wide">
-						{playlist.trackCount} tracks
-					</p>
+				<p className="text-muted-foreground text-xs uppercase tracking-wide">
+					{playlist.trackCount} tracks
+				</p>
+				<div className="flex shrink-0 items-center gap-3">
 					{playlist.spotifyPlaylistId ? (
-						<Badge variant="outline" className="border-primary/40 text-primary">
-							<Icons.circleCheck className="size-3" />
-							Exported
-						</Badge>
-					) : null}
-					{playlist.spotifyPlaylistId && playlist.exportedAt ? (
-						<span className="text-muted-foreground text-xs">
-							Synced{" "}
-							{formatDistanceToNow(playlist.exportedAt, { addSuffix: true })}
+						<span
+							role="img"
+							aria-label="Exported to Spotify"
+							className="text-primary"
+						>
+							<Icons.spotify className="size-4" aria-hidden />
 						</span>
 					) : null}
+					<span
+						className="flex size-11 shrink-0 items-center justify-end text-muted-foreground"
+						aria-hidden
+					>
+						<Icons.arrowUpRight className="size-5" />
+					</span>
 				</div>
-				<span
-					className="flex size-11 shrink-0 items-center justify-end text-muted-foreground"
-					aria-hidden
-				>
-					<Icons.arrowUpRight className="size-5" />
-				</span>
 			</div>
 			<h2 className="mt-3 font-bold text-foreground text-xl leading-tight tracking-tight">
 				{playlist.name}
@@ -88,6 +84,11 @@ export function DashboardPlaylistsListRow({
 						))}
 					</BreadcrumbList>
 				</Breadcrumb>
+			) : null}
+			{playlist.spotifyPlaylistId && playlist.exportedAt ? (
+				<p className="mt-3 text-muted-foreground text-xs">
+					Synced {formatDistanceToNow(playlist.exportedAt, { addSuffix: true })}
+				</p>
 			) : null}
 		</Link>
 	);
