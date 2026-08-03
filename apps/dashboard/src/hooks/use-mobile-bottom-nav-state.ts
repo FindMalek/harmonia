@@ -11,8 +11,10 @@ export function useMobileBottomNavState() {
 	const { snapshot: streamState, connectionState } = usePipelineProgress();
 
 	const hidden =
-		pathname.startsWith(`${DASHBOARD_ROUTES.playlists.path}/`) &&
-		DASHBOARD_ROUTES.playlists.children.detail.hideBottomNav;
+		(pathname.startsWith(`${DASHBOARD_ROUTES.playlists.path}/`) &&
+			DASHBOARD_ROUTES.playlists.children.detail.hideBottomNav) ||
+		(pathname.startsWith(`${DASHBOARD_ROUTES.tracks.path}/`) &&
+			DASHBOARD_ROUTES.tracks.children.detail.hideBottomNav);
 
 	const showAnalysisBar =
 		!hidden &&

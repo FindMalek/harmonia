@@ -57,6 +57,14 @@ export const DASHBOARD_ROUTES = {
 		label: "Tracks",
 		icon: "music",
 		isNav: true,
+		children: {
+			detail: {
+				path: "/tracks/:id",
+				label: "Track Detail",
+				hideBottomNav: true,
+				makePath: (id: string) => `/tracks/${id}`,
+			},
+		},
 	},
 	clusters: {
 		path: "/clusters",
