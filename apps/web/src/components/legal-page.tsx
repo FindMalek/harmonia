@@ -1,9 +1,15 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { WEB_ROUTES } from "@harmonia/common/utils/routes";
 import { HarmoniaBrandHeader, Icons } from "@harmonia/ui";
 import { marked } from "marked";
 import Link from "next/link";
 
-export function LegalPage({ markdown }: { markdown: string }) {
+export function LegalPage({ slug }: { slug: "privacy" | "terms" }) {
+	const markdown = readFileSync(
+		join(process.cwd(), "src/content", `${slug}.md`),
+		"utf-8",
+	);
 	const html = marked.parse(markdown, { async: false });
 
 	return (

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
-import { privacyMarkdown } from "@/content/privacy";
 
 export const metadata: Metadata = {
 	title: "Privacy Policy — Harmonia",
@@ -8,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
-	return <LegalPage markdown={privacyMarkdown} />;
+	return <LegalPage slug="privacy" />;
 }

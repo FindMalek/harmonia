@@ -1,4 +1,4 @@
-export const privacyMarkdown = `# Privacy Policy
+# Privacy Policy
 
 **Last updated: August 4, 2026**
 
@@ -77,4 +77,3 @@ We may update this policy as Harmonia evolves. Material changes will be reflecte
 ## 9. Contact
 
 Questions about this policy, or data deletion requests, can be sent to **[malekgarahellalbus@gmail.com](mailto:malekgarahellalbus@gmail.com)**.
-`;

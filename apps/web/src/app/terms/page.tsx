@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
-import { termsMarkdown } from "@/content/terms";
 
 export const metadata: Metadata = {
 	title: "Terms of Service — Harmonia",
@@ -8,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-	return <LegalPage markdown={termsMarkdown} />;
+	return <LegalPage slug="terms" />;
 }

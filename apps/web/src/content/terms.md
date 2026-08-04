@@ -1,4 +1,4 @@
-export const termsMarkdown = `# Terms of Service
+# Terms of Service
 
 **Last updated: August 4, 2026**
 
@@ -63,4 +63,3 @@ We may update these terms as Harmonia evolves. Continued use after a change cons
 ## 12. Contact
 
 Questions about these terms can be sent to **[malekgarahellalbus@gmail.com](mailto:malekgarahellalbus@gmail.com)**.
-`;
