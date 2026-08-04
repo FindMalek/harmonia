@@ -1,5 +1,18 @@
 # Harmonia
 
+<p align="center">
+  <a href="https://github.com/FindMalek/harmonia/commits/main">
+    <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/FindMalek/harmonia.svg?variant=secondary&mode=dark&color=18181b" />
+  </a>
+  <a href="#license">
+    <img alt="License: MIT" src="https://shieldcn.dev/badge/license-MIT-18181b.svg?variant=secondary&mode=dark" />
+  </a>
+  <img alt="Next.js" src="https://shieldcn.dev/badge/-Next.js-18181b.svg?logo=nextdotjs&variant=secondary&mode=dark" />
+  <img alt="TypeScript" src="https://shieldcn.dev/badge/-TypeScript-18181b.svg?logo=typescript&variant=secondary&mode=dark" />
+  <img alt="Drizzle ORM" src="https://shieldcn.dev/badge/-Drizzle-18181b.svg?logo=drizzle&variant=secondary&mode=dark" />
+  <img alt="Turborepo" src="https://shieldcn.dev/badge/-Turborepo-18181b.svg?logo=turborepo&variant=secondary&mode=dark" />
+</p>
+
 > AI-powered music organization — sync your Spotify library, classify every track, and auto-generate playlists by mood, theme, and vibe.
 
 ## What it does

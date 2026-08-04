@@ -17,6 +17,7 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import {
 	and,
+	asc,
 	count,
 	desc,
 	eq,
@@ -97,7 +98,11 @@ export const tracksRouter = {
 				})
 				.from(track)
 				.where(where)
-				.orderBy(desc(track.createdAt))
+				.orderBy(
+					...(input.sort === "album"
+						? [asc(track.albumName), asc(track.id)]
+						: [desc(track.createdAt)]),
+				)
 				.limit(input.pageSize)
 				.offset(offset);
 

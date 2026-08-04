@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// "album" orders by albumName (then id for stable pagination), letting the UI
+// render contiguous album groups instead of an interleaved recent-first feed.
+export const tracksListSortEnum = z.enum(["recent", "album"]);
+export type TracksListSort = z.infer<typeof tracksListSortEnum>;
+
 export const tracksListInput = z.object({
 	page: z.number().default(1),
 	pageSize: z.number().default(50),
@@ -7,6 +12,7 @@ export const tracksListInput = z.object({
 	lyricsStatus: z.string().optional(),
 	classified: z.boolean().optional(),
 	embedded: z.boolean().optional(),
+	sort: tracksListSortEnum.default("recent"),
 });
 export type TracksListInput = z.infer<typeof tracksListInput>;
 
