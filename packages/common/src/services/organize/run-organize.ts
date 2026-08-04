@@ -154,6 +154,7 @@ export async function runOrganizeForUser({
 				progress.embed = p;
 				await updateRun(runId, { progress });
 			},
+			runId,
 		);
 		progress.embed = embedResult;
 		await updateRun(runId, { progress });
