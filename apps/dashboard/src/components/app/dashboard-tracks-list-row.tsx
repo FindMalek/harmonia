@@ -66,7 +66,7 @@ const TRACKS_SKELETON_KEYS = [
 
 export function DashboardTracksListSkeleton() {
 	return (
-		<div className="divide-y divide-border">
+		<div>
 			{TRACKS_SKELETON_KEYS.map((key) => (
 				<DashboardTracksListRowSkeleton key={key} />
 			))}
