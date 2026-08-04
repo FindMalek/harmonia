@@ -175,7 +175,9 @@ export const tracksRouter = {
 				try {
 					const accessToken = await getUserSpotifyAccessToken(userId);
 					if (accessToken) {
-						const allPlaylists = await fetchAllUserPlaylists(accessToken);
+						const allPlaylists = await fetchAllUserPlaylists(accessToken, {
+							context: { userId },
+						});
 						spotifyPlaylists = allPlaylists
 							.filter((p) => spotifyPlaylistIds.has(p.id))
 							.map((p) => ({ id: p.id, name: p.name }));
