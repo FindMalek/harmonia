@@ -72,6 +72,33 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 	const hasTags = themes.length > 0 || topics.length > 0 || vibe.length > 0;
 	const hasLyrics = Boolean(track.lyrics || track.syncedLyrics);
 
+	// Tempo/key/mode aren't currently populated by the sync pipeline (#241) —
+	// only show stat cards that have a real value instead of a permanent "—".
+	const statCards = [
+		{
+			key: "duration",
+			label: "Duration",
+			value: formatDuration(track.durationMs),
+		},
+		track.tempo != null
+			? {
+					key: "tempo",
+					label: "Tempo",
+					value: `${Math.round(track.tempo)} BPM`,
+				}
+			: null,
+		track.key != null && KEY_NAMES[track.key]
+			? { key: "key", label: "Key", value: KEY_NAMES[track.key] }
+			: null,
+		track.mode === 1 || track.mode === 0
+			? {
+					key: "mode",
+					label: "Mode",
+					value: track.mode === 1 ? "Major" : "Minor",
+				}
+			: null,
+	].filter((stat): stat is NonNullable<typeof stat> => stat !== null);
+
 	return (
 		<div className="flex flex-col gap-6">
 			<DashboardDetailBackLink
@@ -155,23 +182,20 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 				</a>
 			</div>
 
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-				<InsightStatCard
-					label="Duration"
-					value={formatDuration(track.durationMs)}
-				/>
-				<InsightStatCard
-					label="Tempo"
-					value={track.tempo != null ? `${Math.round(track.tempo)} BPM` : "—"}
-				/>
-				<InsightStatCard
-					label="Key"
-					value={track.key != null ? (KEY_NAMES[track.key] ?? "—") : "—"}
-				/>
-				<InsightStatCard
-					label="Mode"
-					value={track.mode === 1 ? "Major" : track.mode === 0 ? "Minor" : "—"}
-				/>
+			<div
+				className={cn(
+					"grid grid-cols-2 gap-3",
+					statCards.length >= 4 && "sm:grid-cols-4",
+					statCards.length === 3 && "sm:grid-cols-3",
+				)}
+			>
+				{statCards.map((stat) => (
+					<InsightStatCard
+						key={stat.key}
+						label={stat.label}
+						value={stat.value}
+					/>
+				))}
 			</div>
 
 			<DashboardInsightsSonicDna
