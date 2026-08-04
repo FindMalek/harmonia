@@ -4,7 +4,7 @@ import type {
 	SpotifySavedTracksResponse,
 } from "@harmonia/common/schemas";
 import type { SyncProgress } from "@harmonia/common/types";
-import { conflictValue, db } from "@harmonia/db";
+import { conflictValue, conflictValuePreserveExisting, db } from "@harmonia/db";
 import {
 	userPlaylistSnapshots,
 	userSpotifyLibraryStats,
@@ -442,9 +442,15 @@ export async function syncLibraryTracks(
 					albumName: conflictValue(track.albumName),
 					albumId: conflictValue(track.albumId),
 					albumImageUrl: conflictValue(track.albumImageUrl),
-					releaseDate: conflictValue(track.releaseDate),
-					explicit: conflictValue(track.explicit),
-					popularity: conflictValue(track.popularity),
+					// A stale cached playlist-items entry (fetched before these three
+					// fields were added to the Spotify request) or a plain Saved
+					// Tracks re-sync racing a playlist scan for the same track can
+					// legitimately produce null here even though a good value is
+					// already stored — preserve the existing value rather than
+					// erasing it (#230 review).
+					releaseDate: conflictValuePreserveExisting(track.releaseDate),
+					explicit: conflictValuePreserveExisting(track.explicit),
+					popularity: conflictValuePreserveExisting(track.popularity),
 					durationMs: conflictValue(track.durationMs),
 					spotifyGenres: conflictValue(track.spotifyGenres),
 					updatedAt: conflictValue(track.updatedAt),
