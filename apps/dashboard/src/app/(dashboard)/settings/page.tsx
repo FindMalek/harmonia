@@ -1,7 +1,15 @@
 "use client";
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Badge, Button } from "@harmonia/ui";
+import {
+	Badge,
+	Button,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@harmonia/ui";
 import { formatDistanceToNow } from "date-fns";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -28,6 +36,7 @@ export default function SettingsPage() {
 		spotifyLoading,
 		lastSync,
 		statsLoading,
+		theme,
 		resolvedTheme,
 		setTheme,
 		signOut,
@@ -43,12 +52,7 @@ export default function SettingsPage() {
 			? formatDistanceToNow(lastSync, { addSuffix: true })
 			: "Never";
 
-	const themeLabel =
-		resolvedTheme === "dark"
-			? "Dark"
-			: resolvedTheme === "light"
-				? "Light"
-				: "System default";
+	const resolvedThemeLabel = resolvedTheme === "dark" ? "Dark" : "Light";
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -82,11 +86,21 @@ export default function SettingsPage() {
 			</DashboardSettingsSection>
 
 			<DashboardSettingsSection label="PREFERENCES">
-				<DashboardSettingsNavRow
-					label="Theme"
-					subtitle={themeLabel}
-					onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-				/>
+				<div className="flex items-center justify-between border-b py-4 last:border-b-0">
+					<span className="text-muted-foreground text-sm">Theme</span>
+					<Select value={theme ?? "system"} onValueChange={setTheme}>
+						<SelectTrigger className="h-8 w-44 text-sm">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="system">
+								{`System default (${resolvedThemeLabel})`}
+							</SelectItem>
+							<SelectItem value="light">Light</SelectItem>
+							<SelectItem value="dark">Dark</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 				<DashboardSettingsRow
 					label="Analysis Frequency"
 					value={
