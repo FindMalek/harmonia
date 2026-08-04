@@ -1,3 +1,4 @@
+import { WEB_ROUTES } from "@harmonia/common/utils/routes";
 import { env } from "@harmonia/env/web";
 import { HarmoniaBrandHeader } from "@harmonia/ui";
 import type { Route } from "next";
@@ -66,6 +67,22 @@ export default function WaitlistPage() {
 								className="text-foreground underline underline-offset-2"
 							>
 								Sign in with Spotify
+							</Link>
+						</p>
+
+						<p className="text-muted-foreground text-xs">
+							<Link
+								href={WEB_ROUTES.privacy.path as Route}
+								className="underline underline-offset-2 hover:text-foreground"
+							>
+								Privacy Policy
+							</Link>
+							<span className="mx-2">·</span>
+							<Link
+								href={WEB_ROUTES.terms.path as Route}
+								className="underline underline-offset-2 hover:text-foreground"
+							>
+								Terms of Service
 							</Link>
 						</p>
 					</div>

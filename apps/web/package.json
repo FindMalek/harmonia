@@ -9,6 +9,7 @@
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.5.0",
+		"@harmonia/common": "workspace:*",
 		"@harmonia/core": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
@@ -24,6 +25,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"dotenv": "catalog:",
+		"marked": "^18.0.7",
 		"next": "catalog:",
 		"next-themes": "^0.4.6",
 		"react": "catalog:",
