@@ -5,7 +5,7 @@ export const SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC = 60;
 
 export const SPOTIFY_PLAYLIST_ITEMS_LIMIT = 50;
 export const SPOTIFY_PLAYLIST_ITEMS_FIELDS =
-	"items(track(id,name,uri,album(id,name),artists(id,name),duration_ms))";
+	"items(track(id,name,uri,album(id,name,release_date),artists(id,name),duration_ms,explicit,popularity))";
 
 export const PLAYLIST_FETCH_CONCURRENCY = 3;
 export const PLAYLIST_FETCH_DELAY_MS = 150;

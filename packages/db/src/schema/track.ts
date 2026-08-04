@@ -24,8 +24,13 @@ export const track = pgTable(
 		// Core metadata (Spotify)
 		name: text("name").notNull(),
 		artistNames: text("artist_names").notNull(), // JSON array as text string
+		artistIds: jsonb("artist_ids").$type<Array<string | null>>(), // Parallel to artistNames, same order; null where Spotify has no ID for that artist
 		albumName: text("album_name"),
+		albumId: text("album_id"),
 		albumImageUrl: text("album_image_url"),
+		releaseDate: text("release_date"), // ISO 8601 date string as returned by Spotify
+		explicit: boolean("explicit"),
+		popularity: integer("popularity"), // 0-100
 		durationMs: integer("duration_ms"),
 		spotifyGenres: jsonb("spotify_genres").$type<string[]>(), // Raw artist genres
 
