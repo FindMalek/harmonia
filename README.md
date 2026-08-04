@@ -1,6 +1,10 @@
 # Harmonia
 
 <p align="center">
+  <img alt="Harmonia" src="https://shieldcn.dev/header/graph.svg?title=Harmonia&subtitle=AI-powered+music+organization+for+Spotify&theme=zinc&mode=dark" />
+</p>
+
+<p align="center">
   <a href="https://github.com/FindMalek/harmonia/commits/main">
     <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/FindMalek/harmonia.svg?variant=secondary&mode=dark&color=18181b" />
   </a>
