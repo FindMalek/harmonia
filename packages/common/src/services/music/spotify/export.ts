@@ -138,7 +138,7 @@ async function createNewPlaylist(
 	) {
 		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
 		await retryableSpotifyRequest(() =>
-			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+			spotifyRequest(`/playlists/${spotifyPlaylistId}/items`, accessToken, {
 				method: "POST",
 				body: { uris: batch },
 			}),
@@ -179,7 +179,7 @@ async function updateExistingPlaylist(
 	);
 
 	await retryableSpotifyRequest(() =>
-		spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+		spotifyRequest(`/playlists/${spotifyPlaylistId}/items`, accessToken, {
 			method: "PUT",
 			body: {
 				uris: trackUris.slice(0, SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST),
@@ -194,7 +194,7 @@ async function updateExistingPlaylist(
 	) {
 		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
 		await retryableSpotifyRequest(() =>
-			spotifyRequest(`/playlists/${spotifyPlaylistId}/tracks`, accessToken, {
+			spotifyRequest(`/playlists/${spotifyPlaylistId}/items`, accessToken, {
 				method: "POST",
 				body: { uris: batch },
 			}),
