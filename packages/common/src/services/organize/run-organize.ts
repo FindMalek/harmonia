@@ -142,6 +142,7 @@ export async function runOrganizeForUser({
 				progress.classify = p;
 				await updateRun(runId, { progress });
 			},
+			runId,
 		);
 		progress.classify = classifyResult;
 		await updateRun(runId, { progress });
