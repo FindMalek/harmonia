@@ -1,10 +1,10 @@
 import "@harmonia/ui/styles/globals.css";
-import { env } from "@harmonia/env/web";
 import type { Metadata } from "next";
 
 import AppProviders from "@/components/app-providers";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = env.NEXT_PUBLIC_HARMONIA_WEB_URL ?? "http://127.0.0.1:3001";
+const siteUrl = getSiteUrl();
 const title = "Harmonia — Your Spotify library, intelligently organized.";
 const description =
 	"Harmonia uses AI to analyze your music library and automatically create meaningful playlists from your songs.";
