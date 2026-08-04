@@ -42,12 +42,11 @@ export function DashboardPlaylistDetailHeader({
 				) : null}
 			</div>
 
+			{scrolled ? (
+				<p className="mt-3 truncate font-medium text-sm">{name}</p>
+			) : null}
+
 			<div className="mt-3 flex items-center gap-2">
-				{scrolled ? (
-					<span className="max-w-[40%] shrink-0 truncate font-medium text-sm">
-						{name}
-					</span>
-				) : null}
 				<div className="relative flex-1">
 					<Icons.search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 					<Input

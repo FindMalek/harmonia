@@ -19,6 +19,8 @@ import {
 	PLAYLIST_FETCH_DELAY_MS,
 	TRACK_UPSERT_BATCH_SIZE,
 } from "../../../constants/spotify";
+import { selectCanonicalTracks } from "../../../utils/normalize-track-title";
+import { parseJsonStringArray } from "../../../utils/parse-json-string-array";
 import {
 	fetchAllSavedTracks,
 	fetchAllUserPlaylists,
@@ -456,11 +458,32 @@ export async function syncLibraryTracks(
 			});
 	}
 
+	// Collapse version variants (Deluxe/Remastered/Radio Edit/etc.) of the same
+	// song down to one canonical userTracks entry (#130) — the underlying
+	// `track` table upsert above stays unfiltered since other users may own
+	// the non-canonical version.
+	const canonicalTracks = selectCanonicalTracks(
+		tracks.map((t) => ({
+			id: t.id,
+			name: t.name,
+			primaryArtist: parseJsonStringArray(t.artistNames)[0] ?? "",
+		})),
+	);
+	const canonicalTrackIds = new Set(canonicalTracks.map((t) => t.id));
+	logger.info(
+		{
+			userId,
+			total: tracks.length,
+			deduped: tracks.length - canonicalTrackIds.size,
+		},
+		"Sync dedup removed version variants",
+	);
+
 	// Tracks with a known real liked-at date self-heal a stale placeholder on
 	// every sync; tracks without one must never touch an existing row's
 	// addedAt with the insert-time default (#214).
 	const { withLikedAt, withoutLikedAt } = partitionTracksByKnownLikedAt(
-		tracks,
+		tracks.filter((t) => canonicalTrackIds.has(t.id)),
 		likedAtByTrackId,
 	);
 

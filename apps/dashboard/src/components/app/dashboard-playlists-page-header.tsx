@@ -27,7 +27,7 @@ export function DashboardPlaylistsPageHeader({
 	const isBusy = exportMutation.isPending || organizeMutation.isPending;
 
 	return (
-		<div className="flex items-start justify-between gap-4">
+		<div className="sticky -top-5 z-10 -mx-4 -mt-4 flex items-start justify-between gap-4 bg-background px-4 pt-4 pb-3">
 			<PageHeader
 				title="AI Playlists"
 				description="Generated from your taste."

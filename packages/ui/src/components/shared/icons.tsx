@@ -20,6 +20,7 @@ import {
 	IconArrowUpRight,
 	IconBrain,
 	IconBrandBandlab,
+	IconBrandSpotifyFilled,
 	IconChartBar,
 	IconCheck,
 	IconChevronDown,
@@ -104,6 +105,7 @@ export const Icons = {
 
 	// Brand
 	logo: IconBrandBandlab,
+	spotify: IconBrandSpotifyFilled,
 
 	// Navigation / App
 	settings: IconSettings,
