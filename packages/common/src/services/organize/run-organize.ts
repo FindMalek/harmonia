@@ -129,6 +129,7 @@ export async function runOrganizeForUser({
 				progress.lyrics = p;
 				await updateRun(runId, { progress });
 			},
+			runId,
 		);
 		progress.lyrics = lyricsResult;
 		await updateRun(runId, { progress });

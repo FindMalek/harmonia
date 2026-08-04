@@ -39,24 +39,29 @@ export const lyricsWorkerTask = task({
 	}) => {
 		await checkCancelled(runId, userId);
 
-		return await fetchLyricsForTrackIds(userId, trackIds, async (delta) => {
-			if (delta.processed > 0)
-				await incrementStageProgress(
-					runId,
-					"lyrics",
-					"processed",
-					delta.processed,
-				);
-			if (delta.found > 0)
-				await incrementStageProgress(runId, "lyrics", "found", delta.found);
-			if (delta.notFound > 0)
-				await incrementStageProgress(
-					runId,
-					"lyrics",
-					"notFound",
-					delta.notFound,
-				);
-		});
+		return await fetchLyricsForTrackIds(
+			userId,
+			trackIds,
+			async (delta) => {
+				if (delta.processed > 0)
+					await incrementStageProgress(
+						runId,
+						"lyrics",
+						"processed",
+						delta.processed,
+					);
+				if (delta.found > 0)
+					await incrementStageProgress(runId, "lyrics", "found", delta.found);
+				if (delta.notFound > 0)
+					await incrementStageProgress(
+						runId,
+						"lyrics",
+						"notFound",
+						delta.notFound,
+					);
+			},
+			runId,
+		);
 	},
 });
 
