@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { accountDeleteOutputSchema } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
 import { account, user } from "@harmonia/db/schema/auth";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
@@ -35,7 +36,7 @@ export const protectedRouter = {
 	// themselves are shared across users (not user-scoped), so they're
 	// correctly left in place; only this user's link to them is removed.
 	deleteAccount: protectedProcedure
-		.output(z.object({ success: z.boolean() }))
+		.output(accountDeleteOutputSchema)
 		.handler(async ({ context }) => {
 			const userId = context.session.user.id;
 			await db.delete(user).where(eq(user.id, userId));
