@@ -51,18 +51,15 @@ export function DashboardPlaylistDetailActions({
 				variant="outline"
 				className="w-full font-bold uppercase tracking-widest"
 				onClick={onExport}
-				disabled={exportPending}
+				isLoading={exportPending}
 			>
-				{exportPending ? (
-					<>
-						<Icons.spinner className="mr-2 size-4 animate-spin" />
-						{isExported ? "Updating..." : "Exporting..."}
-					</>
-				) : isExported ? (
-					"Update in Spotify"
-				) : (
-					"Export to Spotify"
-				)}
+				{exportPending
+					? isExported
+						? "Updating..."
+						: "Exporting..."
+					: isExported
+						? "Update in Spotify"
+						: "Export to Spotify"}
 			</Button>
 			{spotifyPlaylistId ? (
 				<div className="flex items-center justify-between gap-3 border-t py-3">
