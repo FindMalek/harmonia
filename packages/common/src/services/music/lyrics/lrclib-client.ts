@@ -1,5 +1,20 @@
 import { logger } from "@harmonia/logger";
 import pRetry, { AbortError } from "p-retry";
+import { logExternalApiCall } from "../../external-api-log";
+
+export type LRCLibCallContext = {
+	userId?: string | null;
+	pipelineRunId?: number | null;
+};
+
+function tryParseJson(text: string): unknown {
+	if (!text) return undefined;
+	try {
+		return JSON.parse(text);
+	} catch {
+		return undefined;
+	}
+}
 
 type LRCLibTrack = {
 	id: number;
@@ -34,15 +49,54 @@ function toTrack(raw: LRCLibRawTrack): LRCLibTrack {
 
 // Generic helper used by both /api/get (T = LRCLibRawTrack) and /api/search (T = LRCLibRawTrack[]).
 // url is closed over so the retry log always carries request context.
-async function fetchLRCLib<T = LRCLibRawTrack>(url: string): Promise<T | null> {
+async function fetchLRCLib<T = LRCLibRawTrack>(
+	url: string,
+	endpoint: "/api/get" | "/api/search",
+	context: LRCLibCallContext = {},
+): Promise<T | null> {
+	let attempt = 0;
 	return pRetry(
 		async () => {
+			const retryAttempt = attempt;
+			attempt += 1;
+			const params = Object.fromEntries(new URL(url).searchParams);
+			const startTime = Date.now();
 			const response = await fetch(url);
+			const durationMs = Date.now() - startTime;
 
-			if (response.status === 404) return null;
+			if (response.status === 404) {
+				await logExternalApiCall({
+					userId: context.userId,
+					pipelineRunId: context.pipelineRunId,
+					provider: "lrclib",
+					endpoint,
+					method: "GET",
+					httpStatus: 404,
+					requestPayload: params,
+					durationMs,
+					retryAttempt,
+				});
+				return null;
+			}
 
 			if (!response.ok) {
+				const bodyText = await response.clone().text();
 				const message = `LRCLib ${response.status}: ${response.statusText}`;
+				await logExternalApiCall({
+					userId: context.userId,
+					pipelineRunId: context.pipelineRunId,
+					provider: "lrclib",
+					endpoint,
+					method: "GET",
+					httpStatus: response.status,
+					requestPayload: params,
+					responsePayload: tryParseJson(bodyText) as
+						| Record<string, unknown>
+						| undefined,
+					durationMs,
+					errorMessage: message,
+					retryAttempt,
+				});
 				// 429 is rate-limited but transient — must NOT abort, let backoff handle it
 				if (
 					response.status !== 429 &&
@@ -54,6 +108,18 @@ async function fetchLRCLib<T = LRCLibRawTrack>(url: string): Promise<T | null> {
 				// 429 and 5xx — retried with exponential back-off + jitter
 				throw new Error(message);
 			}
+
+			await logExternalApiCall({
+				userId: context.userId,
+				pipelineRunId: context.pipelineRunId,
+				provider: "lrclib",
+				endpoint,
+				method: "GET",
+				httpStatus: response.status,
+				requestPayload: params,
+				durationMs,
+				retryAttempt,
+			});
 
 			return (await response.json()) as T;
 		},
@@ -69,12 +135,15 @@ async function fetchLRCLib<T = LRCLibRawTrack>(url: string): Promise<T | null> {
 	);
 }
 
-export async function getLyricsFromLRCLib(params: {
-	trackName: string;
-	artistName: string;
-	albumName?: string | null;
-	durationMs?: number | null;
-}): Promise<LRCLibTrack | null> {
+export async function getLyricsFromLRCLib(
+	params: {
+		trackName: string;
+		artistName: string;
+		albumName?: string | null;
+		durationMs?: number | null;
+	},
+	context: LRCLibCallContext = {},
+): Promise<LRCLibTrack | null> {
 	// ── 1. Exact-match via /api/get ──────────────────────────────────────────
 	const getParams = new URLSearchParams({
 		track_name: params.trackName,
@@ -87,6 +156,8 @@ export async function getLyricsFromLRCLib(params: {
 
 	const exact = await fetchLRCLib<LRCLibRawTrack>(
 		`https://lrclib.net/api/get?${getParams.toString()}`,
+		"/api/get",
+		context,
 	);
 	if (exact) return toTrack(exact);
 
@@ -99,6 +170,8 @@ export async function getLyricsFromLRCLib(params: {
 
 	const results = await fetchLRCLib<LRCLibRawTrack[]>(
 		`https://lrclib.net/api/search?${searchParams.toString()}`,
+		"/api/search",
+		context,
 	);
 
 	// results is null (404) or LRCLibRawTrack[]; optional-chain handles both

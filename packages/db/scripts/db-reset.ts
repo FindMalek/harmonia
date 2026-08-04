@@ -26,6 +26,7 @@ const TABLES_TO_TRUNCATE = [
 	"character_tracks",
 	"character_clusters",
 	"character",
+	"external_api_call",
 	"pipeline_run",
 	"user_tracks",
 ] as const;

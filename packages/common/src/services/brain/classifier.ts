@@ -24,6 +24,7 @@ type ClassifyDeltaCallback = (deltaClassified: number) => Promise<void>;
 export async function classifyTracksBatch(
 	userId: string,
 	onProgress?: (progress: ClassifyProgress) => Promise<void>,
+	pipelineRunId?: number,
 ): Promise<ClassifyProgress> {
 	const userTrackIds = db
 		.select({ trackId: userTracks.trackId })
@@ -93,7 +94,10 @@ export async function classifyTracksBatch(
 					}),
 				);
 
-				const results = await classifyTracksWithLLM(trackInputs);
+				const results = await classifyTracksWithLLM(trackInputs, {
+					userId,
+					pipelineRunId,
+				});
 
 				if (results.length === 0) {
 					logger.warn(
@@ -210,6 +214,7 @@ export async function classifyTrackIds(
 	userId: string,
 	trackIds: string[],
 	onBatchComplete?: ClassifyDeltaCallback,
+	pipelineRunId?: number,
 ): Promise<ClassifyProgress> {
 	const stats: ClassifyProgress = {
 		classified: 0,
@@ -251,7 +256,10 @@ export async function classifyTrackIds(
 					}),
 				);
 
-				const results = await classifyTracksWithLLM(trackInputs);
+				const results = await classifyTracksWithLLM(trackInputs, {
+					userId,
+					pipelineRunId,
+				});
 
 				if (results.length === 0) {
 					logger.warn(

@@ -65,6 +65,7 @@ export async function refreshSpotifyLibraryStats(
 	const spotifyAccount = await getSpotifyAccount(userId);
 	const playlists = await fetchAllUserPlaylists(accessToken, {
 		ownerId: INCLUDE_FOLLOWED_PLAYLISTS ? undefined : spotifyAccount?.accountId,
+		context: { userId },
 	});
 	const totalPlaylists = playlists.length;
 
@@ -92,7 +93,9 @@ export async function refreshSpotifyLibraryStats(
 					await new Promise((r) =>
 						setTimeout(r, (i % STATS_FETCH_CONCURRENCY) * 100),
 					);
-					items = await fetchPlaylistItems(accessToken, playlist.id);
+					items = await fetchPlaylistItems(accessToken, playlist.id, {
+						context: { userId },
+					});
 					await setCachedPlaylistItems(userId, playlist.id, snapshotId, items);
 					await db
 						.insert(userPlaylistSnapshots)

@@ -39,14 +39,19 @@ export const classifyWorkerTask = task({
 	}) => {
 		await checkCancelled(runId, userId);
 
-		return await classifyTrackIds(userId, trackIds, async (deltaClassified) => {
-			await incrementStageProgress(
-				runId,
-				"classify",
-				"classified",
-				deltaClassified,
-			);
-		});
+		return await classifyTrackIds(
+			userId,
+			trackIds,
+			async (deltaClassified) => {
+				await incrementStageProgress(
+					runId,
+					"classify",
+					"classified",
+					deltaClassified,
+				);
+			},
+			runId,
+		);
 	},
 });
 

@@ -87,6 +87,7 @@ export async function exportPlaylistToSpotify(
 				pl,
 				filteredUris,
 				playlistId,
+				userId,
 			);
 		} catch (err) {
 			if (!(err instanceof SpotifyApiError) || err.status !== 404) {
@@ -104,7 +105,7 @@ export async function exportPlaylistToSpotify(
 
 async function createNewPlaylist(
 	accessToken: string,
-	_userId: string,
+	userId: string,
 	pl: { name: string; description: string | null },
 	trackUris: string[],
 	playlistId: number,
@@ -121,6 +122,8 @@ async function createNewPlaylist(
 					public: false,
 				},
 			},
+			undefined,
+			{ userId },
 		),
 	);
 
@@ -138,10 +141,16 @@ async function createNewPlaylist(
 	) {
 		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
 		await retryableSpotifyRequest(() =>
-			spotifyRequest(`/playlists/${spotifyPlaylistId}/items`, accessToken, {
-				method: "POST",
-				body: { uris: batch },
-			}),
+			spotifyRequest(
+				`/playlists/${spotifyPlaylistId}/items`,
+				accessToken,
+				{
+					method: "POST",
+					body: { uris: batch },
+				},
+				undefined,
+				{ userId },
+			),
 		);
 	}
 
@@ -167,24 +176,37 @@ async function updateExistingPlaylist(
 	pl: { name: string; description: string | null },
 	trackUris: string[],
 	playlistId: number,
+	userId: string,
 ): Promise<{ spotifyPlaylistId: string; spotifyUrl: string }> {
 	await retryableSpotifyRequest(() =>
-		spotifyRequest(`/playlists/${spotifyPlaylistId}`, accessToken, {
-			method: "PUT",
-			body: {
-				name: pl.name,
-				description: pl.description ?? "",
+		spotifyRequest(
+			`/playlists/${spotifyPlaylistId}`,
+			accessToken,
+			{
+				method: "PUT",
+				body: {
+					name: pl.name,
+					description: pl.description ?? "",
+				},
 			},
-		}),
+			undefined,
+			{ userId },
+		),
 	);
 
 	await retryableSpotifyRequest(() =>
-		spotifyRequest(`/playlists/${spotifyPlaylistId}/items`, accessToken, {
-			method: "PUT",
-			body: {
-				uris: trackUris.slice(0, SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST),
+		spotifyRequest(
+			`/playlists/${spotifyPlaylistId}/items`,
+			accessToken,
+			{
+				method: "PUT",
+				body: {
+					uris: trackUris.slice(0, SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST),
+				},
 			},
-		}),
+			undefined,
+			{ userId },
+		),
 	);
 
 	for (
@@ -194,10 +216,16 @@ async function updateExistingPlaylist(
 	) {
 		const batch = trackUris.slice(i, i + SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST);
 		await retryableSpotifyRequest(() =>
-			spotifyRequest(`/playlists/${spotifyPlaylistId}/items`, accessToken, {
-				method: "POST",
-				body: { uris: batch },
-			}),
+			spotifyRequest(
+				`/playlists/${spotifyPlaylistId}/items`,
+				accessToken,
+				{
+					method: "POST",
+					body: { uris: batch },
+				},
+				undefined,
+				{ userId },
+			),
 		);
 	}
 

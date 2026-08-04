@@ -245,6 +245,7 @@ export async function syncLibraryTracks(
 	};
 
 	await fetchAllSavedTracks(accessToken, {
+		context: { userId },
 		onPage: async ({
 			items,
 			cumulativeTrackCount,
@@ -284,7 +285,9 @@ export async function syncLibraryTracks(
 	}
 
 	// 2. Playlists
-	const playlists = await fetchAllUserPlaylists(accessToken);
+	const playlists = await fetchAllUserPlaylists(accessToken, {
+		context: { userId },
+	});
 	const totalPlaylists = playlists.length;
 
 	// 3. For each playlist: use cache if snapshot matches, else fetch and cache
@@ -312,7 +315,9 @@ export async function syncLibraryTracks(
 						),
 					);
 					try {
-						items = await fetchPlaylistItems(accessToken, playlist.id);
+						items = await fetchPlaylistItems(accessToken, playlist.id, {
+							context: { userId },
+						});
 						await setCachedPlaylistItems(
 							userId,
 							playlist.id,

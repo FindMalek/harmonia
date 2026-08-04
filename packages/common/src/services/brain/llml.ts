@@ -15,6 +15,12 @@ import {
 	CLASSIFICATION_MAX_OUTPUT_TOKENS,
 	GROQ_RATE_LIMIT_FALLBACK_DELAY_MS,
 } from "../../constants/brain";
+import { logExternalApiCall } from "../external-api-log";
+
+export type LLMCallContext = {
+	userId?: string | null;
+	pipelineRunId?: number | null;
+};
 
 function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	return formatPrompt({
@@ -88,10 +94,13 @@ function logInvalidJsonError(err: unknown): void {
 
 async function classifyTracksBatchOnce(
 	tracks: TrackForClassification[],
+	context: LLMCallContext,
+	retryAttempt: number,
 ): Promise<ClassificationResult[]> {
+	const startTime = Date.now();
 	try {
 		const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
-		const { output } = await generateText({
+		const { output, usage, response } = await generateText({
 			model: groq(CLASSIFICATION_LLM_MODEL),
 			prompt: buildClassificationPrompt(tracks),
 			temperature: 0,
@@ -100,6 +109,7 @@ async function classifyTracksBatchOnce(
 				schema: classificationResultListSchema,
 			}),
 		});
+		const durationMs = Date.now() - startTime;
 
 		logger.info(
 			{
@@ -119,9 +129,55 @@ async function classifyTracksBatchOnce(
 			}
 		}
 
+		// Prompt text and per-track metadata are never logged (large,
+		// contains user library data) — only counts and token usage.
+		await logExternalApiCall({
+			userId: context.userId,
+			pipelineRunId: context.pipelineRunId,
+			provider: "groq",
+			endpoint: CLASSIFICATION_LLM_MODEL,
+			method: "POST",
+			httpStatus: 200,
+			requestPayload: {
+				model: CLASSIFICATION_LLM_MODEL,
+				trackCount: tracks.length,
+			},
+			responsePayload: {
+				usage,
+				resultCount: output.results.length,
+				responseId: response?.id,
+			},
+			durationMs,
+			retryAttempt,
+		});
+
 		return output.results;
 	} catch (err) {
 		logInvalidJsonError(err);
+		const durationMs = Date.now() - startTime;
+		const httpStatus = APICallError.isInstance(err)
+			? err.statusCode
+			: undefined;
+		await logExternalApiCall({
+			userId: context.userId,
+			pipelineRunId: context.pipelineRunId,
+			provider: "groq",
+			endpoint: CLASSIFICATION_LLM_MODEL,
+			method: "POST",
+			httpStatus,
+			requestPayload: {
+				model: CLASSIFICATION_LLM_MODEL,
+				trackCount: tracks.length,
+			},
+			durationMs,
+			errorMessage: err instanceof Error ? err.message : String(err),
+			// The Vercel AI SDK's generateText() doesn't always surface a raw
+			// HTTP status (e.g. NoObjectGeneratedError has none) — default the
+			// bucket to server_error rather than the generic "no status" case,
+			// since these are Groq-side failures, not client/request errors.
+			statusCategory: httpStatus ? undefined : "server_error",
+			retryAttempt,
+		});
 		throw err;
 	}
 }
@@ -145,12 +201,17 @@ function sleep(ms: number): Promise<void> {
 
 async function classifyTracksAdaptive(
 	tracks: TrackForClassification[],
+	context: LLMCallContext,
 ): Promise<ClassificationResult[]> {
 	try {
 		return await pRetry(
-			async () => {
+			async (attemptCount) => {
 				try {
-					return await classifyTracksBatchOnce(tracks);
+					return await classifyTracksBatchOnce(
+						tracks,
+						context,
+						attemptCount - 1,
+					);
 				} catch (err) {
 					if (isRateLimit(err)) {
 						const delayMs = getRateLimitDelayMs(err);
@@ -211,8 +272,8 @@ async function classifyTracksAdaptive(
 		);
 
 		const [left, right] = await Promise.all([
-			classifyTracksAdaptive(tracks.slice(0, mid)),
-			classifyTracksAdaptive(tracks.slice(mid)),
+			classifyTracksAdaptive(tracks.slice(0, mid), context),
+			classifyTracksAdaptive(tracks.slice(mid), context),
 		]);
 		return [...left, ...right];
 	}
@@ -220,6 +281,7 @@ async function classifyTracksAdaptive(
 
 export async function classifyTracksWithLLM(
 	tracks: TrackForClassification[],
+	context: LLMCallContext = {},
 ): Promise<ClassificationResult[]> {
 	if (!env.HARMONIA_GROQ_API_KEY) {
 		logger.warn(
@@ -229,5 +291,5 @@ export async function classifyTracksWithLLM(
 		return [];
 	}
 
-	return classifyTracksAdaptive(tracks);
+	return classifyTracksAdaptive(tracks, context);
 }

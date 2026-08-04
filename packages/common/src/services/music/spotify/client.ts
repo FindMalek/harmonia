@@ -19,10 +19,25 @@ import {
 	SPOTIFY_RATE_LIMIT_MAX_RETRIES,
 	SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC,
 } from "../../../constants/spotify";
+import { logExternalApiCall } from "../../external-api-log";
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+function tryParseJson(text: string): unknown {
+	if (!text) return undefined;
+	try {
+		return JSON.parse(text);
+	} catch {
+		return undefined;
+	}
+}
+
+export type SpotifyCallContext = {
+	userId?: string | null;
+	pipelineRunId?: number | null;
+};
 
 export async function getSpotifyAccount(userId: string) {
 	const rows = await db
@@ -82,6 +97,7 @@ export async function getUserSpotifyAccessToken(
 		refresh_token: spotifyAccount.refreshToken,
 	});
 
+	const startTime = Date.now();
 	const response = await fetch("https://accounts.spotify.com/api/token", {
 		method: "POST",
 		headers: {
@@ -90,6 +106,7 @@ export async function getUserSpotifyAccessToken(
 		},
 		body,
 	});
+	const durationMs = Date.now() - startTime;
 
 	if (!response.ok) {
 		logger.error(
@@ -100,6 +117,15 @@ export async function getUserSpotifyAccessToken(
 			},
 			"Failed to refresh Spotify access token",
 		);
+		await logExternalApiCall({
+			userId,
+			provider: "spotify",
+			endpoint: "/token",
+			method: "POST",
+			httpStatus: response.status,
+			durationMs,
+			errorMessage: response.statusText,
+		});
 		return null;
 	}
 
@@ -113,6 +139,15 @@ export async function getUserSpotifyAccessToken(
 			accessTokenExpiresAt: expiresAt,
 		})
 		.where(and(eq(account.userId, userId), eq(account.providerId, "spotify")));
+
+	await logExternalApiCall({
+		userId,
+		provider: "spotify",
+		endpoint: "/token",
+		method: "POST",
+		httpStatus: response.status,
+		durationMs,
+	});
 
 	return json.access_token;
 }
@@ -141,6 +176,7 @@ export async function spotifyRequest<T>(
 	accessToken: string,
 	options: SpotifyRequestOptions = {},
 	retriesLeft = SPOTIFY_RATE_LIMIT_MAX_RETRIES,
+	context: SpotifyCallContext = {},
 ): Promise<T | undefined> {
 	const { method = "GET", body } = options;
 	const init: RequestInit = {
@@ -152,7 +188,10 @@ export async function spotifyRequest<T>(
 		...(body !== undefined && { body: JSON.stringify(body) }),
 	};
 
+	const retryAttempt = SPOTIFY_RATE_LIMIT_MAX_RETRIES - retriesLeft;
+	const startTime = Date.now();
 	const response = await fetch(`${SPOTIFY_API_BASE}${path}`, init);
+	const durationMs = Date.now() - startTime;
 
 	if (response.status === 429 && retriesLeft > 0) {
 		const retryAfter = Number(response.headers.get("Retry-After") ?? "0");
@@ -168,8 +207,18 @@ export async function spotifyRequest<T>(
 			},
 			"Spotify rate limit (429); waiting before retry",
 		);
+		await logExternalApiCall({
+			userId: context.userId,
+			pipelineRunId: context.pipelineRunId,
+			provider: "spotify",
+			endpoint: path,
+			method,
+			httpStatus: 429,
+			durationMs,
+			retryAttempt,
+		});
 		await sleep(waitSec * 1000);
-		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
+		return spotifyRequest(path, accessToken, options, retriesLeft - 1, context);
 	}
 
 	// Retry transient Spotify server errors (5xx) with exponential backoff.
@@ -181,8 +230,18 @@ export async function spotifyRequest<T>(
 			{ path, status: response.status, retriesLeft, waitMs },
 			"Spotify server error (5xx); retrying with backoff",
 		);
+		await logExternalApiCall({
+			userId: context.userId,
+			pipelineRunId: context.pipelineRunId,
+			provider: "spotify",
+			endpoint: path,
+			method,
+			httpStatus: response.status,
+			durationMs,
+			retryAttempt,
+		});
 		await sleep(waitMs);
-		return spotifyRequest(path, accessToken, options, retriesLeft - 1);
+		return spotifyRequest(path, accessToken, options, retriesLeft - 1, context);
 	}
 
 	if (!response.ok) {
@@ -207,6 +266,20 @@ export async function spotifyRequest<T>(
 			bodyJson.error_description ?? bodyJson.error ?? response.statusText;
 		const summary =
 			typeof rawSummary === "string" ? rawSummary : JSON.stringify(rawSummary);
+		await logExternalApiCall({
+			userId: context.userId,
+			pipelineRunId: context.pipelineRunId,
+			provider: "spotify",
+			endpoint: path,
+			method,
+			httpStatus: response.status,
+			responsePayload: tryParseJson(bodyText) as
+				| Record<string, unknown>
+				| undefined,
+			durationMs,
+			errorMessage: summary,
+			retryAttempt,
+		});
 		throw new SpotifyApiError(
 			response.status,
 			`Spotify API error ${response.status} for ${path}: ${summary}`,
@@ -217,6 +290,20 @@ export async function spotifyRequest<T>(
 	// an empty body — response.json() throws "Unexpected end of JSON input" on
 	// those, so read as text first and only parse when there's content.
 	const responseText = await response.text();
+
+	// responsePayload intentionally omitted on success — saved-track/playlist
+	// pages are large; a success row's existence is the useful signal.
+	await logExternalApiCall({
+		userId: context.userId,
+		pipelineRunId: context.pipelineRunId,
+		provider: "spotify",
+		endpoint: path,
+		method,
+		httpStatus: response.status,
+		durationMs,
+		retryAttempt,
+	});
+
 	if (!responseText) {
 		return undefined;
 	}
@@ -226,8 +313,18 @@ export async function spotifyRequest<T>(
 // GET endpoints used in this codebase always return a body (paginated list
 // responses) — fail loudly rather than silently propagating undefined if
 // that assumption is ever wrong, instead of an `as T` cast.
-async function spotifyGet<T>(path: string, accessToken: string): Promise<T> {
-	const result = await spotifyRequest<T>(path, accessToken, { method: "GET" });
+async function spotifyGet<T>(
+	path: string,
+	accessToken: string,
+	context: SpotifyCallContext = {},
+): Promise<T> {
+	const result = await spotifyRequest<T>(
+		path,
+		accessToken,
+		{ method: "GET" },
+		undefined,
+		context,
+	);
 	if (result === undefined) {
 		throw new Error(`Spotify GET ${path} returned an empty body`);
 	}
@@ -255,6 +352,7 @@ export async function fetchAllSavedTracks(
 	accessToken: string,
 	options?: {
 		onPage?: (args: FetchSavedTracksOnPageArgs) => void | Promise<void>;
+		context?: SpotifyCallContext;
 	},
 ): Promise<SpotifySavedTracksResponse["items"]> {
 	const limit = 50;
@@ -264,7 +362,11 @@ export async function fetchAllSavedTracks(
 	let reportedTotal: number | undefined;
 
 	for (;;) {
-		const page = await spotifyGet<SpotifySavedTracksResponse>(url, accessToken);
+		const page = await spotifyGet<SpotifySavedTracksResponse>(
+			url,
+			accessToken,
+			options?.context,
+		);
 		if (typeof page.total === "number") {
 			reportedTotal = page.total;
 		}
@@ -300,14 +402,18 @@ export async function fetchAllSavedTracks(
 
 export async function fetchAllUserPlaylists(
 	accessToken: string,
-	options?: { ownerId?: string },
+	options?: { ownerId?: string; context?: SpotifyCallContext },
 ): Promise<SpotifyPlaylistSimplified[]> {
 	const limit = 50;
 	let url = `/me/playlists?limit=${limit}`;
 	const allPlaylists: SpotifyPlaylistSimplified[] = [];
 
 	for (;;) {
-		const page = await spotifyGet<SpotifyPlaylistsResponse>(url, accessToken);
+		const page = await spotifyGet<SpotifyPlaylistsResponse>(
+			url,
+			accessToken,
+			options?.context,
+		);
 		allPlaylists.push(...page.items);
 
 		if (!page.next) {
@@ -327,7 +433,7 @@ export async function fetchAllUserPlaylists(
 export async function fetchPlaylistItems(
 	accessToken: string,
 	playlistId: string,
-	options?: { fields?: string },
+	options?: { fields?: string; context?: SpotifyCallContext },
 ): Promise<SpotifyPlaylistTrackItem[]> {
 	const fields = options?.fields ?? SPOTIFY_PLAYLIST_ITEMS_FIELDS;
 	let url = `/playlists/${playlistId}/items?limit=${SPOTIFY_PLAYLIST_ITEMS_LIMIT}&fields=${encodeURIComponent(fields)}`;
@@ -337,6 +443,7 @@ export async function fetchPlaylistItems(
 		const page = await spotifyGet<SpotifyPlaylistTracksResponse>(
 			url,
 			accessToken,
+			options?.context,
 		);
 		allItems.push(...page.items);
 
@@ -353,6 +460,7 @@ export async function fetchPlaylistItems(
 export async function fetchAllPlaylistTracks(
 	accessToken: string,
 	playlistId: string,
+	context?: SpotifyCallContext,
 ): Promise<SpotifyPlaylistTrackItem[]> {
-	return fetchPlaylistItems(accessToken, playlistId);
+	return fetchPlaylistItems(accessToken, playlistId, { context });
 }
