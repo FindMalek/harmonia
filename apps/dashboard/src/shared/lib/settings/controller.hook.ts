@@ -56,6 +56,20 @@ export function useSettingsController() {
 		window.location.href = "/login";
 	};
 
+	const deleteAccount = useMutation(
+		orpc.deleteAccount.mutationOptions({
+			onSuccess: async () => {
+				useOrganizeStore.getState().setActiveRunId(null);
+				useOrganizeStore.getState().setIsAnalysisDrawerOpen(false);
+				await authClient.signOut();
+				window.location.href = "/login";
+			},
+			onError: (error) => {
+				toastError(error.message ?? "Failed to delete account");
+			},
+		}),
+	);
+
 	return {
 		session,
 		sessionPending,
@@ -71,5 +85,6 @@ export function useSettingsController() {
 		resolvedTheme,
 		setTheme,
 		signOut,
+		deleteAccount,
 	};
 }

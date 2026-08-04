@@ -29,6 +29,18 @@ export const protectedRouter = {
 			.limit(1);
 		return { hasSpotify: rows.length > 0 };
 	}),
+	// Every user-owned table's userId FK is `onDelete: cascade` (session,
+	// account, playlist, cluster, userTracks, userEmailPreferences, etc.) —
+	// deleting the user row cascades the rest at the DB level. `track` rows
+	// themselves are shared across users (not user-scoped), so they're
+	// correctly left in place; only this user's link to them is removed.
+	deleteAccount: protectedProcedure
+		.output(z.object({ success: z.boolean() }))
+		.handler(async ({ context }) => {
+			const userId = context.session.user.id;
+			await db.delete(user).where(eq(user.id, userId));
+			return { success: true };
+		}),
 	redeemInvite: protectedProcedure
 		.input(z.object({ token: z.string().regex(/^[0-9a-f]{64}$/) }))
 		.output(z.object({ success: z.boolean() }))

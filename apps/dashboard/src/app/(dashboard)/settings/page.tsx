@@ -1,7 +1,19 @@
 "use client";
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Badge, Button } from "@harmonia/ui";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+	Badge,
+	Button,
+} from "@harmonia/ui";
 import { formatDistanceToNow } from "date-fns";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -31,6 +43,7 @@ export default function SettingsPage() {
 		resolvedTheme,
 		setTheme,
 		signOut,
+		deleteAccount,
 	} = useSettingsController();
 
 	if (!mounted) {
@@ -113,6 +126,37 @@ export default function SettingsPage() {
 			>
 				Sign out
 			</Button>
+
+			<DashboardSettingsSection label="DANGER ZONE">
+				<AlertDialog>
+					<AlertDialogTrigger asChild>
+						<Button variant="destructive" className="w-full">
+							Delete account
+						</Button>
+					</AlertDialogTrigger>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Delete your account?</AlertDialogTitle>
+							<AlertDialogDescription>
+								This permanently deletes your Harmonia account, your library
+								cache, generated playlists, and all AI analysis. This does not
+								affect your actual Spotify account or library. This cannot be
+								undone.
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>Cancel</AlertDialogCancel>
+							<AlertDialogAction
+								variant="destructive"
+								disabled={deleteAccount.isPending}
+								onClick={() => deleteAccount.mutate({})}
+							>
+								{deleteAccount.isPending ? "Deleting..." : "Delete account"}
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
+			</DashboardSettingsSection>
 		</div>
 	);
 }
