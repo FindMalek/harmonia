@@ -30,3 +30,12 @@ export const db = createDb();
 export function conflictValue<T>(col: Column): SQL<T> {
 	return sql<T>`excluded.${sql.identifier(col.name)}`;
 }
+
+// Like conflictValue, but keeps the existing stored value when the new row's
+// value is null — for fields that can legitimately be absent from a narrower
+// data source (e.g. a cached Spotify playlist-items response fetched before a
+// field was added to the request) without that meaning the value should be
+// erased from an already-populated row.
+export function conflictValuePreserveExisting<T>(col: Column): SQL<T> {
+	return sql<T>`coalesce(excluded.${sql.identifier(col.name)}, ${col})`;
+}
