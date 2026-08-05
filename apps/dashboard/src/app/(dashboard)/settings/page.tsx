@@ -159,7 +159,7 @@ export default function SettingsPage() {
 							<AlertDialogCancel>Cancel</AlertDialogCancel>
 							<AlertDialogAction
 								variant="destructive"
-								disabled={deleteAccount.isPending}
+								isLoading={deleteAccount.isPending}
 								onClick={() => deleteAccount.mutate({})}
 							>
 								{deleteAccount.isPending ? "Deleting..." : "Delete account"}

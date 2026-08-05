@@ -119,6 +119,7 @@ export function AdminWaitlistDetailSheet({
 											size="sm"
 											variant="outline"
 											disabled={isActionLoading}
+											isLoading={isActionLoading}
 											onClick={() =>
 												onSaveNote(item.id, item.status, noteDraft)
 											}
