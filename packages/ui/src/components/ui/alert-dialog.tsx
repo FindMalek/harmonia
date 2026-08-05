@@ -3,6 +3,7 @@ import type * as React from "react";
 
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
+import { Spinner } from "./spinner";
 
 function AlertDialog({
 	...props
@@ -149,16 +150,28 @@ function AlertDialogAction({
 	className,
 	variant = "default",
 	size = "default",
+	isLoading = false,
+	disabled,
+	children,
 	...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action> &
-	Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
+	Pick<React.ComponentProps<typeof Button>, "variant" | "size"> & {
+		isLoading?: boolean;
+	}) {
 	return (
 		<Button variant={variant} size={size} asChild>
+			{/* Button's own isLoading rendering can't be used here — asChild
+			renders via Radix Slot, which requires exactly one child, so the
+			spinner is rendered inside this single child instead. */}
 			<AlertDialogPrimitive.Action
 				data-slot="alert-dialog-action"
 				className={cn(className)}
+				disabled={disabled || isLoading}
 				{...props}
-			/>
+			>
+				{isLoading && <Spinner className="shrink-0 animate-spin" />}
+				{children}
+			</AlertDialogPrimitive.Action>
 		</Button>
 	);
 }
