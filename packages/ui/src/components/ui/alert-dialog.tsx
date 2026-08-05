@@ -160,9 +160,6 @@ function AlertDialogAction({
 	}) {
 	return (
 		<Button variant={variant} size={size} asChild>
-			{/* Button's own isLoading rendering can't be used here — asChild
-			renders via Radix Slot, which requires exactly one child, so the
-			spinner is rendered inside this single child instead. */}
 			<AlertDialogPrimitive.Action
 				data-slot="alert-dialog-action"
 				className={cn(className)}
