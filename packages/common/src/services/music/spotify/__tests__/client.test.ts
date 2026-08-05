@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@harmonia/db", () => ({ db: {} }));
+vi.mock("@harmonia/db", () => ({
+	db: { insert: vi.fn(() => ({ values: vi.fn(() => Promise.resolve()) })) },
+}));
 
 import { SpotifyApiError, spotifyRequest } from "../client";
 

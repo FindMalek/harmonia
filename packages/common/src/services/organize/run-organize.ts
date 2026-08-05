@@ -129,6 +129,7 @@ export async function runOrganizeForUser({
 				progress.lyrics = p;
 				await updateRun(runId, { progress });
 			},
+			runId,
 		);
 		progress.lyrics = lyricsResult;
 		await updateRun(runId, { progress });
@@ -141,6 +142,7 @@ export async function runOrganizeForUser({
 				progress.classify = p;
 				await updateRun(runId, { progress });
 			},
+			runId,
 		);
 		progress.classify = classifyResult;
 		await updateRun(runId, { progress });
@@ -153,6 +155,7 @@ export async function runOrganizeForUser({
 				progress.embed = p;
 				await updateRun(runId, { progress });
 			},
+			runId,
 		);
 		progress.embed = embedResult;
 		await updateRun(runId, { progress });

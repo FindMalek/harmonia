@@ -33,6 +33,14 @@ export const WEB_ROUTES = {
 		path: "/",
 		label: "Waitlist",
 	},
+	privacy: {
+		path: "/privacy",
+		label: "Privacy Policy",
+	},
+	terms: {
+		path: "/terms",
+		label: "Terms of Service",
+	},
 } as const;
 
 export type WebRoutes = typeof WEB_ROUTES;

@@ -17,6 +17,7 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import {
 	and,
+	asc,
 	count,
 	desc,
 	eq,
@@ -97,7 +98,11 @@ export const tracksRouter = {
 				})
 				.from(track)
 				.where(where)
-				.orderBy(desc(track.createdAt))
+				.orderBy(
+					...(input.sort === "album"
+						? [asc(track.albumName), asc(track.id)]
+						: [desc(track.createdAt)]),
+				)
 				.limit(input.pageSize)
 				.offset(offset);
 
@@ -175,7 +180,9 @@ export const tracksRouter = {
 				try {
 					const accessToken = await getUserSpotifyAccessToken(userId);
 					if (accessToken) {
-						const allPlaylists = await fetchAllUserPlaylists(accessToken);
+						const allPlaylists = await fetchAllUserPlaylists(accessToken, {
+							context: { userId },
+						});
 						spotifyPlaylists = allPlaylists
 							.filter((p) => spotifyPlaylistIds.has(p.id))
 							.map((p) => ({ id: p.id, name: p.name }));

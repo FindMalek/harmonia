@@ -39,9 +39,14 @@ export const embedWorkerTask = task({
 	}) => {
 		await checkCancelled(runId, userId);
 
-		return await embedTrackIds(userId, trackIds, async (deltaEmbedded) => {
-			await incrementStageProgress(runId, "embed", "embedded", deltaEmbedded);
-		});
+		return await embedTrackIds(
+			userId,
+			trackIds,
+			async (deltaEmbedded) => {
+				await incrementStageProgress(runId, "embed", "embedded", deltaEmbedded);
+			},
+			runId,
+		);
 	},
 });
 

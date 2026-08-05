@@ -22,6 +22,7 @@ type LyricsDeltaCallback = (delta: {
 export async function fetchLyricsForPendingTracks(
 	userId: string,
 	onProgress?: (progress: LyricsProgress) => Promise<void>,
+	pipelineRunId?: number,
 ): Promise<LyricsProgress> {
 	const stats: LyricsProgress = {
 		found: 0,
@@ -100,12 +101,15 @@ export async function fetchLyricsForPendingTracks(
 				}
 
 				try {
-					const lyrics = await getLyricsFromLRCLib({
-						trackName: t.name,
-						artistName: primaryArtist,
-						albumName: t.albumName,
-						durationMs: t.durationMs,
-					});
+					const lyrics = await getLyricsFromLRCLib(
+						{
+							trackName: t.name,
+							artistName: primaryArtist,
+							albumName: t.albumName,
+							durationMs: t.durationMs,
+						},
+						{ userId, pipelineRunId },
+					);
 
 					if (!lyrics) {
 						await db
@@ -192,6 +196,7 @@ export async function fetchLyricsForTrackIds(
 	userId: string,
 	trackIds: string[],
 	onBatchComplete?: LyricsDeltaCallback,
+	pipelineRunId?: number,
 ): Promise<LyricsProgress> {
 	const stats: LyricsProgress = {
 		found: 0,
@@ -251,12 +256,15 @@ export async function fetchLyricsForTrackIds(
 				}
 
 				try {
-					const lyrics = await getLyricsFromLRCLib({
-						trackName: t.name,
-						artistName: primaryArtist,
-						albumName: t.albumName,
-						durationMs: t.durationMs,
-					});
+					const lyrics = await getLyricsFromLRCLib(
+						{
+							trackName: t.name,
+							artistName: primaryArtist,
+							albumName: t.albumName,
+							durationMs: t.durationMs,
+						},
+						{ userId, pipelineRunId },
+					);
 
 					if (!lyrics) {
 						await db

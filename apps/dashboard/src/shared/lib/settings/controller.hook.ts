@@ -52,9 +52,21 @@ export function useSettingsController() {
 	const signOut = async () => {
 		useOrganizeStore.getState().setActiveRunId(null);
 		useOrganizeStore.getState().setIsAnalysisDrawerOpen(false);
-		await authClient.signOut();
+		// Best effort — the account-deletion flow calls this after the user row
+		// (and its session, via cascade) is already gone server-side, so this
+		// request can legitimately error. Redirect regardless.
+		await authClient.signOut().catch(() => {});
 		window.location.href = "/login";
 	};
+
+	const deleteAccount = useMutation(
+		orpc.deleteAccount.mutationOptions({
+			onSuccess: () => signOut(),
+			onError: (error) => {
+				toastError(error.message ?? "Failed to delete account");
+			},
+		}),
+	);
 
 	return {
 		session,
@@ -71,5 +83,6 @@ export function useSettingsController() {
 		resolvedTheme,
 		setTheme,
 		signOut,
+		deleteAccount,
 	};
 }

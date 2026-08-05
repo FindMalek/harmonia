@@ -13,13 +13,103 @@ import {
 	EMBEDDING_MODEL,
 } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
+import { logExternalApiCall } from "../external-api-log";
 import { buildEmbeddingInput } from "./build-embedding-input";
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{
 		embedding: number[];
 	}>;
+	usage?: { prompt_tokens: number; total_tokens: number };
 };
+
+export type EmbeddingCallContext = {
+	userId?: string | null;
+	pipelineRunId?: number | null;
+};
+
+// Shared by embedTracksBatch and embedTrackIds — one chokepoint for the
+// OpenAI request, retry, and logging. Never logs input texts or embedding
+// vectors (too large) — only { model, inputCount } and usage stats.
+async function fetchEmbeddingsBatch(
+	inputTexts: string[],
+	context: EmbeddingCallContext,
+): Promise<OpenAIEmbeddingResponse> {
+	let attempt = 0;
+	return pRetry(
+		async () => {
+			const retryAttempt = attempt;
+			attempt += 1;
+			const startTime = Date.now();
+			const response = await fetch("https://api.openai.com/v1/embeddings", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${env.HARMONIA_OPENAI_API_KEY}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					model: EMBEDDING_MODEL,
+					input: inputTexts,
+				}),
+			});
+			const durationMs = Date.now() - startTime;
+
+			if (!response.ok) {
+				const text = await response.text();
+				const errorMessage = `OpenAI embeddings ${response.status}: ${text.slice(0, 200)}`;
+				await logExternalApiCall({
+					userId: context.userId,
+					pipelineRunId: context.pipelineRunId,
+					provider: "openai",
+					endpoint: "/v1/embeddings",
+					method: "POST",
+					httpStatus: response.status,
+					requestPayload: {
+						model: EMBEDDING_MODEL,
+						inputCount: inputTexts.length,
+					},
+					durationMs,
+					errorMessage,
+					retryAttempt,
+				});
+				throw new Error(errorMessage);
+			}
+
+			const json = (await response.json()) as OpenAIEmbeddingResponse;
+
+			await logExternalApiCall({
+				userId: context.userId,
+				pipelineRunId: context.pipelineRunId,
+				provider: "openai",
+				endpoint: "/v1/embeddings",
+				method: "POST",
+				httpStatus: response.status,
+				requestPayload: {
+					model: EMBEDDING_MODEL,
+					inputCount: inputTexts.length,
+				},
+				responsePayload: json.usage ? { usage: json.usage } : undefined,
+				durationMs,
+				retryAttempt,
+			});
+
+			return json;
+		},
+		{
+			retries: 3,
+			minTimeout: 2000,
+			onFailedAttempt: (error) => {
+				logger.warn(
+					{
+						attempt: error.attemptNumber,
+						retriesLeft: error.retriesLeft,
+					},
+					"OpenAI embeddings request failed, retrying",
+				);
+			},
+		},
+	);
+}
 
 // pgvector requires raw SQL: Drizzle's update builder bypasses mapToDriverValue for
 // vector columns, so ::vector and ::jsonb casts must be explicit. The AND embedding
@@ -88,6 +178,7 @@ type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
 export async function embedTracksBatch(
 	userId: string,
 	onProgress?: (progress: EmbedProgress) => Promise<void>,
+	pipelineRunId?: number,
 ): Promise<EmbedProgress> {
 	const stats: EmbedProgress = { embedded: 0, total: 0, pending: 0 };
 
@@ -147,45 +238,9 @@ export async function embedTracksBatch(
 				const inputs = toEmbeddingInputs(pendingTracks);
 				if (inputs.length === 0) return;
 
-				const json = await pRetry(
-					async () => {
-						const response = await fetch(
-							"https://api.openai.com/v1/embeddings",
-							{
-								method: "POST",
-								headers: {
-									Authorization: `Bearer ${env.HARMONIA_OPENAI_API_KEY}`,
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									model: EMBEDDING_MODEL,
-									input: inputs.map((i) => i.text),
-								}),
-							},
-						);
-
-						if (!response.ok) {
-							const text = await response.text();
-							throw new Error(
-								`OpenAI embeddings ${response.status}: ${text.slice(0, 200)}`,
-							);
-						}
-
-						return (await response.json()) as OpenAIEmbeddingResponse;
-					},
-					{
-						retries: 3,
-						minTimeout: 2000,
-						onFailedAttempt: (error) => {
-							logger.warn(
-								{
-									attempt: error.attemptNumber,
-									retriesLeft: error.retriesLeft,
-								},
-								"OpenAI embeddings request failed, retrying",
-							);
-						},
-					},
+				const json = await fetchEmbeddingsBatch(
+					inputs.map((i) => i.text),
+					{ userId, pipelineRunId },
 				);
 
 				if (!json.data || json.data.length !== inputs.length) {
@@ -235,6 +290,7 @@ export async function embedTrackIds(
 	userId: string,
 	trackIds: string[],
 	onBatchComplete?: EmbedDeltaCallback,
+	pipelineRunId?: number,
 ): Promise<EmbedProgress> {
 	const stats: EmbedProgress = {
 		embedded: 0,
@@ -275,45 +331,9 @@ export async function embedTrackIds(
 				const inputs = toEmbeddingInputs(pendingTracks);
 				if (inputs.length === 0) return;
 
-				const json = await pRetry(
-					async () => {
-						const response = await fetch(
-							"https://api.openai.com/v1/embeddings",
-							{
-								method: "POST",
-								headers: {
-									Authorization: `Bearer ${env.HARMONIA_OPENAI_API_KEY}`,
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									model: EMBEDDING_MODEL,
-									input: inputs.map((i) => i.text),
-								}),
-							},
-						);
-
-						if (!response.ok) {
-							const text = await response.text();
-							throw new Error(
-								`OpenAI embeddings ${response.status}: ${text.slice(0, 200)}`,
-							);
-						}
-
-						return (await response.json()) as OpenAIEmbeddingResponse;
-					},
-					{
-						retries: 3,
-						minTimeout: 2000,
-						onFailedAttempt: (error) => {
-							logger.warn(
-								{
-									attempt: error.attemptNumber,
-									retriesLeft: error.retriesLeft,
-								},
-								"OpenAI embeddings request failed, retrying",
-							);
-						},
-					},
+				const json = await fetchEmbeddingsBatch(
+					inputs.map((i) => i.text),
+					{ userId, pipelineRunId },
 				);
 
 				if (!json.data || json.data.length !== inputs.length) {
