@@ -1,12 +1,9 @@
+const GITHUB_ASSET_BASE_URL =
+	"https://raw.githubusercontent.com/FindMalek/harmonia/main/packages/email/public";
+
 /** Base URL for hosted email assets (logo, etc.). */
 export function getEmailAssetBaseUrl(): string {
-	const fromEnv =
-		process.env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL ??
-		process.env.NEXT_PUBLIC_HARMONIA_API_URL;
-	if (fromEnv) {
-		return fromEnv.replace(/\/$/, "");
-	}
-	return "http://127.0.0.1:3003";
+	return GITHUB_ASSET_BASE_URL;
 }
 
 export function getEmailLogoUrl(): string {
