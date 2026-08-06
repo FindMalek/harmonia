@@ -1,6 +1,13 @@
 "use client";
 
-import { Button, Input, Label } from "@harmonia/ui";
+import {
+	Icons,
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+	Label,
+} from "@harmonia/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -35,11 +42,11 @@ export function WaitlistForm() {
 				e.preventDefault();
 				signup.mutate({ email, website });
 			}}
-			className="flex flex-col gap-4 sm:flex-row sm:items-end"
+			className="flex flex-col gap-2"
 		>
-			<div className="flex flex-1 flex-col gap-2">
-				<Label htmlFor="email">Email address</Label>
-				<Input
+			<Label htmlFor="email">Email address</Label>
+			<InputGroup>
+				<InputGroupInput
 					id="email"
 					type="email"
 					required
@@ -47,12 +54,23 @@ export function WaitlistForm() {
 					onChange={(e) => setEmail(e.target.value)}
 					placeholder="you@example.com"
 				/>
-			</div>
+				<InputGroupAddon align="inline-end">
+					<InputGroupButton
+						type="submit"
+						size="icon-sm"
+						variant="default"
+						isLoading={signup.isPending}
+						aria-label="Join waitlist"
+					>
+						<Icons.arrowRight />
+					</InputGroupButton>
+				</InputGroupAddon>
+			</InputGroup>
 
 			{/* Honeypot field: hidden from real users, only bots fill it in. */}
 			<div className="absolute h-0 w-0 overflow-hidden opacity-0">
 				<Label htmlFor="website">Website</Label>
-				<Input
+				<InputGroupInput
 					id="website"
 					name="website"
 					type="text"
@@ -63,15 +81,6 @@ export function WaitlistForm() {
 					aria-hidden="true"
 				/>
 			</div>
-
-			<Button
-				type="submit"
-				size="xl"
-				className="uppercase"
-				isLoading={signup.isPending}
-			>
-				Join Waitlist
-			</Button>
 		</form>
 	);
 }

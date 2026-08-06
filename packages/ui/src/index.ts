@@ -91,6 +91,14 @@ export {
 } from "./components/ui/field";
 export { Input } from "./components/ui/input";
 export {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+	InputGroupText,
+	InputGroupTextarea,
+} from "./components/ui/input-group";
+export {
 	InsightSectionCard,
 	InsightStatCard,
 } from "./components/ui/insight-stat-card";
