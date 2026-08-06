@@ -15,7 +15,7 @@
 		"db:push": "node scripts/ensure-pgvector.mjs && drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:studio": "drizzle-kit studio",
-		"db:migrate": "drizzle-kit migrate",
+		"db:migrate": "tsx scripts/migrate.ts",
 		"db:mark-migrations-applied": "node scripts/mark-migrations-applied.mjs",
 		"db:reset": "tsx scripts/db-reset.ts",
 		"db:reset:all": "tsx scripts/db-reset.ts --all",
