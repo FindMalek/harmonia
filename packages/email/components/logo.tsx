@@ -20,32 +20,12 @@ export function Logo() {
 
 	return (
 		<Section className="mt-[32px]">
-			<style>{`
-          .logo-blend {
-            filter: none;
-          }
-
-          @media (prefers-color-scheme: dark) {
-            .logo-blend:not([class^="x_"]):not(.disable-dark-mode .logo-blend) {
-              filter: invert(1) brightness(1.1);
-            }
-          }
-
-          [data-ogsb]:not(.disable-dark-mode) .logo-blend,
-          [data-ogsc]:not(.disable-dark-mode) .logo-blend {
-            filter: invert(1) brightness(1.1);
-          }
-
-          .disable-dark-mode .logo-blend {
-            filter: none !important;
-          }
-        `}</style>
 			<Img
 				src={logoSrc}
 				width="40"
 				height="40"
 				alt="Harmonia"
-				className="logo-blend mx-auto my-0 block"
+				className="mx-auto my-0 block"
 			/>
 		</Section>
 	);
