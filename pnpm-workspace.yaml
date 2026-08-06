@@ -51,7 +51,7 @@ catalog:
   next: ^16.2.9
   react: ^19.2.7
   react-dom: ^19.2.7
-  react-email: 6.6.0
+  react-email: 6.9.1
   resend: ^6.12.4
   tsdown: ^0.11.0
   typescript: 6.0.3
