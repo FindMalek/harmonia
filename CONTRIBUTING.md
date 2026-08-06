@@ -51,15 +51,12 @@ pnpm dev:web        # web app only
 ### Admin dashboard (local)
 
 ```bash
-# In .env — required for db:seed
-HARMONIA_ADMIN_PASSWORD="changeme123!"
-
 pnpm db:push
-pnpm db:seed        # creates admin@harmonia.com (override with HARMONIA_ADMIN_EMAIL)
+pnpm db:seed        # creates admin@harmonia.com / changeme123!
 pnpm dev:ada        # API + dashboard + admin
 ```
 
-Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login). Admin auth uses `/api/admin-auth` and is **separate** from dashboard Spotify sessions.
+Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with `admin@harmonia.com` / `changeme123!`. Admin auth uses `/api/admin-auth` and is **separate** from dashboard Spotify sessions.
 
 ### Quality checks
 

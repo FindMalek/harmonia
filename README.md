@@ -96,17 +96,17 @@ Returning approved users sign in at dashboard `/login` without an invite link.
 ## Admin dashboard (local)
 
 ```bash
-# Add to .env:
-HARMONIA_ADMIN_PASSWORD="changeme123!"
-
 pnpm db:push
-pnpm db:seed              # admin@harmonia.com (override: HARMONIA_ADMIN_EMAIL)
+pnpm db:seed              # seeds the admin user below
 pnpm dev:admin            # admin only (port 3004) — needs API on :3002
 # or
 pnpm dev:ada              # API + dashboard + admin (ports 3002/3003/3004)
 ```
 
-Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login).
+Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with:
+
+- Email: `admin@harmonia.com`
+- Password: `changeme123!`
 
 | Page | Purpose |
 |------|---------|
@@ -129,7 +129,6 @@ pnpm check                # Biome
 All variables are prefixed `HARMONIA_` (server) or `NEXT_PUBLIC_HARMONIA_` (client). Copy `.env.example` and fill in:
 
 - `HARMONIA_DATABASE_URL` — local: `postgresql://postgres:password@localhost:5433/harmonia`
-- `HARMONIA_ADMIN_PASSWORD` — required for `pnpm db:seed`
 - `HARMONIA_SPOTIFY_CLIENT_ID` / `HARMONIA_SPOTIFY_CLIENT_SECRET` — Spotify Developer Dashboard
 - `HARMONIA_RESEND_API_KEY` / `HARMONIA_EMAIL_FROM` — waitlist emails
 - `HARMONIA_OPENAI_API_KEY` — embeddings
