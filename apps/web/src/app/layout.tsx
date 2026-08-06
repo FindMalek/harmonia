@@ -1,5 +1,5 @@
 import "@harmonia/ui/styles/globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import AppProviders from "@/components/app-providers";
 import { getSiteUrl } from "@/lib/site-url";
@@ -41,6 +41,10 @@ export const metadata: Metadata = {
 		title,
 		description,
 	},
+};
+
+export const viewport: Viewport = {
+	themeColor: "#14161a",
 };
 
 const structuredData = {
