@@ -16,6 +16,7 @@ import {
 	IconAlertOctagon,
 	IconAlertTriangle,
 	IconArrowLeft,
+	IconArrowRight,
 	IconArrowsSort,
 	IconArrowUpRight,
 	IconBrain,
@@ -71,6 +72,7 @@ export const Icons = {
 	trash: IconTrash,
 	externalLink: IconExternalLink,
 	arrowLeft: IconArrowLeft,
+	arrowRight: IconArrowRight,
 
 	// Chevrons
 	chevronDown: IconChevronDown,
