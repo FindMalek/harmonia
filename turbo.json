@@ -69,6 +69,11 @@
 			"inputs": ["$TURBO_DEFAULT$", ".env*"],
 			"outputs": ["dist/**", ".next/**"]
 		},
+		"email#build": {
+			"dependsOn": ["^build"],
+			"inputs": ["$TURBO_DEFAULT$", ".env*"],
+			"outputs": [".react-email/.next/**"]
+		},
 		"lint": {
 			"dependsOn": ["^lint"]
 		},
