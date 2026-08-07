@@ -1,27 +1,43 @@
-import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import {
+	boolean,
+	index,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex,
+} from "drizzle-orm/pg-core";
 
-export const user = pgTable("user", {
-	id: text("id").primaryKey(),
-	name: text("name").notNull(),
-	email: text("email").notNull().unique(),
-	emailVerified: boolean("email_verified").default(false).notNull(),
-	hasCompletedOnboarding: boolean("has_completed_onboarding")
-		.default(false)
-		.notNull(),
-	// ponytail: false by default; set to true on invite redemption — run `UPDATE "user" SET is_approved=true` after db:push to grandfather existing users
-	isApproved: boolean("is_approved").default(false).notNull(),
-	image: text("image"),
-	role: text("role").default("user"),
-	banned: boolean("banned").default(false),
-	banReason: text("ban_reason"),
-	banExpires: timestamp("ban_expires"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at")
-		.defaultNow()
-		.$onUpdate(() => /* @__PURE__ */ new Date())
-		.notNull(),
-});
+export const user = pgTable(
+	"user",
+	{
+		id: text("id").primaryKey(),
+		name: text("name").notNull(),
+		email: text("email").notNull().unique(),
+		emailVerified: boolean("email_verified").default(false).notNull(),
+		hasCompletedOnboarding: boolean("has_completed_onboarding")
+			.default(false)
+			.notNull(),
+		// ponytail: false by default; set to true on invite redemption — run `UPDATE "user" SET is_approved=true` after db:push to grandfather existing users
+		isApproved: boolean("is_approved").default(false).notNull(),
+		image: text("image"),
+		role: text("role").default("user"),
+		banned: boolean("banned").default(false),
+		banReason: text("ban_reason"),
+		banExpires: timestamp("ban_expires"),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		// At most one admin, ever — the real enforcement for the admin app's one-time setup flow.
+		uniqueIndex("user_single_admin_idx")
+			.on(table.role)
+			.where(sql`${table.role} = 'admin'`),
+	],
+);
 
 export const session = pgTable(
 	"session",

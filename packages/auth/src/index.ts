@@ -171,6 +171,8 @@ export function createAdminAuth(
 		trustedOrigins: buildTrustedOriginsList(envConfig),
 		emailAndPassword: {
 			enabled: true,
+			// Closed for good — the one admin account is created via admin.setup.create instead.
+			disableSignUp: true,
 		},
 		socialProviders: {},
 		plugins: [nextCookies(), admin({ defaultRole: "user" })],
