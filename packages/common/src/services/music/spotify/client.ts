@@ -1,4 +1,5 @@
 import type {
+	SpotifyArtistsResponse,
 	SpotifyPlaylistSimplified,
 	SpotifyPlaylistsResponse,
 	SpotifyPlaylistTrackItem,
@@ -463,4 +464,34 @@ export async function fetchAllPlaylistTracks(
 	context?: SpotifyCallContext,
 ): Promise<SpotifyPlaylistTrackItem[]> {
 	return fetchPlaylistItems(accessToken, playlistId, { context });
+}
+
+const ARTISTS_BATCH_SIZE = 50; // GET /artists max ids per request
+
+export async function fetchArtistsByIds(
+	accessToken: string,
+	artistIds: string[],
+	context: SpotifyCallContext = {},
+): Promise<Array<{ id: string; name: string; imageUrl: string | null }>> {
+	const results: Array<{ id: string; name: string; imageUrl: string | null }> =
+		[];
+
+	for (let i = 0; i < artistIds.length; i += ARTISTS_BATCH_SIZE) {
+		const batch = artistIds.slice(i, i + ARTISTS_BATCH_SIZE);
+		const page = await spotifyGet<SpotifyArtistsResponse>(
+			`/artists?ids=${batch.join(",")}`,
+			accessToken,
+			context,
+		);
+		for (const a of page.artists) {
+			if (!a) continue;
+			results.push({
+				id: a.id,
+				name: a.name,
+				imageUrl: a.images?.[0]?.url ?? null,
+			});
+		}
+	}
+
+	return results;
 }

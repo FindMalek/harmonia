@@ -43,3 +43,13 @@ export type SpotifyCreatePlaylistResponse = {
 	id: string;
 	external_urls: { spotify: string };
 };
+
+export type SpotifyArtistSimplified = {
+	id: string;
+	name: string;
+	images?: Array<{ url: string }>;
+} | null; // Spotify returns null in the array for an ID it couldn't resolve
+
+export type SpotifyArtistsResponse = {
+	artists: SpotifyArtistSimplified[];
+};
