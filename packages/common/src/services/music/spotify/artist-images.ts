@@ -6,9 +6,7 @@ import { eq, inArray } from "drizzle-orm";
 
 import { fetchArtistsByIds, getUserSpotifyAccessToken } from "./client";
 
-// No fan-out/worker split needed here (unlike lyrics/classify/embed) — a
-// batch of 50 artist IDs is a single Spotify request, so even a library with
-// a couple thousand unique artists is a few dozen sequential calls.
+// No fan-out/worker split needed — a batch of 50 artist IDs is one Spotify request.
 export async function fetchAndCacheArtistImages(
 	userId: string,
 	pipelineRunId?: number,

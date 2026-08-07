@@ -111,8 +111,7 @@ export const organizePipeline = task({
 			const syncRun = await syncStageTask.triggerAndWait({ userId, runId });
 
 			try {
-				// Cosmetic enrichment for the track detail page — fire-and-forget,
-				// doesn't gate pipeline success/failure or the rest of the run.
+				// Cosmetic enrichment — fire-and-forget, doesn't gate the run's outcome.
 				await artistsStageTask.trigger({ userId, runId });
 			} catch (artistsErr) {
 				logger.warn(
