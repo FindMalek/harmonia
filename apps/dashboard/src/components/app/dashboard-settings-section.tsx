@@ -1,4 +1,4 @@
-import { Icons, Separator } from "@harmonia/ui";
+import { Button, Icons, Separator } from "@harmonia/ui";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -49,10 +49,11 @@ export function DashboardSettingsNavRow({
 	onClick: () => void;
 }) {
 	return (
-		<button
+		<Button
 			type="button"
+			variant="ghost"
 			onClick={onClick}
-			className="flex w-full items-center justify-between border-b py-4 transition-colors last:border-b-0 hover:bg-muted/40"
+			className="h-auto w-full justify-between rounded-none border-b py-4 last:border-b-0 hover:bg-muted/40"
 		>
 			<div className="text-left">
 				<p className="font-medium text-sm">{label}</p>
@@ -61,7 +62,7 @@ export function DashboardSettingsNavRow({
 				)}
 			</div>
 			<Icons.chevronRight className="size-4 shrink-0 text-muted-foreground" />
-		</button>
+		</Button>
 	);
 }
 

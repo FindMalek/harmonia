@@ -16,6 +16,10 @@ export const queryClient = new QueryClient({
 			const message = error.message;
 			const fullText = `Error: ${message}`;
 			toast.error(fullText, {
+				// Raw <button> is deliberate here, not a missed shadcn conversion —
+				// these render inside a Sonner toast's compact action slot, where
+				// Button's base classes (border, rounded-none, focus ring) fight
+				// the toast's own minimal layout for no real benefit.
 				action: (
 					<div className="flex gap-1">
 						<button
