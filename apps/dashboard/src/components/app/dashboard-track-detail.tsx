@@ -125,9 +125,23 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 						<p className="inline-flex flex-wrap items-center gap-1 text-muted-foreground">
 							{artists.map((name, index) => {
 								const artistId = track.artistIds?.[index];
+								const imageUrl = track.artistImageUrls?.[index];
 								return (
-									<span key={`${name}-${index}`}>
+									<span
+										key={`${name}-${index}`}
+										className="inline-flex items-center gap-1"
+									>
 										{index > 0 ? ", " : ""}
+										{imageUrl ? (
+											<Image
+												src={imageUrl}
+												alt=""
+												width={16}
+												height={16}
+												className="size-4 shrink-0 rounded-full"
+												unoptimized
+											/>
+										) : null}
 										{artistId ? (
 											<a
 												href={`https://open.spotify.com/artist/${artistId}`}

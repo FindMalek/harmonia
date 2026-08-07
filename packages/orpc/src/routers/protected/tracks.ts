@@ -9,6 +9,7 @@ import {
 	tracksListOutputSchema,
 } from "@harmonia/common/schemas";
 import { db } from "@harmonia/db";
+import { artist } from "@harmonia/db/schema/artist";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
@@ -141,6 +142,23 @@ export const tracksRouter = {
 
 			if (!result) return null;
 
+			const artistIds = (result.track.artistIds ?? []).filter(
+				(id): id is string => Boolean(id),
+			);
+			const artistImageRows =
+				artistIds.length > 0
+					? await db
+							.select({ id: artist.id, imageUrl: artist.imageUrl })
+							.from(artist)
+							.where(inArray(artist.id, artistIds))
+					: [];
+			const imageUrlByArtistId = new Map(
+				artistImageRows.map((a) => [a.id, a.imageUrl]),
+			);
+			const artistImageUrls = (result.track.artistIds ?? []).map((id) =>
+				id ? (imageUrlByArtistId.get(id) ?? null) : null,
+			);
+
 			const clusterAssignment = await db
 				.select({ clusterId: clusterTracks.clusterId })
 				.from(clusterTracks)
@@ -209,6 +227,7 @@ export const tracksRouter = {
 				likedAt: result.likedAt,
 				harmoniaPlaylists,
 				spotifyPlaylists,
+				artistImageUrls,
 			};
 		}),
 };

@@ -1,3 +1,4 @@
+export * from "./artist";
 export * from "./auth";
 export * from "./cluster";
 export * from "./email-send-log";

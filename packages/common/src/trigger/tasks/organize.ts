@@ -3,6 +3,7 @@ import { task } from "@trigger.dev/sdk";
 
 import { PipelineCancelledError, updateRun } from "../../services/organize";
 import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
+import { artistsStageTask } from "./stages/artists";
 import { classifyStageTask } from "./stages/classify";
 import { clusterStageTask } from "./stages/cluster";
 import { embedStageTask } from "./stages/embed";
@@ -108,6 +109,24 @@ export const organizePipeline = task({
 			await updateRun(runId, { status: "running", startedAt: new Date() });
 
 			const syncRun = await syncStageTask.triggerAndWait({ userId, runId });
+
+			try {
+				// Cosmetic enrichment — fire-and-forget, doesn't gate the run's outcome.
+				await artistsStageTask.trigger({ userId, runId });
+			} catch (artistsErr) {
+				logger.warn(
+					{
+						userId,
+						runId,
+						error:
+							artistsErr instanceof Error
+								? artistsErr.message
+								: String(artistsErr),
+					},
+					"Failed to queue artist image fetch task",
+				);
+			}
+
 			const lyricsRun = await lyricsStageTask.triggerAndWait({
 				userId,
 				runId,
