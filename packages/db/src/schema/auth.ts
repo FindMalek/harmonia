@@ -32,9 +32,7 @@ export const user = pgTable(
 			.notNull(),
 	},
 	(table) => [
-		// At most one admin, ever — the actual enforcement boundary for the
-		// admin app's one-time setup flow (packages/orpc's setup procedures
-		// only gate the UX; this is what makes a race condition impossible).
+		// At most one admin, ever — the real enforcement for the admin app's one-time setup flow.
 		uniqueIndex("user_single_admin_idx")
 			.on(table.role)
 			.where(sql`${table.role} = 'admin'`),

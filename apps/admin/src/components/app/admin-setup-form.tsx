@@ -19,7 +19,10 @@ import { orpc } from "@/shared/api/orpc";
 
 const setupSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	email: z.string().email("Enter a valid email address."),
+	email: z
+		.string()
+		.trim()
+		.pipe(z.email({ error: "Enter a valid email address." })),
 	password: z.string().min(8, "Password must be at least 8 characters."),
 });
 

@@ -1,3 +1,4 @@
+import { APIError } from "better-auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const selectMock = vi.fn();
@@ -96,9 +97,7 @@ describe("admin setup", () => {
 	});
 
 	it("createAdminAccount reports CONFLICT if a concurrent request won the race", async () => {
-		// First count (pre-check) says no admin yet, createUser fails (unique
-		// index violation), second count (post-failure recheck) says one now
-		// exists — the other request won.
+		// Pre-check says 0, createUser fails, recheck says 1 — the other request won.
 		mockAdminCount(0, 1);
 		createUserMock.mockRejectedValue(
 			Object.assign(new Error("duplicate key value"), {
@@ -116,9 +115,11 @@ describe("admin setup", () => {
 		).rejects.toMatchObject({ code: "CONFLICT" });
 	});
 
-	it("createAdminAccount surfaces the real error when creation fails for an unrelated reason", async () => {
+	it("createAdminAccount surfaces a better-auth APIError's message as BAD_REQUEST", async () => {
 		mockAdminCount(0, 0);
-		createUserMock.mockRejectedValue(new Error("USER_ALREADY_EXISTS"));
+		createUserMock.mockRejectedValue(
+			new APIError("BAD_REQUEST", { message: "USER_ALREADY_EXISTS" }),
+		);
 		const { createAdminAccount } = await import("../setup");
 		await expect(
 			createAdminAccount({
@@ -129,6 +130,22 @@ describe("admin setup", () => {
 		).rejects.toMatchObject({
 			code: "BAD_REQUEST",
 			message: "USER_ALREADY_EXISTS",
+		});
+	});
+
+	it("createAdminAccount hides an unrelated error behind a generic message", async () => {
+		mockAdminCount(0, 0);
+		createUserMock.mockRejectedValue(new Error("connection terminated"));
+		const { createAdminAccount } = await import("../setup");
+		await expect(
+			createAdminAccount({
+				name: "Admin",
+				email: "admin@harmonia.com",
+				password: "password123",
+			}),
+		).rejects.toMatchObject({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Failed to create admin account",
 		});
 	});
 });

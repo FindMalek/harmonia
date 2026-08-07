@@ -5,8 +5,7 @@ import { AdminSetupForm } from "@/components/app/admin-setup-form";
 import { adminAccountExists } from "@/shared/api/admin-exists.server";
 
 export default async function SetupPage() {
-	// Permanently a dead end once the one admin account exists — enforced for
-	// real by the database (user_single_admin_idx), this is just the redirect.
+	// Permanently a dead end once the admin account exists (enforced at the DB level).
 	if (await adminAccountExists()) {
 		redirect("/login");
 	}

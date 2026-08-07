@@ -8,7 +8,9 @@ import {
 import { adminAuth } from "@harmonia/core";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
+import { logger } from "@harmonia/logger";
 import { ORPCError } from "@orpc/server";
+import { APIError } from "better-auth";
 import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -40,11 +42,7 @@ export async function createAdminAccount(input: {
 	}
 
 	try {
-		// Called with no headers/request — bypasses the session/permission
-		// check that auth.api.createUser enforces when hit as a real HTTP
-		// request (see better-auth's admin plugin routes.mjs). This is the
-		// same "internal/privileged call" path packages/db's seed script
-		// effectively re-implements by hand for local dev.
+		// No headers/request passed — bypasses auth.api.createUser's normal session check (better-auth's internal/privileged call path).
 		await adminAuth.api.createUser({
 			body: {
 				email: input.email.toLowerCase().trim(),
@@ -54,28 +52,25 @@ export async function createAdminAccount(input: {
 			},
 		});
 	} catch (err) {
-		// The user_single_admin_idx unique index is the real backstop for a
-		// concurrent double-submit — if someone else's request won that race
-		// between our count check and this insert, report the same clean
-		// "already exists" error instead of a raw DB error.
-		const raceLost = (await adminCount()) > 0;
-		if (raceLost) {
+		// user_single_admin_idx is the real race backstop — a concurrent double-submit lands here as a DB error, not an APIError.
+		if ((await adminCount()) > 0) {
 			throw new ORPCError("CONFLICT", {
 				message: "An admin account already exists.",
 			});
 		}
-		const message =
-			err instanceof Error ? err.message : "Failed to create admin account";
-		throw new ORPCError("BAD_REQUEST", { message });
+		if (err instanceof APIError) {
+			throw new ORPCError("BAD_REQUEST", { message: err.message });
+		}
+		logger.error({ err }, "admin.setup.create: unexpected failure");
+		throw new ORPCError("INTERNAL_SERVER_ERROR", {
+			message: "Failed to create admin account",
+		});
 	}
 
 	return { success: true };
 }
 
-// Public — there is no session yet the first time this ever needs to run.
-// Actual race-safety comes from the database (user_single_admin_idx in
-// packages/db/src/schema/auth.ts), not from the count checks above, which
-// only drive the UI (redirect to /login vs show the form).
+// Public — there is no session yet the first time this ever runs; the database enforces the "only once" guarantee, this just drives the UI.
 export const adminSetupRouter = {
 	status: publicProcedure
 		.input(z.void())
