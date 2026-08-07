@@ -2,6 +2,7 @@
 
 import { ADMIN_NAV_ITEMS } from "@harmonia/common/utils/routes";
 import {
+	Button,
 	Icons,
 	ModeToggle,
 	Sidebar,
@@ -82,14 +83,16 @@ export function AdminSidebar() {
 			<SidebarFooter>
 				<div className="flex items-center justify-between px-2 py-1">
 					<ModeToggle variant="immediate" />
-					<button
+					<Button
 						type="button"
+						variant="ghost"
+						size="xs"
 						onClick={handleSignOut}
-						className="flex items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground"
+						className="h-auto gap-1.5 p-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
 					>
 						<Icons.logout className="size-3.5" />
 						Sign out
-					</button>
+					</Button>
 				</div>
 			</SidebarFooter>
 		</Sidebar>
