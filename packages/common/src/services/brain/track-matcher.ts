@@ -9,10 +9,9 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
-import {
-	CLUSTER_MAX_SIZE,
-	TRACK_MATCH_SIMILARITY_THRESHOLD,
-} from "../../constants/brain";
+import { CLUSTER_MAX_SIZE } from "../../constants/brain";
+
+const TRACK_MATCH_SIMILARITY_THRESHOLD = 0.7;
 
 export type TrackMatchResult = {
 	matched: number;

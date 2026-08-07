@@ -1,8 +1,4 @@
 import {
-	PIPELINE_STREAM_MAX_POLLS,
-	PIPELINE_STREAM_POLL_INTERVAL_MS,
-} from "@harmonia/common/constants";
-import {
 	emptyInput,
 	pipelineClearAnalysisOutputSchema,
 	pipelineGetByIdInput,
@@ -23,6 +19,9 @@ import { eventIterator } from "@orpc/server";
 import { and, count, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure } from "../../procedures";
+
+const PIPELINE_STREAM_POLL_INTERVAL_MS = 2000;
+const PIPELINE_STREAM_MAX_POLLS = 900;
 
 export const pipelineRouter = {
 	getAll: approvedProcedure

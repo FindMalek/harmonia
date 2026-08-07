@@ -10,14 +10,13 @@ import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
 
-import {
-	CLASSIFICATION_BATCH_SIZE,
-	CLASSIFICATION_CONCURRENCY,
-	CLASSIFICATION_LLM_MODEL,
-} from "../../constants/brain";
+import { CLASSIFICATION_LLM_MODEL } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 import { classifyTracksWithLLM } from "./llml";
+
+const CLASSIFICATION_BATCH_SIZE = 6;
+const CLASSIFICATION_CONCURRENCY = 1;
 
 type ClassifyDeltaCallback = (deltaClassified: number) => Promise<void>;
 

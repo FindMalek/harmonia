@@ -1,9 +1,6 @@
 import type { CreatedPlaylist } from "../schemas";
 
-/**
- * Stage-specific progress types for the Organize pipeline.
- * Each stage reports its own shape; PipelineProgress aggregates them.
- */
+// Stage-specific progress types for the Organize pipeline; PipelineProgress aggregates them.
 
 export type SyncPhase = "liked" | "playlists" | "preparing";
 

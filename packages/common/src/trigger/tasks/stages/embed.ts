@@ -3,10 +3,6 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { queue, task } from "@trigger.dev/sdk";
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
-import {
-	EMBED_FANOUT_CHUNK_SIZE,
-	EMBED_WORKER_QUEUE_CONCURRENCY,
-} from "../../../constants";
 import { embedTrackIds } from "../../../services/brain";
 import {
 	checkCancelled,
@@ -15,6 +11,10 @@ import {
 	updateStageProgress,
 } from "../../../services/organize";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
+
+// 512 tracks/worker → 2 OpenAI batches of 256, pLimit(3) → ~4s/worker.
+const EMBED_FANOUT_CHUNK_SIZE = 512;
+const EMBED_WORKER_QUEUE_CONCURRENCY = 5;
 
 const embedWorkerQueue = queue({
 	name: "organize-embed-worker",
