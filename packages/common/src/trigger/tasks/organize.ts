@@ -1,9 +1,5 @@
 import { logger } from "@harmonia/logger";
 import { task } from "@trigger.dev/sdk";
-import {
-	PIPELINE_PARTIAL_CLASSIFY_THRESHOLD,
-	PIPELINE_PARTIAL_EMBED_THRESHOLD,
-} from "../../constants";
 
 import { PipelineCancelledError, updateRun } from "../../services/organize";
 import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
@@ -17,6 +13,10 @@ import { matchStageTask } from "./stages/match";
 import { syncStageTask } from "./stages/sync";
 
 type OrganizeRunStatus = "completed" | "partial" | "failed" | "cancelled";
+
+// Ratio of done/total (work pending at run start) below which a non-throwing run is still reported "partial"; total===0 never flags.
+const PIPELINE_PARTIAL_CLASSIFY_THRESHOLD = 0.5;
+const PIPELINE_PARTIAL_EMBED_THRESHOLD = 0.5;
 
 /**
  * Decide whether a run that completed every stage without throwing still

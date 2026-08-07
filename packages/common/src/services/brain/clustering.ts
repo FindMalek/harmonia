@@ -7,12 +7,12 @@ import { logger } from "@harmonia/logger";
 import Clustering from "density-clustering";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 
-import {
-	CLUSTER_EPSILON,
-	CLUSTER_MAX_SIZE,
-	CLUSTER_MIN_POINTS,
-	CLUSTER_MIN_SIZE,
-} from "../../constants/brain";
+import { CLUSTER_MAX_SIZE } from "../../constants/brain";
+
+// DBSCAN params for semantic-only embeddings — see .cursor/rules/packages/common.mdc "Clustering Tuning".
+const CLUSTER_MIN_POINTS = 5;
+const CLUSTER_EPSILON = 0.3;
+const CLUSTER_MIN_SIZE = 20;
 
 const MAX_SPLIT_DEPTH = 4;
 

@@ -11,11 +11,6 @@ import { eq } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import {
-	INCLUDE_FOLLOWED_PLAYLISTS,
-	LIBRARY_STATS_CACHE_STALE_MS,
-	STATS_FETCH_CONCURRENCY,
-} from "../../../constants/spotify";
-import {
 	fetchAllUserPlaylists,
 	fetchPlaylistItems,
 	getSpotifyAccount,
@@ -26,6 +21,12 @@ import {
 	getCachedPlaylistItems,
 	setCachedPlaylistItems,
 } from "./playlist-cache";
+
+// Will be plan-based later (e.g. free=24h, paid=shorter).
+const LIBRARY_STATS_CACHE_STALE_MS = 24 * 60 * 60 * 1000;
+// When true (paid plans), include followed/collaborative playlists. For now: owned only.
+const INCLUDE_FOLLOWED_PLAYLISTS = false;
+const STATS_FETCH_CONCURRENCY = 4;
 
 const refreshLocks = new Map<string, Promise<SpotifyLibraryStats>>();
 

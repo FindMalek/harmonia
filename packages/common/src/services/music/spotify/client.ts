@@ -12,14 +12,14 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import {
-	SPOTIFY_API_BASE,
-	SPOTIFY_PLAYLIST_ITEMS_FIELDS,
-	SPOTIFY_PLAYLIST_ITEMS_LIMIT,
-	SPOTIFY_RATE_LIMIT_MAX_RETRIES,
-	SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC,
-} from "../../../constants/spotify";
 import { logExternalApiCall } from "../../external-api-log";
+
+const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+const SPOTIFY_RATE_LIMIT_MAX_RETRIES = 3;
+const SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC = 60;
+const SPOTIFY_PLAYLIST_ITEMS_LIMIT = 50;
+const SPOTIFY_PLAYLIST_ITEMS_FIELDS =
+	"items(track(id,name,uri,album(id,name,release_date),artists(id,name),duration_ms,explicit,popularity))";
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));

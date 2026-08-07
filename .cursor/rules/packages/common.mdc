@@ -64,6 +64,14 @@ await lyricsStageTask.triggerAndWait({ userId, runId });
 
 Each stage task: calls `checkCancelled` → sets `currentStage` → runs service → updates progress via `updateStageProgress`.
 
+## Clustering Tuning (DBSCAN)
+
+`CLUSTER_EPSILON` in `services/brain/clustering.ts` controls DBSCAN density for semantic-only embeddings (v2: no Title/Artists/Album). Embeddings are L2-normalised in-memory before clustering, so Euclidean distance is equivalent to cosine distance (for unit vectors, ‖a−b‖² = 2 − 2·cos(θ)) — the metric `text-embedding-3-small` and the `vector_cosine_ops` HNSW index on `track.embedding` both assume.
+
+Epsilon in normalised-Euclidean units: `0.30` ≈ cos(θ) > ~0.95 (strict), `0.50` ≈ cos(θ) > ~0.87, `0.75` ≈ cos(θ) > ~0.72.
+
+Tuning: clusters collapsing into a few mega-clusters → lower epsilon (try 0.20–0.25). Clusters too fragmented / mostly noise → raise it (try 0.35–0.45). The post-clustering sanity log (clusters/tracks ratio) makes regressions visible — re-tune against a representative library.
+
 ## Exports
 
 All exports go through `packages/common/package.json` `exports` map. Add a new export entry when adding a new path.
