@@ -58,7 +58,7 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	});
 }
 
-function isSplitRetryableError(err: unknown): boolean {
+export function isSplitRetryableError(err: unknown): boolean {
 	const cause =
 		err instanceof AbortError && err.originalError != null
 			? err.originalError
@@ -68,7 +68,11 @@ function isSplitRetryableError(err: unknown): boolean {
 	const message = cause instanceof Error ? cause.message : String(cause);
 	return (
 		message.includes("Failed to validate JSON") ||
-		message.includes("No output generated")
+		message.includes("No output generated") ||
+		// Groq's structured-output rejection (surfaces as a 4xx APICallError,
+		// not NoObjectGeneratedError) — e.g. "Generated JSON does not match
+		// the expected schema... jsonschema: '' does not validate with ...".
+		message.includes("does not match the expected schema")
 	);
 }
 
