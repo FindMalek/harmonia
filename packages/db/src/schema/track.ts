@@ -57,6 +57,10 @@ export const track = pgTable(
 		lyricsFetchedAt: timestamp("lyrics_fetched_at"),
 		lyricsStatus: text("lyrics_status"),
 
+		// Audio features (GetSongBPM) — backfills tempo/key/mode/danceability/acousticness
+		audioFeaturesFetchedAt: timestamp("audio_features_fetched_at"),
+		audioFeaturesStatus: text("audio_features_status"),
+
 		// LLM classification (Groq) — full structured output
 		llmMood: text("llm_mood"),
 		llmTags: jsonb("llm_tags").$type<{
@@ -99,6 +103,7 @@ export const track = pgTable(
 	(table) => [
 		index("track_genre_domain_id_idx").on(table.genreDomainId),
 		index("track_lyrics_status_idx").on(table.lyricsStatus),
+		index("track_audio_features_status_idx").on(table.audioFeaturesStatus),
 		index("track_embedding_idx").using(
 			"hnsw",
 			table.embedding.op("vector_cosine_ops"),

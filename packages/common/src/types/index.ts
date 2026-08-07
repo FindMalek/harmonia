@@ -4,6 +4,7 @@
  */
 
 export type {
+	AudioFeaturesProgress,
 	ClassifyProgress,
 	ClusterProgress,
 	EmbedProgress,

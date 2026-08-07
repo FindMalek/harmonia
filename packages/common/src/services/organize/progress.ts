@@ -15,13 +15,14 @@ import { eq, sql } from "drizzle-orm";
  * concurrent calls accumulate correctly without losing updates.
  */
 type LyricsField = "found" | "notFound" | "processed" | "total";
+type AudioFeaturesField = "found" | "notFound" | "processed" | "total";
 type ClassifyField = "classified" | "total" | "pending";
 type EmbedField = "embedded" | "total" | "pending";
-type StageField = LyricsField | ClassifyField | EmbedField;
+type StageField = LyricsField | AudioFeaturesField | ClassifyField | EmbedField;
 
 export async function incrementStageProgress(
 	runId: number,
-	stage: "lyrics" | "classify" | "embed",
+	stage: "lyrics" | "audioFeatures" | "classify" | "embed",
 	field: StageField,
 	delta: number,
 ): Promise<void> {

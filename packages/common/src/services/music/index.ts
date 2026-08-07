@@ -1,3 +1,4 @@
+export { fetchAudioFeaturesForTrackIds } from "./audio-features/fetch-audio-features";
 export {
 	fetchLyricsForPendingTracks,
 	fetchLyricsForTrackIds,

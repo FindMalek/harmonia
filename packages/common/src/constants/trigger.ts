@@ -2,6 +2,10 @@
 export const LYRICS_FANOUT_CHUNK_SIZE = 500;
 export const LYRICS_WORKER_QUEUE_CONCURRENCY = 2;
 
+/** Audio features: 500 tracks/worker, pLimit(3), 2 concurrent workers → 6 peak GetSongBPM requests. */
+export const AUDIO_FEATURES_FANOUT_CHUNK_SIZE = 500;
+export const AUDIO_FEATURES_WORKER_QUEUE_CONCURRENCY = 2;
+
 /**
  * Classify: 200 tracks/worker → ~34 LLM batches of 6.
  * Peak Groq calls ≈ CLASSIFY_WORKER_QUEUE_CONCURRENCY × CLASSIFICATION_CONCURRENCY

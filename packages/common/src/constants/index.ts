@@ -1,3 +1,4 @@
+export * from "./audio-features";
 export * from "./brain";
 export * from "./lyrics";
 export * from "./pipeline";
