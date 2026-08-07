@@ -59,10 +59,14 @@ export function WaitlistForm() {
 						type="submit"
 						size="icon-sm"
 						variant="default"
-						isLoading={signup.isPending}
+						disabled={signup.isPending}
 						aria-label="Join waitlist"
 					>
-						<Icons.arrowRight />
+						{signup.isPending ? (
+							<Icons.spinner className="animate-spin" />
+						) : (
+							<Icons.arrowRight />
+						)}
 					</InputGroupButton>
 				</InputGroupAddon>
 			</InputGroup>
