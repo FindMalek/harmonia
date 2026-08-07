@@ -1,8 +1,9 @@
 import { db } from "@harmonia/db";
 import { track, userTracks } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
 import { queue, task } from "@trigger.dev/sdk";
-import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import {
 	EMBED_FANOUT_CHUNK_SIZE,
 	EMBED_WORKER_QUEUE_CONCURRENCY,
@@ -59,11 +60,15 @@ export const embedStageTask = task({
 		await checkCancelled(runId, userId);
 		await updateRun(runId, { currentStage: "embed" });
 
-		// Only embed tracks that have been classified (llmClassifiedAt IS NOT NULL)
 		const userTrackIds = db
 			.select({ trackId: userTracks.trackId })
 			.from(userTracks)
 			.where(eq(userTracks.userId, userId));
+
+		// Only embed tracks that have a classification result.
+		const analyzedTrackIds = db
+			.select({ trackId: trackAnalysis.trackId })
+			.from(trackAnalysis);
 
 		const allPending = await db
 			.select({ id: track.id })
@@ -72,7 +77,7 @@ export const embedStageTask = task({
 				and(
 					inArray(track.id, userTrackIds),
 					isNull(track.embedding),
-					isNotNull(track.llmClassifiedAt),
+					inArray(track.id, analyzedTrackIds),
 				),
 			);
 

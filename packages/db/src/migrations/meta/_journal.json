@@ -197,6 +197,13 @@
 			"when": 1786094486974,
 			"tag": "0027_user_single_admin_index",
 			"breakpoints": true
+		},
+		{
+			"idx": 28,
+			"version": "7",
+			"when": 1786111321784,
+			"tag": "0028_smart_scrambler",
+			"breakpoints": true
 		}
 	]
 }
