@@ -4,10 +4,6 @@ import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
 import { queue, task } from "@trigger.dev/sdk";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
-import {
-	CLASSIFY_FANOUT_CHUNK_SIZE,
-	CLASSIFY_WORKER_QUEUE_CONCURRENCY,
-} from "../../../constants";
 import { classifyTrackIds } from "../../../services/brain";
 import {
 	checkCancelled,
@@ -16,6 +12,11 @@ import {
 	updateStageProgress,
 } from "../../../services/organize";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
+
+// 200 tracks/worker → ~34 LLM batches of 6. Peak Groq calls ≈
+// CLASSIFY_WORKER_QUEUE_CONCURRENCY × CLASSIFICATION_CONCURRENCY (services/brain/classifier.ts).
+const CLASSIFY_FANOUT_CHUNK_SIZE = 200;
+const CLASSIFY_WORKER_QUEUE_CONCURRENCY = 2;
 
 const classifyWorkerQueue = queue({
 	name: "organize-classify-worker",

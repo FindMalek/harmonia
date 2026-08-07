@@ -1,7 +1,4 @@
-/**
- * Check if an origin matches the allowed origin pattern
- * Supports wildcard patterns like *.vercel.app or exact matches
- */
+// Supports wildcard patterns (e.g. *.vercel.app) in addition to exact matches.
 export function isOriginAllowed(
 	origin: string | null,
 	allowedOriginPattern: string | undefined,
@@ -40,10 +37,6 @@ export function isOriginAllowed(
 	return false;
 }
 
-/**
- * Check if an origin is allowed based on base origins and optional pattern
- * Returns true if origin matches any base origin OR matches the pattern
- */
 export function isOriginAllowedForRequest(
 	origin: string | null,
 	baseOrigins: string[],
@@ -62,10 +55,6 @@ export function isOriginAllowedForRequest(
 	return false;
 }
 
-/**
- * Build trusted origins configuration for Better Auth
- * Returns either a static array or a dynamic function that validates origins
- */
 export function buildTrustedOrigins(
 	baseOrigins: string[],
 	isVercel: boolean,

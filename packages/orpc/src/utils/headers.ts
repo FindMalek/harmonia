@@ -1,6 +1,3 @@
-/**
- * Convert Headers instance to a plain object for serialization/forwarding
- */
 export function headersToObject(headers: Headers): Record<string, string> {
 	const obj: Record<string, string> = {};
 	headers.forEach((value, key) => {
@@ -9,9 +6,6 @@ export function headersToObject(headers: Headers): Record<string, string> {
 	return obj;
 }
 
-/**
- * Convert a plain object (or Headers) back to a Headers instance
- */
 export function headersToHeaders(
 	headers: Headers | Record<string, string>,
 ): Headers {

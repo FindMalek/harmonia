@@ -10,12 +10,11 @@ import { llml as formatPrompt } from "@zenbase/llml";
 import { APICallError, generateText, NoObjectGeneratedError, Output } from "ai";
 import pRetry, { AbortError } from "p-retry";
 
-import {
-	CLASSIFICATION_LLM_MODEL,
-	CLASSIFICATION_MAX_OUTPUT_TOKENS,
-	GROQ_RATE_LIMIT_FALLBACK_DELAY_MS,
-} from "../../constants/brain";
+import { CLASSIFICATION_LLM_MODEL } from "../../constants/brain";
 import { logExternalApiCall } from "../external-api-log";
+
+const CLASSIFICATION_MAX_OUTPUT_TOKENS = 8192;
+const GROQ_RATE_LIMIT_FALLBACK_DELAY_MS = 45_000;
 
 export type LLMCallContext = {
 	userId?: string | null;

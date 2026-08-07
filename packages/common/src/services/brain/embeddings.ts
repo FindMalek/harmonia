@@ -9,14 +9,13 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
-import {
-	EMBEDDING_BATCH_SIZE,
-	EMBEDDING_CONCURRENCY,
-	EMBEDDING_MODEL,
-} from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
 import { logExternalApiCall } from "../external-api-log";
 import { buildEmbeddingInput } from "./build-embedding-input";
+
+const EMBEDDING_MODEL = "text-embedding-3-small";
+const EMBEDDING_BATCH_SIZE = 256;
+const EMBEDDING_CONCURRENCY = 3;
 
 type OpenAIEmbeddingResponse = {
 	data: Array<{
