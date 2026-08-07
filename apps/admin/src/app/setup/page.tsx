@@ -1,26 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle, Icons } from "@harmonia/ui";
 import { redirect } from "next/navigation";
 
-import { AdminLoginForm } from "@/components/app/admin-login-form";
+import { AdminSetupForm } from "@/components/app/admin-setup-form";
 import { adminAccountExists } from "@/shared/api/admin-exists.server";
-import { getAdminServerSession } from "@/shared/api/session.server";
 
-export default async function LoginPage({
-	searchParams,
-}: {
-	searchParams: Promise<{ error?: string }>;
-}) {
-	const session = await getAdminServerSession();
-
-	if (session?.user?.role === "admin") {
-		redirect("/");
+export default async function SetupPage() {
+	// Permanently a dead end once the one admin account exists — enforced for
+	// real by the database (user_single_admin_idx), this is just the redirect.
+	if (await adminAccountExists()) {
+		redirect("/login");
 	}
-
-	if (!(await adminAccountExists())) {
-		redirect("/setup");
-	}
-
-	const { error } = await searchParams;
 
 	return (
 		<div className="flex min-h-svh items-center justify-center bg-sidebar p-4">
@@ -31,26 +20,21 @@ export default async function LoginPage({
 					</div>
 					<div>
 						<h1 className="font-semibold text-lg tracking-tight">
-							Harmonia Admin
+							Create the admin account
 						</h1>
 						<p className="text-muted-foreground text-xs">
-							Authorised personnel only
+							This can only be done once — there is no way to register another
+							admin account after this.
 						</p>
 					</div>
 				</div>
 
-				{error === "unauthorized" && (
-					<p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-center text-destructive text-xs">
-						You do not have permission to access this area.
-					</p>
-				)}
-
 				<Card>
 					<CardHeader>
-						<CardTitle className="text-sm">Sign in</CardTitle>
+						<CardTitle className="text-sm">Set up Harmonia Admin</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<AdminLoginForm />
+						<AdminSetupForm />
 					</CardContent>
 				</Card>
 			</div>

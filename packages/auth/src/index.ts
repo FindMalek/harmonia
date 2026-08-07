@@ -171,6 +171,10 @@ export function createAdminAuth(
 		trustedOrigins: buildTrustedOriginsList(envConfig),
 		emailAndPassword: {
 			enabled: true,
+			// Public self-registration is closed — the only way to create an
+			// admin account is the one-time setup flow (packages/orpc's
+			// admin.setup.create), which calls auth.api.createUser directly.
+			disableSignUp: true,
 		},
 		socialProviders: {},
 		plugins: [nextCookies(), admin({ defaultRole: "user" })],
