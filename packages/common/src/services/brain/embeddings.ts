@@ -1,9 +1,11 @@
 import type { EmbedProgress } from "@harmonia/common/types";
+import { llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { track, userTracks } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
@@ -111,32 +113,21 @@ async function fetchEmbeddingsBatch(
 }
 
 // pgvector requires raw SQL: Drizzle's update builder bypasses mapToDriverValue for
-// vector columns, so ::vector and ::jsonb casts must be explicit. The AND embedding
+// vector columns, so the ::vector cast must be explicit. The AND embedding
 // IS NULL guard makes the write idempotent across concurrent workers.
 async function persistEmbedding(
 	trackId: string,
 	embeddingInput: string,
-	analysisSnapshot: (typeof track.$inferSelect)["analysisSnapshot"],
 	rawEmbedding: number[],
 	now: Date,
 ): Promise<void> {
 	const vecStr = `[${rawEmbedding.join(",")}]`;
-	const snapshotJson = JSON.stringify({
-		...(analysisSnapshot ?? {}),
-		embeddingDims: rawEmbedding.length,
-		modelVersions: {
-			...(analysisSnapshot?.modelVersions ?? {}),
-			embedding: EMBEDDING_MODEL,
-			embeddingInputVersion: "v2",
-		},
-	});
 	await db.execute(sql`
 		UPDATE track
 		SET
 			embedding              = ${vecStr}::vector,
 			embedding_generated_at = ${now},
 			embedding_input        = ${embeddingInput},
-			analysis_snapshot      = ${snapshotJson}::jsonb,
 			updated_at             = NOW()
 		WHERE id = ${trackId}
 		  AND embedding IS NULL
@@ -146,20 +137,22 @@ async function persistEmbedding(
 type EmbeddingInput = {
 	id: string;
 	text: string;
-	analysisSnapshot: (typeof track.$inferSelect)["analysisSnapshot"];
 };
 
+// analysisByTrackId is a separate lookup (not a JOIN) — fetched once per batch from
+// track_analysis and merged here, since track's `.select()` shorthand doesn't mix
+// cleanly with a joined table's columns without enumerating every track column.
 function toEmbeddingInputs(
-	pendingTracks: Array<
-		Pick<
-			typeof track.$inferSelect,
-			"id" | "llmMood" | "llmTags" | "analysisSnapshot"
-		>
-	>,
+	pendingTracks: Array<Pick<typeof track.$inferSelect, "id">>,
+	analysisByTrackId: Map<string, ReturnType<typeof llmFieldsFromAnalysis>>,
 ): EmbeddingInput[] {
 	return pendingTracks
 		.map((t) => {
-			const text = buildEmbeddingInput(t);
+			const { llmMood, llmTags } = analysisByTrackId.get(t.id) ?? {
+				llmMood: null,
+				llmTags: null,
+			};
+			const text = buildEmbeddingInput({ llmMood, llmTags });
 			if (!text) {
 				logger.warn(
 					{ trackId: t.id },
@@ -167,9 +160,19 @@ function toEmbeddingInputs(
 				);
 				return null;
 			}
-			return { id: t.id, text, analysisSnapshot: t.analysisSnapshot };
+			return { id: t.id, text };
 		})
 		.filter((x): x is NonNullable<typeof x> => x !== null);
+}
+
+async function fetchAnalysisByTrackId(
+	trackIds: string[],
+): Promise<Map<string, ReturnType<typeof llmFieldsFromAnalysis>>> {
+	const rows = await db
+		.select()
+		.from(trackAnalysis)
+		.where(inArray(trackAnalysis.trackId, trackIds));
+	return new Map(rows.map((r) => [r.trackId, llmFieldsFromAnalysis(r)]));
 }
 
 type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
@@ -194,6 +197,10 @@ export async function embedTracksBatch(
 		.from(userTracks)
 		.where(eq(userTracks.userId, userId));
 
+	const analyzedTrackIds = db
+		.select({ trackId: trackAnalysis.trackId })
+		.from(trackAnalysis);
+
 	const allPending = await db
 		.select({ id: track.id })
 		.from(track)
@@ -201,7 +208,7 @@ export async function embedTracksBatch(
 			and(
 				inArray(track.id, userTrackIds),
 				isNull(track.embedding),
-				isNotNull(track.llmClassifiedAt),
+				inArray(track.id, analyzedTrackIds),
 			),
 		);
 
@@ -223,7 +230,7 @@ export async function embedTracksBatch(
 		batches.map((batchIds) =>
 			limit(async () => {
 				const pendingTracks = await db
-					.select()
+					.select({ id: track.id })
 					.from(track)
 					.where(and(inArray(track.id, batchIds), isNull(track.embedding)));
 
@@ -234,7 +241,10 @@ export async function embedTracksBatch(
 					"Starting embedding batch",
 				);
 
-				const inputs = toEmbeddingInputs(pendingTracks);
+				const analysisByTrackId = await fetchAnalysisByTrackId(
+					pendingTracks.map((t) => t.id),
+				);
+				const inputs = toEmbeddingInputs(pendingTracks, analysisByTrackId);
 				if (inputs.length === 0) return;
 
 				const json = await fetchEmbeddingsBatch(
@@ -256,13 +266,7 @@ export async function embedTracksBatch(
 					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
 						if (!input || !embedding) return;
-						await persistEmbedding(
-							input.id,
-							input.text,
-							input.analysisSnapshot,
-							embedding,
-							now,
-						);
+						await persistEmbedding(input.id, input.text, embedding, now);
 					}),
 				);
 
@@ -280,11 +284,7 @@ export async function embedTracksBatch(
 	return { embedded, total, pending: 0 };
 }
 
-/**
- * Generates embeddings for an explicit list of track IDs (fan-out worker entry point).
- * Re-checks embedding IS NULL AND llmClassifiedAt IS NOT NULL at DB level for idempotency.
- * Calls onBatchComplete with delta count after each internal OpenAI batch.
- */
+// Fan-out worker entry point; re-checks embedding IS NULL and a track_analysis row exists at DB level for idempotency.
 export async function embedTrackIds(
 	userId: string,
 	trackIds: string[],
@@ -314,20 +314,26 @@ export async function embedTrackIds(
 		batches.map((batchIds) =>
 			limit(async () => {
 				// Idempotency re-check + dependency guard: only embed classified tracks
+				const analyzedTrackIds = db
+					.select({ trackId: trackAnalysis.trackId })
+					.from(trackAnalysis);
 				const pendingTracks = await db
-					.select()
+					.select({ id: track.id })
 					.from(track)
 					.where(
 						and(
 							inArray(track.id, batchIds),
 							isNull(track.embedding),
-							isNotNull(track.llmClassifiedAt),
+							inArray(track.id, analyzedTrackIds),
 						),
 					);
 
 				if (pendingTracks.length === 0) return;
 
-				const inputs = toEmbeddingInputs(pendingTracks);
+				const analysisByTrackId = await fetchAnalysisByTrackId(
+					pendingTracks.map((t) => t.id),
+				);
+				const inputs = toEmbeddingInputs(pendingTracks, analysisByTrackId);
 				if (inputs.length === 0) return;
 
 				const json = await fetchEmbeddingsBatch(
@@ -348,13 +354,7 @@ export async function embedTrackIds(
 					inputs.map(async (input, index) => {
 						const embedding = json.data[index]?.embedding;
 						if (!input || !embedding) return;
-						await persistEmbedding(
-							input.id,
-							input.text,
-							input.analysisSnapshot,
-							embedding,
-							now,
-						);
+						await persistEmbedding(input.id, input.text, embedding, now);
 					}),
 				);
 

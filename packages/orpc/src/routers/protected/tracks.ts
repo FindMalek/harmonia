@@ -8,6 +8,7 @@ import {
 	tracksListInput,
 	tracksListOutputSchema,
 } from "@harmonia/common/schemas";
+import { llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { artist } from "@harmonia/db/schema/artist";
 import { clusterTracks } from "@harmonia/db/schema/cluster";
@@ -15,6 +16,7 @@ import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { userPlaylistSnapshotItems } from "@harmonia/db/schema/spotify";
 import { track, userTracks } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
 import {
 	and,
@@ -26,6 +28,7 @@ import {
 	inArray,
 	isNotNull,
 	isNull,
+	notInArray,
 	or,
 } from "drizzle-orm";
 import { z } from "zod";
@@ -44,6 +47,10 @@ export const tracksRouter = {
 				.from(userTracks)
 				.where(eq(userTracks.userId, userId));
 
+			const analyzedTrackIds = db
+				.select({ trackId: trackAnalysis.trackId })
+				.from(trackAnalysis);
+
 			const conditions = [inArray(track.id, userTrackIds)];
 
 			if (input.search) {
@@ -59,9 +66,9 @@ export const tracksRouter = {
 			}
 
 			if (input.classified === true) {
-				conditions.push(isNotNull(track.llmClassifiedAt));
+				conditions.push(inArray(track.id, analyzedTrackIds));
 			} else if (input.classified === false) {
-				conditions.push(isNull(track.llmClassifiedAt));
+				conditions.push(notInArray(track.id, analyzedTrackIds));
 			}
 
 			if (input.embedded === true) {
@@ -77,7 +84,7 @@ export const tracksRouter = {
 				.from(track)
 				.where(where);
 
-			const tracks = await db
+			const rows = await db
 				.select({
 					id: track.id,
 					name: track.name,
@@ -91,13 +98,21 @@ export const tracksRouter = {
 					popularity: track.popularity,
 					durationMs: track.durationMs,
 					lyricsStatus: track.lyricsStatus,
-					llmMood: track.llmMood,
-					llmTags: track.llmTags,
-					llmClassifiedAt: track.llmClassifiedAt,
 					embeddingGeneratedAt: track.embeddingGeneratedAt,
 					createdAt: track.createdAt,
+					mood: trackAnalysis.mood,
+					secondaryMoods: trackAnalysis.secondaryMoods,
+					themes: trackAnalysis.themes,
+					topics: trackAnalysis.topics,
+					vibe: trackAnalysis.vibe,
+					vocalType: trackAnalysis.vocalType,
+					energyLevel: trackAnalysis.energyLevel,
+					language: trackAnalysis.language,
+					era: trackAnalysis.era,
+					classifiedAt: trackAnalysis.classifiedAt,
 				})
 				.from(track)
+				.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 				.where(where)
 				.orderBy(
 					...(input.sort === "album"
@@ -106,6 +121,36 @@ export const tracksRouter = {
 				)
 				.limit(input.pageSize)
 				.offset(offset);
+
+			const tracks = rows.map(
+				({
+					mood,
+					secondaryMoods,
+					themes,
+					topics,
+					vibe,
+					vocalType,
+					energyLevel,
+					language,
+					era,
+					classifiedAt,
+					...rest
+				}) => ({
+					...rest,
+					...llmFieldsFromAnalysis({
+						mood,
+						secondaryMoods,
+						themes,
+						topics,
+						vibe,
+						vocalType,
+						energyLevel,
+						language,
+						era,
+						classifiedAt,
+					}),
+				}),
+			);
 
 			return {
 				tracks,
@@ -131,6 +176,18 @@ export const tracksRouter = {
 					track,
 					likedAt: userTracks.addedAt,
 					genreDomainName: genreDomain.name,
+					analysis: {
+						mood: trackAnalysis.mood,
+						secondaryMoods: trackAnalysis.secondaryMoods,
+						themes: trackAnalysis.themes,
+						topics: trackAnalysis.topics,
+						vibe: trackAnalysis.vibe,
+						vocalType: trackAnalysis.vocalType,
+						energyLevel: trackAnalysis.energyLevel,
+						language: trackAnalysis.language,
+						era: trackAnalysis.era,
+						classifiedAt: trackAnalysis.classifiedAt,
+					},
 				})
 				.from(track)
 				.innerJoin(
@@ -138,6 +195,7 @@ export const tracksRouter = {
 					and(eq(userTracks.trackId, track.id), eq(userTracks.userId, userId)),
 				)
 				.leftJoin(genreDomain, eq(genreDomain.id, track.genreDomainId))
+				.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 				.where(and(eq(track.id, input.id), inArray(track.id, userTrackIds)));
 
 			if (!result) return null;
@@ -221,6 +279,7 @@ export const tracksRouter = {
 
 			return {
 				...result.track,
+				...llmFieldsFromAnalysis(result.analysis),
 				embedding: undefined,
 				clusterId: clusterAssignment[0]?.clusterId ?? null,
 				genreDomainName: result.genreDomainName,

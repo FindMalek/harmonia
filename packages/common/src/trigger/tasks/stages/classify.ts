@@ -1,8 +1,9 @@
 import { db } from "@harmonia/db";
 import { track, userTracks } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
 import { queue, task } from "@trigger.dev/sdk";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { classifyTrackIds } from "../../../services/brain";
 import {
 	checkCancelled,
@@ -70,13 +71,17 @@ export const classifyStageTask = task({
 			.from(userTracks)
 			.where(eq(userTracks.userId, userId));
 
+		const analyzedTrackIds = db
+			.select({ trackId: trackAnalysis.trackId })
+			.from(trackAnalysis);
+
 		const allPending = await db
 			.select({ id: track.id })
 			.from(track)
 			.where(
 				and(
 					inArray(track.id, userTrackIds),
-					isNull(track.llmClassifiedAt),
+					notInArray(track.id, analyzedTrackIds),
 					inArray(track.lyricsStatus, ["found", "not_found"]),
 				),
 			);

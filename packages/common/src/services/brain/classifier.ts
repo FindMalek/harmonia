@@ -6,8 +6,9 @@ import type { ClassifyProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { genreDomain } from "@harmonia/db/schema/genre-domain";
 import { track, userTracks } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, notInArray } from "drizzle-orm";
 import pLimit from "p-limit";
 
 import { CLASSIFICATION_LLM_MODEL } from "../../constants/brain";
@@ -204,11 +205,7 @@ export async function classifyTracksBatch(
 	return { classified, total, pending: 0 };
 }
 
-/**
- * Classifies an explicit list of track IDs (fan-out worker entry point).
- * Re-checks llmClassifiedAt IS NULL at DB level for idempotency.
- * Calls onBatchComplete with delta count after each internal LLM batch.
- */
+// Fan-out worker entry point; re-checks for an existing track_analysis row at DB level for idempotency, calling onBatchComplete with a delta count after each internal LLM batch.
 export async function classifyTrackIds(
 	userId: string,
 	trackIds: string[],
@@ -229,12 +226,18 @@ export async function classifyTrackIds(
 	await Promise.all(
 		batches.map((batchIds) =>
 			limit(async () => {
-				// Idempotency re-check: skip already-classified tracks
+				// Idempotency re-check: skip tracks that already have an analysis row
+				const analyzedTrackIds = db
+					.select({ trackId: trackAnalysis.trackId })
+					.from(trackAnalysis);
 				const pendingTracks = await db
 					.select()
 					.from(track)
 					.where(
-						and(inArray(track.id, batchIds), isNull(track.llmClassifiedAt)),
+						and(
+							inArray(track.id, batchIds),
+							notInArray(track.id, analyzedTrackIds),
+						),
 					);
 
 				if (pendingTracks.length === 0) return;
@@ -304,46 +307,39 @@ export async function classifyTrackIds(
 				}
 
 				const now = new Date();
-				await Promise.all(
-					updates.map(({ trackId, result, genreDomainId }) =>
-						db
-							.update(track)
-							.set({
-								llmMood: result.mood ?? null,
-								llmTags: {
-									secondaryMoods: result.secondaryMoods ?? [],
-									themes: result.themes ?? [],
-									topics: result.topics ?? [],
-									vibe: result.vibe ?? [],
-									vocalType: result.vocalType ?? "unknown",
-									energyLevel: result.energyLevel ?? "unknown",
-									language: result.language ?? "unknown",
-									era: result.era ?? "unknown",
-								},
-								llmClassifiedAt: now,
-								genreDomainId: genreDomainId ?? null,
-								domainAssignedAt: genreDomainId ? now : null,
-								analysisSnapshot: {
-									llm: {
-										mood: result.mood,
-										secondaryMoods: result.secondaryMoods ?? [],
-										themes: result.themes ?? [],
-										topics: result.topics ?? [],
-										vibe: result.vibe ?? [],
-										vocalType: result.vocalType ?? "unknown",
-										energyLevel: result.energyLevel ?? null,
-										language: result.language ?? null,
-										era: result.era ?? null,
-										domainName: result.domainName ?? null,
-									},
-									domain: result.domainName ?? null,
-									embeddingDims: undefined,
-									modelVersions: { llm: CLASSIFICATION_LLM_MODEL },
-								},
-							})
-							.where(and(eq(track.id, trackId), isNull(track.llmClassifiedAt))),
-					),
-				);
+				if (updates.length > 0) {
+					// Append-only insert (no upsert guard): the coordinator's fan-out
+					// assigns each track ID to exactly one worker batch, so a duplicate
+					// row here would only happen on a genuine retry — harmless for an
+					// audit-log table where "a" row per track is all reads assume today.
+					await db.insert(trackAnalysis).values(
+						updates.map(({ trackId, result }) => ({
+							trackId,
+							mood: result.mood ?? null,
+							secondaryMoods: result.secondaryMoods ?? [],
+							themes: result.themes ?? [],
+							topics: result.topics ?? [],
+							vibe: result.vibe ?? [],
+							vocalType: result.vocalType ?? "unknown",
+							energyLevel: result.energyLevel ?? "unknown",
+							language: result.language ?? "unknown",
+							era: result.era ?? "unknown",
+							modelId: CLASSIFICATION_LLM_MODEL,
+							classifiedAt: now,
+						})),
+					);
+					await Promise.all(
+						updates.map(({ trackId, genreDomainId }) =>
+							db
+								.update(track)
+								.set({
+									genreDomainId: genreDomainId ?? null,
+									domainAssignedAt: genreDomainId ? now : null,
+								})
+								.where(eq(track.id, trackId)),
+						),
+					);
+				}
 
 				stats.classified += updates.length;
 				stats.pending = stats.total - stats.classified;

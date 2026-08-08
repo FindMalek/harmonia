@@ -34,3 +34,45 @@ export type AnalysisSnapshot = {
 	embeddingDims?: number;
 	modelVersions?: { llm?: string; embedding?: string };
 };
+
+/** Flat shape of a joined track_analysis row, as selected by read-path queries. */
+export type TrackAnalysisRow = {
+	mood: string | null;
+	secondaryMoods: string[] | null;
+	themes: string[] | null;
+	topics: string[] | null;
+	vibe: string[] | null;
+	vocalType: string | null;
+	energyLevel: string | null;
+	language: string | null;
+	era: string | null;
+	classifiedAt: Date | null;
+};
+
+/**
+ * Reconstructs the legacy llmMood/llmTags/llmClassifiedAt shape from a
+ * LEFT JOINed track_analysis row (null classifiedAt means no join match,
+ * i.e. not yet classified). Keeps output schemas/consumers unchanged after
+ * moving classification storage off the track table (#113).
+ */
+export function llmFieldsFromAnalysis(
+	row: TrackAnalysisRow | null | undefined,
+) {
+	if (!row || row.classifiedAt === null) {
+		return { llmMood: null, llmTags: null, llmClassifiedAt: null };
+	}
+	return {
+		llmMood: row.mood,
+		llmTags: {
+			secondaryMoods: row.secondaryMoods ?? [],
+			themes: row.themes ?? [],
+			topics: row.topics ?? [],
+			vibe: row.vibe ?? [],
+			vocalType: row.vocalType ?? "",
+			energyLevel: row.energyLevel ?? "",
+			language: row.language ?? "",
+			era: row.era ?? "",
+		} satisfies LlmTags,
+		llmClassifiedAt: row.classifiedAt,
+	};
+}

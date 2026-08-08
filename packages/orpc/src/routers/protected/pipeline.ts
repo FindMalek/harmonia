@@ -15,8 +15,18 @@ import { cluster } from "@harmonia/db/schema/cluster";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
 import { track, userTracks } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { eventIterator } from "@orpc/server";
-import { and, count, desc, eq, inArray, isNull, or } from "drizzle-orm";
+import {
+	and,
+	count,
+	countDistinct,
+	desc,
+	eq,
+	inArray,
+	isNull,
+	or,
+} from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure } from "../../procedures";
 
@@ -200,10 +210,15 @@ export const pipelineRouter = {
 				.select({
 					total: count(),
 					withLyrics: count(track.lyrics),
-					classified: count(track.llmClassifiedAt),
 					embedded: count(track.embeddingGeneratedAt),
 				})
 				.from(track)
+				.where(inArray(track.id, userTrackIds));
+
+			const [classifiedStats] = await db
+				.select({ classified: countDistinct(trackAnalysis.trackId) })
+				.from(trackAnalysis)
+				.innerJoin(track, eq(track.id, trackAnalysis.trackId))
 				.where(inArray(track.id, userTrackIds));
 
 			const [clusterStats] = await db
@@ -225,7 +240,7 @@ export const pipelineRouter = {
 				tracks: {
 					total: trackStats?.total ?? 0,
 					withLyrics: trackStats?.withLyrics ?? 0,
-					classified: trackStats?.classified ?? 0,
+					classified: classifiedStats?.classified ?? 0,
 					embedded: trackStats?.embedded ?? 0,
 					lyricsPending: lyricsPending[0]?.count ?? 0,
 				},
@@ -252,18 +267,21 @@ export const pipelineRouter = {
 				.from(userTracks)
 				.where(eq(userTracks.userId, userId));
 
+			// Delete first — the idempotency checks in classify/embed stages key off
+			// "a track_analysis row exists," so leaving old rows in place would make
+			// the pipeline think these tracks are already classified.
+			await db
+				.delete(trackAnalysis)
+				.where(inArray(trackAnalysis.trackId, userTrackIds));
+
 			const result = await db
 				.update(track)
 				.set({
-					llmMood: null,
-					llmTags: null,
-					llmClassifiedAt: null,
 					genreDomainId: null,
 					domainAssignedAt: null,
 					embedding: null,
 					embeddingGeneratedAt: null,
 					embeddingInput: null,
-					analysisSnapshot: null,
 				})
 				.where(inArray(track.id, userTrackIds));
 
