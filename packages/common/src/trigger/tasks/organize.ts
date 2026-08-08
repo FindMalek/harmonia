@@ -2,6 +2,7 @@ import { logger } from "@harmonia/logger";
 import { task } from "@trigger.dev/sdk";
 
 import { PipelineCancelledError, updateRun } from "../../services/organize";
+import { assessRunOutcome } from "./assess-run-outcome";
 import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
 import { artistsStageTask } from "./stages/artists";
 import { classifyStageTask } from "./stages/classify";
@@ -14,81 +15,6 @@ import { matchStageTask } from "./stages/match";
 import { syncStageTask } from "./stages/sync";
 
 type OrganizeRunStatus = "completed" | "partial" | "failed" | "cancelled";
-
-// Ratio of done/total (work pending at run start) below which a non-throwing run is still reported "partial"; total===0 never flags.
-const PIPELINE_PARTIAL_CLASSIFY_THRESHOLD = 0.5;
-const PIPELINE_PARTIAL_EMBED_THRESHOLD = 0.5;
-
-/**
- * Decide whether a run that completed every stage without throwing still
- * achieved a useful outcome. Returns `partial` with a human-readable reason
- * when a cross-stage gate trips, otherwise `completed`.
- *
- * Intentionally does NOT throw — downstream stages already no-op gracefully
- * when an upstream stage left nothing behind. We only surface the degraded
- * outcome so the run is not reported as a clean success.
- */
-function assessRunOutcome(args: {
-	classify: { classified: number; total: number } | undefined;
-	embed: { embedded: number; total: number } | undefined;
-	generate: { playlists: number; tracksOrganized: number } | undefined;
-	/** Stage coordinator tasks that resolved with `ok: false` (exhausted retries). */
-	stageFailures: readonly string[];
-}): { status: "completed" | "partial"; error: string | null } {
-	const reasons: string[] = [];
-
-	// A stage that hard-failed (returned ok:false without throwing) is always
-	// degraded, regardless of the coverage numbers — otherwise a failed stage
-	// could be surfaced as a clean success.
-	if (args.stageFailures.length > 0) {
-		reasons.push(`stage failure: ${args.stageFailures.join(", ")}`);
-	}
-
-	const classify = args.classify;
-	if (classify && classify.total > 0) {
-		const coverage = classify.classified / classify.total;
-		if (coverage < PIPELINE_PARTIAL_CLASSIFY_THRESHOLD) {
-			const pct = Math.round(coverage * 100);
-			reasons.push(
-				classify.classified === 0
-					? `classification failed (0 of ${classify.total} pending tracks tagged)`
-					: `only ${pct}% of pending tracks were classified`,
-			);
-		}
-	}
-
-	const embed = args.embed;
-	if (embed && embed.total > 0) {
-		const coverage = embed.embedded / embed.total;
-		if (coverage < PIPELINE_PARTIAL_EMBED_THRESHOLD) {
-			const pct = Math.round(coverage * 100);
-			reasons.push(
-				embed.embedded === 0
-					? `embedding failed (0 of ${embed.total} classified tracks compared)`
-					: `only ${pct}% of classified tracks were embedded`,
-			);
-		}
-	}
-
-	const generate = args.generate;
-	if (
-		generate &&
-		generate.playlists === 0 &&
-		classify !== undefined &&
-		classify.classified > 0
-	) {
-		reasons.push("no playlists were generated despite classified tracks");
-	}
-
-	if (reasons.length === 0) {
-		return { status: "completed", error: null };
-	}
-
-	return {
-		status: "partial",
-		error: `Pipeline completed with reduced coverage — ${reasons.join("; ")}. Re-running recommended.`,
-	};
-}
 
 export const organizePipeline = task({
 	id: "organize-pipeline",
@@ -184,6 +110,7 @@ export const organizePipeline = task({
 			const outcome = assessRunOutcome({
 				classify: classifyRun.ok ? classifyRun.output : undefined,
 				embed: embedRun.ok ? embedRun.output : undefined,
+				cluster: clusterRun.ok ? clusterRun.output : undefined,
 				generate: generateRun.ok ? generateRun.output : undefined,
 				stageFailures,
 			});

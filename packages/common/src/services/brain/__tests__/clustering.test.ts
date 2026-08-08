@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@harmonia/db", () => ({ db: {} }));
 
-import { mergeSmallClusters, splitLargeClusters } from "../clustering";
+import { kmeans, mergeSmallClusters, splitLargeClusters } from "../clustering";
 
 function totalIndices(clusters: number[][]): number[] {
 	return clusters.flat().sort((a, b) => a - b);
@@ -65,6 +65,52 @@ describe("mergeSmallClusters", () => {
 	it("is a no-op for a single input cluster", () => {
 		const embeddings: number[][] = [[0], [1]];
 		expect(mergeSmallClusters([[0, 1]], embeddings, 10)).toEqual([[0, 1]]);
+	});
+});
+
+describe("kmeans", () => {
+	it("separates two well-separated groups (DBSCAN-fallback use case, #282)", () => {
+		const embeddings: number[][] = [
+			[0, 0],
+			[0.1, 0],
+			[0, 0.1],
+			[10, 10],
+			[10.1, 10],
+			[10, 10.1],
+		];
+
+		const result = kmeans(embeddings, 2);
+
+		expect(totalIndices(result)).toEqual([0, 1, 2, 3, 4, 5]);
+		const groupWithZero = result.find((c) => c.includes(0));
+		expect(groupWithZero).toEqual(expect.arrayContaining([0, 1, 2]));
+		expect(groupWithZero).toHaveLength(3);
+	});
+
+	it("clamps k to the number of points when k exceeds n", () => {
+		const embeddings: number[][] = [
+			[0, 0],
+			[1, 1],
+			[2, 2],
+		];
+		const result = kmeans(embeddings, 10);
+		expect(totalIndices(result)).toEqual([0, 1, 2]);
+		expect(result.length).toBeLessThanOrEqual(3);
+	});
+
+	it("returns empty for empty input", () => {
+		expect(kmeans([], 3)).toEqual([]);
+	});
+
+	it("never drops or duplicates a point across output buckets", () => {
+		const embeddings: number[][] = Array.from({ length: 25 }, (_, i) => [
+			i % 5,
+			Math.floor(i / 5),
+		]);
+		const result = kmeans(embeddings, 3);
+		expect(totalIndices(result)).toEqual(
+			Array.from({ length: 25 }, (_, i) => i),
+		);
 	});
 });
 
