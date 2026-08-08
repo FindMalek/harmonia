@@ -52,6 +52,21 @@ function stageProducedNothing(
 	}
 }
 
+/** Coarse rounding on purpose — a raw "3m 14s" implies more precision than a best-effort estimate actually has (#283). */
+function formatEtaSeconds(seconds: number): string {
+	if (seconds < 60) return "Less than a minute remaining";
+	const minutes = Math.round(seconds / 60);
+	if (minutes < 60) {
+		return minutes === 1
+			? "About 1 minute remaining"
+			: `About ${minutes} minutes remaining`;
+	}
+	const hours = Math.round(minutes / 60);
+	return hours === 1
+		? "About 1 hour remaining"
+		: `About ${hours} hours remaining`;
+}
+
 export function DashboardAnalysisDrawer() {
 	const {
 		isAnalysisDrawerOpen,
@@ -281,6 +296,12 @@ export function DashboardAnalysisDrawer() {
 										You can close this window — we'll email you when it's done.
 									</p>
 								)}
+								{streamState.status === "running" &&
+									streamState.etaSeconds != null && (
+										<p className="text-muted-foreground text-xs">
+											{formatEtaSeconds(streamState.etaSeconds)}
+										</p>
+									)}
 
 								{(isPartial || isFailed) && streamState.error && (
 									<Alert variant={isPartial ? "warning" : "destructive"}>

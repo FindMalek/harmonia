@@ -54,6 +54,8 @@ export const pipelineStatusEventSchema = z.discriminatedUnion("event", [
 		currentStage: z.string().nullable(),
 		progress: z.record(z.string(), z.unknown()),
 		startedAt: z.date().nullable(),
+		/** Best-effort remaining-time estimate in seconds; null when there isn't enough signal to estimate honestly yet (#283). */
+		etaSeconds: z.number().nullable(),
 	}),
 	z.object({
 		event: z.literal("completed"),

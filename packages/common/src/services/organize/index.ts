@@ -6,3 +6,9 @@ export {
 	updateRun,
 	updateStageProgress,
 } from "./run-organize";
+export {
+	estimateRemainingSeconds,
+	getHistoricalStageRates,
+	recordStageTiming,
+	type StageRate,
+} from "./stage-timing";
