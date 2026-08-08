@@ -1,10 +1,9 @@
-import { apiEnv } from "@harmonia/env/presets/api";
 import { defineConfig } from "@trigger.dev/sdk";
 
 export default defineConfig({
-	// standard Trigger.dev var, not in @harmonia/env — fall back to it when HARMONIA_TRIGGER_PROJECT_REF is unset
+	// process.env, not apiEnv — apiEnv validates the entire api schema eagerly, which `trigger deploy` in CI doesn't have.
 	project:
-		apiEnv.HARMONIA_TRIGGER_PROJECT_REF ??
+		process.env.HARMONIA_TRIGGER_PROJECT_REF ??
 		process.env.TRIGGER_PROJECT_REF ??
 		"",
 	dirs: ["./src/trigger"],
