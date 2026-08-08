@@ -1,6 +1,7 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { HarmoniaBrandHeader } from "@harmonia/ui";
 import type { Route } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthSpotifySignInButton } from "@/components/app/auth-spotify-sign-in-button";
 import { getServerSession } from "@/shared/api/session.server";
@@ -10,6 +11,11 @@ export default async function LoginPage() {
 
 	if (session?.user) {
 		if (!session.user.isApproved) {
+			// proxy.ts's middleware never runs on /login, so this is the only place left that can redeem a fresh invite cookie for a returning, already-signed-in user (#281).
+			const cookieStore = await cookies();
+			if (cookieStore.has("harmonia_invite")) {
+				redirect("/api/redeem-invite" as Route);
+			}
 			redirect("/waiting" as Route);
 		}
 		if (!session.user.hasCompletedOnboarding) {

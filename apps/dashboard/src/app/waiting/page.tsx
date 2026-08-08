@@ -1,5 +1,6 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { cn, HarmoniaBrandHeader, Icons } from "@harmonia/ui";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Fragment } from "react";
 import { serverClient } from "@/shared/api/orpc-server";
@@ -72,6 +73,14 @@ export default async function WaitingPage({
 			redirect(DASHBOARD_ROUTES.overview.path);
 		}
 		redirect(DASHBOARD_ROUTES.onboarding.introduction.path);
+	}
+
+	// proxy.ts's middleware never runs on /waiting either — same #281 fallback as /login.
+	if (session?.user && !session.user.isApproved) {
+		const cookieStore = await cookies();
+		if (cookieStore.has("harmonia_invite")) {
+			redirect("/api/redeem-invite");
+		}
 	}
 
 	const { token, reason } = await searchParams;
