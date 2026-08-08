@@ -1,0 +1,1 @@
+ALTER TABLE "user_spotify_library_stats" ADD COLUMN "last_full_sync_at" timestamp;

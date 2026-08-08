@@ -79,6 +79,11 @@ export const userSpotifyLibraryStats = pgTable("user_spotify_library_stats", {
 	totalPlaylists: integer("total_playlists").notNull().default(0),
 	uniqueAlbums: integer("unique_albums").notNull().default(0),
 	uniqueArtists: integer("unique_artists").notNull().default(0),
+	// When syncLibraryTracks last did a REAL full sync (Liked Songs + owned
+	// playlists) — distinct from `updatedAt` below, which also gets bumped by
+	// refreshSpotifyLibraryStats's unrelated playlists-only 24h stats cache (#284).
+	// Null means never synced; always triggers a real sync (onboarding case).
+	lastFullSyncAt: timestamp("last_full_sync_at"),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
 		.$onUpdate(() => new Date())

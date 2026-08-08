@@ -14,8 +14,14 @@
 		"./trigger/tasks/organize": {
 			"default": "./src/trigger/tasks/organize.ts"
 		},
+		"./trigger/tasks/spotify/refresh-library-snapshots": {
+			"default": "./src/trigger/tasks/spotify/refresh-library-snapshots.ts"
+		},
 		"./trigger/tasks/stages/sync": {
 			"default": "./src/trigger/tasks/stages/sync.ts"
+		},
+		"./trigger/tasks/stages/artists": {
+			"default": "./src/trigger/tasks/stages/artists.ts"
 		},
 		"./trigger/tasks/stages/lyrics": {
 			"default": "./src/trigger/tasks/stages/lyrics.ts"
