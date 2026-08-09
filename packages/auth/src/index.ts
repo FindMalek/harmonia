@@ -1,3 +1,4 @@
+import { tryAutoApproveByEmail } from "@harmonia/common/services/waitlist";
 import { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";
 import { buildTrustedOrigins } from "@harmonia/common/utils/origin";
 import * as schema from "@harmonia/db/schema/auth";
@@ -67,6 +68,26 @@ function buildTrustedOriginsList(envConfig: AuthEnvConfig) {
 	);
 }
 
+/**
+ * Runs on every Spotify account link/re-link (first sign-in and every
+ * return visit) — covers the case where someone was approved but never
+ * clicked their invite email, only signed in directly. Safe: the email
+ * comes from Spotify's own verified OAuth profile, not user input.
+ */
+async function autoApproveIfWaitlisted(accountUserId: string): Promise<void> {
+	try {
+		await tryAutoApproveByEmail(accountUserId);
+	} catch (err) {
+		logger.warn(
+			{
+				userId: accountUserId,
+				error: err instanceof Error ? err.message : String(err),
+			},
+			"Failed to auto-approve from waitlist on Spotify sign-in",
+		);
+	}
+}
+
 const sharedUserFields = {
 	additionalFields: {
 		hasCompletedOnboarding: {
@@ -119,6 +140,20 @@ export function createDashboardAuth(
 								"Failed to send welcome email",
 							);
 						}
+					},
+				},
+			},
+			account: {
+				create: {
+					after: async (createdAccount) => {
+						if (createdAccount.providerId !== "spotify") return;
+						await autoApproveIfWaitlisted(createdAccount.userId);
+					},
+				},
+				update: {
+					after: async (updatedAccount) => {
+						if (updatedAccount.providerId !== "spotify") return;
+						await autoApproveIfWaitlisted(updatedAccount.userId);
 					},
 				},
 			},
