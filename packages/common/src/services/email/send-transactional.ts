@@ -401,18 +401,23 @@ export async function sendSpotifyReauthNotification({
 		templateKey: "spotify_reauth",
 	});
 	if (!policy.allowed) {
-		await reserveEmailDelivery({
+		const reservation = await reserveEmailDelivery({
 			userId,
 			email: userRow.email,
 			templateKey: "spotify_reauth",
 			idempotencyKey,
 			metadata: { stage, policyReason: policy.reason },
 		});
-		await markEmailDelivery({
-			idempotencyKey,
-			status: "skipped",
-			skipReason: policy.reason,
-		});
+		// A prior call for this same idempotencyKey may have already sent
+		// successfully — don't downgrade a completed "sent" record back to
+		// "skipped" and make it look retryable.
+		if (reservation.created) {
+			await markEmailDelivery({
+				idempotencyKey,
+				status: "skipped",
+				skipReason: policy.reason,
+			});
+		}
 		logger.info(
 			{ userId, templateKey: "spotify_reauth", stage, reason: policy.reason },
 			"Email delivery skipped",

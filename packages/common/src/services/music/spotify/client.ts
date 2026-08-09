@@ -16,6 +16,7 @@ import { and, eq } from "drizzle-orm";
 import { logExternalApiCall } from "../../external-api-log";
 import {
 	clearSpotifyNeedsReauth,
+	getSpotifyConnectionStatus,
 	markSpotifyNeedsReauth,
 } from "./connection-status";
 
@@ -96,6 +97,18 @@ export async function getUserSpotifyAccessToken(
 		return null;
 	}
 
+	// Already known dead (a prior refresh got invalid_grant) — don't spend a
+	// request confirming what we already know. Cleared automatically on the
+	// next successful reconnect (see connection-status.ts).
+	const { needsReauth } = await getSpotifyConnectionStatus(userId);
+	if (needsReauth) {
+		logger.info(
+			{ userId },
+			"Skipping Spotify token refresh: connection needs reauth",
+		);
+		return null;
+	}
+
 	const clientId = env.HARMONIA_SPOTIFY_CLIENT_ID;
 	const clientSecret = env.HARMONIA_SPOTIFY_CLIENT_SECRET;
 
@@ -153,7 +166,7 @@ export async function getUserSpotifyAccessToken(
 		});
 
 		if (isDeadToken) {
-			await markSpotifyNeedsReauth(userId);
+			await markSpotifyNeedsReauth(userId, spotifyAccount.refreshToken);
 		}
 
 		return null;

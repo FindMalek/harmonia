@@ -68,10 +68,20 @@ export const pollSpotifyReauthRemindersTask = schedules.task({
 			if (stage === null) continue;
 
 			try {
-				await sendSpotifyReauthEmailTask.trigger({
+				// Waits for actual delivery so the stage is only recorded as sent
+				// once it really was — a fire-and-forget .trigger() would let the
+				// stage get marked even if the send itself later fails.
+				const result = await sendSpotifyReauthEmailTask.triggerAndWait({
 					userId: candidate.userId,
 					stage,
 				});
+				if (!result.ok) {
+					logger.warn(
+						{ userId: candidate.userId, stage, error: result.error },
+						"Spotify reauth reminder email task failed",
+					);
+					continue;
+				}
 				await db
 					.insert(userSpotifyLibraryStats)
 					.values({ userId: candidate.userId, reauthReminderStage: stage })

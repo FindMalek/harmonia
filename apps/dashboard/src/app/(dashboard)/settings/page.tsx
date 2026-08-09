@@ -37,6 +37,7 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { env } from "@/lib/env";
 import { authClient } from "@/shared/api/auth-client";
+import { toastError } from "@/shared/api/error-handler";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 
 export default function SettingsPage() {
@@ -64,13 +65,21 @@ export default function SettingsPage() {
 	const handleReconnect = async () => {
 		setReconnecting(true);
 		try {
-			await authClient.signIn.social({
+			const { error } = await authClient.signIn.social({
 				provider: "spotify",
 				callbackURL: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}${DASHBOARD_ROUTES.settings.path}`,
 			});
+			// A successful call redirects the browser away — reaching here at all
+			// means it didn't, so treat a missing `error` the same as one present.
+			if (error) {
+				setReconnecting(false);
+				toastError(error.message ?? "Failed to reconnect Spotify");
+			}
 		} catch (error) {
 			setReconnecting(false);
-			console.error("Failed to reconnect Spotify", error);
+			toastError(
+				error instanceof Error ? error.message : "Failed to reconnect Spotify",
+			);
 		}
 	};
 

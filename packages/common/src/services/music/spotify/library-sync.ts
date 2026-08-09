@@ -23,6 +23,7 @@ import {
 	getSpotifyAccount,
 	getUserSpotifyAccessToken,
 } from "./client";
+import { getSpotifyConnectionStatus } from "./connection-status";
 import {
 	getCachedPlaylistItems,
 	setCachedPlaylistItems,
@@ -186,7 +187,13 @@ export async function syncLibraryTracks(
 			{ userId },
 			"Skipping syncLibraryTracks: no Spotify access token",
 		);
-		const empty = toStats(new Set(), 0, new Set(), new Set());
+		// getUserSpotifyAccessToken may have just detected a dead token on this
+		// very call — reflect that instead of always reporting false.
+		const { needsReauth } = await getSpotifyConnectionStatus(userId);
+		const empty = {
+			...toStats(new Set(), 0, new Set(), new Set()),
+			needsReauth,
+		};
 		await db
 			.insert(userSpotifyLibraryStats)
 			.values({
