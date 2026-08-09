@@ -1,4 +1,5 @@
 import {
+	boolean,
 	integer,
 	pgTable,
 	primaryKey,
@@ -84,6 +85,16 @@ export const userSpotifyLibraryStats = pgTable("user_spotify_library_stats", {
 	// refreshSpotifyLibraryStats's unrelated playlists-only 24h stats cache (#284).
 	// Null means never synced; always triggers a real sync (onboarding case).
 	lastFullSyncAt: timestamp("last_full_sync_at"),
+	// Reactive: set when a refresh attempt gets back `invalid_grant` from Spotify
+	// (#289) — the connection is dead right now, not just "will expire soon".
+	// Cleared on any successful refresh and whenever Better Auth writes a fresh
+	// Spotify `account` row (re-auth), see packages/auth/src/index.ts.
+	needsReauth: boolean("needs_reauth").notNull().default(false),
+	// Proactive: which expiry-warning email has been sent for the CURRENT token
+	// cycle, so each stage fires at most once. Reset to null on reconnect.
+	reauthReminderStage: text("reauth_reminder_stage").$type<
+		"14d" | "3d" | null
+	>(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
 		.$onUpdate(() => new Date())

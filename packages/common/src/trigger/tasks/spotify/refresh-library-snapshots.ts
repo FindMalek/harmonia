@@ -39,6 +39,12 @@ export const refreshLibrarySnapshotsTask = schedules.task({
 						isNull(userSpotifyLibraryStats.lastFullSyncAt),
 						lt(userSpotifyLibraryStats.lastFullSyncAt, threeDaysAgo),
 					),
+					// Skip users with a known-dead connection (#289) — the sync would
+					// just fail, and the reactive path already flags them for reauth.
+					or(
+						isNull(userSpotifyLibraryStats.needsReauth),
+						eq(userSpotifyLibraryStats.needsReauth, false),
+					),
 				),
 			);
 

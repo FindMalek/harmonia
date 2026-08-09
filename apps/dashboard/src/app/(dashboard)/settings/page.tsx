@@ -2,6 +2,9 @@
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import {
+	Alert,
+	AlertAction,
+	AlertDescription,
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -11,8 +14,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
+	AlertTitle,
 	Badge,
 	Button,
+	Icons,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -30,6 +35,8 @@ import {
 	DashboardSettingsSkeleton,
 } from "@/components/app/dashboard-settings-section";
 import { PageHeader } from "@/components/shared/page-header";
+import { env } from "@/lib/env";
+import { authClient } from "@/shared/api/auth-client";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 
 export default function SettingsPage() {
@@ -45,12 +52,27 @@ export default function SettingsPage() {
 		spotifyLoading,
 		lastSync,
 		statsLoading,
+		needsReauth,
 		theme,
 		resolvedTheme,
 		setTheme,
 		signOut,
 		deleteAccount,
 	} = useSettingsController();
+
+	const [reconnecting, setReconnecting] = useState(false);
+	const handleReconnect = async () => {
+		setReconnecting(true);
+		try {
+			await authClient.signIn.social({
+				provider: "spotify",
+				callbackURL: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}${DASHBOARD_ROUTES.settings.path}`,
+			});
+		} catch (error) {
+			setReconnecting(false);
+			console.error("Failed to reconnect Spotify", error);
+		}
+	};
 
 	if (!mounted) {
 		return <DashboardSettingsSkeleton />;
@@ -70,6 +92,27 @@ export default function SettingsPage() {
 				title="Settings"
 				description="Manage your account and app preferences."
 			/>
+
+			{needsReauth && (
+				<Alert variant="warning">
+					<Icons.alertTriangle />
+					<AlertTitle>Your Spotify connection expired</AlertTitle>
+					<AlertDescription>
+						Reconnect to keep syncing your library and generating playlists.
+					</AlertDescription>
+					<AlertAction>
+						<Button
+							size="sm"
+							variant="outline"
+							isLoading={reconnecting}
+							disabled={reconnecting}
+							onClick={() => void handleReconnect()}
+						>
+							Reconnect
+						</Button>
+					</AlertAction>
+				</Alert>
+			)}
 
 			<DashboardSettingsSection label="CONNECTED SERVICES">
 				<DashboardSettingsRow

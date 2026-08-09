@@ -9,8 +9,17 @@ export {
 	getUserSpotifyAccessToken,
 } from "./spotify/client";
 export {
+	clearSpotifyNeedsReauth,
+	getSpotifyConnectionStatus,
+	markSpotifyNeedsReauth,
+} from "./spotify/connection-status";
+export {
 	exportAllPlaylists,
 	exportPlaylistToSpotify,
 } from "./spotify/export";
 export { getSpotifyLibraryStats } from "./spotify/library-stats";
 export { syncLibraryTracks } from "./spotify/library-sync";
+export {
+	determineReauthReminderStage,
+	type ReauthReminderStage,
+} from "./spotify/reauth-reminder";

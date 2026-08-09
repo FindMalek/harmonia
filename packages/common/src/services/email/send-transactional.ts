@@ -7,6 +7,7 @@ import {
 	sendFeedback3DayEmail,
 	sendOrganizeCompleteEmail,
 	sendOrganizeWeeklyDigestEmail,
+	sendSpotifyReauthEmail,
 	sendWelcomeEmail,
 } from "@harmonia/email/send";
 import { env } from "@harmonia/env/server";
@@ -371,6 +372,98 @@ export async function sendWelcomeNotification({ userId }: { userId: string }) {
 		{
 			userId,
 			templateKey: "welcome",
+			providerMessageId: result.emailId,
+		},
+		"Email delivery sent",
+	);
+	return { ok: true, reason: "sent" as const };
+}
+
+export async function sendSpotifyReauthNotification({
+	userId,
+	stage,
+}: {
+	userId: string;
+	stage: "14d" | "3d";
+}) {
+	const config = buildSendConfig();
+	if (!config) return { ok: false, reason: "provider_not_configured" as const };
+
+	const userRow = await getUserForEmail(userId);
+	if (!userRow?.email) return { ok: false, reason: "missing_email" as const };
+
+	// Keyed per stage so 14d and 3d each send at most once per token cycle,
+	// independent of each other.
+	const idempotencyKey = `spotify-reauth/${stage}/${userId}`;
+	const policy = await evaluateEmailPolicy({
+		userId,
+		email: userRow.email,
+		templateKey: "spotify_reauth",
+	});
+	if (!policy.allowed) {
+		await reserveEmailDelivery({
+			userId,
+			email: userRow.email,
+			templateKey: "spotify_reauth",
+			idempotencyKey,
+			metadata: { stage, policyReason: policy.reason },
+		});
+		await markEmailDelivery({
+			idempotencyKey,
+			status: "skipped",
+			skipReason: policy.reason,
+		});
+		logger.info(
+			{ userId, templateKey: "spotify_reauth", stage, reason: policy.reason },
+			"Email delivery skipped",
+		);
+		return { ok: false, reason: policy.reason };
+	}
+
+	const reservation = await reserveEmailDelivery({
+		userId,
+		email: userRow.email,
+		templateKey: "spotify_reauth",
+		idempotencyKey,
+		metadata: { stage },
+	});
+	if (!reservation.created)
+		return { ok: true, reason: "already_sent" as const };
+
+	const result = await sendSpotifyReauthEmail({
+		config,
+		to: userRow.email,
+		idempotencyKey,
+		props: {
+			dashboardUrl: getDashboardUrl(),
+			recipientName: userRow.name,
+			stage,
+		},
+	});
+
+	if (!result.ok) {
+		await markEmailDelivery({
+			idempotencyKey,
+			status: "failed",
+			error: result.error,
+		});
+		logger.warn(
+			{ userId, templateKey: "spotify_reauth", stage, error: result.error },
+			"Email delivery failed",
+		);
+		return { ok: false, reason: "send_failed" as const, error: result.error };
+	}
+
+	await markEmailDelivery({
+		idempotencyKey,
+		status: "sent",
+		providerMessageId: result.emailId,
+	});
+	logger.info(
+		{
+			userId,
+			templateKey: "spotify_reauth",
+			stage,
 			providerMessageId: result.emailId,
 		},
 		"Email delivery sent",

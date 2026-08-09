@@ -9,6 +9,7 @@ export const emailTemplateKeyEnum = z.enum([
 	"invoice",
 	"waitlist_confirmation",
 	"waitlist_approved",
+	"spotify_reauth",
 ]);
 export type EmailTemplateKey = z.infer<typeof emailTemplateKeyEnum>;
 

@@ -171,6 +171,7 @@ export function toStats(
 		totalPlaylists,
 		uniqueAlbums: albumKeys.size,
 		uniqueArtists: artistKeys.size,
+		needsReauth: false,
 	};
 }
 
@@ -234,6 +235,7 @@ export async function syncLibraryTracks(
 			totalPlaylists: existingStats.totalPlaylists,
 			uniqueAlbums: existingStats.uniqueAlbums,
 			uniqueArtists: existingStats.uniqueArtists,
+			needsReauth: existingStats.needsReauth,
 		};
 		const result: SyncProgress & { stats?: SpotifyLibraryStats } = {
 			total: existingStats.totalTracks,

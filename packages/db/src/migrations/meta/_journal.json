@@ -218,6 +218,13 @@
 			"when": 1786210324894,
 			"tag": "0030_mute_rhino",
 			"breakpoints": true
+		},
+		{
+			"idx": 31,
+			"version": "7",
+			"when": 1786283819528,
+			"tag": "0031_green_hannibal_king",
+			"breakpoints": true
 		}
 	]
 }
