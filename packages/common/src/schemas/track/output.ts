@@ -76,19 +76,6 @@ export const trackGetByIdOutputSchema = z.object({
 	llmClassifiedAt: z.date().nullable(),
 	embeddingGeneratedAt: z.date().nullable(),
 	domainAssignedAt: z.date().nullable(),
-	analysisSnapshot: z
-		.object({
-			llm: z.record(z.string(), z.unknown()),
-			domain: z.string().nullable(),
-			embeddingDims: z.number().optional(),
-			modelVersions: z
-				.object({
-					llm: z.string().optional(),
-					embedding: z.string().optional(),
-				})
-				.optional(),
-		})
-		.nullable(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 	clusterId: z.number().nullable(),

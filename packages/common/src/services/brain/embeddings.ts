@@ -1,11 +1,11 @@
 import type { EmbedProgress } from "@harmonia/common/types";
 import { llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
-import { track, userTracks } from "@harmonia/db/schema/track";
+import { track } from "@harmonia/db/schema/track";
 import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, inArray, isNull, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
@@ -176,113 +176,6 @@ async function fetchAnalysisByTrackId(
 }
 
 type EmbedDeltaCallback = (deltaEmbedded: number) => Promise<void>;
-
-export async function embedTracksBatch(
-	userId: string,
-	onProgress?: (progress: EmbedProgress) => Promise<void>,
-	pipelineRunId?: number,
-): Promise<EmbedProgress> {
-	const stats: EmbedProgress = { embedded: 0, total: 0, pending: 0 };
-
-	if (!env.HARMONIA_OPENAI_API_KEY) {
-		logger.warn(
-			{ type: "embeddings" },
-			"No HARMONIA_OPENAI_API_KEY configured; skipping embedding generation",
-		);
-		return stats;
-	}
-
-	const userTrackIds = db
-		.select({ trackId: userTracks.trackId })
-		.from(userTracks)
-		.where(eq(userTracks.userId, userId));
-
-	const analyzedTrackIds = db
-		.select({ trackId: trackAnalysis.trackId })
-		.from(trackAnalysis);
-
-	const allPending = await db
-		.select({ id: track.id })
-		.from(track)
-		.where(
-			and(
-				inArray(track.id, userTrackIds),
-				isNull(track.embedding),
-				inArray(track.id, analyzedTrackIds),
-			),
-		);
-
-	const total = allPending.length;
-
-	if (total === 0) {
-		logger.info({ userId }, "No tracks pending embedding");
-		return { embedded: 0, total: 0, pending: 0 };
-	}
-
-	const batches = chunk(
-		allPending.map((t) => t.id),
-		EMBEDDING_BATCH_SIZE,
-	);
-	let embedded = 0;
-	const limit = pLimit(EMBEDDING_CONCURRENCY);
-
-	await Promise.all(
-		batches.map((batchIds) =>
-			limit(async () => {
-				const pendingTracks = await db
-					.select({ id: track.id })
-					.from(track)
-					.where(and(inArray(track.id, batchIds), isNull(track.embedding)));
-
-				if (pendingTracks.length === 0) return;
-
-				logger.info(
-					{ userId, batchSize: pendingTracks.length, embedded },
-					"Starting embedding batch",
-				);
-
-				const analysisByTrackId = await fetchAnalysisByTrackId(
-					pendingTracks.map((t) => t.id),
-				);
-				const inputs = toEmbeddingInputs(pendingTracks, analysisByTrackId);
-				if (inputs.length === 0) return;
-
-				const json = await fetchEmbeddingsBatch(
-					inputs.map((i) => i.text),
-					{ userId, pipelineRunId },
-				);
-
-				if (!json.data || json.data.length !== inputs.length) {
-					logger.error(
-						{ expected: inputs.length, actual: json.data?.length },
-						"Embedding response length mismatch",
-					);
-					return;
-				}
-
-				const now = new Date();
-
-				await Promise.all(
-					inputs.map(async (input, index) => {
-						const embedding = json.data[index]?.embedding;
-						if (!input || !embedding) return;
-						await persistEmbedding(input.id, input.text, embedding, now);
-					}),
-				);
-
-				embedded += inputs.length;
-				await onProgress?.({ embedded, total, pending: total - embedded });
-			}),
-		),
-	);
-
-	logger.info(
-		{ userId, embedded },
-		"Completed embedding generation for all pending tracks",
-	);
-
-	return { embedded, total, pending: 0 };
-}
 
 // Fan-out worker entry point; re-checks embedding IS NULL and a track_analysis row exists at DB level for idempotency.
 export async function embedTrackIds(
