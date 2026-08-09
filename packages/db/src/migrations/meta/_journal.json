@@ -218,6 +218,13 @@
 			"when": 1786210324894,
 			"tag": "0030_mute_rhino",
 			"breakpoints": true
+		},
+		{
+			"idx": 31,
+			"version": "7",
+			"when": 1786286732089,
+			"tag": "0031_small_scrambler",
+			"breakpoints": true
 		}
 	]
 }

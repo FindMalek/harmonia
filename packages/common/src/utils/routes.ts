@@ -112,6 +112,11 @@ export const DASHBOARD_ROUTES = {
 			},
 		},
 	},
+	feedback: {
+		path: "/feedback",
+		label: "Feedback",
+		isNav: false,
+	},
 	onboarding: {
 		index: {
 			path: "/welcome",

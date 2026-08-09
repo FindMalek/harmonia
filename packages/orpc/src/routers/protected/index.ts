@@ -8,6 +8,7 @@ import { z } from "zod";
 import { approvedProcedure, protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
 import { emailPreferencesRouter } from "./email-preferences";
+import { feedbackRouter } from "./feedback";
 import { insightsRouter } from "./insights";
 import { pipelineRouter } from "./pipeline";
 import { playlistsRouter } from "./playlists";
@@ -118,6 +119,7 @@ export const protectedRouter = {
 	spotify: spotifyRouter,
 	emailPreferences: emailPreferencesRouter,
 	insights: insightsRouter,
+	feedback: feedbackRouter,
 };
 
 export type ProtectedRouter = typeof protectedRouter;

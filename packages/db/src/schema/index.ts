@@ -4,6 +4,7 @@ export * from "./cluster";
 export * from "./email-send-log";
 export * from "./email-suppression";
 export * from "./external-api-call";
+export * from "./feedback";
 export * from "./genre-domain";
 export * from "./pipeline-run";
 export * from "./playlist";

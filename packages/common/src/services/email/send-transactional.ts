@@ -432,13 +432,18 @@ export async function sendFeedback3DayNotification({
 	if (!reservation.created)
 		return { ok: true, reason: "already_sent" as const };
 
+	const feedbackParams = new URLSearchParams({
+		source: "email_feedback_3day",
+		campaignKey,
+	});
 	const result = await sendFeedback3DayEmail({
 		config,
 		to: userRow.email,
 		idempotencyKey,
 		props: {
 			recipientName: userRow.name,
-			feedbackUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.settings.children.notifications.path}`,
+			feedbackUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.feedback.path}?${feedbackParams.toString()}`,
+			settingsUrl: `${getDashboardUrl()}${DASHBOARD_ROUTES.settings.children.notifications.path}`,
 			dashboardUrl: getDashboardUrl(),
 		},
 	});
