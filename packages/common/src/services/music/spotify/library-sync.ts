@@ -11,14 +11,9 @@ import {
 } from "@harmonia/db/schema/spotify";
 import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
+import { eq } from "drizzle-orm";
 import pLimit from "p-limit";
 
-import {
-	LIKED_PHASE_PERCENT_CAP_BEFORE_MILESTONE,
-	PLAYLIST_FETCH_CONCURRENCY,
-	PLAYLIST_FETCH_DELAY_MS,
-	TRACK_UPSERT_BATCH_SIZE,
-} from "../../../constants/spotify";
 import { selectCanonicalTracks } from "../../../utils/normalize-track-title";
 import { parseJsonStringArray } from "../../../utils/parse-json-string-array";
 import {
@@ -32,6 +27,15 @@ import {
 	getCachedPlaylistItems,
 	setCachedPlaylistItems,
 } from "./playlist-cache";
+
+const PLAYLIST_FETCH_CONCURRENCY = 3;
+const PLAYLIST_FETCH_DELAY_MS = 150;
+const TRACK_UPSERT_BATCH_SIZE = 100;
+const LIKED_PHASE_PERCENT_CAP_BEFORE_MILESTONE = 24;
+// Matches the periodic snapshot-refresh cron's cadence (#284) — a manual or
+// weekly run within this window trusts the existing synced data instead of
+// re-fetching Liked Songs (the slowest, uncached part of sync) from Spotify.
+const SYNC_FRESHNESS_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 function likedPhaseSubPercent(args: {
 	cumulativeRows: number;
@@ -202,6 +206,47 @@ export async function syncLibraryTracks(
 				},
 			});
 		return { total: 0, done: true, stats: empty };
+	}
+
+	const [existingStats] = await db
+		.select()
+		.from(userSpotifyLibraryStats)
+		.where(eq(userSpotifyLibraryStats.userId, userId))
+		.limit(1);
+
+	const isFresh =
+		existingStats?.lastFullSyncAt != null &&
+		Date.now() - existingStats.lastFullSyncAt.getTime() <
+			SYNC_FRESHNESS_WINDOW_MS;
+
+	if (isFresh && existingStats) {
+		// Trust the already-synced track/userTracks rows from the last real sync
+		// instead of re-paging the entire Liked Songs list from Spotify (#284) —
+		// the periodic snapshot-refresh cron keeps this window from going stale
+		// for long. onboarding's first-ever call always has lastFullSyncAt=null,
+		// so it naturally falls through to the real sync path below instead.
+		logger.info(
+			{ userId, lastFullSyncAt: existingStats.lastFullSyncAt },
+			"syncLibraryTracks: snapshot still fresh, skipping Spotify re-fetch",
+		);
+		const stats: SpotifyLibraryStats = {
+			totalTracks: existingStats.totalTracks,
+			totalPlaylists: existingStats.totalPlaylists,
+			uniqueAlbums: existingStats.uniqueAlbums,
+			uniqueArtists: existingStats.uniqueArtists,
+		};
+		const result: SyncProgress & { stats?: SpotifyLibraryStats } = {
+			total: existingStats.totalTracks,
+			done: true,
+			stats,
+			phase: "preparing",
+			phasesCompleted: 3,
+			percent: 100,
+		};
+		if (onProgress) {
+			await onProgress(result);
+		}
+		return result;
 	}
 
 	logger.info({ userId }, "Starting syncLibraryTracks from Spotify");
@@ -380,6 +425,7 @@ export async function syncLibraryTracks(
 	const stats = toStats(trackIds, totalPlaylists, albumNames, artistNames);
 
 	// 6. Upsert library stats
+	const syncCompletedAt = new Date();
 	await db
 		.insert(userSpotifyLibraryStats)
 		.values({
@@ -388,6 +434,7 @@ export async function syncLibraryTracks(
 			totalPlaylists: stats.totalPlaylists,
 			uniqueAlbums: stats.uniqueAlbums,
 			uniqueArtists: stats.uniqueArtists,
+			lastFullSyncAt: syncCompletedAt,
 		})
 		.onConflictDoUpdate({
 			target: userSpotifyLibraryStats.userId,
@@ -396,6 +443,7 @@ export async function syncLibraryTracks(
 				totalPlaylists: stats.totalPlaylists,
 				uniqueAlbums: stats.uniqueAlbums,
 				uniqueArtists: stats.uniqueArtists,
+				lastFullSyncAt: syncCompletedAt,
 				updatedAt: new Date(),
 			},
 		});

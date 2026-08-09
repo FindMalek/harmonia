@@ -3,10 +3,6 @@ import { track, userTracks } from "@harmonia/db/schema/track";
 import { logger } from "@harmonia/logger";
 import { queue, task } from "@trigger.dev/sdk";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
-import {
-	LYRICS_FANOUT_CHUNK_SIZE,
-	LYRICS_WORKER_QUEUE_CONCURRENCY,
-} from "../../../constants";
 import { fetchLyricsForTrackIds } from "../../../services/music";
 import {
 	checkCancelled,
@@ -15,6 +11,10 @@ import {
 	updateStageProgress,
 } from "../../../services/organize";
 import { chunk, workerIdempotencyKey } from "../../utils/chunk";
+
+// 500 tracks/worker, pLimit(3), 2 concurrent workers → 6 peak LRCLib requests.
+const LYRICS_FANOUT_CHUNK_SIZE = 500;
+const LYRICS_WORKER_QUEUE_CONCURRENCY = 2;
 
 const lyricsWorkerQueue = queue({
 	name: "organize-lyrics-worker",

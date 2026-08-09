@@ -10,8 +10,13 @@ config({ path: path.resolve(root, ".env") });
 const env = { ...process.env };
 // The Trigger.dev CLI reads TRIGGER_* vars; the repo standardises on the
 // HARMONIA_TRIGGER_* namespace, so map them across (mirrors run-trigger-dev.mjs).
-if (!env.TRIGGER_SECRET_KEY && env.HARMONIA_TRIGGER_SECRET_KEY) {
-	env.TRIGGER_SECRET_KEY = env.HARMONIA_TRIGGER_SECRET_KEY;
+//
+// `deploy` specifically authenticates via a Personal Access Token
+// (TRIGGER_ACCESS_TOKEN) — NOT the environment API key (TRIGGER_SECRET_KEY)
+// that `dev`/the SDK's configure() use at runtime. These are two different
+// credentials; see https://trigger.dev/docs/github-actions.
+if (!env.TRIGGER_ACCESS_TOKEN && env.HARMONIA_TRIGGER_ACCESS_TOKEN) {
+	env.TRIGGER_ACCESS_TOKEN = env.HARMONIA_TRIGGER_ACCESS_TOKEN;
 }
 if (!env.TRIGGER_PROJECT_REF && env.HARMONIA_TRIGGER_PROJECT_REF) {
 	env.TRIGGER_PROJECT_REF = env.HARMONIA_TRIGGER_PROJECT_REF;
@@ -25,9 +30,9 @@ if (!projectRef) {
 	process.exit(1);
 }
 
-if (!env.TRIGGER_SECRET_KEY) {
+if (!env.TRIGGER_ACCESS_TOKEN) {
 	console.error(
-		"Missing Trigger secret key: set TRIGGER_SECRET_KEY (or HARMONIA_TRIGGER_SECRET_KEY) to deploy.",
+		"Missing Trigger access token: set TRIGGER_ACCESS_TOKEN (or HARMONIA_TRIGGER_ACCESS_TOKEN) — a Personal Access Token from your Trigger.dev profile, not the environment secret key — to deploy.",
 	);
 	process.exit(1);
 }

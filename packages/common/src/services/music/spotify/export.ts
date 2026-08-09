@@ -6,14 +6,15 @@ import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 import pRetry, { AbortError } from "p-retry";
 
-import { SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST } from "../../../constants/spotify";
 import {
 	getUserSpotifyAccessToken,
 	SpotifyApiError,
 	spotifyRequest,
 } from "./client";
 
-/** Wraps spotifyRequest with retry, but a 404 (deleted playlist) is never transient — abort immediately instead of burning retries on it. */
+const SPOTIFY_EXPORT_MAX_TRACKS_PER_REQUEST = 100;
+
+// A 404 (deleted playlist) is never transient — abort immediately instead of burning retries on it.
 function retryableSpotifyRequest<T>(fn: () => Promise<T>): Promise<T> {
 	return pRetry(
 		async () => {

@@ -1,7 +1,4 @@
-/**
- * Canonical domain types for Harmonia.
- * Use these for type safety; Zod schemas in schemas/ handle validation.
- */
+// Canonical domain types; Zod schemas in schemas/ handle validation.
 
 export type {
 	AudioFeaturesProgress,
@@ -14,5 +11,5 @@ export type {
 	SyncPhase,
 	SyncProgress,
 } from "./pipeline";
-export type { AnalysisSnapshot, LlmTags } from "./track";
-export { getLlmTags } from "./track";
+export type { AnalysisSnapshot, LlmTags, TrackAnalysisRow } from "./track";
+export { getLlmTags, llmFieldsFromAnalysis } from "./track";

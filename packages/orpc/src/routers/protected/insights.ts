@@ -6,7 +6,16 @@ import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
 import { userSpotifyLibraryStats } from "@harmonia/db/schema/spotify";
 import { track, userTracks } from "@harmonia/db/schema/track";
-import { and, count, desc, eq, inArray, isNotNull } from "drizzle-orm";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
+import {
+	and,
+	count,
+	countDistinct,
+	desc,
+	eq,
+	inArray,
+	isNotNull,
+} from "drizzle-orm";
 import { approvedProcedure } from "../../procedures";
 
 function normalizeEra(era: string): string | null {
@@ -67,6 +76,7 @@ export const insightsRouter = {
 				coveredTrackRows,
 				classifiedTrackRows,
 				trackCountRows,
+				classifiedCountRows,
 				distinctGenreDomainRows,
 			] = await Promise.all([
 				db
@@ -133,25 +143,30 @@ export const insightsRouter = {
 				// (API removed Nov 2024) and will always be null
 				db
 					.select({
-						llmMood: track.llmMood,
-						llmTags: track.llmTags,
+						mood: trackAnalysis.mood,
+						secondaryMoods: trackAnalysis.secondaryMoods,
+						themes: trackAnalysis.themes,
+						vibe: trackAnalysis.vibe,
+						era: trackAnalysis.era,
+						energyLevel: trackAnalysis.energyLevel,
 					})
-					.from(track)
-					.where(
-						and(
-							inArray(track.id, userTrackIds),
-							isNotNull(track.llmClassifiedAt),
-						),
-					),
+					.from(trackAnalysis)
+					.innerJoin(track, eq(track.id, trackAnalysis.trackId))
+					.where(inArray(track.id, userTrackIds)),
 
 				db
 					.select({
 						total: count(),
 						withLyrics: count(track.lyrics),
-						classified: count(track.llmClassifiedAt),
 						embedded: count(track.embeddingGeneratedAt),
 					})
 					.from(track)
+					.where(inArray(track.id, userTrackIds)),
+
+				db
+					.select({ classified: countDistinct(trackAnalysis.trackId) })
+					.from(trackAnalysis)
+					.innerJoin(track, eq(track.id, trackAnalysis.trackId))
 					.where(inArray(track.id, userTrackIds)),
 
 				db
@@ -167,6 +182,7 @@ export const insightsRouter = {
 
 			const spotifyStats = spotifyStatsRows[0];
 			const trackCounts = trackCountRows[0];
+			const classifiedCount = classifiedCountRows[0]?.classified ?? 0;
 			const hasClassifyRun = classifiedTrackRows.length > 0;
 			const isPipelineStable = runningPipelineRows.length === 0;
 
@@ -179,28 +195,25 @@ export const insightsRouter = {
 			const energyValues: number[] = [];
 
 			for (const t of classifiedTrackRows) {
-				if (t.llmMood?.trim()) {
-					const m = t.llmMood.trim();
+				if (t.mood?.trim()) {
+					const m = t.mood.trim();
 					moodMap.set(m, (moodMap.get(m) ?? 0) + 1);
 				}
-				const tags = t.llmTags;
-				if (tags) {
-					for (const sm of tags.secondaryMoods ?? []) {
-						if (sm.trim())
-							secondaryMoodMap.set(sm, (secondaryMoodMap.get(sm) ?? 0) + 1);
-					}
-					const normalizedEra = tags.era ? normalizeEra(tags.era) : null;
-					if (normalizedEra)
-						eraMap.set(normalizedEra, (eraMap.get(normalizedEra) ?? 0) + 1);
-					for (const th of tags.themes ?? []) {
-						if (th.trim()) themeMap.set(th, (themeMap.get(th) ?? 0) + 1);
-					}
-					for (const v of tags.vibe ?? []) {
-						if (v.trim()) vibeMap.set(v, (vibeMap.get(v) ?? 0) + 1);
-					}
-					const e = energyFromLevel(tags.energyLevel);
-					if (e !== null) energyValues.push(e);
+				for (const sm of t.secondaryMoods ?? []) {
+					if (sm.trim())
+						secondaryMoodMap.set(sm, (secondaryMoodMap.get(sm) ?? 0) + 1);
 				}
+				const normalizedEra = t.era ? normalizeEra(t.era) : null;
+				if (normalizedEra)
+					eraMap.set(normalizedEra, (eraMap.get(normalizedEra) ?? 0) + 1);
+				for (const th of t.themes ?? []) {
+					if (th.trim()) themeMap.set(th, (themeMap.get(th) ?? 0) + 1);
+				}
+				for (const v of t.vibe ?? []) {
+					if (v.trim()) vibeMap.set(v, (vibeMap.get(v) ?? 0) + 1);
+				}
+				const e = energyFromLevel(t.energyLevel);
+				if (e !== null) energyValues.push(e);
 			}
 
 			const totalClassified = classifiedTrackRows.length;
@@ -319,7 +332,7 @@ export const insightsRouter = {
 				processingStatus: {
 					total: trackCounts?.total ?? 0,
 					withLyrics: trackCounts?.withLyrics ?? 0,
-					classified: trackCounts?.classified ?? 0,
+					classified: classifiedCount,
 					embedded: trackCounts?.embedded ?? 0,
 				},
 				isSystemConnected: true,

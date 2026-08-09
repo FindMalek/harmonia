@@ -5,13 +5,12 @@ import { logger } from "@harmonia/logger";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
 
-import {
-	AUDIO_FEATURES_BATCH_SIZE,
-	AUDIO_FEATURES_CONCURRENCY,
-} from "../../../constants/audio-features";
 import { chunk } from "../../../trigger/utils/chunk";
 import { parseJsonStringArray } from "../../../utils/parse-json-string-array";
 import { getAudioFeaturesFromGetSongBPM } from "./getsongbpm-client";
+
+const AUDIO_FEATURES_BATCH_SIZE = 200;
+const AUDIO_FEATURES_CONCURRENCY = 3;
 
 type AudioFeaturesDeltaCallback = (delta: {
 	processed: number;

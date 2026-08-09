@@ -1,0 +1,45 @@
+# Trigger.dev deploy workflow
+# Pushes task code to Trigger.dev's own infrastructure when trigger-related
+# files change on main — separate from the Vercel deploy of the Next.js apps.
+#
+# Required secrets:
+#   TRIGGER_ACCESS_TOKEN        - Personal Access Token (Trigger.dev profile -> Personal Access Tokens).
+#                                  NOT the project API key (HARMONIA_TRIGGER_SECRET_KEY) — deploy needs
+#                                  account-level auth, not an environment-scoped runtime key.
+#   HARMONIA_TRIGGER_PROJECT_REF - Trigger.dev prod project ref (Project -> Settings).
+#   Add both in: GitHub repo → Settings → Secrets and variables → Actions.
+
+name: Trigger.dev Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/common/src/trigger/**"
+      - "apps/api/trigger.config.ts"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy Trigger.dev tasks
+        env:
+          TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+          HARMONIA_TRIGGER_PROJECT_REF: ${{ secrets.HARMONIA_TRIGGER_PROJECT_REF }}
+        run: pnpm deploy:trigger

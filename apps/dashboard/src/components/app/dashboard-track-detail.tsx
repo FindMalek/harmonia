@@ -72,8 +72,9 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 	const hasTags = themes.length > 0 || topics.length > 0 || vibe.length > 0;
 	const hasLyrics = Boolean(track.lyrics || track.syncedLyrics);
 
-	// Tempo/key/mode aren't currently populated by the sync pipeline (#241) —
-	// only show stat cards that have a real value instead of a permanent "—".
+	// Tempo/key/mode come from the GetSongBPM audio-features stage (#251) and
+	// aren't found for every track — only show stat cards with a real value
+	// instead of a permanent "—".
 	const statCards = [
 		{
 			key: "duration",
@@ -125,9 +126,23 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 						<p className="inline-flex flex-wrap items-center gap-1 text-muted-foreground">
 							{artists.map((name, index) => {
 								const artistId = track.artistIds?.[index];
+								const imageUrl = track.artistImageUrls?.[index];
 								return (
-									<span key={`${name}-${index}`}>
+									<span
+										key={`${name}-${index}`}
+										className="inline-flex items-center gap-1"
+									>
 										{index > 0 ? ", " : ""}
+										{imageUrl ? (
+											<Image
+												src={imageUrl}
+												alt=""
+												width={16}
+												height={16}
+												className="size-4 shrink-0 rounded-full"
+												unoptimized
+											/>
+										) : null}
 										{artistId ? (
 											<a
 												href={`https://open.spotify.com/artist/${artistId}`}
@@ -197,6 +212,23 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 					/>
 				))}
 			</div>
+
+			{track.tempo != null ||
+			track.key != null ||
+			track.danceability != null ||
+			track.acousticness != null ? (
+				<p className="text-muted-foreground text-xs">
+					Tempo, key, danceability, and acousticness data via{" "}
+					<a
+						href="https://getsongbpm.com"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="hover:text-primary hover:underline"
+					>
+						GetSongBPM
+					</a>
+				</p>
+			) : null}
 
 			<DashboardInsightsSonicDna
 				dna={{

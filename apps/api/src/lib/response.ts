@@ -1,7 +1,4 @@
-/**
- * Apply CORS headers to a Response.
- * Creates a new Response with merged headers (Response headers are immutable).
- */
+// Builds a new Response instead of mutating — Response headers are immutable.
 export function applyCors(
 	response: Response,
 	corsHeaders: Record<string, string>,
@@ -17,9 +14,6 @@ export function applyCors(
 	});
 }
 
-/**
- * Create a JSON response with CORS headers.
- */
 export function jsonResponse(
 	body: unknown,
 	status: number,

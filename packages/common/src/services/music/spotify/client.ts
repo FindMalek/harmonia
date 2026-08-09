@@ -1,4 +1,5 @@
 import type {
+	SpotifyArtistsResponse,
 	SpotifyPlaylistSimplified,
 	SpotifyPlaylistsResponse,
 	SpotifyPlaylistTrackItem,
@@ -12,14 +13,14 @@ import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
-import {
-	SPOTIFY_API_BASE,
-	SPOTIFY_PLAYLIST_ITEMS_FIELDS,
-	SPOTIFY_PLAYLIST_ITEMS_LIMIT,
-	SPOTIFY_RATE_LIMIT_MAX_RETRIES,
-	SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC,
-} from "../../../constants/spotify";
 import { logExternalApiCall } from "../../external-api-log";
+
+const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+const SPOTIFY_RATE_LIMIT_MAX_RETRIES = 3;
+const SPOTIFY_RATE_LIMIT_MAX_WAIT_SEC = 60;
+const SPOTIFY_PLAYLIST_ITEMS_LIMIT = 50;
+const SPOTIFY_PLAYLIST_ITEMS_FIELDS =
+	"items(track(id,name,uri,album(id,name,release_date),artists(id,name),duration_ms,explicit,popularity))";
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -463,4 +464,34 @@ export async function fetchAllPlaylistTracks(
 	context?: SpotifyCallContext,
 ): Promise<SpotifyPlaylistTrackItem[]> {
 	return fetchPlaylistItems(accessToken, playlistId, { context });
+}
+
+const ARTISTS_BATCH_SIZE = 50; // GET /artists max ids per request
+
+export async function fetchArtistsByIds(
+	accessToken: string,
+	artistIds: string[],
+	context: SpotifyCallContext = {},
+): Promise<Array<{ id: string; name: string; imageUrl: string | null }>> {
+	const results: Array<{ id: string; name: string; imageUrl: string | null }> =
+		[];
+
+	for (let i = 0; i < artistIds.length; i += ARTISTS_BATCH_SIZE) {
+		const batch = artistIds.slice(i, i + ARTISTS_BATCH_SIZE);
+		const page = await spotifyGet<SpotifyArtistsResponse>(
+			`/artists?ids=${batch.join(",")}`,
+			accessToken,
+			context,
+		);
+		for (const a of page.artists) {
+			if (!a) continue;
+			results.push({
+				id: a.id,
+				name: a.name,
+				imageUrl: a.images?.[0]?.url ?? null,
+			});
+		}
+	}
+
+	return results;
 }

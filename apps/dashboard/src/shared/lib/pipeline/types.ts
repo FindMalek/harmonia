@@ -13,6 +13,8 @@ export type PipelineProgressStage = {
 	classified?: number;
 	embedded?: number;
 	clusters?: number;
+	/** Cluster stage only — the pool of embedded tracks DBSCAN ran against, distinct from `total`. */
+	totalTracks?: number;
 	playlists?: number;
 	tracksOrganized?: number;
 };

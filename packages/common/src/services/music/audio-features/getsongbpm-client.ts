@@ -30,6 +30,29 @@ type GetSongBPMSong = {
 	acousticness?: number | string;
 };
 
+/**
+ * GetSongBPM's `/search/` matches by title only, so results can include
+ * same-titled songs by other artists. No fallback to the top result: for a
+ * common title, an unmatched artist means the top hit is a different song —
+ * writing its audio features would silently corrupt this track's data,
+ * which is worse than leaving it null.
+ *
+ * (GetSongBPM also exposes a combined title+artist search that avoids this
+ * mismatch at the source — not adopted here since its exact query syntax
+ * isn't reliably documented; worth revisiting if match rate turns out low.)
+ */
+export function findArtistMatch(
+	results: GetSongBPMSearchResult[],
+	artistName: string,
+): GetSongBPMSearchResult | null {
+	const normalizedArtist = artistName.trim().toLowerCase();
+	return (
+		results.find(
+			(r) => r.artist?.name?.trim().toLowerCase() === normalizedArtist,
+		) ?? null
+	);
+}
+
 function tryParseJson(text: string): unknown {
 	if (!text) return undefined;
 	try {
@@ -39,6 +62,10 @@ function tryParseJson(text: string): unknown {
 	}
 }
 
+// GetSongBPM's documented limit is 3,000 requests/hour (no paid tier). The
+// 429 branch below retries with backoff instead of aborting — combined with
+// the 6-peak-concurrent-request cap in stages/audio-features.ts, this is the
+// defense against that limit rather than any explicit pacing here.
 // Base retry config — no onFailedAttempt here so each call site can close over its url.
 const RETRY_BASE = {
 	retries: 3,
@@ -69,7 +96,7 @@ const PITCH_CLASS: Record<string, number> = {
 	B: 11,
 };
 
-function parseKeyOf(keyOf: string | undefined): {
+export function parseKeyOf(keyOf: string | undefined): {
 	key: number | null;
 	mode: number | null;
 } {
@@ -202,11 +229,7 @@ export async function getAudioFeaturesFromGetSongBPM(
 	const results = searchResponse?.search;
 	if (!Array.isArray(results) || results.length === 0) return null;
 
-	const normalizedArtist = params.artistName.trim().toLowerCase();
-	const match =
-		results.find(
-			(r) => r.artist?.name?.trim().toLowerCase() === normalizedArtist,
-		) ?? results[0];
+	const match = findArtistMatch(results, params.artistName);
 	if (!match) return null;
 
 	const songParams = new URLSearchParams({

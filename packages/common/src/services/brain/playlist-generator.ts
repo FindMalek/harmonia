@@ -5,7 +5,7 @@ import type {
 } from "@harmonia/common/schemas";
 import { playlistMetadataSchema } from "@harmonia/common/schemas";
 import type { GenerateProgress } from "@harmonia/common/types";
-import { getLlmTags } from "@harmonia/common/types";
+import { getLlmTags, llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import {
 	type ClusterMeta,
@@ -18,6 +18,7 @@ import {
 	playlistTracks,
 } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
@@ -143,14 +144,31 @@ export async function generatePlaylists(
 						id: track.id,
 						name: track.name,
 						artistNames: track.artistNames,
-						llmMood: track.llmMood,
-						llmTags: track.llmTags,
+						mood: trackAnalysis.mood,
+						secondaryMoods: trackAnalysis.secondaryMoods,
+						themes: trackAnalysis.themes,
+						topics: trackAnalysis.topics,
+						vibe: trackAnalysis.vibe,
+						vocalType: trackAnalysis.vocalType,
+						energyLevel: trackAnalysis.energyLevel,
+						language: trackAnalysis.language,
+						era: trackAnalysis.era,
+						classifiedAt: trackAnalysis.classifiedAt,
 					})
 					.from(clusterTracks)
 					.innerJoin(track, eq(track.id, clusterTracks.trackId))
+					.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 					.where(eq(clusterTracks.clusterId, c.id))
 					.orderBy(clusterTracks.position);
-				return { clusterId: c.id, rows };
+				return {
+					clusterId: c.id,
+					rows: rows.map(({ id, name, artistNames, ...analysis }) => ({
+						id,
+						name,
+						artistNames,
+						...llmFieldsFromAnalysis(analysis),
+					})),
+				};
 			}),
 		),
 	);
@@ -312,12 +330,29 @@ async function reconcileManualSpotifyEdits(args: {
 				id: track.id,
 				name: track.name,
 				artistNames: track.artistNames,
-				llmMood: track.llmMood,
-				llmTags: track.llmTags,
+				mood: trackAnalysis.mood,
+				secondaryMoods: trackAnalysis.secondaryMoods,
+				themes: trackAnalysis.themes,
+				topics: trackAnalysis.topics,
+				vibe: trackAnalysis.vibe,
+				vocalType: trackAnalysis.vocalType,
+				energyLevel: trackAnalysis.energyLevel,
+				language: trackAnalysis.language,
+				era: trackAnalysis.era,
+				classifiedAt: trackAnalysis.classifiedAt,
 			})
 			.from(track)
+			.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 			.where(inArray(track.id, missingAdded));
-		trackRows = [...trackRows, ...addedRows];
+		trackRows = [
+			...trackRows,
+			...addedRows.map(({ id, name, artistNames, ...analysis }) => ({
+				id,
+				name,
+				artistNames,
+				...llmFieldsFromAnalysis(analysis),
+			})),
+		];
 	}
 
 	logger.info(

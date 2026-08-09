@@ -1,2 +1,0 @@
-export const AUDIO_FEATURES_BATCH_SIZE = 200;
-export const AUDIO_FEATURES_CONCURRENCY = 3;

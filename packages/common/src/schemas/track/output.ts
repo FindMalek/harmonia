@@ -99,5 +99,7 @@ export const trackGetByIdOutputSchema = z.object({
 	harmoniaPlaylists: z.array(z.object({ id: z.number(), name: z.string() })),
 	/** The user's own Spotify playlists (any, not just Harmonia's) that currently contain this track. */
 	spotifyPlaylists: z.array(z.object({ id: z.string(), name: z.string() })),
+	/** Parallel to artistIds, same order — null where the image isn't cached yet. */
+	artistImageUrls: z.array(z.string().nullable()),
 });
 export type TrackGetByIdOutput = z.infer<typeof trackGetByIdOutputSchema>;

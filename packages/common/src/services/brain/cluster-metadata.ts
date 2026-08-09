@@ -1,6 +1,6 @@
 import { createGroq } from "@ai-sdk/groq";
 import { clusterMetadataSchema } from "@harmonia/common/schemas";
-import { getLlmTags } from "@harmonia/common/types";
+import { llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import {
 	type ClusterMeta,
@@ -8,6 +8,7 @@ import {
 	clusterTracks,
 } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
@@ -46,11 +47,20 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 					.select({
 						name: track.name,
 						artistNames: track.artistNames,
-						llmMood: track.llmMood,
-						llmTags: track.llmTags,
+						mood: trackAnalysis.mood,
+						secondaryMoods: trackAnalysis.secondaryMoods,
+						themes: trackAnalysis.themes,
+						topics: trackAnalysis.topics,
+						vibe: trackAnalysis.vibe,
+						vocalType: trackAnalysis.vocalType,
+						energyLevel: trackAnalysis.energyLevel,
+						language: trackAnalysis.language,
+						era: trackAnalysis.era,
+						classifiedAt: trackAnalysis.classifiedAt,
 					})
 					.from(clusterTracks)
 					.innerJoin(track, eq(track.id, clusterTracks.trackId))
+					.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 					.where(eq(clusterTracks.clusterId, c.id));
 
 				if (trackRows.length === 0) return;
@@ -61,11 +71,11 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 				const energyLevels: string[] = [];
 
 				for (const t of trackRows) {
-					if (t.llmMood) moods.push(t.llmMood);
-					const tags = getLlmTags(t.llmTags);
-					if (tags.themes) themes.push(...tags.themes);
-					if (tags.vibe) vibes.push(...tags.vibe);
-					if (tags.energyLevel) energyLevels.push(tags.energyLevel);
+					const { llmMood, llmTags } = llmFieldsFromAnalysis(t);
+					if (llmMood) moods.push(llmMood);
+					if (llmTags?.themes) themes.push(...llmTags.themes);
+					if (llmTags?.vibe) vibes.push(...llmTags.vibe);
+					if (llmTags?.energyLevel) energyLevels.push(llmTags.energyLevel);
 				}
 
 				const topMoods = topN(moods, 5);

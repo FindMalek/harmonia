@@ -13,6 +13,7 @@ import {
 	playlistUpdateInput,
 	playlistUpdateOutputSchema,
 } from "@harmonia/common/schemas";
+import { llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import type { ClusterMeta } from "@harmonia/db/schema/cluster";
 import { cluster } from "@harmonia/db/schema/cluster";
@@ -22,6 +23,7 @@ import {
 	playlistTracks,
 } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
+import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { ORPCError } from "@orpc/server";
 import { and, asc, desc, eq, gt, ilike, lt, or } from "drizzle-orm";
 import { z } from "zod";
@@ -143,9 +145,62 @@ export const playlistsRouter = {
 				albumName: track.albumName,
 				albumImageUrl: track.albumImageUrl,
 				durationMs: track.durationMs,
-				llmMood: track.llmMood,
-				llmTags: track.llmTags,
 				position: playlistTracks.position,
+				mood: trackAnalysis.mood,
+				secondaryMoods: trackAnalysis.secondaryMoods,
+				themes: trackAnalysis.themes,
+				topics: trackAnalysis.topics,
+				vibe: trackAnalysis.vibe,
+				vocalType: trackAnalysis.vocalType,
+				energyLevel: trackAnalysis.energyLevel,
+				language: trackAnalysis.language,
+				era: trackAnalysis.era,
+				classifiedAt: trackAnalysis.classifiedAt,
+			};
+			const withLlmFields = <
+				T extends {
+					mood: string | null;
+					secondaryMoods: string[] | null;
+					themes: string[] | null;
+					topics: string[] | null;
+					vibe: string[] | null;
+					vocalType: string | null;
+					energyLevel: string | null;
+					language: string | null;
+					era: string | null;
+					classifiedAt: Date | null;
+				},
+			>(
+				row: T,
+			) => {
+				const {
+					mood,
+					secondaryMoods,
+					themes,
+					topics,
+					vibe,
+					vocalType,
+					energyLevel,
+					language,
+					era,
+					classifiedAt,
+					...rest
+				} = row;
+				return {
+					...rest,
+					...llmFieldsFromAnalysis({
+						mood,
+						secondaryMoods,
+						themes,
+						topics,
+						vibe,
+						vocalType,
+						energyLevel,
+						language,
+						era,
+						classifiedAt,
+					}),
+				};
 			};
 			const searchCondition = input.search
 				? or(
@@ -159,6 +214,7 @@ export const playlistsRouter = {
 					.select(columns)
 					.from(playlistTracks)
 					.innerJoin(track, eq(track.id, playlistTracks.trackId))
+					.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 					.where(
 						and(
 							eq(playlistTracks.playlistId, input.playlistId),
@@ -171,7 +227,10 @@ export const playlistsRouter = {
 					.orderBy(playlistTracks.position)
 					.limit(input.limit + 1);
 
-				const { page, hasMore } = splitPage(rows, input.limit);
+				const { page, hasMore } = splitPage(
+					rows.map(withLlmFields),
+					input.limit,
+				);
 				const nextCursor = hasMore
 					? (page[page.length - 1]?.position ?? null)
 					: null;
@@ -191,6 +250,7 @@ export const playlistsRouter = {
 				.select(columns)
 				.from(playlistTracks)
 				.innerJoin(track, eq(track.id, playlistTracks.trackId))
+				.leftJoin(trackAnalysis, eq(trackAnalysis.trackId, track.id))
 				.where(
 					and(eq(playlistTracks.playlistId, input.playlistId), searchCondition),
 				)
@@ -198,7 +258,7 @@ export const playlistsRouter = {
 				.limit(input.limit + 1)
 				.offset(offset);
 
-			const { page, hasMore } = splitPage(rows, input.limit);
+			const { page, hasMore } = splitPage(rows.map(withLlmFields), input.limit);
 			const nextCursor = hasMore ? offset + input.limit : null;
 
 			return { items: page, nextCursor };
