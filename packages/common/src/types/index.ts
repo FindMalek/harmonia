@@ -10,5 +10,5 @@ export type {
 	SyncPhase,
 	SyncProgress,
 } from "./pipeline";
-export type { AnalysisSnapshot, LlmTags, TrackAnalysisRow } from "./track";
+export type { LlmTags, TrackAnalysisRow } from "./track";
 export { getLlmTags, llmFieldsFromAnalysis } from "./track";
