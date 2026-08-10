@@ -222,8 +222,15 @@
 		{
 			"idx": 31,
 			"version": "7",
-			"when": 1786286732089,
-			"tag": "0031_small_scrambler",
+			"when": 1786286074315,
+			"tag": "0031_goofy_cyclops",
+			"breakpoints": true
+		},
+		{
+			"idx": 32,
+			"version": "7",
+			"when": 1786324799971,
+			"tag": "0032_spicy_dust",
 			"breakpoints": true
 		}
 	]

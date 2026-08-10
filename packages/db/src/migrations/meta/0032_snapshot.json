@@ -1,6 +1,6 @@
 {
-	"id": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
-	"prevId": "7c3671d5-50f5-480d-9800-0bae3cf465e1",
+	"id": "d8be0e4f-c96d-477e-ae97-d95506de4f46",
+	"prevId": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -1317,6 +1317,72 @@
 					"columnsFrom": ["pipeline_run_id"],
 					"columnsTo": ["id"],
 					"onDelete": "set null",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.feedback": {
+			"name": "feedback",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"message": {
+					"name": "message",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"rating": {
+					"name": "rating",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"source": {
+					"name": "source",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"campaign_key": {
+					"name": "campaign_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"feedback_user_id_user_id_fk": {
+					"name": "feedback_user_id_user_id_fk",
+					"tableFrom": "feedback",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
 					"onUpdate": "no action"
 				}
 			},
