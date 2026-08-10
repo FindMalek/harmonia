@@ -222,8 +222,15 @@
 		{
 			"idx": 31,
 			"version": "7",
-			"when": 1786283819528,
-			"tag": "0031_green_hannibal_king",
+			"when": 1786286074315,
+			"tag": "0031_goofy_cyclops",
+			"breakpoints": true
+		},
+		{
+			"idx": 32,
+			"version": "7",
+			"when": 1786324645940,
+			"tag": "0032_luxuriant_black_tom",
 			"breakpoints": true
 		}
 	]
