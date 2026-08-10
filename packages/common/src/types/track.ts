@@ -27,14 +27,6 @@ export function getLlmTags(value: unknown): Partial<LlmTags> {
 	};
 }
 
-// Mirrors DB schema's track.analysisSnapshot column shape.
-export type AnalysisSnapshot = {
-	llm: Record<string, unknown>;
-	domain: string | null;
-	embeddingDims?: number;
-	modelVersions?: { llm?: string; embedding?: string };
-};
-
 /** Flat shape of a joined track_analysis row, as selected by read-path queries. */
 export type TrackAnalysisRow = {
 	mood: string | null;
