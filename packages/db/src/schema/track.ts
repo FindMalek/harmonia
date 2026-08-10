@@ -61,19 +61,8 @@ export const track = pgTable(
 		audioFeaturesFetchedAt: timestamp("audio_features_fetched_at"),
 		audioFeaturesStatus: text("audio_features_status"),
 
-		// LLM classification (Groq) — full structured output
-		llmMood: text("llm_mood"),
-		llmTags: jsonb("llm_tags").$type<{
-			secondaryMoods: string[];
-			themes: string[];
-			topics: string[];
-			vibe: string[];
-			vocalType: string;
-			energyLevel: string;
-			language: string;
-			era: string;
-		}>(),
-		llmClassifiedAt: timestamp("llm_classified_at"),
+		// LLM classification output lives in track_analysis (#113) — see
+		// llmFieldsFromAnalysis for the read-side shape reconstruction.
 
 		// Embedding (OpenAI)
 		embedding: vector("embedding", { dimensions: 1536 }),
@@ -82,18 +71,6 @@ export const track = pgTable(
 
 		// Domain assignment
 		domainAssignedAt: timestamp("domain_assigned_at"),
-
-		// Full analysis snapshot (optional — for audit/debug)
-		analysisSnapshot: jsonb("analysis_snapshot").$type<{
-			llm: Record<string, unknown>;
-			domain: string | null;
-			embeddingDims?: number;
-			modelVersions?: {
-				llm?: string;
-				embedding?: string;
-				embeddingInputVersion?: string;
-			}; // e.g. openai/gpt-oss-120b
-		}>(),
 
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")

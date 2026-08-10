@@ -222,8 +222,15 @@
 		{
 			"idx": 31,
 			"version": "7",
-			"when": 1786285020014,
-			"tag": "0031_clear_the_professor",
+			"when": 1786286074315,
+			"tag": "0031_goofy_cyclops",
+			"breakpoints": true
+		},
+		{
+			"idx": 32,
+			"version": "7",
+			"when": 1786325590247,
+			"tag": "0032_wonderful_omega_sentinel",
 			"breakpoints": true
 		}
 	]

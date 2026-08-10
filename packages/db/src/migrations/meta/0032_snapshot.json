@@ -1,6 +1,6 @@
 {
-	"id": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
-	"prevId": "7c3671d5-50f5-480d-9800-0bae3cf465e1",
+	"id": "3d758fd8-8321-42c2-82c5-8a71c5b2a3ab",
+	"prevId": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -2252,6 +2252,18 @@
 					"primaryKey": false,
 					"notNull": false
 				},
+				"audio_features_fetched_at": {
+					"name": "audio_features_fetched_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"audio_features_status": {
+					"name": "audio_features_status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
 				"embedding": {
 					"name": "embedding",
 					"type": "vector(1536)",
@@ -2311,6 +2323,21 @@
 					"columns": [
 						{
 							"expression": "lyrics_status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"track_audio_features_status_idx": {
+					"name": "track_audio_features_status_idx",
+					"columns": [
+						{
+							"expression": "audio_features_status",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
