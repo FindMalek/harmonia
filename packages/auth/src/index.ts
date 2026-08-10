@@ -71,8 +71,10 @@ function buildTrustedOriginsList(envConfig: AuthEnvConfig) {
 /**
  * Runs on every Spotify account link/re-link (first sign-in and every
  * return visit) — covers the case where someone was approved but never
- * clicked their invite email, only signed in directly. Safe: the email
- * comes from Spotify's own verified OAuth profile, not user input.
+ * clicked their invite email, only signed in directly. Note: Spotify's
+ * profile email is self-reported, not independently verified — see the
+ * security note on tryAutoApproveByEmail for why this is still an accepted
+ * tradeoff here.
  */
 async function autoApproveIfWaitlisted(accountUserId: string): Promise<void> {
 	try {

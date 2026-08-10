@@ -1,6 +1,7 @@
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
+import { logger } from "@harmonia/logger";
 import { and, eq, isNull } from "drizzle-orm";
 
 /**
@@ -33,10 +34,18 @@ export async function redeemWaitlistRow(
 /**
  * Auto-approves a user (by id) if their own account email matches an
  * approved, unredeemed waitlist entry — closes the gap where someone never
- * clicked their approval email but was already approved. Safe to call on
- * every Spotify sign-in: the email comes from the user's own row, which
- * Better Auth populates from Spotify's verified OAuth profile, not from
- * anything the caller supplies directly.
+ * clicked their approval email but was already approved.
+ *
+ * Security note: Spotify's `/me` profile email is explicitly documented as
+ * self-reported and NOT independently re-verified by Spotify for OAuth
+ * consumers — Better Auth sets `emailVerified: false` for Spotify sign-ins
+ * for exactly this reason. This function still trusts it as a matching
+ * signal, which is a deliberate, accepted tradeoff for this app: the
+ * approval this grants has low stakes (personal-project waitlist access,
+ * not payment or admin rights), and every auto-approval is logged below for
+ * after-the-fact review. If Harmonia's risk profile changes (more users,
+ * more valuable access), require an app-controlled verification step (e.g.
+ * a confirmation email to the matched address) before trusting this path.
  */
 export async function tryAutoApproveByEmail(userId: string): Promise<boolean> {
 	const [userRow] = await db
@@ -61,5 +70,12 @@ export async function tryAutoApproveByEmail(userId: string): Promise<boolean> {
 
 	if (!row) return false;
 
-	return redeemWaitlistRow(row.id, userId);
+	const approved = await redeemWaitlistRow(row.id, userId);
+	if (approved) {
+		logger.info(
+			{ userId, waitlistRowId: row.id },
+			"Auto-approved from waitlist by Spotify email match",
+		);
+	}
+	return approved;
 }
