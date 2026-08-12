@@ -56,7 +56,7 @@ export const protectedRouter = {
 			// farming vector: someone collecting multiple waitlist approvals
 			// (e.g. via several emails) can't stack them onto one account.
 			const [callingUser] = await db
-				.select({ isApproved: user.isApproved })
+				.select({ isApproved: user.isApproved, email: user.email })
 				.from(user)
 				.where(eq(user.id, userId));
 
@@ -67,6 +67,7 @@ export const protectedRouter = {
 			const [row] = await db
 				.select({
 					id: waitlistSignup.id,
+					email: waitlistSignup.email,
 					status: waitlistSignup.status,
 					inviteTokenExpiresAt: waitlistSignup.inviteTokenExpiresAt,
 					inviteRedeemedAt: waitlistSignup.inviteRedeemedAt,
@@ -78,11 +79,18 @@ export const protectedRouter = {
 			// Re-check status here (not just token validity): an admin can reject
 			// someone after approving them, and the already-sent email link
 			// shouldn't still work even if its token hasn't expired yet.
+			//
+			// The email match guards against binding the invite to whatever
+			// account happens to be signed in when the link is clicked — without
+			// it, clicking your invite while signed into a different account
+			// permanently strands the waitlist row (#301): inviteRedeemedAt gets
+			// stamped on the wrong user with no retry path.
 			if (
 				row?.status !== "approved" ||
 				row?.inviteRedeemedAt ||
 				!row?.inviteTokenExpiresAt ||
-				row.inviteTokenExpiresAt < new Date()
+				row.inviteTokenExpiresAt < new Date() ||
+				row.email !== callingUser?.email
 			) {
 				return { success: false };
 			}

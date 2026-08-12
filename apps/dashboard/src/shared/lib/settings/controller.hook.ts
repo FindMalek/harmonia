@@ -76,6 +76,7 @@ export function useSettingsController() {
 		spotifyLoading: spotifyLinked.isLoading,
 		lastSync: toSyncDate(libraryStats.data?.updatedAt),
 		statsLoading: libraryStats.isLoading,
+		needsReauth: libraryStats.data?.needsReauth ?? false,
 		emailPreferences: emailPreferences.data ?? null,
 		emailPreferencesLoading: emailPreferences.isLoading,
 		updateEmailPreferences,

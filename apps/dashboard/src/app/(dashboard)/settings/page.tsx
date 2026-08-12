@@ -13,6 +13,13 @@ import {
 	AlertDialogTrigger,
 	Badge,
 	Button,
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
+	Icons,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -30,6 +37,9 @@ import {
 	DashboardSettingsSkeleton,
 } from "@/components/app/dashboard-settings-section";
 import { PageHeader } from "@/components/shared/page-header";
+import { env } from "@/lib/env";
+import { authClient } from "@/shared/api/auth-client";
+import { toastError } from "@/shared/api/error-handler";
 import { useSettingsController } from "@/shared/lib/settings/controller.hook";
 
 export default function SettingsPage() {
@@ -45,12 +55,36 @@ export default function SettingsPage() {
 		spotifyLoading,
 		lastSync,
 		statsLoading,
+		needsReauth,
 		theme,
 		resolvedTheme,
 		setTheme,
 		signOut,
 		deleteAccount,
 	} = useSettingsController();
+
+	const [reconnecting, setReconnecting] = useState(false);
+	const [reauthDrawerDismissed, setReauthDrawerDismissed] = useState(false);
+	const handleReconnect = async () => {
+		setReconnecting(true);
+		try {
+			const { error } = await authClient.signIn.social({
+				provider: "spotify",
+				callbackURL: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}${DASHBOARD_ROUTES.settings.path}`,
+			});
+			// A successful call redirects the browser away — reaching here at all
+			// means it didn't, so treat a missing `error` the same as one present.
+			if (error) {
+				setReconnecting(false);
+				toastError(error.message ?? "Failed to reconnect Spotify");
+			}
+		} catch (error) {
+			setReconnecting(false);
+			toastError(
+				error instanceof Error ? error.message : "Failed to reconnect Spotify",
+			);
+		}
+	};
 
 	if (!mounted) {
 		return <DashboardSettingsSkeleton />;
@@ -71,12 +105,47 @@ export default function SettingsPage() {
 				description="Manage your account and app preferences."
 			/>
 
+			<Drawer
+				open={needsReauth && !reauthDrawerDismissed}
+				onOpenChange={(open) => setReauthDrawerDismissed(!open)}
+			>
+				<DrawerContent>
+					<DrawerHeader>
+						<DrawerTitle className="flex items-center gap-2">
+							<Icons.alertTriangle className="size-4 text-yellow-600" />
+							Your Spotify connection expired
+						</DrawerTitle>
+						<DrawerDescription>
+							Reconnect to keep syncing your library and generating playlists.
+						</DrawerDescription>
+					</DrawerHeader>
+					<DrawerFooter>
+						<Button
+							isLoading={reconnecting}
+							disabled={reconnecting}
+							onClick={() => void handleReconnect()}
+						>
+							Reconnect
+						</Button>
+					</DrawerFooter>
+				</DrawerContent>
+			</Drawer>
+
 			<DashboardSettingsSection label="CONNECTED SERVICES">
 				<DashboardSettingsRow
 					label="Spotify"
 					value={
 						spotifyLoading ? (
 							"..."
+						) : needsReauth ? (
+							<button
+								type="button"
+								className="flex items-center gap-1.5 text-yellow-600"
+								onClick={() => setReauthDrawerDismissed(false)}
+							>
+								<span className="size-2 rounded-full bg-yellow-500" />
+								Expired — Reconnect
+							</button>
 						) : spotifyLinked ? (
 							<span className="flex items-center gap-1.5">
 								<span className="size-2 rounded-full bg-green-500" />

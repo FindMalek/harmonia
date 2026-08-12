@@ -1,6 +1,6 @@
 {
-	"id": "ab33af2e-2291-43b7-8f6d-75ebd52db854",
-	"prevId": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
+	"id": "9b3247d5-5e46-4a40-a26c-4dea0ea88c34",
+	"prevId": "92617d20-5578-46bf-ad82-e05d3766df8f",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -1326,6 +1326,72 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.feedback": {
+			"name": "feedback",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"message": {
+					"name": "message",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"rating": {
+					"name": "rating",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"source": {
+					"name": "source",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"campaign_key": {
+					"name": "campaign_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"feedback_user_id_user_id_fk": {
+					"name": "feedback_user_id_user_id_fk",
+					"tableFrom": "feedback",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.genre_domain": {
 			"name": "genre_domain",
 			"schema": "",
@@ -2114,6 +2180,19 @@
 				"last_full_sync_at": {
 					"name": "last_full_sync_at",
 					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"needs_reauth": {
+					"name": "needs_reauth",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"reauth_reminder_stage": {
+					"name": "reauth_reminder_stage",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},

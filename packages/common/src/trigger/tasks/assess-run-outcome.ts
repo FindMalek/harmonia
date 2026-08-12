@@ -23,7 +23,21 @@ export function assessRunOutcome(args: {
 	generate: { playlists: number; tracksOrganized: number } | undefined;
 	/** Stage coordinator tasks that resolved with `ok: false` (exhausted retries). */
 	stageFailures: readonly string[];
+	/** Sync detected a dead Spotify token (#289) — every later stage trivially sees nothing pending, so without this check the run reports a clean "completed" despite doing nothing. */
+	needsReauth?: boolean;
 }): { status: "completed" | "partial"; error: string | null } {
+	// Checked first and returned immediately, not folded into `reasons` below —
+	// this isn't "reduced coverage, re-run recommended" (re-running can't help
+	// until the user reconnects), so it gets its own distinct message instead
+	// of being diluted into that generic framing.
+	if (args.needsReauth) {
+		return {
+			status: "partial",
+			error:
+				"Your Spotify connection expired — reconnect in Settings to keep syncing your library.",
+		};
+	}
+
 	const reasons: string[] = [];
 
 	// A stage that hard-failed (returned ok:false without throwing) is always

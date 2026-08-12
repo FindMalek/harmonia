@@ -17,6 +17,7 @@ const TEMPLATE_CATEGORIES: Record<EmailTemplateKey, EmailTemplateCategory> = {
 	invoice: "billing",
 	waitlist_confirmation: "transactional",
 	waitlist_approved: "transactional",
+	spotify_reauth: "security",
 };
 
 export function getEmailTemplateCategory(

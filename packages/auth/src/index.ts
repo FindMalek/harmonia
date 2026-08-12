@@ -1,3 +1,4 @@
+import { clearSpotifyNeedsReauth } from "@harmonia/common/services/music";
 import { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";
 import { buildTrustedOrigins } from "@harmonia/common/utils/origin";
 import * as schema from "@harmonia/db/schema/auth";
@@ -117,6 +118,43 @@ export function createDashboardAuth(
 									error: err instanceof Error ? err.message : String(err),
 								},
 								"Failed to send welcome email",
+							);
+						}
+					},
+				},
+			},
+			account: {
+				create: {
+					// Fires on first-ever Spotify link and on re-auth after Better Auth
+					// re-links an existing provider account — either way, a fresh token
+					// just landed, so clear any stale "needs reauth" state (#289).
+					after: async (createdAccount) => {
+						if (createdAccount.providerId !== "spotify") return;
+						try {
+							await clearSpotifyNeedsReauth(createdAccount.userId);
+						} catch (err) {
+							logger.warn(
+								{
+									userId: createdAccount.userId,
+									error: err instanceof Error ? err.message : String(err),
+								},
+								"Failed to clear Spotify reauth flag after account create",
+							);
+						}
+					},
+				},
+				update: {
+					after: async (updatedAccount) => {
+						if (updatedAccount.providerId !== "spotify") return;
+						try {
+							await clearSpotifyNeedsReauth(updatedAccount.userId);
+						} catch (err) {
+							logger.warn(
+								{
+									userId: updatedAccount.userId,
+									error: err instanceof Error ? err.message : String(err),
+								},
+								"Failed to clear Spotify reauth flag after account update",
 							);
 						}
 					},

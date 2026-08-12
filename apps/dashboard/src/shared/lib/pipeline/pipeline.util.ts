@@ -34,6 +34,7 @@ export const EMPTY_SNAPSHOT: PipelineStreamState = {
 	startedAt: null,
 	completedAt: null,
 	error: null,
+	etaSeconds: null,
 };
 
 export function snapshotFromRun(run: {
@@ -51,6 +52,9 @@ export function snapshotFromRun(run: {
 		startedAt: run.startedAt ?? null,
 		completedAt: run.completedAt ?? null,
 		error: run.error ?? null,
+		// Only the live stream computes this — a plain row fetch (initial
+		// hydration probe) has nothing to estimate from yet.
+		etaSeconds: null,
 	};
 }
 
