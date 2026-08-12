@@ -53,6 +53,7 @@ export async function refreshSpotifyLibraryStats(
 					uniqueAlbums: cached.uniqueAlbums,
 					uniqueArtists: cached.uniqueArtists,
 					updatedAt: cached.updatedAt ?? null,
+					needsReauth: cached.needsReauth,
 				}
 			: {
 					totalTracks: 0,
@@ -60,6 +61,7 @@ export async function refreshSpotifyLibraryStats(
 					uniqueAlbums: 0,
 					uniqueArtists: 0,
 					updatedAt: null,
+					needsReauth: false,
 				};
 	}
 
@@ -148,7 +150,7 @@ export async function refreshSpotifyLibraryStats(
 			},
 		});
 
-	return { ...stats, updatedAt: now };
+	return { ...stats, updatedAt: now, needsReauth: false };
 }
 
 /**
@@ -177,6 +179,7 @@ export async function getSpotifyLibraryStats(
 			uniqueAlbums: cached.uniqueAlbums,
 			uniqueArtists: cached.uniqueArtists,
 			updatedAt: cached.updatedAt ?? null,
+			needsReauth: cached.needsReauth,
 		};
 	}
 
@@ -188,6 +191,7 @@ export async function getSpotifyLibraryStats(
 			uniqueAlbums: cached.uniqueAlbums,
 			uniqueArtists: cached.uniqueArtists,
 			updatedAt: cached.updatedAt ?? null,
+			needsReauth: cached.needsReauth,
 		};
 
 		const existing = refreshLocks.get(userId);

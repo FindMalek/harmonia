@@ -66,8 +66,4 @@ const EMBEDDING_BATCH_SIZE = 64;
 
 Only export a constant into a package's `constants/*.ts` file if it's used from 2+ files. A constant used in exactly one file stays local to that file (unexported, no separate constants-file entry).
 
-## Commits
-
-`feat:` `fix:` `chore:` `perf:` `refactor:` prefixes. No scope required.
-
-No AI/tool branding in commit messages or PR text; no `Co-authored-by:` for assistants (see project overview).
+Commit conventions live in `00-project-overview.mdc`.

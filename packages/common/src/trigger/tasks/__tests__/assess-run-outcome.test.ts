@@ -102,4 +102,18 @@ describe("assessRunOutcome", () => {
 		expect(result.status).toBe("partial");
 		expect(result.error).toContain("stage failure: embed");
 	});
+
+	it("flags a dead Spotify token distinctly, even though every stage trivially saw nothing pending (#289)", () => {
+		const result = assessRunOutcome({
+			...HEALTHY_ARGS,
+			classify: { classified: 0, total: 0 },
+			embed: { embedded: 0, total: 0 },
+			cluster: { clusters: 0, totalTracks: 0 },
+			generate: { playlists: 0, tracksOrganized: 0 },
+			needsReauth: true,
+		});
+		expect(result.status).toBe("partial");
+		expect(result.error).toContain("reconnect in Settings");
+		expect(result.error).not.toContain("Re-running recommended");
+	});
 });

@@ -26,6 +26,8 @@ export type PipelineStreamState = {
 	startedAt: Date | null;
 	completedAt: Date | null;
 	error: string | null;
+	/** Best-effort remaining-time estimate in seconds, only ever set while actively streaming; null otherwise or when there isn't enough signal yet (#283). */
+	etaSeconds: number | null;
 };
 
 export type LivePipelineProgress = {

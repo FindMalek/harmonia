@@ -19,6 +19,10 @@ import {
 	type OrganizeWeeklyDigestEmailProps,
 } from "../emails/organize-weekly-digest";
 import {
+	SpotifyReauthEmail,
+	type SpotifyReauthEmailProps,
+} from "../emails/spotify-reauth";
+import {
 	WaitlistApprovedEmail,
 	type WaitlistApprovedEmailProps,
 } from "../emails/waitlist-approved";
@@ -91,6 +95,13 @@ type SendWaitlistApprovedInput = {
 	config: SendEmailConfig;
 	to: string;
 	props: WaitlistApprovedEmailProps;
+	idempotencyKey: string;
+};
+
+type SendSpotifyReauthInput = {
+	config: SendEmailConfig;
+	to: string;
+	props: SpotifyReauthEmailProps;
 	idempotencyKey: string;
 };
 
@@ -284,6 +295,36 @@ export async function sendWaitlistApprovedEmail(
 			subject: "You're in — welcome to Harmonia",
 			html,
 			tags: [{ name: "category", value: "waitlist_approved" }],
+		},
+		{ idempotencyKey: input.idempotencyKey },
+	);
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	return { ok: true, emailId: data?.id ?? "" };
+}
+
+export async function sendSpotifyReauthEmail(
+	input: SendSpotifyReauthInput,
+): Promise<SendResult> {
+	const config = resolveConfig(input.config);
+	const resend = createResend(config);
+	const html = await render(SpotifyReauthEmail(input.props));
+	const subject =
+		input.props.stage === "3d"
+			? "Your Spotify connection expires in a few days"
+			: "Your Spotify connection needs a refresh soon";
+
+	const { data, error } = await resend.emails.send(
+		{
+			from: config.from,
+			to: [input.to],
+			replyTo: config.replyTo ? [config.replyTo] : undefined,
+			subject,
+			html,
+			tags: [{ name: "category", value: "spotify_reauth" }],
 		},
 		{ idempotencyKey: input.idempotencyKey },
 	);

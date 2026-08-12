@@ -1,3 +1,4 @@
+import { clearSpotifyNeedsReauth } from "@harmonia/common/services/music";
 import { tryAutoApproveByEmail } from "@harmonia/common/services/waitlist";
 import { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";
 import { buildTrustedOrigins } from "@harmonia/common/utils/origin";
@@ -90,6 +91,24 @@ async function autoApproveIfWaitlisted(accountUserId: string): Promise<void> {
 	}
 }
 
+/**
+ * Fires on every Spotify account link/re-link — a fresh token just landed,
+ * so clear any stale "needs reauth" state (#289).
+ */
+async function clearReauthFlagIfNeeded(accountUserId: string): Promise<void> {
+	try {
+		await clearSpotifyNeedsReauth(accountUserId);
+	} catch (err) {
+		logger.warn(
+			{
+				userId: accountUserId,
+				error: err instanceof Error ? err.message : String(err),
+			},
+			"Failed to clear Spotify reauth flag after account link",
+		);
+	}
+}
+
 const sharedUserFields = {
 	additionalFields: {
 		hasCompletedOnboarding: {
@@ -147,15 +166,26 @@ export function createDashboardAuth(
 			},
 			account: {
 				create: {
+					// Fires on first-ever Spotify link and on re-auth after Better Auth
+					// re-links an existing provider account — either way, a fresh token
+					// just landed: clear any stale "needs reauth" state (#289) and
+					// check whether this account's email matches an approved,
+					// unredeemed waitlist entry (#298).
 					after: async (createdAccount) => {
 						if (createdAccount.providerId !== "spotify") return;
-						await autoApproveIfWaitlisted(createdAccount.userId);
+						await Promise.all([
+							clearReauthFlagIfNeeded(createdAccount.userId),
+							autoApproveIfWaitlisted(createdAccount.userId),
+						]);
 					},
 				},
 				update: {
 					after: async (updatedAccount) => {
 						if (updatedAccount.providerId !== "spotify") return;
-						await autoApproveIfWaitlisted(updatedAccount.userId);
+						await Promise.all([
+							clearReauthFlagIfNeeded(updatedAccount.userId),
+							autoApproveIfWaitlisted(updatedAccount.userId),
+						]);
 					},
 				},
 			},

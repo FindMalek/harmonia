@@ -24,6 +24,7 @@ type AdminDataTableProps<TData> = {
 	getRowId?: (row: TData) => string;
 	rowSelection?: RowSelectionState;
 	onRowSelectionChange?: (selection: RowSelectionState) => void;
+	onRowClick?: (row: TData) => void;
 };
 
 export function AdminDataTable<TData>({
@@ -33,6 +34,7 @@ export function AdminDataTable<TData>({
 	getRowId,
 	rowSelection,
 	onRowSelectionChange,
+	onRowClick,
 }: AdminDataTableProps<TData>) {
 	const table = useReactTable({
 		data,
@@ -78,7 +80,13 @@ export function AdminDataTable<TData>({
 				<TableBody>
 					{table.getRowModel().rows.length > 0 ? (
 						table.getRowModel().rows.map((row) => (
-							<TableRow key={row.id}>
+							<TableRow
+								key={row.id}
+								onClick={
+									onRowClick ? () => onRowClick(row.original) : undefined
+								}
+								className={onRowClick ? "cursor-pointer" : undefined}
+							>
 								{row.getVisibleCells().map((cell) => (
 									<TableCell key={cell.id}>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}

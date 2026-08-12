@@ -39,6 +39,7 @@ import {
 	IconLayoutSidebar,
 	IconLoader,
 	IconLogout,
+	IconMessageCircle,
 	IconMinus,
 	IconMoon,
 	IconMusic,
@@ -116,6 +117,7 @@ export const Icons = {
 	user: IconUser,
 	users: IconUsers,
 	logout: IconLogout,
+	messageCircle: IconMessageCircle,
 
 	// Loading / pipeline states
 	checkCircle: IconCircleCheck,

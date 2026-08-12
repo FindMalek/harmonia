@@ -227,6 +227,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								currentStage: data.currentStage,
 								progress: asProgressRecord(data.progress),
 								startedAt: data.startedAt,
+								etaSeconds: data.etaSeconds,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(asProgressRecord(data.progress)),
@@ -238,6 +239,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								currentStage: null,
 								progress: asProgressRecord(data.progress),
 								completedAt: data.completedAt,
+								etaSeconds: null,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(asProgressRecord(data.progress)),
@@ -253,6 +255,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								progress: asProgressRecord(data.progress),
 								completedAt: data.completedAt,
 								error: data.error ?? null,
+								etaSeconds: null,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(asProgressRecord(data.progress)),
@@ -268,6 +271,7 @@ export function usePipelineProgressDrive(): PipelineProgressContextValue {
 								progress: asProgressRecord(data.progress),
 								completedAt: data.completedAt,
 								error: data.error ?? "Unknown error",
+								etaSeconds: null,
 							}));
 							setLiveProgress(
 								deriveLiveProgress(asProgressRecord(data.progress)),

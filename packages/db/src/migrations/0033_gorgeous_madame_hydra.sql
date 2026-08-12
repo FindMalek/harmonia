@@ -1,0 +1,2 @@
+ALTER TABLE "user_spotify_library_stats" ADD COLUMN "needs_reauth" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_spotify_library_stats" ADD COLUMN "reauth_reminder_stage" text;

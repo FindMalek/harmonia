@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
 	index,
+	integer,
 	jsonb,
 	pgTable,
 	serial,
@@ -83,4 +84,27 @@ export const pipelineRun = pgTable(
 			.on(table.userId)
 			.where(sql`${table.status} = 'running'`),
 	],
+);
+
+/**
+ * Real wall-clock duration of each completed stage — feeds the ETA estimate
+ * (#283). One row per stage per run, written once the stage finishes.
+ * trackCount is the item count that stage actually processed (null for
+ * stages without a clean per-item cost model, e.g. cluster/generate/match/
+ * export) — used to derive a historical seconds-per-track rate; stages
+ * without one fall back to a flat historical average duration instead.
+ */
+export const pipelineStageTiming = pgTable(
+	"pipeline_stage_timing",
+	{
+		id: serial("id").primaryKey(),
+		runId: integer("run_id")
+			.notNull()
+			.references(() => pipelineRun.id, { onDelete: "cascade" }),
+		stage: text("stage").notNull(),
+		trackCount: integer("track_count"),
+		startedAt: timestamp("started_at").notNull(),
+		completedAt: timestamp("completed_at").notNull(),
+	},
+	(table) => [index("pipeline_stage_timing_stage_idx").on(table.stage)],
 );

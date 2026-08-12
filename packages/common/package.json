@@ -71,6 +71,12 @@
 		"./trigger/tasks/emails/poll-waitlist-approvals": {
 			"default": "./src/trigger/tasks/emails/poll-waitlist-approvals.ts"
 		},
+		"./trigger/tasks/emails/send-spotify-reauth": {
+			"default": "./src/trigger/tasks/emails/send-spotify-reauth.ts"
+		},
+		"./trigger/tasks/emails/poll-spotify-reauth-reminders": {
+			"default": "./src/trigger/tasks/emails/poll-spotify-reauth-reminders.ts"
+		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
 		},
