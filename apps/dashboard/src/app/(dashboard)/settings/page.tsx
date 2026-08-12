@@ -2,9 +2,6 @@
 
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import {
-	Alert,
-	AlertAction,
-	AlertDescription,
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -14,9 +11,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
-	AlertTitle,
 	Badge,
 	Button,
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
 	Icons,
 	Select,
 	SelectContent,
@@ -62,6 +64,7 @@ export default function SettingsPage() {
 	} = useSettingsController();
 
 	const [reconnecting, setReconnecting] = useState(false);
+	const [reauthDrawerDismissed, setReauthDrawerDismissed] = useState(false);
 	const handleReconnect = async () => {
 		setReconnecting(true);
 		try {
@@ -102,26 +105,31 @@ export default function SettingsPage() {
 				description="Manage your account and app preferences."
 			/>
 
-			{needsReauth && (
-				<Alert variant="warning">
-					<Icons.alertTriangle />
-					<AlertTitle>Your Spotify connection expired</AlertTitle>
-					<AlertDescription>
-						Reconnect to keep syncing your library and generating playlists.
-					</AlertDescription>
-					<AlertAction>
+			<Drawer
+				open={needsReauth && !reauthDrawerDismissed}
+				onOpenChange={(open) => setReauthDrawerDismissed(!open)}
+			>
+				<DrawerContent>
+					<DrawerHeader>
+						<DrawerTitle className="flex items-center gap-2">
+							<Icons.alertTriangle className="size-4 text-yellow-600" />
+							Your Spotify connection expired
+						</DrawerTitle>
+						<DrawerDescription>
+							Reconnect to keep syncing your library and generating playlists.
+						</DrawerDescription>
+					</DrawerHeader>
+					<DrawerFooter>
 						<Button
-							size="sm"
-							variant="outline"
 							isLoading={reconnecting}
 							disabled={reconnecting}
 							onClick={() => void handleReconnect()}
 						>
 							Reconnect
 						</Button>
-					</AlertAction>
-				</Alert>
-			)}
+					</DrawerFooter>
+				</DrawerContent>
+			</Drawer>
 
 			<DashboardSettingsSection label="CONNECTED SERVICES">
 				<DashboardSettingsRow
@@ -129,6 +137,15 @@ export default function SettingsPage() {
 					value={
 						spotifyLoading ? (
 							"..."
+						) : needsReauth ? (
+							<button
+								type="button"
+								className="flex items-center gap-1.5 text-yellow-600"
+								onClick={() => setReauthDrawerDismissed(false)}
+							>
+								<span className="size-2 rounded-full bg-yellow-500" />
+								Expired — Reconnect
+							</button>
 						) : spotifyLinked ? (
 							<span className="flex items-center gap-1.5">
 								<span className="size-2 rounded-full bg-green-500" />

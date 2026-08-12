@@ -93,7 +93,7 @@ export const userSpotifyLibraryStats = pgTable("user_spotify_library_stats", {
 	// Proactive: which expiry-warning email has been sent for the CURRENT token
 	// cycle, so each stage fires at most once. Reset to null on reconnect.
 	reauthReminderStage: text("reauth_reminder_stage").$type<
-		"14d" | "3d" | null
+		"14d" | "3d" | "0d" | null
 	>(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()

@@ -382,9 +382,18 @@ export async function sendWelcomeNotification({ userId }: { userId: string }) {
 export async function sendSpotifyReauthNotification({
 	userId,
 	stage,
+	refreshTokenExpiresAt,
 }: {
 	userId: string;
-	stage: "14d" | "3d";
+	stage: "14d" | "3d" | "0d";
+	/**
+	 * Identifies which 6-month token cycle this reminder belongs to. Without
+	 * it, the idempotency key repeats verbatim across cycles — a user who
+	 * reconnects and lives through a second full cycle would have their
+	 * legitimate new reminder silently swallowed as a "duplicate" of the
+	 * first cycle's send.
+	 */
+	refreshTokenExpiresAt: Date;
 }) {
 	const config = buildSendConfig();
 	if (!config) return { ok: false, reason: "provider_not_configured" as const };
@@ -392,9 +401,10 @@ export async function sendSpotifyReauthNotification({
 	const userRow = await getUserForEmail(userId);
 	if (!userRow?.email) return { ok: false, reason: "missing_email" as const };
 
-	// Keyed per stage so 14d and 3d each send at most once per token cycle,
-	// independent of each other.
-	const idempotencyKey = `spotify-reauth/${stage}/${userId}`;
+	// Keyed per stage and per token cycle so 14d/3d/0d each send at most once
+	// per cycle, and a later cycle's reminders aren't suppressed by an
+	// earlier cycle's delivery record under the same stage name.
+	const idempotencyKey = `spotify-reauth/${stage}/${userId}/${refreshTokenExpiresAt.getTime()}`;
 	const policy = await evaluateEmailPolicy({
 		userId,
 		email: userRow.email,

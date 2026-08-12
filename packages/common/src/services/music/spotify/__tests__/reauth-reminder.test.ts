@@ -23,6 +23,10 @@ describe("determineReauthReminderStage", () => {
 		).toBeNull();
 	});
 
+	it("does not jump to 3d while still outside its window, even with 14d already sent", () => {
+		expect(determineReauthReminderStage(daysFromNow(5), "14d", NOW)).toBeNull();
+	});
+
 	it("returns 3d when within the 3-day window, regardless of prior 14d send", () => {
 		expect(determineReauthReminderStage(daysFromNow(2), "14d", NOW)).toBe("3d");
 	});
@@ -31,12 +35,26 @@ describe("determineReauthReminderStage", () => {
 		expect(determineReauthReminderStage(daysFromNow(2), null, NOW)).toBe("3d");
 	});
 
-	it("never resends once 3d has been sent — that's the final stage", () => {
-		expect(determineReauthReminderStage(daysFromNow(1), "3d", NOW)).toBeNull();
-		expect(determineReauthReminderStage(daysFromNow(-5), "3d", NOW)).toBeNull();
+	it("returns 0d when within the 1-day window, regardless of prior 3d send", () => {
+		expect(determineReauthReminderStage(daysFromNow(0.5), "3d", NOW)).toBe(
+			"0d",
+		);
 	});
 
-	it("returns 3d for an already-past expiry that never got a reminder", () => {
-		expect(determineReauthReminderStage(daysFromNow(-1), null, NOW)).toBe("3d");
+	it("catches up straight to 0d if earlier windows were missed entirely", () => {
+		expect(determineReauthReminderStage(daysFromNow(0.5), null, NOW)).toBe(
+			"0d",
+		);
+	});
+
+	it("never resends once 0d has been sent — that's the final stage", () => {
+		expect(
+			determineReauthReminderStage(daysFromNow(0.5), "0d", NOW),
+		).toBeNull();
+		expect(determineReauthReminderStage(daysFromNow(-5), "0d", NOW)).toBeNull();
+	});
+
+	it("returns 0d for an already-past expiry that never got a reminder", () => {
+		expect(determineReauthReminderStage(daysFromNow(-1), null, NOW)).toBe("0d");
 	});
 });

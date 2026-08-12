@@ -18,7 +18,7 @@ import {
 export type SpotifyReauthEmailProps = {
 	dashboardUrl: string;
 	recipientName?: string | null;
-	stage: "14d" | "3d";
+	stage: "14d" | "3d" | "0d";
 };
 
 const STAGE_COPY: Record<
@@ -34,6 +34,11 @@ const STAGE_COPY: Record<
 		preview: "Your Spotify connection expires in a few days",
 		heading: "Your Spotify connection expires in a few days",
 		body: "This is a second reminder — your Spotify connection to Harmonia expires in about 3 days. Reconnect now to avoid a gap in your syncs and organize runs.",
+	},
+	"0d": {
+		preview: "Your Spotify connection expires today",
+		heading: "Your Spotify connection expires today",
+		body: "This is your final reminder — your Spotify connection to Harmonia expires today. Reconnect now to avoid any interruption to your syncs and organize runs.",
 	},
 };
 

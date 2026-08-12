@@ -11,9 +11,10 @@ import {
 } from "../../../services/music/spotify/reauth-reminder";
 import { sendSpotifyReauthEmailTask } from "./send-spotify-reauth";
 
-// Two-stage warning before Spotify's 6-month refresh token expiry (#289):
-// 14 days out, then 3 days out if still not reconnected. Daily cadence is
-// plenty against a 6-month window — no need for anything tighter.
+// Three-stage warning before Spotify's 6-month refresh token expiry (#289):
+// 14 days out, 3 days out, then the day of expiry, each if still not
+// reconnected. Daily cadence is plenty against a 6-month window — no need
+// for anything tighter.
 export const pollSpotifyReauthRemindersTask = schedules.task({
 	id: "email-poll-spotify-reauth-reminders",
 	cron: "0 8 * * *",
@@ -44,18 +45,19 @@ export const pollSpotifyReauthRemindersTask = schedules.task({
 						isNull(userSpotifyLibraryStats.needsReauth),
 						eq(userSpotifyLibraryStats.needsReauth, false),
 					),
-					// reauthReminderStage = '3d' means both stages already sent for this cycle.
+					// reauthReminderStage = '0d' means every stage already sent this cycle.
 					or(
 						isNull(userSpotifyLibraryStats.reauthReminderStage),
-						ne(userSpotifyLibraryStats.reauthReminderStage, "3d"),
+						ne(userSpotifyLibraryStats.reauthReminderStage, "0d"),
 					),
 				),
 			);
 
-		if (candidates.length === 0) return { sent14d: 0, sent3d: 0 };
+		if (candidates.length === 0) return { sent14d: 0, sent3d: 0, sent0d: 0 };
 
 		let sent14d = 0;
 		let sent3d = 0;
+		let sent0d = 0;
 
 		for (const candidate of candidates) {
 			if (!candidate.refreshTokenExpiresAt) continue;
@@ -74,6 +76,7 @@ export const pollSpotifyReauthRemindersTask = schedules.task({
 				const result = await sendSpotifyReauthEmailTask.triggerAndWait({
 					userId: candidate.userId,
 					stage,
+					refreshTokenExpiresAt: candidate.refreshTokenExpiresAt.toISOString(),
 				});
 				if (!result.ok) {
 					logger.warn(
@@ -90,7 +93,8 @@ export const pollSpotifyReauthRemindersTask = schedules.task({
 						set: { reauthReminderStage: stage },
 					});
 				if (stage === "14d") sent14d++;
-				else sent3d++;
+				else if (stage === "3d") sent3d++;
+				else sent0d++;
 			} catch (err) {
 				logger.warn(
 					{
@@ -104,10 +108,10 @@ export const pollSpotifyReauthRemindersTask = schedules.task({
 		}
 
 		logger.info(
-			{ candidates: candidates.length, sent14d, sent3d },
+			{ candidates: candidates.length, sent14d, sent3d, sent0d },
 			"Completed Spotify reauth reminder poll",
 		);
 
-		return { sent14d, sent3d };
+		return { sent14d, sent3d, sent0d };
 	},
 });
