@@ -8,6 +8,8 @@ export { sendWaitlistApprovedEmailTask } from "@harmonia/common/trigger/tasks/em
 export { sendWaitlistConfirmationEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-confirmation";
 export { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";
 export { organizePipeline } from "@harmonia/common/trigger/tasks/organize";
+export { refreshLibrarySnapshotsTask } from "@harmonia/common/trigger/tasks/spotify/refresh-library-snapshots";
+export { artistsStageTask } from "@harmonia/common/trigger/tasks/stages/artists";
 export {
 	classifyStageTask,
 	classifyWorkerTask,

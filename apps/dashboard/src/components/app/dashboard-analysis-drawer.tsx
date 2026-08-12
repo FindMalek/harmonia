@@ -39,12 +39,14 @@ function stageProducedNothing(
 ): boolean {
 	const prog = progress?.[stageId];
 	switch (stageId) {
+		// total===0 means nothing was pending (already done in an earlier run) —
+		// a healthy outcome, not a stage that failed to produce anything (#282).
 		case "classify":
-			return !prog?.classified;
+			return !!prog?.total && !prog?.classified;
 		case "embed":
-			return !prog?.embedded;
+			return !!prog?.total && !prog?.embedded;
 		case "cluster":
-			return !prog?.clusters;
+			return !!prog?.totalTracks && !prog?.clusters;
 		case "generate":
 			return !prog?.playlists && !prog?.tracksOrganized;
 		default:

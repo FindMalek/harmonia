@@ -1,6 +1,6 @@
 {
-	"id": "7c3671d5-50f5-480d-9800-0bae3cf465e1",
-	"prevId": "5a2e27b6-d327-4c57-a457-29409a571a37",
+	"id": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
+	"prevId": "7c3671d5-50f5-480d-9800-0bae3cf465e1",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -2252,24 +2252,6 @@
 					"primaryKey": false,
 					"notNull": false
 				},
-				"llm_mood": {
-					"name": "llm_mood",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"llm_tags": {
-					"name": "llm_tags",
-					"type": "jsonb",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"llm_classified_at": {
-					"name": "llm_classified_at",
-					"type": "timestamp",
-					"primaryKey": false,
-					"notNull": false
-				},
 				"embedding": {
 					"name": "embedding",
 					"type": "vector(1536)",
@@ -2291,12 +2273,6 @@
 				"domain_assigned_at": {
 					"name": "domain_assigned_at",
 					"type": "timestamp",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"analysis_snapshot": {
-					"name": "analysis_snapshot",
-					"type": "jsonb",
 					"primaryKey": false,
 					"notNull": false
 				},

@@ -1,6 +1,6 @@
 {
-	"id": "7c3671d5-50f5-480d-9800-0bae3cf465e1",
-	"prevId": "5a2e27b6-d327-4c57-a457-29409a571a37",
+	"id": "ab33af2e-2291-43b7-8f6d-75ebd52db854",
+	"prevId": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -1502,6 +1502,81 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.pipeline_stage_timing": {
+			"name": "pipeline_stage_timing",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"run_id": {
+					"name": "run_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"stage": {
+					"name": "stage",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"track_count": {
+					"name": "track_count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"started_at": {
+					"name": "started_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {
+				"pipeline_stage_timing_stage_idx": {
+					"name": "pipeline_stage_timing_stage_idx",
+					"columns": [
+						{
+							"expression": "stage",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"pipeline_stage_timing_run_id_pipeline_run_id_fk": {
+					"name": "pipeline_stage_timing_run_id_pipeline_run_id_fk",
+					"tableFrom": "pipeline_stage_timing",
+					"tableTo": "pipeline_run",
+					"columnsFrom": ["run_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.playlist": {
 			"name": "playlist",
 			"schema": "",
@@ -2252,24 +2327,6 @@
 					"primaryKey": false,
 					"notNull": false
 				},
-				"llm_mood": {
-					"name": "llm_mood",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"llm_tags": {
-					"name": "llm_tags",
-					"type": "jsonb",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"llm_classified_at": {
-					"name": "llm_classified_at",
-					"type": "timestamp",
-					"primaryKey": false,
-					"notNull": false
-				},
 				"embedding": {
 					"name": "embedding",
 					"type": "vector(1536)",
@@ -2291,12 +2348,6 @@
 				"domain_assigned_at": {
 					"name": "domain_assigned_at",
 					"type": "timestamp",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"analysis_snapshot": {
-					"name": "analysis_snapshot",
-					"type": "jsonb",
 					"primaryKey": false,
 					"notNull": false
 				},
