@@ -1,6 +1,6 @@
 {
-	"id": "ab33af2e-2291-43b7-8f6d-75ebd52db854",
-	"prevId": "6f9b9e1f-c2d0-4e80-95ce-be5957e0a5d6",
+	"id": "92617d20-5578-46bf-ad82-e05d3766df8f",
+	"prevId": "ab33af2e-2291-43b7-8f6d-75ebd52db854",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -2114,6 +2114,19 @@
 				"last_full_sync_at": {
 					"name": "last_full_sync_at",
 					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"needs_reauth": {
+					"name": "needs_reauth",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"reauth_reminder_stage": {
+					"name": "reauth_reminder_stage",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},

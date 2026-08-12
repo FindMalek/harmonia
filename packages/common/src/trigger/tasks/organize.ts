@@ -1,7 +1,11 @@
 import { logger } from "@harmonia/logger";
 import { task } from "@trigger.dev/sdk";
 
-import { PipelineCancelledError, updateRun } from "../../services/organize";
+import {
+	PipelineCancelledError,
+	recordStageTiming,
+	updateRun,
+} from "../../services/organize";
 import { assessRunOutcome } from "./assess-run-outcome";
 import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
 import { artistsStageTask } from "./stages/artists";
@@ -34,7 +38,17 @@ export const organizePipeline = task({
 		try {
 			await updateRun(runId, { status: "running", startedAt: new Date() });
 
+			// Real wall-clock duration per stage feeds the ETA estimate shown in
+			// the dashboard (#283) — recorded here, once per stage, rather than
+			// inside each stage task, so every stage's timing lives in one place.
+			const syncStart = new Date();
 			const syncRun = await syncStageTask.triggerAndWait({ userId, runId });
+			await recordStageTiming(
+				runId,
+				"sync",
+				syncStart,
+				syncRun.ok ? syncRun.output.total : null,
+			);
 
 			try {
 				// Cosmetic enrichment — fire-and-forget, doesn't gate the run's outcome.
@@ -53,30 +67,62 @@ export const organizePipeline = task({
 				);
 			}
 
+			const lyricsStart = new Date();
 			const lyricsRun = await lyricsStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
+			await recordStageTiming(
+				runId,
+				"lyrics",
+				lyricsStart,
+				lyricsRun.ok ? lyricsRun.output.total : null,
+			);
+
+			const classifyStart = new Date();
 			const classifyRun = await classifyStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
+			await recordStageTiming(
+				runId,
+				"classify",
+				classifyStart,
+				classifyRun.ok ? classifyRun.output.total : null,
+			);
+
+			const embedStart = new Date();
 			const embedRun = await embedStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
+			await recordStageTiming(
+				runId,
+				"embed",
+				embedStart,
+				embedRun.ok ? embedRun.output.total : null,
+			);
+
+			const clusterStart = new Date();
 			const clusterRun = await clusterStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
+			await recordStageTiming(runId, "cluster", clusterStart, null);
+
+			const generateStart = new Date();
 			const generateRun = await generateStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
+			await recordStageTiming(runId, "generate", generateStart, null);
+
+			const matchStart = new Date();
 			const matchRun = await matchStageTask.triggerAndWait({
 				userId,
 				runId,
 			});
+			await recordStageTiming(runId, "match", matchStart, null);
 
 			// Only playlists actually touched this run (created/updated by
 			// generate, or appended to by match) are candidates for auto-export —
@@ -88,11 +134,13 @@ export const organizePipeline = task({
 					...(matchRun.ok ? matchRun.output.touchedPlaylistIds : []),
 				]),
 			];
+			const exportStart = new Date();
 			const exportRun = await exportStageTask.triggerAndWait({
 				userId,
 				runId,
 				playlistIds: touchedPlaylistIds,
 			});
+			await recordStageTiming(runId, "export", exportStart, null);
 
 			// Any stage that resolved with ok:false (exhausted retries, no
 			// throw) is a hard failure of the run and must not be surfaced as
