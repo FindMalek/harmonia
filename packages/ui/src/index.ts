@@ -174,6 +174,7 @@ export {
 	TabsTrigger,
 	tabsListVariants,
 } from "./components/ui/tabs";
+export { Textarea } from "./components/ui/textarea";
 export {
 	Tooltip,
 	TooltipContent,

@@ -239,6 +239,13 @@
 			"when": 1786544654496,
 			"tag": "0033_gorgeous_madame_hydra",
 			"breakpoints": true
+		},
+		{
+			"idx": 34,
+			"version": "7",
+			"when": 1786546221941,
+			"tag": "0034_loose_gladiator",
+			"breakpoints": true
 		}
 	]
 }
