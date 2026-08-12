@@ -14,6 +14,11 @@ import { logger } from "@harmonia/logger";
 import { and, eq } from "drizzle-orm";
 
 import { logExternalApiCall } from "../../external-api-log";
+import {
+	clearSpotifyNeedsReauth,
+	getSpotifyConnectionStatus,
+	markSpotifyNeedsReauth,
+} from "./connection-status";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const SPOTIFY_RATE_LIMIT_MAX_RETRIES = 3;
@@ -33,6 +38,20 @@ function tryParseJson(text: string): unknown {
 	} catch {
 		return undefined;
 	}
+}
+
+/**
+ * `invalid_grant` means the refresh token itself is dead (6-month expiry,
+ * #289, or the user revoked access) — distinct from a transient 5xx/429,
+ * which should NOT flag the connection as broken.
+ */
+export function isDeadTokenError(body: unknown): boolean {
+	return (
+		typeof body === "object" &&
+		body !== null &&
+		"error" in body &&
+		(body as { error?: unknown }).error === "invalid_grant"
+	);
 }
 
 export type SpotifyCallContext = {
@@ -78,6 +97,18 @@ export async function getUserSpotifyAccessToken(
 		return null;
 	}
 
+	// Already known dead (a prior refresh got invalid_grant) — don't spend a
+	// request confirming what we already know. Cleared automatically on the
+	// next successful reconnect (see connection-status.ts).
+	const { needsReauth } = await getSpotifyConnectionStatus(userId);
+	if (needsReauth) {
+		logger.info(
+			{ userId },
+			"Skipping Spotify token refresh: connection needs reauth",
+		);
+		return null;
+	}
+
 	const clientId = env.HARMONIA_SPOTIFY_CLIENT_ID;
 	const clientSecret = env.HARMONIA_SPOTIFY_CLIENT_SECRET;
 
@@ -110,10 +141,16 @@ export async function getUserSpotifyAccessToken(
 	const durationMs = Date.now() - startTime;
 
 	if (!response.ok) {
+		const bodyText = await response.text();
+		const body = tryParseJson(bodyText) as { error?: string } | undefined;
+		const isDeadToken = isDeadTokenError(body);
+
 		logger.error(
 			{
 				status: response.status,
 				statusText: response.statusText,
+				spotifyError: body?.error,
+				isDeadToken,
 				userId,
 			},
 			"Failed to refresh Spotify access token",
@@ -125,8 +162,13 @@ export async function getUserSpotifyAccessToken(
 			method: "POST",
 			httpStatus: response.status,
 			durationMs,
-			errorMessage: response.statusText,
+			errorMessage: body?.error ?? response.statusText,
 		});
+
+		if (isDeadToken) {
+			await markSpotifyNeedsReauth(userId, spotifyAccount.refreshToken);
+		}
+
 		return null;
 	}
 
@@ -140,6 +182,10 @@ export async function getUserSpotifyAccessToken(
 			accessTokenExpiresAt: expiresAt,
 		})
 		.where(and(eq(account.userId, userId), eq(account.providerId, "spotify")));
+
+	// A successful refresh proves the connection currently works — clear any
+	// stale "needs reauth" flag rather than waiting for the user to reconnect.
+	await clearSpotifyNeedsReauth(userId);
 
 	await logExternalApiCall({
 		userId,

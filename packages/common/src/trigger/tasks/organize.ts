@@ -161,6 +161,9 @@ export const organizePipeline = task({
 				cluster: clusterRun.ok ? clusterRun.output : undefined,
 				generate: generateRun.ok ? generateRun.output : undefined,
 				stageFailures,
+				needsReauth: syncRun.ok
+					? (syncRun.output.stats?.needsReauth ?? false)
+					: false,
 			});
 
 			await updateRun(runId, {
