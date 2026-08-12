@@ -15,6 +15,7 @@ export {
 	sendFeedback3DayNotification,
 	sendOrganizeCompleteNotification,
 	sendOrganizeWeeklyDigestNotification,
+	sendSpotifyReauthNotification,
 	sendWelcomeNotification,
 } from "./send-transactional";
 export {

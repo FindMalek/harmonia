@@ -3,6 +3,7 @@ export * from "./admin";
 export * from "./classification";
 export * from "./cluster";
 export * from "./email";
+export * from "./feedback";
 export * from "./insights";
 export * from "./organize";
 export * from "./pipeline";

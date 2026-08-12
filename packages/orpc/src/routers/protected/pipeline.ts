@@ -10,6 +10,10 @@ import {
 	pipelineStatusEventSchema,
 	pipelineStreamStatusInput,
 } from "@harmonia/common/schemas";
+import {
+	estimateRemainingSeconds,
+	getHistoricalStageRates,
+} from "@harmonia/common/services/organize";
 import { db } from "@harmonia/db";
 import { cluster } from "@harmonia/db/schema/cluster";
 import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
@@ -113,6 +117,10 @@ export const pipelineRouter = {
 		.handler(async function* ({ input, context, signal }) {
 			const userId = context.session.user.id;
 			let polls = 0;
+			// Fetched once per stream connection, not per poll tick — historical
+			// averages don't meaningfully change within a single run's lifetime,
+			// and this avoids re-querying every PIPELINE_STREAM_POLL_INTERVAL_MS.
+			const historicalRates = await getHistoricalStageRates();
 
 			try {
 				while (!signal?.aborted) {
@@ -138,6 +146,11 @@ export const pipelineRouter = {
 						currentStage: run.currentStage,
 						progress: run.progress ?? {},
 						startedAt: run.startedAt,
+						etaSeconds: estimateRemainingSeconds({
+							currentStage: run.currentStage,
+							progress: run.progress ?? {},
+							historicalRates,
+						}),
 					};
 
 					if (run.status === "completed") {

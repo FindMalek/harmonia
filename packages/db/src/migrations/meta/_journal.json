@@ -229,8 +229,29 @@
 		{
 			"idx": 32,
 			"version": "7",
-			"when": 1786325590247,
-			"tag": "0032_wonderful_omega_sentinel",
+			"when": 1786541189381,
+			"tag": "0032_curly_sir_ram",
+			"breakpoints": true
+		},
+		{
+			"idx": 33,
+			"version": "7",
+			"when": 1786544654496,
+			"tag": "0033_gorgeous_madame_hydra",
+			"breakpoints": true
+		},
+		{
+			"idx": 34,
+			"version": "7",
+			"when": 1786546221941,
+			"tag": "0034_loose_gladiator",
+			"breakpoints": true
+		},
+		{
+			"idx": 35,
+			"version": "7",
+			"when": 1786549078621,
+			"tag": "0035_large_lockjaw",
 			"breakpoints": true
 		}
 	]

@@ -1,9 +1,11 @@
+export { pollSpotifyReauthRemindersTask } from "@harmonia/common/trigger/tasks/emails/poll-spotify-reauth-reminders";
 export { pollWaitlistApprovalsTask } from "@harmonia/common/trigger/tasks/emails/poll-waitlist-approvals";
 export { scheduleFeedback3DayEmailTask } from "@harmonia/common/trigger/tasks/emails/schedule-feedback-3day";
 export { sendFeedback3DayEmailTask } from "@harmonia/common/trigger/tasks/emails/send-feedback-3day";
 export { sendInvoiceEmailTask } from "@harmonia/common/trigger/tasks/emails/send-invoice";
 export { sendMarketingFeatureUpdateEmailTask } from "@harmonia/common/trigger/tasks/emails/send-marketing-feature-update";
 export { sendOrganizeCompleteEmailTask } from "@harmonia/common/trigger/tasks/emails/send-organize-complete";
+export { sendSpotifyReauthEmailTask } from "@harmonia/common/trigger/tasks/emails/send-spotify-reauth";
 export { sendWaitlistApprovedEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-approved";
 export { sendWaitlistConfirmationEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-confirmation";
 export { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";

@@ -4,7 +4,7 @@ vi.mock("@harmonia/db", () => ({
 	db: { insert: vi.fn(() => ({ values: vi.fn(() => Promise.resolve()) })) },
 }));
 
-import { SpotifyApiError, spotifyRequest } from "../client";
+import { isDeadTokenError, SpotifyApiError, spotifyRequest } from "../client";
 
 function mockFetchOnce(response: {
 	status: number;
@@ -59,5 +59,22 @@ describe("spotifyRequest", () => {
 		const result = spotifyRequest("/playlists/deleted", "token");
 		await expect(result).rejects.toThrow(SpotifyApiError);
 		await expect(result).rejects.toMatchObject({ status: 404 });
+	});
+});
+
+describe("isDeadTokenError", () => {
+	it("recognizes invalid_grant as a dead token", () => {
+		expect(isDeadTokenError({ error: "invalid_grant" })).toBe(true);
+	});
+
+	it("does not flag other OAuth errors as dead tokens", () => {
+		expect(isDeadTokenError({ error: "invalid_client" })).toBe(false);
+	});
+
+	it("does not flag a transient/unparseable body as a dead token", () => {
+		expect(isDeadTokenError(undefined)).toBe(false);
+		expect(isDeadTokenError(null)).toBe(false);
+		expect(isDeadTokenError("rate limited")).toBe(false);
+		expect(isDeadTokenError({})).toBe(false);
 	});
 });

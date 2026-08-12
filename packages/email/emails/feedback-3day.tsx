@@ -20,12 +20,14 @@ import { getEmailImageUrl } from "../utils";
 export type Feedback3DayEmailProps = {
 	recipientName?: string | null;
 	feedbackUrl: string;
+	settingsUrl: string;
 	dashboardUrl: string;
 };
 
 export function Feedback3DayEmail({
 	recipientName,
-	feedbackUrl = "http://127.0.0.1:3003/settings/notifications",
+	feedbackUrl = "http://127.0.0.1:3003/feedback",
+	settingsUrl = "http://127.0.0.1:3003/settings/notifications",
 	dashboardUrl = "http://127.0.0.1:3003",
 }: Feedback3DayEmailProps) {
 	const themeClasses = getEmailThemeClasses();
@@ -93,7 +95,7 @@ export function Feedback3DayEmail({
 					</Text>
 
 					<Footer
-						settingsUrl={feedbackUrl}
+						settingsUrl={settingsUrl}
 						complianceText="You are receiving this email based on your Harmonia notification preferences."
 					/>
 				</Container>
@@ -104,7 +106,8 @@ export function Feedback3DayEmail({
 
 Feedback3DayEmail.PreviewProps = {
 	recipientName: "Malek",
-	feedbackUrl: "http://127.0.0.1:3003/settings/notifications",
+	feedbackUrl: "http://127.0.0.1:3003/feedback",
+	settingsUrl: "http://127.0.0.1:3003/settings/notifications",
 	dashboardUrl: "http://127.0.0.1:3003",
 } satisfies Feedback3DayEmailProps;
 
