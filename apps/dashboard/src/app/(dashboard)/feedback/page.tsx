@@ -6,6 +6,8 @@ import {
 	FieldError,
 	FieldGroup,
 	FieldLabel,
+	Icons,
+	Separator,
 	Textarea,
 } from "@harmonia/ui";
 import { useForm } from "@tanstack/react-form";
@@ -62,11 +64,15 @@ export default function FeedbackPage() {
 			<div className="flex flex-col gap-6">
 				<PageHeader
 					title="Feedback"
-					description="Thanks for letting us know."
+					description="Tell us what's working and what we can improve."
 				/>
-				<p className="text-muted-foreground text-sm">
-					We read every submission — appreciate you taking the time.
-				</p>
+				<div className="flex flex-col items-center gap-3 border py-16 text-center">
+					<Icons.circleCheck className="size-8 text-primary" />
+					<p className="font-medium text-sm">Thanks for the feedback!</p>
+					<p className="max-w-xs text-muted-foreground text-sm">
+						We read every submission — appreciate you taking the time.
+					</p>
+				</div>
 			</div>
 		);
 	}
@@ -83,77 +89,90 @@ export default function FeedbackPage() {
 					e.preventDefault();
 					form.handleSubmit();
 				}}
+				className="border"
 			>
-				<FieldGroup>
-					<form.Field
-						name="message"
-						children={(field) => {
-							const isInvalid =
-								field.state.meta.isTouched && !field.state.meta.isValid;
-							return (
-								<Field data-invalid={isInvalid}>
-									<FieldLabel htmlFor={field.name} className="text-xs">
-										Your feedback
-									</FieldLabel>
-									<Textarea
-										id={field.name}
-										name={field.name}
-										placeholder="What's on your mind?"
-										rows={6}
-										maxLength={2000}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										aria-invalid={isInvalid}
-									/>
-									{isInvalid && <FieldError errors={field.state.meta.errors} />}
+				<div className="flex flex-col gap-2 px-4 pt-4 pb-2">
+					<span className="text-muted-foreground text-xs uppercase tracking-widest">
+						Share feedback
+					</span>
+					<Separator />
+				</div>
+
+				<div className="px-4 pb-4">
+					<FieldGroup>
+						<form.Field
+							name="message"
+							children={(field) => {
+								const isInvalid =
+									field.state.meta.isTouched && !field.state.meta.isValid;
+								return (
+									<Field data-invalid={isInvalid}>
+										<FieldLabel htmlFor={field.name}>Your feedback</FieldLabel>
+										<Textarea
+											id={field.name}
+											name={field.name}
+											placeholder="What's on your mind?"
+											rows={6}
+											maxLength={2000}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											aria-invalid={isInvalid}
+										/>
+										{isInvalid && (
+											<FieldError errors={field.state.meta.errors} />
+										)}
+									</Field>
+								);
+							}}
+						/>
+
+						<form.Field
+							name="rating"
+							children={(field) => (
+								<Field>
+									<FieldLabel>Rating (optional)</FieldLabel>
+									<div className="flex gap-2">
+										{RATINGS.map((value) => (
+											<Button
+												key={value}
+												type="button"
+												size="icon"
+												variant={
+													field.state.value === value ? "default" : "outline"
+												}
+												className="size-10"
+												onClick={() =>
+													field.handleChange((current) =>
+														current === value ? null : value,
+													)
+												}
+											>
+												{value}
+											</Button>
+										))}
+									</div>
+									<p className="text-muted-foreground text-xs">
+										1 = not great, 5 = love it
+									</p>
 								</Field>
-							);
-						}}
-					/>
+							)}
+						/>
 
-					<form.Field
-						name="rating"
-						children={(field) => (
-							<Field>
-								<FieldLabel className="text-xs">Rating (optional)</FieldLabel>
-								<div className="flex gap-2">
-									{RATINGS.map((value) => (
-										<Button
-											key={value}
-											type="button"
-											size="icon"
-											variant={
-												field.state.value === value ? "default" : "outline"
-											}
-											className="size-9"
-											onClick={() =>
-												field.handleChange((current) =>
-													current === value ? null : value,
-												)
-											}
-										>
-											{value}
-										</Button>
-									))}
-								</div>
-							</Field>
-						)}
-					/>
-
-					<form.Subscribe selector={(state) => state.isSubmitting}>
-						{(isSubmitting) => (
-							<Button
-								type="submit"
-								className="w-fit"
-								disabled={isSubmitting}
-								isLoading={isSubmitting}
-							>
-								{isSubmitting ? "Sending..." : "Send feedback"}
-							</Button>
-						)}
-					</form.Subscribe>
-				</FieldGroup>
+						<form.Subscribe selector={(state) => state.isSubmitting}>
+							{(isSubmitting) => (
+								<Button
+									type="submit"
+									className="w-fit"
+									disabled={isSubmitting}
+									isLoading={isSubmitting}
+								>
+									{isSubmitting ? "Sending..." : "Send feedback"}
+								</Button>
+							)}
+						</form.Subscribe>
+					</FieldGroup>
+				</div>
 			</form>
 		</div>
 	);

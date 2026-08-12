@@ -9,8 +9,7 @@ export const feedback = pgTable("feedback", {
 		.references(() => user.id, { onDelete: "cascade" }),
 	message: text("message").notNull(),
 	rating: integer("rating"),
-	// e.g. "email_feedback_3day", "in_app"
-	source: text("source").notNull(),
+	source: text("source").$type<"email_feedback_3day" | "in_app">().notNull(),
 	// Correlates back to the triggering email campaign, if any.
 	campaignKey: text("campaign_key"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),

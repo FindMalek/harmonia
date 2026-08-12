@@ -18,6 +18,12 @@ export const ADMIN_ROUTES = {
 		icon: "person",
 		isNav: true,
 	},
+	feedback: {
+		path: "/feedback",
+		label: "Feedback",
+		icon: "message",
+		isNav: true,
+	},
 } as const;
 
 export type AdminRoutes = typeof ADMIN_ROUTES;
