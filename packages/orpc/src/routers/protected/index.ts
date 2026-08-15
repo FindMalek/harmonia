@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import { accountDeleteOutputSchema } from "@harmonia/common/schemas";
+import { redeemWaitlistRow } from "@harmonia/common/services/waitlist";
 import { db } from "@harmonia/db";
 import { account, user } from "@harmonia/db/schema/auth";
 import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure, protectedProcedure } from "../../procedures";
 import { clustersRouter } from "./clusters";
@@ -95,28 +96,7 @@ export const protectedRouter = {
 				return { success: false };
 			}
 
-			const success = await db.transaction(async (tx) => {
-				// Atomic: only stamp if still unredeemed (race condition guard)
-				const [redeemed] = await tx
-					.update(waitlistSignup)
-					.set({ inviteRedeemedAt: new Date(), inviteRedeemedByUserId: userId })
-					.where(
-						and(
-							eq(waitlistSignup.id, row.id),
-							isNull(waitlistSignup.inviteRedeemedAt),
-						),
-					)
-					.returning({ id: waitlistSignup.id });
-
-				if (!redeemed) return false;
-
-				await tx
-					.update(user)
-					.set({ isApproved: true })
-					.where(eq(user.id, userId));
-
-				return true;
-			});
+			const success = await redeemWaitlistRow(row.id, userId);
 
 			return { success };
 		}),

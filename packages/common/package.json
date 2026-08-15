@@ -92,6 +92,9 @@
 		"./services/organize": {
 			"default": "./src/services/organize/index.ts"
 		},
+		"./services/waitlist": {
+			"default": "./src/services/waitlist/index.ts"
+		},
 		"./schemas": {
 			"default": "./src/schemas/index.ts"
 		},

@@ -1,4 +1,5 @@
 import { clearSpotifyNeedsReauth } from "@harmonia/common/services/music";
+import { tryAutoApproveByEmail } from "@harmonia/common/services/waitlist";
 import { sendWelcomeEmailTask } from "@harmonia/common/trigger/tasks/emails/send-welcome";
 import { buildTrustedOrigins } from "@harmonia/common/utils/origin";
 import * as schema from "@harmonia/db/schema/auth";
@@ -68,6 +69,46 @@ function buildTrustedOriginsList(envConfig: AuthEnvConfig) {
 	);
 }
 
+/**
+ * Runs on every Spotify account link/re-link (first sign-in and every
+ * return visit) — covers the case where someone was approved but never
+ * clicked their invite email, only signed in directly. Note: Spotify's
+ * profile email is self-reported, not independently verified — see the
+ * security note on tryAutoApproveByEmail for why this is still an accepted
+ * tradeoff here.
+ */
+async function autoApproveIfWaitlisted(accountUserId: string): Promise<void> {
+	try {
+		await tryAutoApproveByEmail(accountUserId);
+	} catch (err) {
+		logger.warn(
+			{
+				userId: accountUserId,
+				error: err instanceof Error ? err.message : String(err),
+			},
+			"Failed to auto-approve from waitlist on Spotify sign-in",
+		);
+	}
+}
+
+/**
+ * Fires on every Spotify account link/re-link — a fresh token just landed,
+ * so clear any stale "needs reauth" state (#289).
+ */
+async function clearReauthFlagIfNeeded(accountUserId: string): Promise<void> {
+	try {
+		await clearSpotifyNeedsReauth(accountUserId);
+	} catch (err) {
+		logger.warn(
+			{
+				userId: accountUserId,
+				error: err instanceof Error ? err.message : String(err),
+			},
+			"Failed to clear Spotify reauth flag after account link",
+		);
+	}
+}
+
 const sharedUserFields = {
 	additionalFields: {
 		hasCompletedOnboarding: {
@@ -127,36 +168,24 @@ export function createDashboardAuth(
 				create: {
 					// Fires on first-ever Spotify link and on re-auth after Better Auth
 					// re-links an existing provider account — either way, a fresh token
-					// just landed, so clear any stale "needs reauth" state (#289).
+					// just landed: clear any stale "needs reauth" state (#289) and
+					// check whether this account's email matches an approved,
+					// unredeemed waitlist entry (#298).
 					after: async (createdAccount) => {
 						if (createdAccount.providerId !== "spotify") return;
-						try {
-							await clearSpotifyNeedsReauth(createdAccount.userId);
-						} catch (err) {
-							logger.warn(
-								{
-									userId: createdAccount.userId,
-									error: err instanceof Error ? err.message : String(err),
-								},
-								"Failed to clear Spotify reauth flag after account create",
-							);
-						}
+						await Promise.all([
+							clearReauthFlagIfNeeded(createdAccount.userId),
+							autoApproveIfWaitlisted(createdAccount.userId),
+						]);
 					},
 				},
 				update: {
 					after: async (updatedAccount) => {
 						if (updatedAccount.providerId !== "spotify") return;
-						try {
-							await clearSpotifyNeedsReauth(updatedAccount.userId);
-						} catch (err) {
-							logger.warn(
-								{
-									userId: updatedAccount.userId,
-									error: err instanceof Error ? err.message : String(err),
-								},
-								"Failed to clear Spotify reauth flag after account update",
-							);
-						}
+						await Promise.all([
+							clearReauthFlagIfNeeded(updatedAccount.userId),
+							autoApproveIfWaitlisted(updatedAccount.userId),
+						]);
 					},
 				},
 			},
