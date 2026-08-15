@@ -1,17 +1,28 @@
-import { getSpotifyLibraryStats, syncLibraryTracks } from "@harmonia/common";
+import { getSpotifyLibraryStats } from "@harmonia/common";
 import {
 	emptyInput,
-	type SyncProgressEvent,
+	type SpotifyLibraryStats,
 	spotifyLibraryStatsSchema,
 	syncProgressEventSchema,
 } from "@harmonia/common/schemas";
-import type { SyncProgress } from "@harmonia/common/types";
+import { syncUserLibraryTask } from "@harmonia/common/trigger/tasks/spotify/sync-user-library";
+import type { SyncPhase, SyncProgress } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
-import { eventIterator } from "@orpc/server";
+import { eventIterator, ORPCError } from "@orpc/server";
+import { runs } from "@trigger.dev/sdk";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure } from "../../procedures";
+
+const TERMINAL_FAILURE_STATUSES = new Set([
+	"CANCELED",
+	"FAILED",
+	"CRASHED",
+	"SYSTEM_FAILURE",
+	"EXPIRED",
+	"TIMED_OUT",
+]);
 
 export const spotifyRouter = {
 	libraryStats: approvedProcedure
@@ -28,43 +39,42 @@ export const spotifyRouter = {
 		.handler(async function* ({ context }) {
 			const userId = context.session.user.id;
 
-			const queue: SyncProgressEvent[] = [];
-			let resolveNext: (() => void) | null = null;
-			const waitNext = () =>
-				new Promise<void>((r) => {
-					resolveNext = r;
-				});
-
-			const onProgress = async (p: SyncProgress) => {
-				queue.push({
-					event: "progress",
-					progress: {
-						phase: p.phase ?? "liked",
-						phasesCompleted: p.phasesCompleted ?? 0,
-						percent: p.percent ?? 0,
-						done: p.done ?? false,
-						total: p.total ?? 0,
-					},
-				});
-				resolveNext?.();
-			};
-
-			const syncPromise = syncLibraryTracks(userId, onProgress);
+			// Triggers the sync on Trigger.dev's infra instead of running it
+			// inline here — this handler just relays the run's realtime
+			// metadata/status, so it stays CPU-idle (I/O wait) for the sync's
+			// full duration rather than CPU-active (#295).
+			const handle = await syncUserLibraryTask.trigger({ userId });
 
 			try {
-				while (true) {
-					while (queue.length > 0) {
-						yield queue.shift()!;
+				for await (const run of runs.subscribeToRun(handle)) {
+					const progress = run.metadata?.progress as SyncProgress | undefined;
+
+					if (progress) {
+						yield {
+							event: "progress",
+							progress: {
+								phase: (progress.phase ?? "liked") as SyncPhase,
+								phasesCompleted: progress.phasesCompleted ?? 0,
+								percent: progress.percent ?? 0,
+								done: progress.done ?? false,
+								total: progress.total ?? 0,
+							},
+						};
 					}
 
-					const result = await Promise.race([
-						syncPromise.then((r) => ({ done: true, result: r })),
-						waitNext().then(() => ({ done: false, result: null })),
-					]);
+					if (run.status === "COMPLETED") {
+						const output = run.output as
+							| (SyncProgress & { stats?: SpotifyLibraryStats })
+							| undefined;
+						yield { event: "completed", stats: output?.stats };
+						return;
+					}
 
-					if (result.done && result.result) {
-						const { stats } = result.result;
-						yield { event: "completed", stats };
+					if (TERMINAL_FAILURE_STATUSES.has(run.status)) {
+						yield {
+							event: "failed",
+							error: `Sync ${run.status.toLowerCase()}`,
+						};
 						return;
 					}
 				}
@@ -87,8 +97,16 @@ export const spotifyRouter = {
 		)
 		.handler(async ({ context }) => {
 			const userId = context.session.user.id;
-			const result = await syncLibraryTracks(userId);
-			return result;
+
+			const run = await syncUserLibraryTask.triggerAndWait({ userId });
+			if (!run.ok) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message:
+						run.error instanceof Error ? run.error.message : String(run.error),
+				});
+			}
+
+			return run.output;
 		}),
 
 	finalizeOnboarding: approvedProcedure
