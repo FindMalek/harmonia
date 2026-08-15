@@ -31,13 +31,7 @@ export type InsertRunResult =
 	| { kind: "created"; runId: number }
 	| { kind: "skipped"; runId: number };
 
-/**
- * Inserts a new "running" pipeline_run row for the user, or reports the
- * existing one if the unique-running-per-user constraint blocks it. If the
- * conflicting run finishes between our insert attempt and the lookup (a
- * narrow but real race), the constraint has cleared — retry the insert
- * instead of dropping a valid request as "skipped".
- */
+// Retries the insert if the running-conflict clears between our attempt and the lookup (narrow race).
 export async function insertRunOrSkip(
 	userId: string,
 	triggeredBy: "user" | "cron",
@@ -64,8 +58,6 @@ export async function insertRunOrSkip(
 			if (existingRunId !== null) {
 				return { kind: "skipped", runId: existingRunId };
 			}
-			// Conflicting run finished between our insert and this lookup —
-			// loop around and retry the insert now that it should be clear.
 		}
 	}
 	throw new Error(
@@ -80,12 +72,7 @@ export type OrganizeAllUsersResult = {
 	error?: string;
 };
 
-/**
- * Queues an organize run for every user (skipping anyone with a run already
- * in progress). Runs created this way are marked `triggeredBy: "cron"`,
- * which send-organize-complete.ts uses to send the weekly digest email
- * instead of the regular "organize complete" email.
- */
+// triggeredBy: "cron" is what makes send-organize-complete.ts send the weekly digest email.
 export async function runOrganizeForAllUsers(): Promise<
 	OrganizeAllUsersResult[]
 > {
