@@ -14,6 +14,9 @@
 		"./trigger/tasks/organize": {
 			"default": "./src/trigger/tasks/organize.ts"
 		},
+		"./trigger/tasks/organize-weekly-cron": {
+			"default": "./src/trigger/tasks/organize-weekly-cron.ts"
+		},
 		"./trigger/tasks/spotify/refresh-library-snapshots": {
 			"default": "./src/trigger/tasks/spotify/refresh-library-snapshots.ts"
 		},
