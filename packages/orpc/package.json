@@ -32,6 +32,7 @@
 		"@orpc/client": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
+		"@trigger.dev/sdk": "catalog:",
 		"better-auth": "catalog:",
 		"drizzle-orm": "catalog:",
 		"next": "catalog:",

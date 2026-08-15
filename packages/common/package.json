@@ -17,6 +17,9 @@
 		"./trigger/tasks/spotify/refresh-library-snapshots": {
 			"default": "./src/trigger/tasks/spotify/refresh-library-snapshots.ts"
 		},
+		"./trigger/tasks/spotify/sync-user-library": {
+			"default": "./src/trigger/tasks/spotify/sync-user-library.ts"
+		},
 		"./trigger/tasks/stages/sync": {
 			"default": "./src/trigger/tasks/stages/sync.ts"
 		},
