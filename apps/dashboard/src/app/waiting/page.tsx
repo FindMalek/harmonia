@@ -1,6 +1,7 @@
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { cn, HarmoniaBrandHeader, Icons } from "@harmonia/ui";
+import { buttonVariants, cn, HarmoniaBrandHeader, Icons } from "@harmonia/ui";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Fragment } from "react";
 import { serverClient } from "@/shared/api/orpc-server";
@@ -117,10 +118,19 @@ export default async function WaitingPage({
 							You're in.
 						</h1>
 						<p className="mt-6 text-base text-muted-foreground leading-relaxed">
-							Check your inbox for the email with your sign-in link.
+							Check your inbox for the email with your sign-in link, or continue
+							below.
 						</p>
 						<div className="mt-10">
 							<Stepper status="approved" />
+						</div>
+						<div className="mt-10">
+							<Link
+								href={`/api/invite/${token}`}
+								className={buttonVariants({ size: "lg" })}
+							>
+								Go to dashboard
+							</Link>
 						</div>
 					</div>
 				</WaitingShell>
