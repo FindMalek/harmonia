@@ -34,7 +34,7 @@ async function triggerApprovedEmailSafely(payload: {
 	} catch (error) {
 		logger.warn(
 			{ waitlistId: payload.waitlistId, error },
-			"Failed to trigger waitlist approved email task — poll cron will retry",
+			"Failed to trigger waitlist approved email task — use resendInvite to retry",
 		);
 	}
 }
@@ -267,7 +267,7 @@ export const adminWaitlistRouter = {
 			} catch (error) {
 				logger.warn(
 					{ ids: rows.map((r) => r.id), error },
-					"Failed to batch-trigger waitlist approved email tasks — poll cron will retry",
+					"Failed to batch-trigger waitlist approved email tasks — use resendInvite to retry",
 				);
 			}
 
