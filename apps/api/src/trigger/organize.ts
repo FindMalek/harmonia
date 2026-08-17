@@ -1,5 +1,4 @@
 export { pollSpotifyReauthRemindersTask } from "@harmonia/common/trigger/tasks/emails/poll-spotify-reauth-reminders";
-export { pollWaitlistApprovalsTask } from "@harmonia/common/trigger/tasks/emails/poll-waitlist-approvals";
 export { scheduleFeedback3DayEmailTask } from "@harmonia/common/trigger/tasks/emails/schedule-feedback-3day";
 export { sendFeedback3DayEmailTask } from "@harmonia/common/trigger/tasks/emails/send-feedback-3day";
 export { sendInvoiceEmailTask } from "@harmonia/common/trigger/tasks/emails/send-invoice";

@@ -213,7 +213,7 @@ export async function sendWaitlistApprovedNotification({
 			{ waitlistId, templateKey: "waitlist_approved", error: result.error },
 			"Email delivery failed",
 		);
-		// Do NOT stamp approvalEmailSentAt — let the poller retry.
+		// Do NOT stamp approvalEmailSentAt — the caller throws on send_failed so Trigger.dev retries; a resendInvite covers what's still stuck after that.
 		return { ok: false, reason: "send_failed" as const, error: result.error };
 	}
 
