@@ -17,7 +17,7 @@ import { track } from "@harmonia/db/schema/track";
 import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
-import { generateText, Output } from "ai";
+import { APICallError, generateText, Output } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
@@ -98,9 +98,11 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 				const provider = activeProvider;
 				const modelId = getModelId("clusterMetadata");
 				const startTime = Date.now();
+				let attempt = 0;
 				try {
 					const meta = await withLLMRetry(
-						async () => {
+						async (attemptCount) => {
+							attempt = attemptCount - 1;
 							const { output } = await generateText({
 								model: getAIModel("clusterMetadata"),
 								output: Output.object({ schema: clusterMetadataSchema }),
@@ -147,6 +149,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						httpStatus: 200,
 						requestPayload: { model: modelId, clusterId: c.id },
 						durationMs: Date.now() - startTime,
+						retryAttempt: attempt,
 					});
 
 					generated++;
@@ -158,15 +161,20 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						},
 						"Failed to generate cluster metadata",
 					);
+					const httpStatus = APICallError.isInstance(err)
+						? err.statusCode
+						: undefined;
 					await logExternalApiCall({
 						userId,
 						provider,
 						endpoint: modelId,
 						method: "POST",
+						httpStatus,
 						requestPayload: { model: modelId, clusterId: c.id },
 						durationMs: Date.now() - startTime,
 						errorMessage: err instanceof Error ? err.message : String(err),
-						statusCategory: "server_error",
+						statusCategory: httpStatus ? undefined : "server_error",
+						retryAttempt: attempt,
 					});
 				}
 			}),

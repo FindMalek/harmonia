@@ -3,6 +3,8 @@ import { APICallError, NoObjectGeneratedError } from "ai";
 import pRetry, { AbortError } from "p-retry";
 
 const DEFAULT_RATE_LIMIT_FALLBACK_DELAY_MS = 45_000;
+// retry-after is provider-controlled and otherwise unbounded.
+const MAX_RATE_LIMIT_DELAY_MS = 120_000;
 
 export function isRateLimit(err: unknown): err is APICallError {
 	return APICallError.isInstance(err) && err.statusCode === 429;
@@ -15,7 +17,9 @@ export function getRateLimitDelayMs(
 	const retryAfter = err.responseHeaders?.["retry-after"];
 	if (retryAfter) {
 		const seconds = Number(retryAfter);
-		if (Number.isFinite(seconds) && seconds > 0) return seconds * 1000;
+		if (Number.isFinite(seconds) && seconds > 0) {
+			return Math.min(seconds * 1000, MAX_RATE_LIMIT_DELAY_MS);
+		}
 	}
 	return fallbackMs;
 }
@@ -38,20 +42,18 @@ export function isSplitRetryableError(err: unknown): boolean {
 
 export function logInvalidJsonError(err: unknown): void {
 	if (!NoObjectGeneratedError.isInstance(err)) return;
-	const e = err as { text?: string; cause?: unknown };
-	const failedText =
-		e.text ??
-		(typeof e.cause === "object" &&
-		e.cause !== null &&
-		"failed_generation" in e.cause
-			? String((e.cause as { failed_generation?: string }).failed_generation)
-			: undefined);
+	const { text, cause } = err;
+	let failedText = text;
+	if (
+		failedText === undefined &&
+		typeof cause === "object" &&
+		cause !== null &&
+		"failed_generation" in cause
+	) {
+		failedText = String(cause.failed_generation);
+	}
 	logger.warn(
-		{
-			errorMessage: err.message,
-			rawOutput: failedText,
-			cause: e.cause,
-		},
+		{ errorMessage: err.message, rawOutput: failedText, cause },
 		"LLM returned invalid JSON; see rawOutput for model output",
 	);
 }
@@ -78,6 +80,8 @@ export async function withLLMRetry<T>(
 				return await fn(attemptCount);
 			} catch (err) {
 				if (isRateLimit(err)) {
+					// Last attempt — p-retry won't call fn again, so don't wait.
+					if (attemptCount > options.retries) throw err;
 					const delayMs = getRateLimitDelayMs(
 						err,
 						options.rateLimitFallbackDelayMs,
@@ -99,9 +103,7 @@ export async function withLLMRetry<T>(
 					err.statusCode >= 400 &&
 					err.statusCode < 500
 				) {
-					throw new AbortError(
-						err instanceof Error ? err.message : String(err),
-					);
+					throw new AbortError(err);
 				}
 				throw err;
 			}
@@ -110,13 +112,13 @@ export async function withLLMRetry<T>(
 			retries: options.retries,
 			minTimeout: options.minTimeout ?? 1000,
 			randomize: options.randomize ?? true,
-			onFailedAttempt: (error) => {
+			onFailedAttempt: ({ error, attemptNumber, retriesLeft }) => {
 				logger.warn(
 					{
 						label: options.label,
-						attempt: error.attemptNumber,
-						retriesLeft: error.retriesLeft,
-						error: String(error),
+						attempt: attemptNumber,
+						retriesLeft,
+						error: error.message,
 					},
 					"LLM call failed, retrying",
 				);

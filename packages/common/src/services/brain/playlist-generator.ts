@@ -27,7 +27,7 @@ import { track } from "@harmonia/db/schema/track";
 import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
-import { generateText, Output } from "ai";
+import { APICallError, generateText, Output } from "ai";
 import { and, eq, inArray } from "drizzle-orm";
 import pLimit from "p-limit";
 import { normalizeTrackTitle } from "../../utils/normalize-track-title";
@@ -704,10 +704,12 @@ async function generatePlaylistMetadata(
 	const provider = activeProvider;
 	const modelId = getModelId("playlistNaming");
 	const startTime = Date.now();
+	let attempt = 0;
 
 	try {
 		const output = await withLLMRetry(
-			async () => {
+			async (attemptCount) => {
+				attempt = attemptCount - 1;
 				const clusterInfo: Record<string, string | number> = {
 					mood: meta
 						? meta.dominantMood
@@ -763,19 +765,25 @@ async function generatePlaylistMetadata(
 			httpStatus: 200,
 			requestPayload: { model: modelId, avoidNameCount: avoidNames.length },
 			durationMs: Date.now() - startTime,
+			retryAttempt: attempt,
 		});
 
 		return output;
 	} catch (err) {
+		const httpStatus = APICallError.isInstance(err)
+			? err.statusCode
+			: undefined;
 		await logExternalApiCall({
 			userId,
 			provider,
 			endpoint: modelId,
 			method: "POST",
+			httpStatus,
 			requestPayload: { model: modelId, avoidNameCount: avoidNames.length },
 			durationMs: Date.now() - startTime,
 			errorMessage: err instanceof Error ? err.message : String(err),
-			statusCategory: "server_error",
+			statusCategory: httpStatus ? undefined : "server_error",
+			retryAttempt: attempt,
 		});
 		throw err;
 	}
