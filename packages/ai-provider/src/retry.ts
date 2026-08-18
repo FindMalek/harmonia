@@ -20,13 +20,7 @@ export function getRateLimitDelayMs(
 	return fallbackMs;
 }
 
-/**
- * True for errors worth retrying by splitting a batch in half rather than
- * simply retrying the same request — a structured-output/schema failure a
- * smaller batch might sidestep. Message substrings below are tuned against
- * Groq's error text (moved here unchanged from llml.ts); revisit once
- * Concentrate/Gemini are live and their error shapes are known.
- */
+// Tuned against Groq's error text — revisit once Concentrate/Gemini are live.
 export function isSplitRetryableError(err: unknown): boolean {
 	const cause =
 		err instanceof AbortError && err.originalError != null
@@ -38,9 +32,6 @@ export function isSplitRetryableError(err: unknown): boolean {
 	return (
 		message.includes("Failed to validate JSON") ||
 		message.includes("No output generated") ||
-		// Groq's structured-output rejection surfaces as a 4xx APICallError,
-		// not NoObjectGeneratedError — e.g. "Generated JSON does not match
-		// the expected schema... jsonschema: '' does not validate with ...".
 		message.includes("does not match the expected schema")
 	);
 }
@@ -74,18 +65,9 @@ export type WithLLMRetryOptions = {
 	minTimeout?: number;
 	randomize?: boolean;
 	rateLimitFallbackDelayMs?: number;
-	/** Included in retry/rate-limit log lines, e.g. "classification". */
 	label: string;
 };
 
-/**
- * Wraps an LLM call with the retry/backoff behavior shared across all three
- * call sites: a 429 sleeps for the server's retry-after (or a fallback
- * delay) then retries, a hard non-429 4xx aborts immediately instead of
- * wasting retries, and every other failure follows p-retry's normal
- * backoff. Extracted from llml.ts's classifyTracksAdaptive, the most
- * complete of the three implementations that existed before this package.
- */
 export async function withLLMRetry<T>(
 	fn: (attemptCount: number) => Promise<T>,
 	options: WithLLMRetryOptions,

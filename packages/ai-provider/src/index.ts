@@ -1,5 +1,5 @@
 export {
-	getActiveProvider,
+	activeProvider,
 	getAIModel,
 	getModelId,
 	isProviderConfigured,

@@ -1,5 +1,5 @@
 import {
-	getActiveProvider,
+	activeProvider,
 	getAIModel,
 	getModelId,
 	isProviderConfigured,
@@ -28,7 +28,7 @@ const CLUSTER_METADATA_RETRIES = 2;
 export async function generateClusterMetadata(userId: string): Promise<number> {
 	if (!isProviderConfigured()) {
 		logger.warn(
-			{ type: "cluster-metadata", provider: getActiveProvider() },
+			{ type: "cluster-metadata", provider: activeProvider },
 			"No credentials configured for the active AI provider; skipping cluster metadata generation",
 		);
 		return 0;
@@ -95,7 +95,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 					return `${t.name} by ${artists.join(", ")}`;
 				});
 
-				const provider = getActiveProvider();
+				const provider = activeProvider;
 				const modelId = getModelId("clusterMetadata");
 				const startTime = Date.now();
 				try {

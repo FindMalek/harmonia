@@ -1,5 +1,5 @@
 import {
-	getActiveProvider,
+	activeProvider,
 	getAIModel,
 	getModelId,
 	isProviderConfigured,
@@ -67,7 +67,7 @@ async function classifyTracksBatchOnce(
 	context: LLMCallContext,
 	retryAttempt: number,
 ): Promise<ClassificationResult[]> {
-	const provider = getActiveProvider();
+	const provider = activeProvider;
 	const modelId = getModelId("classification");
 	const startTime = Date.now();
 	try {
@@ -192,7 +192,7 @@ export async function classifyTracksWithLLM(
 ): Promise<ClassificationResult[]> {
 	if (!isProviderConfigured()) {
 		logger.warn(
-			{ type: "llml", provider: getActiveProvider() },
+			{ type: "llml", provider: activeProvider },
 			"No credentials configured for the active AI provider; skipping LLM classification and returning empty results",
 		);
 		return [];

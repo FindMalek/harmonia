@@ -1,5 +1,5 @@
 import {
-	getActiveProvider,
+	activeProvider,
 	getAIModel,
 	getModelId,
 	isProviderConfigured,
@@ -82,7 +82,7 @@ export async function generatePlaylists(
 
 	if (!isProviderConfigured()) {
 		logger.warn(
-			{ provider: getActiveProvider() },
+			{ provider: activeProvider },
 			"No credentials configured for the active AI provider; skipping playlist generation",
 		);
 		return stats;
@@ -701,7 +701,7 @@ async function generatePlaylistMetadata(
 		if (tags.vibe) vibes.push(...tags.vibe);
 	}
 
-	const provider = getActiveProvider();
+	const provider = activeProvider;
 	const modelId = getModelId("playlistNaming");
 	const startTime = Date.now();
 

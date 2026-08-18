@@ -6,14 +6,11 @@ import type { LanguageModel } from "ai";
 
 import { type AITask, TASK_MODELS } from "./models";
 
-/** The currently configured provider — defaults to "groq". */
-export function getActiveProvider() {
-	return env.HARMONIA_AI_PROVIDER;
-}
+export const activeProvider = env.HARMONIA_AI_PROVIDER;
 
 /** Whether the active provider has its required credential set. */
 export function isProviderConfigured(): boolean {
-	switch (getActiveProvider()) {
+	switch (activeProvider) {
 		case "groq":
 			return Boolean(env.HARMONIA_GROQ_API_KEY);
 		case "concentrate":
@@ -48,35 +45,23 @@ function getGeminiClient() {
 	return geminiClient;
 }
 
-/**
- * Resolves the model ID configured for a task on the active provider.
- * Throws rather than falling back to a guess when nothing is configured —
- * see TASK_MODELS in ./models.
- */
+// Throws rather than guessing when the active provider has no entry — see TASK_MODELS.
 export function getModelId(task: AITask): string {
-	const provider = getActiveProvider();
-	const modelId = TASK_MODELS[task][provider];
+	const modelId = TASK_MODELS[task][activeProvider];
 
 	if (!modelId) {
 		throw new Error(
-			`No model configured for task "${task}" on provider "${provider}" — add an entry to TASK_MODELS in packages/ai-provider/src/models.ts`,
+			`No model configured for task "${task}" on provider "${activeProvider}" — add an entry to TASK_MODELS in packages/ai-provider/src/models.ts`,
 		);
 	}
 
 	return modelId;
 }
 
-/**
- * Resolves the AI SDK model to use for a given task, based on the active
- * HARMONIA_AI_PROVIDER. This is the single place that constructs a
- * provider client — call sites should never import createGroq/createOpenAI/
- * createGoogleGenerativeAI directly.
- */
 export function getAIModel(task: AITask): LanguageModel {
-	const provider = getActiveProvider();
 	const modelId = getModelId(task);
 
-	switch (provider) {
+	switch (activeProvider) {
 		case "groq":
 			return getGroqClient()(modelId);
 		case "concentrate":
