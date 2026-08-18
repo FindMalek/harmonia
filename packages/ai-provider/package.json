@@ -1,0 +1,29 @@
+{
+	"name": "@harmonia/ai-provider",
+	"version": "0.0.0",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@ai-sdk/google": "^3.0.110",
+		"@ai-sdk/groq": "^3.0.41",
+		"@ai-sdk/openai": "^3.0.97",
+		"@harmonia/env": "workspace:*",
+		"@harmonia/logger": "workspace:*",
+		"ai": "^6.0.205",
+		"p-retry": "^8.0.0"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"typescript": "catalog:"
+	}
+}

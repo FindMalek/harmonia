@@ -121,7 +121,7 @@
 		}
 	},
 	"dependencies": {
-		"@ai-sdk/groq": "^3.0.41",
+		"@harmonia/ai-provider": "workspace:*",
 		"@harmonia/db": "workspace:*",
 		"@harmonia/email": "workspace:*",
 		"@harmonia/env": "workspace:*",

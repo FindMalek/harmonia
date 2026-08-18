@@ -26,7 +26,10 @@ function deriveStatusCategory(httpStatus: number | undefined | null): string {
 export type LogExternalApiCallInput = {
 	userId?: string | null;
 	pipelineRunId?: number | null;
-	provider: "spotify" | "lrclib" | "openai" | "groq";
+	// "concentrate" | "gemini" match @harmonia/ai-provider's AIProviderName
+	// exactly, so getActiveProvider()'s return value can be passed straight
+	// through without translation.
+	provider: "spotify" | "lrclib" | "openai" | "groq" | "concentrate" | "gemini";
 	endpoint: string;
 	method?: string;
 	httpStatus?: number | null;

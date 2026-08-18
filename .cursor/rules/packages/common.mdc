@@ -48,8 +48,7 @@ Run tests: `pnpm --filter @harmonia/common test`
 
 ## LLM Calls
 
-All LLM calls use `@ai-sdk/groq` via `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.
-**Never** use the default `groq()` factory (reads `GROQ_API_KEY` which is not set).
+All LLM calls resolve their model via `@harmonia/ai-provider`'s `getAIModel(task)` — never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in `@harmonia/common`. The active provider (`groq` | `concentrate` | `gemini`) is controlled by `HARMONIA_AI_PROVIDER`; gate on `isProviderConfigured()` before calling, and use `withLLMRetry()` for the shared 429-aware backoff instead of a bare `pRetry`. See `.cursor/rules/packages/00-package-index.mdc` § `@harmonia/ai-provider`.
 
 Prompts are structured using `llml` from `@zenbase/llml`.
 

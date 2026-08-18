@@ -23,7 +23,7 @@ export const externalApiCall = pgTable(
 			onDelete: "set null",
 		}),
 
-		provider: text("provider").notNull(), // 'spotify' | 'lrclib' | 'openai' | 'groq'
+		provider: text("provider").notNull(), // 'spotify' | 'lrclib' | 'openai' | 'groq' | 'concentrate' | 'gemini'
 		endpoint: text("endpoint").notNull(), // REST path (e.g. '/me/tracks') or model ID for AI providers
 		method: text("method").notNull().default("GET"),
 

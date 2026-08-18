@@ -1,4 +1,10 @@
-import { createGroq } from "@ai-sdk/groq";
+import {
+	getActiveProvider,
+	getAIModel,
+	getModelId,
+	isProviderConfigured,
+	withLLMRetry,
+} from "@harmonia/ai-provider";
 import type {
 	CreatedPlaylist,
 	PlaylistMetadata,
@@ -19,15 +25,14 @@ import {
 } from "@harmonia/db/schema/playlist";
 import { track } from "@harmonia/db/schema/track";
 import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
-import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
 import { generateText, Output } from "ai";
 import { and, eq, inArray } from "drizzle-orm";
 import pLimit from "p-limit";
-import pRetry from "p-retry";
 import { normalizeTrackTitle } from "../../utils/normalize-track-title";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
+import { logExternalApiCall } from "../external-api-log";
 import { getLatestPlaylistTrackIds } from "../music/spotify/playlist-cache";
 import {
 	jaccardSimilarity,
@@ -35,6 +40,8 @@ import {
 } from "./playlist-matcher";
 import { normalizePlaylistName } from "./playlist-naming";
 import { diffManualSpotifyEdits } from "./spotify-reconcile";
+
+const PLAYLIST_NAMING_RETRIES = 2;
 
 // Below this track-overlap similarity, a cluster is treated as unrelated to
 // any existing playlist and gets a brand new one instead of an update.
@@ -73,10 +80,10 @@ export async function generatePlaylists(
 		createdPlaylists: [],
 	};
 
-	if (!env.HARMONIA_GROQ_API_KEY) {
+	if (!isProviderConfigured()) {
 		logger.warn(
-			{},
-			"No HARMONIA_GROQ_API_KEY configured; skipping playlist generation",
+			{ provider: getActiveProvider() },
+			"No credentials configured for the active AI provider; skipping playlist generation",
 		);
 		return stats;
 	}
@@ -413,6 +420,7 @@ async function updateExistingPlaylist(args: {
 	if (shouldRegenerateMetadata) {
 		try {
 			generatedMetadata = await generateUniquePlaylistMetadata(
+				userId,
 				meta,
 				trackRows,
 				usedPlaylistNames,
@@ -512,6 +520,7 @@ async function createNewPlaylist(args: {
 
 	try {
 		const generated = await generateUniquePlaylistMetadata(
+			userId,
 			meta,
 			trackRows,
 			usedPlaylistNames,
@@ -631,6 +640,7 @@ const MAX_NAME_COLLISION_RETRIES = 2;
 
 /** Retries generatePlaylistMetadata against an avoid-list until the name doesn't collide with another playlist chosen this run (#112). */
 async function generateUniquePlaylistMetadata(
+	userId: string,
 	meta: ClusterMeta | null,
 	trackRows: TrackRow[],
 	usedPlaylistNames: Set<string>,
@@ -638,7 +648,12 @@ async function generateUniquePlaylistMetadata(
 	const avoidNames: string[] = [];
 
 	for (let attempt = 0; attempt <= MAX_NAME_COLLISION_RETRIES; attempt++) {
-		const result = await generatePlaylistMetadata(meta, trackRows, avoidNames);
+		const result = await generatePlaylistMetadata(
+			userId,
+			meta,
+			trackRows,
+			avoidNames,
+		);
 		const normalized = normalizePlaylistName(result.name);
 
 		if (!usedPlaylistNames.has(normalized)) {
@@ -666,6 +681,7 @@ async function generateUniquePlaylistMetadata(
 }
 
 async function generatePlaylistMetadata(
+	userId: string,
 	meta: ClusterMeta | null,
 	trackRows: TrackRow[],
 	avoidNames: string[] = [],
@@ -685,60 +701,84 @@ async function generatePlaylistMetadata(
 		if (tags.vibe) vibes.push(...tags.vibe);
 	}
 
-	return pRetry(
-		async () => {
-			const clusterInfo: Record<string, string | number> = {
-				mood: meta
-					? meta.dominantMood
-					: [...new Set(moods)].slice(0, 5).join(", "),
-				topThemes: [...new Set(themes)].slice(0, 5).join(", ") || "various",
-				topVibes: [...new Set(vibes)].slice(0, 5).join(", ") || "various",
-				trackCount: trackRows.length,
-				sampleTracks: sampleTracks.join("; "),
-			};
-			if (meta?.themeSummary) clusterInfo.theme = meta.themeSummary;
-			if (meta?.dominantEnergy) clusterInfo.energy = meta.dominantEnergy;
-			if (meta?.suggestedArchetype)
-				clusterInfo.archetype = meta.suggestedArchetype;
-			if (avoidNames.length > 0) {
-				clusterInfo.namesToAvoid = avoidNames.join(", ");
-			}
+	const provider = getActiveProvider();
+	const modelId = getModelId("playlistNaming");
+	const startTime = Date.now();
 
-			const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
-			const { output } = await generateText({
-				model: groq("openai/gpt-oss-120b"),
-				output: Output.object({ schema: playlistMetadataSchema }),
-				// Not 0: temperature 0 made similar clusters always name "midnight" etc (#112).
-				temperature: 0.8,
-				prompt: llml({
-					role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
-					clusterInfo,
-					generate: [
-						"name: a creative, evocative playlist name (2-4 words) drawn from the specific sample tracks and mood below — no generic names like 'My Playlist', and avoid overused stock words like 'midnight', 'vibes', 'dreams', 'chill' unless a sample track title genuinely justifies it",
-						...(avoidNames.length > 0
-							? [
-									"This is a retry: the previous name collided with one already used this run (listed in namesToAvoid) — pick a meaningfully different name and style, not a small variation on it",
-								]
-							: []),
-						"description: one short sentence (10-15 words max) capturing the vibe — no filler phrases",
-						"taxonomy: mood | situation | genre | hybrid",
-						"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
-					],
-				}),
-			});
-			return output;
-		},
-		{
-			retries: 2,
-			minTimeout: 2000,
-			onFailedAttempt: (error) => {
-				logger.warn(
-					{ attempt: error.attemptNumber },
-					"Playlist metadata generation failed, retrying",
-				);
+	try {
+		const output = await withLLMRetry(
+			async () => {
+				const clusterInfo: Record<string, string | number> = {
+					mood: meta
+						? meta.dominantMood
+						: [...new Set(moods)].slice(0, 5).join(", "),
+					topThemes: [...new Set(themes)].slice(0, 5).join(", ") || "various",
+					topVibes: [...new Set(vibes)].slice(0, 5).join(", ") || "various",
+					trackCount: trackRows.length,
+					sampleTracks: sampleTracks.join("; "),
+				};
+				if (meta?.themeSummary) clusterInfo.theme = meta.themeSummary;
+				if (meta?.dominantEnergy) clusterInfo.energy = meta.dominantEnergy;
+				if (meta?.suggestedArchetype)
+					clusterInfo.archetype = meta.suggestedArchetype;
+				if (avoidNames.length > 0) {
+					clusterInfo.namesToAvoid = avoidNames.join(", ");
+				}
+
+				const { output } = await generateText({
+					model: getAIModel("playlistNaming"),
+					output: Output.object({ schema: playlistMetadataSchema }),
+					// Not 0: temperature 0 made similar clusters always name "midnight" etc (#112).
+					temperature: 0.8,
+					prompt: llml({
+						role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",
+						clusterInfo,
+						generate: [
+							"name: a creative, evocative playlist name (2-4 words) drawn from the specific sample tracks and mood below — no generic names like 'My Playlist', and avoid overused stock words like 'midnight', 'vibes', 'dreams', 'chill' unless a sample track title genuinely justifies it",
+							...(avoidNames.length > 0
+								? [
+										"This is a retry: the previous name collided with one already used this run (listed in namesToAvoid) — pick a meaningfully different name and style, not a small variation on it",
+									]
+								: []),
+							"description: one short sentence (10-15 words max) capturing the vibe — no filler phrases",
+							"taxonomy: mood | situation | genre | hybrid",
+							"coverColor: a hex color code that matches the playlist vibe (e.g. #1a1a2e for dark moody, #ff6b6b for energetic)",
+						],
+					}),
+				});
+				return output;
 			},
-		},
-	);
+			{
+				retries: PLAYLIST_NAMING_RETRIES,
+				minTimeout: 2000,
+				label: "playlist-naming",
+			},
+		);
+
+		await logExternalApiCall({
+			userId,
+			provider,
+			endpoint: modelId,
+			method: "POST",
+			httpStatus: 200,
+			requestPayload: { model: modelId, avoidNameCount: avoidNames.length },
+			durationMs: Date.now() - startTime,
+		});
+
+		return output;
+	} catch (err) {
+		await logExternalApiCall({
+			userId,
+			provider,
+			endpoint: modelId,
+			method: "POST",
+			requestPayload: { model: modelId, avoidNameCount: avoidNames.length },
+			durationMs: Date.now() - startTime,
+			errorMessage: err instanceof Error ? err.message : String(err),
+			statusCategory: "server_error",
+		});
+		throw err;
+	}
 }
 
 function orderTracksByEnergy(tracks: TrackRow[]): TrackRow[] {

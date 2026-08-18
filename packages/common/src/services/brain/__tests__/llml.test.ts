@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@harmonia/db", () => ({ db: {} }));
 
-import { isSplitRetryableError } from "../llml";
+import { isSplitRetryableError } from "@harmonia/ai-provider";
 
 describe("isSplitRetryableError", () => {
 	it("recognizes Groq's schema-validation rejection (additionalProperties variant)", () => {
