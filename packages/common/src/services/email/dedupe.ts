@@ -1,6 +1,6 @@
 import { db } from "@harmonia/db";
 import { emailSendLog } from "@harmonia/db/schema/email-send-log";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import type { EmailSendStatus, EmailTemplateKey } from "../../schemas";
 
@@ -39,17 +39,33 @@ export async function reserveEmailDelivery({
 		return { created: true, logId: created.id };
 	}
 
+	// Row already exists. The only safe retry is reclaiming a row that
+	// genuinely failed, via an atomic UPDATE...WHERE so a concurrent caller
+	// can't also win the same claim. "queued" (an attempt may be in flight)
+	// or "sent" (already delivered) must never be treated as retryable —
+	// that gap previously let concurrent/duplicate callers each pass a
+	// plain status check and physically send more than once.
+	const [reclaimed] = await db
+		.update(emailSendLog)
+		.set({ status: "queued" })
+		.where(
+			and(
+				eq(emailSendLog.idempotencyKey, idempotencyKey),
+				eq(emailSendLog.status, "failed"),
+			),
+		)
+		.returning({ id: emailSendLog.id });
+
+	if (reclaimed) {
+		return { created: true, logId: reclaimed.id };
+	}
+
 	const [existing] = await db
-		.select({ id: emailSendLog.id, status: emailSendLog.status })
+		.select({ id: emailSendLog.id })
 		.from(emailSendLog)
 		.where(eq(emailSendLog.idempotencyKey, idempotencyKey));
 
-	if (existing?.status === "sent") {
-		return { created: false, logId: existing.id };
-	}
-
-	// Previous attempt didn't make it to "sent" (queued/failed/skipped) - allow retry on the same row.
-	return { created: true, logId: existing?.id ?? null };
+	return { created: false, logId: existing?.id ?? null };
 }
 
 export async function markEmailDelivery({
