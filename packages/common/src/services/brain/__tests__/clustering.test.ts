@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@harmonia/db", () => ({ db: {} }));
 
-import { kmeans, mergeSmallClusters, splitLargeClusters } from "../clustering";
+import {
+	computeAutoEpsilon,
+	kmeans,
+	mergeSmallClusters,
+	splitLargeClusters,
+} from "../clustering";
 
 function totalIndices(clusters: number[][]): number[] {
 	return clusters.flat().sort((a, b) => a - b);
@@ -137,5 +142,53 @@ describe("splitLargeClusters", () => {
 		expect(totalIndices(result)).toEqual(
 			Array.from({ length: size }, (_, i) => i),
 		);
+	});
+});
+
+describe("computeAutoEpsilon", () => {
+	const FALLBACK_EPSILON = 0.3;
+
+	it("falls back to the fixed constant when there aren't enough points for a k-distance", () => {
+		// n <= minPts: no point can have a 5th-nearest neighbour.
+		const embeddings: number[][] = Array.from({ length: 5 }, (_, i) => [i]);
+		expect(computeAutoEpsilon(embeddings, 5)).toBe(FALLBACK_EPSILON);
+	});
+
+	it("picks a smaller epsilon for a tightly-clustered library than an eclectic one", () => {
+		const tight: number[][] = Array.from({ length: 30 }, (_, i) => [i * 0.01]);
+		const eclectic: number[][] = Array.from({ length: 30 }, (_, i) => [i * 10]);
+
+		const tightEps = computeAutoEpsilon(tight, 5);
+		const eclecticEps = computeAutoEpsilon(eclectic, 5);
+
+		expect(tightEps).toBeLessThan(eclecticEps);
+	});
+
+	it("is deterministic — same input always yields the same output", () => {
+		const embeddings: number[][] = Array.from({ length: 50 }, (_, i) => [
+			Math.sin(i),
+			Math.cos(i),
+		]);
+		const first = computeAutoEpsilon(embeddings, 5);
+		const second = computeAutoEpsilon(embeddings, 5);
+		expect(first).toBe(second);
+	});
+
+	it("stays correct when sampling kicks in on a library larger than the sample cap", () => {
+		const embeddings: number[][] = Array.from({ length: 40 }, (_, i) => [
+			i * 0.05,
+		]);
+		// maxSample smaller than n forces the step-sampling path.
+		const eps = computeAutoEpsilon(embeddings, 5, 10, 10);
+		expect(eps).toBeGreaterThan(0);
+		expect(Number.isFinite(eps)).toBe(true);
+	});
+
+	it("does not crash on fully identical points and returns a sane value", () => {
+		const embeddings: number[][] = Array.from({ length: 20 }, () => [0, 0]);
+		const eps = computeAutoEpsilon(embeddings, 5);
+		// Every k-distance is 0 for identical points — falls back rather
+		// than handing DBSCAN a useless eps of 0.
+		expect(eps).toBe(FALLBACK_EPSILON);
 	});
 });

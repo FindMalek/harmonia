@@ -11,8 +11,23 @@ import { CLUSTER_MAX_SIZE } from "../../constants/brain";
 
 // DBSCAN params for semantic-only embeddings — see .cursor/rules/packages/common.mdc "Clustering Tuning".
 const CLUSTER_MIN_POINTS = 5;
+// Fallback only now (#294) — the real per-run value comes from
+// computeAutoEpsilon. Kept as the floor for libraries too small for a
+// k-distance distribution to mean anything.
 const CLUSTER_EPSILON = 0.3;
 const CLUSTER_MIN_SIZE = 20;
+
+// k-distance percentile used to derive eps per user (#294) — the automatic
+// analogue of picking the "knee" off a k-distance elbow plot by eye. Low
+// percentile because the knee sits near the dense end of the distribution;
+// 10th was the value validated against real production embeddings.
+const AUTO_EPS_PERCENTILE = 10;
+// Caps the k-distance computation's cost on large libraries: DBSCAN itself
+// pays a full O(n²) pass right after this runs, so sampling which points we
+// compute a k-distance FOR (each still compared against the full dataset,
+// so its own k-distance stays accurate) keeps this a fraction of that
+// rather than doubling the clustering stage's cost.
+const AUTO_EPS_MAX_SAMPLE = 300;
 
 // k-means fallback k when DBSCAN finds zero clusters (#282) — validated against
 // real production embeddings sampled at sizes 15-100: DBSCAN produced 0 clusters
@@ -68,10 +83,16 @@ export async function runClustering(
 			noise: number[];
 		};
 	};
+	const autoEpsilon = computeAutoEpsilon(embeddings, CLUSTER_MIN_POINTS);
+	logger.info(
+		{ userId, count: embeddings.length, autoEpsilon },
+		"Clustering: using per-user auto-selected epsilon",
+	);
+
 	const dbscan = new (Clustering as DBSCANModule).DBSCAN();
 	let rawClusters = dbscan.run(
 		embeddings,
-		CLUSTER_EPSILON,
+		autoEpsilon,
 		CLUSTER_MIN_POINTS,
 	) as number[][];
 
@@ -364,6 +385,58 @@ function euclideanDistance(a: number[], b: number[]): number {
 		sum += diff * diff;
 	}
 	return Math.sqrt(sum);
+}
+
+/**
+ * Derives DBSCAN's eps from the data instead of one fixed constant for
+ * every user (#294). Standard k-distance heuristic: for each point, find
+ * the distance to its minPts-th nearest neighbour; sort those distances;
+ * pick eps at a low percentile of that distribution, approximating where a
+ * k-distance elbow plot would bend by eye. A user with tightly-clustered
+ * taste and a user with eclectic taste land on different epsilons this way,
+ * instead of both being forced through the same global threshold.
+ *
+ * Exported for direct unit testing — pure, deterministic, no I/O.
+ */
+export function computeAutoEpsilon(
+	embeddings: number[][],
+	minPts: number,
+	percentile = AUTO_EPS_PERCENTILE,
+	maxSample = AUTO_EPS_MAX_SAMPLE,
+): number {
+	const n = embeddings.length;
+	// Need at least minPts+1 points for any point to have a minPts-th
+	// neighbour at all — below that a k-distance distribution isn't
+	// meaningful, so fall back to the fixed constant.
+	if (n <= minPts) return CLUSTER_EPSILON;
+
+	const step = Math.max(1, Math.floor(n / maxSample));
+	const kDistances: number[] = [];
+
+	for (let i = 0; i < n; i += step) {
+		const point = embeddings[i];
+		if (!point) continue;
+
+		const distances: number[] = [];
+		for (let j = 0; j < n; j++) {
+			if (j === i) continue;
+			const other = embeddings[j];
+			if (!other) continue;
+			distances.push(euclideanDistance(point, other));
+		}
+		distances.sort((a, b) => a - b);
+
+		const kth = distances[minPts - 1];
+		if (kth !== undefined) kDistances.push(kth);
+	}
+
+	if (kDistances.length === 0) return CLUSTER_EPSILON;
+
+	kDistances.sort((a, b) => a - b);
+	const rank = Math.floor((percentile / 100) * (kDistances.length - 1));
+	const eps = kDistances[rank];
+
+	return eps && eps > 0 ? eps : CLUSTER_EPSILON;
 }
 
 /**
