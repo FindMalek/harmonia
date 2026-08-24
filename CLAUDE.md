@@ -9,20 +9,8 @@ Rules are maintained in `.cursor/rules/` as the single source of truth — all a
 @.cursor/rules/01-naming-conventions.mdc
 @.cursor/rules/02-code-patterns.mdc
 
-### Apps
-
-@.cursor/rules/apps/api.mdc
-@.cursor/rules/apps/dashboard.mdc
-@.cursor/rules/apps/web.mdc
-@.cursor/rules/apps/admin.mdc
-
 ### Packages
 
-@.cursor/rules/packages/00-package-index.mdc
-@.cursor/rules/packages/common.mdc
-@.cursor/rules/packages/db.mdc
-@.cursor/rules/packages/env.mdc
-@.cursor/rules/packages/orpc.mdc
 @.cursor/rules/packages/trigger.mdc
 @.cursor/rules/packages/ui.mdc
 

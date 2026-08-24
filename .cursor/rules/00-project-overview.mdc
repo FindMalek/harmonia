@@ -32,37 +32,6 @@ Harmonia is an AI-powered music organization app. It syncs a user's Spotify libr
 - `packages/ui`: shadcn/ui component library + shared Tailwind config
 - `packages/email`: React Email templates + Resend send layer (`@harmonia/email`)
 
-## Development Commands
-
-Run all commands from the repository root.
-
-```bash
-pnpm dev:api          # API + Trigger.dev worker
-pnpm dev:ad           # API + dashboard + Trigger.dev
-pnpm dev:admin        # admin app only (port 3004)
-pnpm dev:ada          # API + dashboard + admin + Trigger.dev
-pnpm dev:all          # all apps + Trigger.dev
-pnpm dev:web          # web app only
-
-pnpm db:seed          # seed admin user (requires HARMONIA_ADMIN_PASSWORD)
-
-pnpm db:push          # push Drizzle schema to local Postgres
-pnpm db:studio        # open Drizzle Studio UI
-pnpm db:generate      # generate migration files
-pnpm db:migrate       # run migrations (production)
-pnpm db:setup         # start Docker Postgres + push schema
-pnpm db:reset         # truncate user-data tables (auth + genre_domain preserved)
-pnpm db:nuke          # Docker volume wipe + db:push (local Postgres on 5433)
-
-pnpm trigger:dev      # start Trigger.dev worker alone
-pnpm deps:sync        # update all deps to latest + syncpack fix
-pnpm check-types      # tsc --noEmit across all packages
-pnpm test             # vitest in @harmonia/common and @harmonia/orpc
-pnpm check            # Biome check + fix
-pnpm lint             # Biome lint + fix
-pnpm format           # Biome format + fix
-```
-
 ## Hard Rules
 
 1. **Never `process.env` directly.** Use `import { env } from "@harmonia/env/server"`.
@@ -71,16 +40,6 @@ pnpm format           # Biome format + fix
 4. **All env vars prefixed `HARMONIA_` or `NEXT_PUBLIC_HARMONIA_`.**
 5. **JSONB progress writes: use `updateStageProgress(runId, stage, val)`.** Never overwrite the full column in concurrent code.
 6. **DB driver is conditional.** `.neon.tech` URL → `@neondatabase/serverless`, otherwise → `pg`. Do not change this logic.
-
-## Tooling
-
-- Package manager: `pnpm`
-- Build/task orchestration: `turbo`
-- Linting/formatting: `biome` (tabs, double quotes, auto-organised imports)
-- API layer: `oRPC`
-- ORM: `drizzle-orm`
-- Background jobs: `@trigger.dev/sdk`
-- Auth: `better-auth` — dual instances (dashboard Spotify OAuth + admin email/password)
 
 ## Git commits
 
