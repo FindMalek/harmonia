@@ -24,6 +24,12 @@ export const ADMIN_ROUTES = {
 		icon: "message",
 		isNav: true,
 	},
+	costs: {
+		path: "/costs",
+		label: "Costs",
+		icon: "chart",
+		isNav: true,
+	},
 } as const;
 
 export type AdminRoutes = typeof ADMIN_ROUTES;

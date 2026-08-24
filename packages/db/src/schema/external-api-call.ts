@@ -3,6 +3,7 @@ import {
 	integer,
 	jsonb,
 	pgTable,
+	real,
 	serial,
 	text,
 	timestamp,
@@ -35,6 +36,12 @@ export const externalApiCall = pgTable(
 		responsePayload: jsonb("response_payload").$type<Record<string, unknown>>(),
 		durationMs: integer("duration_ms"),
 		errorMessage: text("error_message"),
+
+		// Computed at write time from responsePayload.usage against the static
+		// pricing table (packages/common/src/constants/pricing.ts). Null for
+		// calls with no per-token pricing (Spotify, LRCLib — not token-billed)
+		// or missing/malformed usage data.
+		costUsd: real("cost_usd"),
 
 		// Denormalized status bucket for O(1) dashboard WHERE clauses (no CASE
 		// in every query): 'success' | 'rate_limited' | 'not_found' |

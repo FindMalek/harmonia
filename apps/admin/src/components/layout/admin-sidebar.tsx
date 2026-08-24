@@ -27,6 +27,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 	users: Icons.users,
 	person: Icons.user,
 	message: Icons.messageCircle,
+	chart: Icons.chart,
 };
 
 export function AdminSidebar() {
