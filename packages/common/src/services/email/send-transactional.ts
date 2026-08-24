@@ -2,6 +2,7 @@ import type { CreatedPlaylist } from "@harmonia/common/schemas";
 import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
 import { db } from "@harmonia/db";
 import { user } from "@harmonia/db/schema/auth";
+import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
 import { playlist } from "@harmonia/db/schema/playlist";
 import {
 	sendFeedback3DayEmail,
@@ -486,6 +487,45 @@ export async function sendSpotifyReauthNotification({
 	return { ok: true, reason: "sent" as const };
 }
 
+// Feedback is only meaningful once the user has actually experienced the
+// product end to end: finished onboarding, seen a manual analysis they
+// asked for, and seen an automated (cron) one happen on its own. Checked at
+// send time (not schedule time) since a user can cross these thresholds
+// during the 3-day wait.
+async function isEligibleForFeedback3Day(userId: string): Promise<boolean> {
+	const [userRow] = await db
+		.select({ hasCompletedOnboarding: user.hasCompletedOnboarding })
+		.from(user)
+		.where(eq(user.id, userId));
+	if (!userRow?.hasCompletedOnboarding) return false;
+
+	const [manualRun] = await db
+		.select({ id: pipelineRun.id })
+		.from(pipelineRun)
+		.where(
+			and(
+				eq(pipelineRun.userId, userId),
+				eq(pipelineRun.triggeredBy, "user"),
+				eq(pipelineRun.status, "completed"),
+			),
+		)
+		.limit(1);
+	if (!manualRun) return false;
+
+	const [cronRun] = await db
+		.select({ id: pipelineRun.id })
+		.from(pipelineRun)
+		.where(
+			and(
+				eq(pipelineRun.userId, userId),
+				eq(pipelineRun.triggeredBy, "cron"),
+				eq(pipelineRun.status, "completed"),
+			),
+		)
+		.limit(1);
+	return !!cronRun;
+}
+
 export async function sendFeedback3DayNotification({
 	userId,
 	campaignKey,
@@ -499,7 +539,21 @@ export async function sendFeedback3DayNotification({
 	const userRow = await getUserForEmail(userId);
 	if (!userRow?.email) return { ok: false, reason: "missing_email" as const };
 
-	const idempotencyKey = `feedback-3day/${campaignKey}/${userId}`;
+	// Deliberately checked before touching the dedup table: this campaign's
+	// idempotency key is scoped per-user (not per-run), so reserving it here
+	// while not yet eligible would permanently block the real send once the
+	// user does become eligible on a later run.
+	if (!(await isEligibleForFeedback3Day(userId))) {
+		logger.info(
+			{ userId, templateKey: "feedback_3day", campaignKey },
+			"Feedback 3-day email not yet eligible — onboarding/manual/automated analysis conditions not all met",
+		);
+		return { ok: false, reason: "not_eligible" as const };
+	}
+
+	// Scoped per-user, not per-run: this campaign should fire at most once
+	// ever per user, regardless of how many organize runs they complete.
+	const idempotencyKey = `feedback-3day/${userId}`;
 	const policy = await evaluateEmailPolicy({
 		userId,
 		email: userRow.email,
