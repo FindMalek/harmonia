@@ -5,8 +5,6 @@ export type AIProviderName = z.infer<typeof aiProviderSchema>;
 
 export type AITask = "classification" | "clusterMetadata" | "playlistNaming";
 
-type ModelsForTask = Partial<Record<AIProviderName, string>>;
-
 // Each task is pinned to a specific provider — not a single global runtime
 // switch across all three (that design was replaced before ever shipping;
 // a global switch can't express "Groq for these two, Concentrate for that
@@ -24,27 +22,16 @@ export const TASK_PROVIDER: Record<AITask, AIProviderName> = {
 	playlistNaming: "concentrate",
 };
 
-// getAIModel()/getModelId() throw if a task has no entry for its assigned
-// provider (TASK_PROVIDER above), rather than guessing. Concentrate reuses
-// Groq's exact models (bare slugs — Concentrate doesn't route gpt-oss under
-// an "openai/" prefix) for an apples-to-apples trial; same convention
-// applied to Claude's slug below, but it hasn't been confirmed against a
-// live Concentrate request yet (needs an API key — verify before relying on
-// it in production).
-export const TASK_MODELS: Record<AITask, ModelsForTask> = {
-	classification: {
-		groq: "openai/gpt-oss-20b",
-		concentrate: "gpt-oss-20b",
-		gemini: "gemini-2.5-flash-lite",
-	},
-	clusterMetadata: {
-		groq: "openai/gpt-oss-120b",
-		concentrate: "gpt-oss-120b",
-		gemini: "gemini-2.5-flash",
-	},
-	playlistNaming: {
-		groq: "openai/gpt-oss-120b",
-		concentrate: "claude-sonnet-5",
-		gemini: "gemini-2.5-flash",
-	},
-} as const;
+// One model ID per task, matching that task's TASK_PROVIDER entry above —
+// not a full task×provider matrix. There's exactly one live pairing per
+// task; a matrix of untested "what if this task used a different provider"
+// entries would be unverified config nobody reads. Reassigning a task to a
+// different provider means changing both maps together, which is the point:
+// they're meant to move as a pair, not independently.
+// claude-sonnet-5 hasn't been confirmed against a live Concentrate request
+// yet (needs an API key) — verify before relying on it in production.
+export const TASK_MODELS: Record<AITask, string> = {
+	classification: "openai/gpt-oss-20b",
+	clusterMetadata: "openai/gpt-oss-120b",
+	playlistNaming: "claude-sonnet-5",
+};

@@ -53,18 +53,8 @@ function getGeminiClient() {
 	return geminiClient;
 }
 
-// Throws rather than guessing when a task's assigned provider has no entry — see TASK_MODELS.
 export function getModelId(task: AITask): string {
-	const provider = getTaskProvider(task);
-	const modelId = TASK_MODELS[task][provider];
-
-	if (!modelId) {
-		throw new Error(
-			`No model configured for task "${task}" on its assigned provider "${provider}" — add an entry to TASK_MODELS in packages/ai-provider/src/models.ts`,
-		);
-	}
-
-	return modelId;
+	return TASK_MODELS[task];
 }
 
 export function getAIModel(task: AITask): LanguageModel {
