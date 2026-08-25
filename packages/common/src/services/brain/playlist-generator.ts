@@ -1,7 +1,7 @@
 import {
-	activeProvider,
 	getAIModel,
 	getModelId,
+	getTaskProvider,
 	isProviderConfigured,
 	withLLMRetry,
 } from "@harmonia/ai-provider";
@@ -80,10 +80,10 @@ export async function generatePlaylists(
 		createdPlaylists: [],
 	};
 
-	if (!isProviderConfigured()) {
+	if (!isProviderConfigured("playlistNaming")) {
 		logger.warn(
-			{ provider: activeProvider },
-			"No credentials configured for the active AI provider; skipping playlist generation",
+			{ provider: getTaskProvider("playlistNaming") },
+			"No credentials configured for the playlist-naming task's assigned provider; skipping playlist generation",
 		);
 		return stats;
 	}
@@ -701,7 +701,7 @@ async function generatePlaylistMetadata(
 		if (tags.vibe) vibes.push(...tags.vibe);
 	}
 
-	const provider = activeProvider;
+	const provider = getTaskProvider("playlistNaming");
 	const modelId = getModelId("playlistNaming");
 	const startTime = Date.now();
 	let attempt = 0;

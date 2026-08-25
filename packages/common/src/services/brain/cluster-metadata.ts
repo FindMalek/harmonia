@@ -1,7 +1,7 @@
 import {
-	activeProvider,
 	getAIModel,
 	getModelId,
+	getTaskProvider,
 	isProviderConfigured,
 	withLLMRetry,
 } from "@harmonia/ai-provider";
@@ -26,10 +26,13 @@ import { logExternalApiCall } from "../external-api-log";
 const CLUSTER_METADATA_RETRIES = 2;
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
-	if (!isProviderConfigured()) {
+	if (!isProviderConfigured("clusterMetadata")) {
 		logger.warn(
-			{ type: "cluster-metadata", provider: activeProvider },
-			"No credentials configured for the active AI provider; skipping cluster metadata generation",
+			{
+				type: "cluster-metadata",
+				provider: getTaskProvider("clusterMetadata"),
+			},
+			"No credentials configured for the cluster-metadata task's assigned provider; skipping cluster metadata generation",
 		);
 		return 0;
 	}
@@ -95,7 +98,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 					return `${t.name} by ${artists.join(", ")}`;
 				});
 
-				const provider = activeProvider;
+				const provider = getTaskProvider("clusterMetadata");
 				const modelId = getModelId("clusterMetadata");
 				const startTime = Date.now();
 				let attempt = 0;

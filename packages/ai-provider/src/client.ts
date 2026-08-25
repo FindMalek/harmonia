@@ -4,13 +4,21 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@harmonia/env/server";
 import type { LanguageModel } from "ai";
 
-import { type AITask, TASK_MODELS } from "./models";
+import {
+	type AIProviderName,
+	type AITask,
+	TASK_MODELS,
+	TASK_PROVIDER,
+} from "./models";
 
-export const activeProvider = env.HARMONIA_AI_PROVIDER;
+/** The fixed provider assigned to a task — see TASK_PROVIDER in models.ts. */
+export function getTaskProvider(task: AITask): AIProviderName {
+	return TASK_PROVIDER[task];
+}
 
-/** Whether the active provider has its required credential set. */
-export function isProviderConfigured(): boolean {
-	switch (activeProvider) {
+/** Whether the provider assigned to this task has its required credential set. */
+export function isProviderConfigured(task: AITask): boolean {
+	switch (getTaskProvider(task)) {
 		case "groq":
 			return Boolean(env.HARMONIA_GROQ_API_KEY);
 		case "concentrate":
@@ -45,13 +53,14 @@ function getGeminiClient() {
 	return geminiClient;
 }
 
-// Throws rather than guessing when the active provider has no entry — see TASK_MODELS.
+// Throws rather than guessing when a task's assigned provider has no entry — see TASK_MODELS.
 export function getModelId(task: AITask): string {
-	const modelId = TASK_MODELS[task][activeProvider];
+	const provider = getTaskProvider(task);
+	const modelId = TASK_MODELS[task][provider];
 
 	if (!modelId) {
 		throw new Error(
-			`No model configured for task "${task}" on provider "${activeProvider}" — add an entry to TASK_MODELS in packages/ai-provider/src/models.ts`,
+			`No model configured for task "${task}" on its assigned provider "${provider}" — add an entry to TASK_MODELS in packages/ai-provider/src/models.ts`,
 		);
 	}
 
@@ -61,7 +70,7 @@ export function getModelId(task: AITask): string {
 export function getAIModel(task: AITask): LanguageModel {
 	const modelId = getModelId(task);
 
-	switch (activeProvider) {
+	switch (getTaskProvider(task)) {
 		case "groq":
 			return getGroqClient()(modelId);
 		case "concentrate":
