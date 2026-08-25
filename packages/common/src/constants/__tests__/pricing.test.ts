@@ -28,9 +28,7 @@ describe("computeCostUsd", () => {
 	});
 
 	it("returns null for missing usage", () => {
-		expect(
-			computeCostUsd("groq", "openai/gpt-oss-20b", undefined),
-		).toBeNull();
+		expect(computeCostUsd("groq", "openai/gpt-oss-20b", undefined)).toBeNull();
 	});
 
 	it("returns null for malformed usage", () => {
@@ -46,5 +44,31 @@ describe("computeCostUsd", () => {
 				outputTokens: 0,
 			}),
 		).toBeNull();
+	});
+
+	it("computes cost for Groq's gpt-oss-120b (cluster-metadata/playlist-naming's Groq entry)", () => {
+		const cost = computeCostUsd("groq", "openai/gpt-oss-120b", {
+			inputTokens: 1_000_000,
+			outputTokens: 1_000_000,
+		});
+		// $0.15 input + $0.75 output per 1M tokens
+		expect(cost).toBeCloseTo(0.9, 6);
+	});
+
+	it("computes zero (not null) for Concentrate's free gpt-oss tier with real usage", () => {
+		const cost = computeCostUsd("concentrate", "gpt-oss-20b", {
+			inputTokens: 500_000,
+			outputTokens: 500_000,
+		});
+		expect(cost).toBe(0);
+	});
+
+	it("computes cost for Claude Sonnet 5 via Concentrate (playlist-naming's assigned model)", () => {
+		const cost = computeCostUsd("concentrate", "claude-sonnet-5", {
+			inputTokens: 1_000_000,
+			outputTokens: 1_000_000,
+		});
+		// $2.00 input + $10.00 output per 1M tokens
+		expect(cost).toBeCloseTo(12.0, 6);
 	});
 });

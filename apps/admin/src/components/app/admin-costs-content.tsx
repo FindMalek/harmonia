@@ -20,12 +20,13 @@ import { AdminTableToolbar } from "./admin-table-toolbar";
 const PROVIDER_OPTIONS = [
 	{ value: "groq", label: "Groq" },
 	{ value: "openai", label: "OpenAI" },
+	{ value: "concentrate", label: "Concentrate" },
 ];
 
 const COSTS_PARAMS = {
 	page: parseAsInteger.withDefault(1),
 	pageSize: parseAsInteger.withDefault(25),
-	provider: parseAsStringLiteral(["groq", "openai"] as const),
+	provider: parseAsStringLiteral(["groq", "openai", "concentrate"] as const),
 	q: parseAsString.withDefault(""),
 };
 
@@ -81,6 +82,11 @@ const columns: ColumnDef<AdminCostsRunItem>[] = [
 		cell: ({ row }) => formatCost(row.original.openaiCostUsd),
 	},
 	{
+		accessorKey: "concentrateCostUsd",
+		header: "Concentrate",
+		cell: ({ row }) => formatCost(row.original.concentrateCostUsd),
+	},
+	{
 		accessorKey: "totalCostUsd",
 		header: "Total",
 		cell: ({ row }) => (
@@ -118,7 +124,10 @@ export function AdminCostsContent() {
 				onSearch={(value) => setParams({ q: value, page: 1 })}
 				onStatusChange={(value) =>
 					setParams({
-						provider: value === "groq" || value === "openai" ? value : null,
+						provider:
+							value === "groq" || value === "openai" || value === "concentrate"
+								? value
+								: null,
 						page: 1,
 					})
 				}

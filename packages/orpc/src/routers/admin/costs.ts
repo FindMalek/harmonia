@@ -80,16 +80,21 @@ export const adminCostsRouter = {
 							.groupBy(externalApiCall.pipelineRunId, externalApiCall.provider)
 					: [];
 
-			const costByRun = new Map<number, { groq: number; openai: number }>();
+			const costByRun = new Map<
+				number,
+				{ groq: number; openai: number; concentrate: number }
+			>();
 			for (const row of costRows) {
 				if (row.pipelineRunId === null) continue;
 				const entry = costByRun.get(row.pipelineRunId) ?? {
 					groq: 0,
 					openai: 0,
+					concentrate: 0,
 				};
 				const value = Number(row.costUsd);
 				if (row.provider === "groq") entry.groq += value;
 				if (row.provider === "openai") entry.openai += value;
+				if (row.provider === "concentrate") entry.concentrate += value;
 				costByRun.set(row.pipelineRunId, entry);
 			}
 
@@ -97,12 +102,17 @@ export const adminCostsRouter = {
 
 			return {
 				items: runs.map((r) => {
-					const cost = costByRun.get(r.runId) ?? { groq: 0, openai: 0 };
+					const cost = costByRun.get(r.runId) ?? {
+						groq: 0,
+						openai: 0,
+						concentrate: 0,
+					};
 					return {
 						...r,
 						groqCostUsd: cost.groq,
 						openaiCostUsd: cost.openai,
-						totalCostUsd: cost.groq + cost.openai,
+						concentrateCostUsd: cost.concentrate,
+						totalCostUsd: cost.groq + cost.openai + cost.concentrate,
 					};
 				}),
 				total,

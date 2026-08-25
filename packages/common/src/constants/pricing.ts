@@ -1,10 +1,15 @@
 /**
- * $ per 1M tokens, by provider and model/endpoint. Sourced 2026-08-24:
+ * $ per 1M tokens, by provider and model/endpoint. Sourced 2026-08-24/25:
  * - OpenAI text-embedding-3-small: confirmed directly from OpenAI's published pricing.
- * - Groq openai/gpt-oss-20b: Groq's own pricing page is JS-rendered and
- *   couldn't be fetched directly — this is the commonly-cited list price
- *   from third-party aggregators. Treat as approximate; verify against
- *   console.groq.com directly if precise billing reconciliation is needed.
+ * - Groq openai/gpt-oss-20b and openai/gpt-oss-120b: Groq's own pricing page
+ *   is JS-rendered and couldn't be fetched directly — these are the
+ *   commonly-cited list prices from third-party aggregators. Treat as
+ *   approximate; verify against console.groq.com directly if precise
+ *   billing reconciliation is needed.
+ * - Concentrate's gpt-oss-20b/120b: confirmed $0.00 (free tier) directly
+ *   from Concentrate's own model list.
+ * - Concentrate's claude-sonnet-5: from Concentrate's own model list.
+ *   Task assignment per #334/#335 — playlist naming runs on this.
  *
  * ponytail: static table, no auto-refresh — revisit when a provider changes pricing.
  */
@@ -14,6 +19,12 @@ export const PRICING_PER_1M_TOKENS: Record<
 > = {
 	groq: {
 		"openai/gpt-oss-20b": { input: 0.1, output: 0.5 },
+		"openai/gpt-oss-120b": { input: 0.15, output: 0.75 },
+	},
+	concentrate: {
+		"gpt-oss-20b": { input: 0, output: 0 },
+		"gpt-oss-120b": { input: 0, output: 0 },
+		"claude-sonnet-5": { input: 2.0, output: 10.0 },
 	},
 	openai: {
 		"text-embedding-3-small": { input: 0.02, output: 0 },
@@ -49,5 +60,8 @@ export function computeCostUsd(
 
 	if (inputTokens === 0 && outputTokens === 0) return null;
 
-	return (inputTokens / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output;
+	return (
+		(inputTokens / 1_000_000) * rates.input +
+		(outputTokens / 1_000_000) * rates.output
+	);
 }

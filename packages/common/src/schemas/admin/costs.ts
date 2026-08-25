@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const adminCostProviderEnum = z.enum(["groq", "openai"]);
+export const adminCostProviderEnum = z.enum(["groq", "openai", "concentrate"]);
 export type AdminCostProvider = z.infer<typeof adminCostProviderEnum>;
 
 export const adminCostsListInput = z.object({
@@ -22,6 +22,7 @@ export const adminCostsRunItemSchema = z.object({
 	completedAt: z.date().nullable(),
 	groqCostUsd: z.number(),
 	openaiCostUsd: z.number(),
+	concentrateCostUsd: z.number(),
 	totalCostUsd: z.number(),
 });
 export type AdminCostsRunItem = z.infer<typeof adminCostsRunItemSchema>;
