@@ -15,8 +15,7 @@ export const externalApiCall = pgTable(
 	{
 		id: serial("id").primaryKey(),
 
-		// userId is nullable — Spotify token-refresh calls run before a user
-		// session is fully resolved.
+		// userId is nullable — Spotify token-refresh calls run before a user session is fully resolved.
 		userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
 		// SET NULL so audit rows survive run deletion.
 		pipelineRunId: integer("pipeline_run_id").references(() => pipelineRun.id, {
@@ -36,9 +35,7 @@ export const externalApiCall = pgTable(
 		durationMs: integer("duration_ms"),
 		errorMessage: text("error_message"),
 
-		// Denormalized status bucket for O(1) dashboard WHERE clauses (no CASE
-		// in every query): 'success' | 'rate_limited' | 'not_found' |
-		// 'client_error' | 'server_error' | 'error'
+		// Denormalized status bucket for O(1) dashboard WHERE clauses: 'success' | 'rate_limited' | 'not_found' | 'client_error' | 'server_error' | 'error'
 		statusCategory: text("status_category").notNull(),
 
 		// 0 = first attempt, 1+ = retry number

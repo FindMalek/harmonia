@@ -43,15 +43,10 @@ import { diffManualSpotifyEdits } from "./spotify-reconcile";
 
 const PLAYLIST_NAMING_RETRIES = 2;
 
-// Below this track-overlap similarity, a cluster is treated as unrelated to
-// any existing playlist and gets a brand new one instead of an update.
+// Below this track-overlap similarity, a cluster gets a new playlist instead of matching an existing one.
 const PLAYLIST_MATCH_THRESHOLD = 0.5;
 
-// Below this track-overlap similarity between a matched playlist's old and
-// new track set, regenerate the LLM name/description — the content changed
-// enough that the old name may no longer fit. At or above it, keep the
-// existing name (avoids repeatedly re-naming a barely-changed playlist, and
-// saves the LLM call).
+// Below this old/new track-overlap similarity, regenerate the LLM name/description instead of keeping it (saves the call otherwise).
 const PLAYLIST_METADATA_REGEN_THRESHOLD = 0.8;
 
 type TrackRow = {
@@ -62,8 +57,7 @@ type TrackRow = {
 	llmTags: unknown;
 };
 
-// GenerateProgress declares updatedPlaylistIds optional (other producers of
-// this shape may omit it); this function always populates it.
+// GenerateProgress declares updatedPlaylistIds optional; this function always populates it.
 type GenerateResult = GenerateProgress & {
 	updatedPlaylistIds: number[];
 	createdPlaylists: CreatedPlaylist[];
@@ -98,10 +92,7 @@ export async function generatePlaylists(
 		return stats;
 	}
 
-	// Existing Harmonia playlists + their current track membership, so new
-	// clusters can be matched against them instead of every run recreating
-	// everything from scratch (issue #158). Fetched up front, before any
-	// per-cluster LLM/DB work, since matching needs the full picture at once.
+	// Existing playlists + track membership, fetched up front so new clusters can match against them instead of recreating everything (#158).
 	const existingPlaylistRows = await db
 		.select({
 			id: playlist.id,
@@ -140,8 +131,7 @@ export async function generatePlaylists(
 		}
 	}
 
-	// Fetch each cluster's track rows up front (parallelized) so matching can
-	// run before the per-cluster generation loop decides create vs. update.
+	// Fetch each cluster's track rows up front (parallelized) so matching runs before create-vs-update decisions.
 	const fetchLimit = pLimit(5);
 	const clusterTrackRows = await Promise.all(
 		clusters.map((c) =>
@@ -202,11 +192,7 @@ export async function generatePlaylists(
 		matches.map((m) => [m.clusterIndex, m.playlistId]),
 	);
 
-	// A playlist that no longer matches any current cluster is an orphan (#206)
-	// — clustering has moved on but nothing ever cleaned it up. Only prune ones
-	// never exported to Spotify; an already-exported orphan is left alone until
-	// there's a deliberate staleness UX, since deleting the Harmonia row
-	// wouldn't touch the real Spotify playlist the user may still be using.
+	// Orphaned playlist (#206): only prune ones never exported — an exported orphan stays until there's a real staleness UX.
 	const { prunable: prunablePlaylistIds, exportedOrphanCount } =
 		findPrunableOrphanedPlaylists(
 			existingPlaylistRows,
@@ -407,9 +393,7 @@ async function updateExistingPlaylist(args: {
 	const newTrackIds = new Set(trackRows.map((t) => t.id));
 	const similarity = jaccardSimilarity(oldTrackIds, newTrackIds);
 
-	// Identical membership (order-only differences aside) — nothing changed,
-	// skip the write entirely so an unchanged playlist doesn't get touched
-	// (and doesn't trigger a needless Spotify re-export downstream).
+	// Identical membership — skip the write so an unchanged playlist doesn't trigger a needless Spotify re-export.
 	if (similarity === 1) return false;
 
 	const shouldRegenerateMetadata =
@@ -458,11 +442,7 @@ async function updateExistingPlaylist(args: {
 				})
 				.where(eq(playlist.id, playlistId));
 
-			// The cluster this playlist maps to is always this run's fresh
-			// cluster row — last run's playlistClusters row already cascade-
-			// deleted when runClustering() wiped last run's cluster table.
-			// Upsert defensively: harmless if the row is already unique, but
-			// keeps this idempotent against any future retry path.
+			// Last run's playlistClusters row already cascade-deleted when runClustering() wiped the cluster table; upsert for retry-safety.
 			await tx
 				.insert(playlistClusters)
 				.values({ playlistId, clusterId, position: 0, weight: 1.0 })
@@ -471,10 +451,7 @@ async function updateExistingPlaylist(args: {
 					set: { position: 0, weight: 1.0 },
 				});
 
-			// No positional diff: nothing in the app lets a user reorder tracks
-			// within a Harmonia playlist (ordering is always algorithmic, via
-			// orderTracksByEnergy), so a full replace is equivalent to a diff
-			// here and considerably simpler.
+			// No positional diff needed: ordering is always algorithmic (orderTracksByEnergy), so a full replace equals a diff here.
 			await tx
 				.delete(playlistTracks)
 				.where(eq(playlistTracks.playlistId, playlistId));
@@ -668,15 +645,13 @@ async function generateUniquePlaylistMetadata(
 			);
 			avoidNames.push(result.name);
 		} else {
-			// Exhausted retries — accept it. A repeated name is a worse-but-rare
-			// outcome, not worth blocking generation over.
+			// Exhausted retries — accept it, a repeated name isn't worth blocking generation over.
 			usedPlaylistNames.add(normalized);
 			return result;
 		}
 	}
 
-	// Unreachable given the loop bounds above, but keeps TypeScript satisfied
-	// without a non-null assertion.
+	// Unreachable given the loop bounds above — keeps TypeScript satisfied without a non-null assertion.
 	throw new Error("generateUniquePlaylistMetadata: exhausted retry loop");
 }
 

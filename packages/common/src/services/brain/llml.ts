@@ -101,8 +101,7 @@ async function classifyTracksBatchOnce(
 			}
 		}
 
-		// Prompt text and per-track metadata are never logged (large,
-		// contains user library data) — only counts and token usage.
+		// Prompt text and per-track metadata are never logged (large, contains user library data) — only counts and token usage.
 		await logExternalApiCall({
 			userId: context.userId,
 			pipelineRunId: context.pipelineRunId,
@@ -143,10 +142,7 @@ async function classifyTracksBatchOnce(
 			},
 			durationMs,
 			errorMessage: err instanceof Error ? err.message : String(err),
-			// The Vercel AI SDK's generateText() doesn't always surface a raw
-			// HTTP status (e.g. NoObjectGeneratedError has none) — default the
-			// bucket to server_error rather than the generic "no status" case,
-			// since these are provider-side failures, not client/request errors.
+			// generateText() doesn't always surface an HTTP status — default to server_error, these are provider-side failures.
 			statusCategory: httpStatus ? undefined : "server_error",
 			retryAttempt,
 		});

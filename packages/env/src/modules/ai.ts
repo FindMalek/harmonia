@@ -1,11 +1,6 @@
 import { z } from "zod";
 
-// Single source of truth for provider names — @harmonia/ai-provider's
-// AIProviderName type is inferred from this schema, not redeclared. No
-// runtime env var selects one globally — @harmonia/ai-provider's
-// TASK_PROVIDER pins each task to a fixed provider instead (see
-// packages/ai-provider/src/models.ts). This schema just names the values
-// that map can use.
+// Provider name values only — @harmonia/ai-provider's TASK_PROVIDER (models.ts) pins each task to one, no env var selects globally.
 export const aiProviderSchema = z.enum(["groq", "concentrate", "gemini"]);
 
 export const aiModule = {

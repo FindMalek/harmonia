@@ -125,10 +125,7 @@ export async function classifyTrackIds(
 				const now = new Date();
 				if (updates.length > 0) {
 					const modelId = getModelId("classification");
-					// Append-only insert (no upsert guard): the coordinator's fan-out
-					// assigns each track ID to exactly one worker batch, so a duplicate
-					// row here would only happen on a genuine retry — harmless for an
-					// audit-log table where "a" row per track is all reads assume today.
+					// Append-only insert: fan-out assigns each track to one worker batch, a duplicate row only happens on genuine retry.
 					await db.insert(trackAnalysis).values(
 						updates.map(({ trackId, result }) => ({
 							trackId,
