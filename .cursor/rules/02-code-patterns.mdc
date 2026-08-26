@@ -163,7 +163,21 @@ Hard limits:
 
 - **One line, always.** No multi-line comment blocks, no wrapped paragraphs
   above a function or a field. If it doesn't fit on one line, cut it down
-  until it does — don't wrap it instead.
+  until it does — don't wrap it instead. This has been violated repeatedly;
+  treat it as a hard stop, not a style preference. Before finishing any edit
+  that adds a comment, check it: is it wrapped across 2+ `//` lines? If yes,
+  compress it before moving on, don't leave it for review to catch.
+  Example — wrong:
+  ```ts
+  // Below this track-overlap similarity, a cluster is treated as unrelated
+  // to any existing playlist and gets a brand new one instead of an update.
+  const PLAYLIST_MATCH_THRESHOLD = 0.5;
+  ```
+  right:
+  ```ts
+  // Below this track-overlap similarity, a cluster gets a new playlist instead of matching an existing one.
+  const PLAYLIST_MATCH_THRESHOLD = 0.5;
+  ```
 - If the reasoning genuinely can't compress to one line, it belongs in the
   relevant `.cursor/rules/*.mdc` doc, not the code. Code comments point at a
   local, single-spot reason; anything broader (a convention, a pattern, a
