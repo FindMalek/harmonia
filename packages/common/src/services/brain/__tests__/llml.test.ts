@@ -1,9 +1,6 @@
+import { isSplitRetryableError } from "@harmonia/ai-provider";
 import { AbortError } from "p-retry";
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("@harmonia/db", () => ({ db: {} }));
-
-import { isSplitRetryableError } from "../llml";
+import { describe, expect, it } from "vitest";
 
 describe("isSplitRetryableError", () => {
 	it("recognizes Groq's schema-validation rejection (additionalProperties variant)", () => {

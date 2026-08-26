@@ -1,4 +1,10 @@
-import { createGroq } from "@ai-sdk/groq";
+import {
+	getAIModel,
+	getModelId,
+	getTaskProvider,
+	isProviderConfigured,
+	withLLMRetry,
+} from "@harmonia/ai-provider";
 import { clusterMetadataSchema } from "@harmonia/common/schemas";
 import { llmFieldsFromAnalysis } from "@harmonia/common/types";
 import { db } from "@harmonia/db";
@@ -9,20 +15,24 @@ import {
 } from "@harmonia/db/schema/cluster";
 import { track } from "@harmonia/db/schema/track";
 import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
-import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml } from "@zenbase/llml";
-import { generateText, Output } from "ai";
+import { APICallError, generateText, Output } from "ai";
 import { and, eq, isNull } from "drizzle-orm";
 import pLimit from "p-limit";
-import pRetry from "p-retry";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
+import { logExternalApiCall } from "../external-api-log";
+
+const CLUSTER_METADATA_RETRIES = 2;
 
 export async function generateClusterMetadata(userId: string): Promise<number> {
-	if (!env.HARMONIA_GROQ_API_KEY) {
+	if (!isProviderConfigured("clusterMetadata")) {
 		logger.warn(
-			{ type: "cluster-metadata" },
-			"No HARMONIA_GROQ_API_KEY configured; skipping cluster metadata generation",
+			{
+				type: "cluster-metadata",
+				provider: getTaskProvider("clusterMetadata"),
+			},
+			"No credentials configured for the cluster-metadata task's assigned provider; skipping cluster metadata generation",
 		);
 		return 0;
 	}
@@ -88,12 +98,16 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 					return `${t.name} by ${artists.join(", ")}`;
 				});
 
+				const provider = getTaskProvider("clusterMetadata");
+				const modelId = getModelId("clusterMetadata");
+				const startTime = Date.now();
+				let attempt = 0;
 				try {
-					const meta = await pRetry(
-						async () => {
-							const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
+					const meta = await withLLMRetry(
+						async (attemptCount) => {
+							attempt = attemptCount - 1;
 							const { output } = await generateText({
-								model: groq("openai/gpt-oss-120b"),
+								model: getAIModel("clusterMetadata"),
 								output: Output.object({ schema: clusterMetadataSchema }),
 								temperature: 0,
 								prompt: llml({
@@ -119,14 +133,9 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 							return output;
 						},
 						{
-							retries: 2,
+							retries: CLUSTER_METADATA_RETRIES,
 							minTimeout: 2000,
-							onFailedAttempt: (error) => {
-								logger.warn(
-									{ clusterId: c.id, attempt: error.attemptNumber },
-									"Cluster metadata generation failed, retrying",
-								);
-							},
+							label: `cluster-metadata:${c.id}`,
 						},
 					);
 
@@ -134,6 +143,17 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						.update(cluster)
 						.set({ metadata: meta as ClusterMeta })
 						.where(eq(cluster.id, c.id));
+
+					await logExternalApiCall({
+						userId,
+						provider,
+						endpoint: modelId,
+						method: "POST",
+						httpStatus: 200,
+						requestPayload: { model: modelId, clusterId: c.id },
+						durationMs: Date.now() - startTime,
+						retryAttempt: attempt,
+					});
 
 					generated++;
 				} catch (err) {
@@ -144,6 +164,21 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						},
 						"Failed to generate cluster metadata",
 					);
+					const httpStatus = APICallError.isInstance(err)
+						? err.statusCode
+						: undefined;
+					await logExternalApiCall({
+						userId,
+						provider,
+						endpoint: modelId,
+						method: "POST",
+						httpStatus,
+						requestPayload: { model: modelId, clusterId: c.id },
+						durationMs: Date.now() - startTime,
+						errorMessage: err instanceof Error ? err.message : String(err),
+						statusCategory: httpStatus ? undefined : "server_error",
+						retryAttempt: attempt,
+					});
 				}
 			}),
 		),
