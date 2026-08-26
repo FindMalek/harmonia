@@ -705,7 +705,6 @@ async function generatePlaylistMetadata(
 				const { output } = await generateText({
 					model: getAIModel("playlistNaming"),
 					output: Output.object({ schema: playlistMetadataSchema }),
-					// Not 0: temperature 0 made similar clusters always name "midnight" etc (#112).
 					temperature: 0.8,
 					prompt: llml({
 						role: "You are a creative music curator generating a playlist from a cluster of similar tracks.",

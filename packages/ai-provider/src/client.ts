@@ -1,10 +1,10 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createGroq } from "@ai-sdk/groq";
 import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@harmonia/env/server";
 import type { LanguageModel } from "ai";
 
 import {
+	AI_PROVIDER,
 	type AIProviderName,
 	type AITask,
 	TASK_MODELS,
@@ -19,18 +19,15 @@ export function getTaskProvider(task: AITask): AIProviderName {
 /** Whether the provider assigned to this task has its required credential set. */
 export function isProviderConfigured(task: AITask): boolean {
 	switch (getTaskProvider(task)) {
-		case "groq":
+		case AI_PROVIDER.groq:
 			return Boolean(env.HARMONIA_GROQ_API_KEY);
-		case "concentrate":
+		case AI_PROVIDER.concentrate:
 			return Boolean(env.HARMONIA_CONCENTRATE_API_KEY);
-		case "gemini":
-			return Boolean(env.HARMONIA_GEMINI_API_KEY);
 	}
 }
 
 let groqClient: ReturnType<typeof createGroq> | undefined;
 let concentrateClient: ReturnType<typeof createOpenAI> | undefined;
-let geminiClient: ReturnType<typeof createGoogleGenerativeAI> | undefined;
 
 function getGroqClient() {
 	groqClient ??= createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
@@ -46,13 +43,6 @@ function getConcentrateClient() {
 	return concentrateClient;
 }
 
-function getGeminiClient() {
-	geminiClient ??= createGoogleGenerativeAI({
-		apiKey: env.HARMONIA_GEMINI_API_KEY,
-	});
-	return geminiClient;
-}
-
 export function getModelId(task: AITask): string {
 	return TASK_MODELS[task];
 }
@@ -61,11 +51,9 @@ export function getAIModel(task: AITask): LanguageModel {
 	const modelId = getModelId(task);
 
 	switch (getTaskProvider(task)) {
-		case "groq":
+		case AI_PROVIDER.groq:
 			return getGroqClient()(modelId);
-		case "concentrate":
+		case AI_PROVIDER.concentrate:
 			return getConcentrateClient().responses(modelId);
-		case "gemini":
-			return getGeminiClient()(modelId);
 	}
 }

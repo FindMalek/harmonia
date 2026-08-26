@@ -5,6 +5,7 @@ export {
 	isProviderConfigured,
 } from "./client";
 export type { AIProviderName, AITask } from "./models";
+export { AI_PROVIDER } from "./models";
 export {
 	isSplitRetryableError,
 	logInvalidJsonError,

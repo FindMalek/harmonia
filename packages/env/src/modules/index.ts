@@ -1,4 +1,4 @@
-export { aiModule, aiProviderSchema } from "./ai";
+export { aiModule } from "./ai";
 export { authModule } from "./auth";
 export { clientModule } from "./client";
 export { dbModule } from "./db";

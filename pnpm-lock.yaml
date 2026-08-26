@@ -90,6 +90,9 @@ catalogs:
     '@trigger.dev/sdk':
       specifier: ^4.4.6
       version: 4.4.6
+    ai:
+      specifier: ^6.0.205
+      version: 6.0.205
     better-auth:
       specifier: 1.6.18
       version: 1.6.18
@@ -595,9 +598,6 @@ importers:
 
   packages/ai-provider:
     dependencies:
-      '@ai-sdk/google':
-        specifier: ^3.0.110
-        version: 3.0.110(zod@4.4.3)
       '@ai-sdk/groq':
         specifier: ^3.0.41
         version: 3.0.41(zod@4.4.3)
@@ -611,14 +611,11 @@ importers:
         specifier: workspace:*
         version: link:../logger
       ai:
-        specifier: ^6.0.205
+        specifier: 'catalog:'
         version: 6.0.205(zod@4.4.3)
       p-retry:
         specifier: ^8.0.0
         version: 8.0.0
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
     devDependencies:
       '@harmonia/config':
         specifier: workspace:*
@@ -682,7 +679,7 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0(typescript@6.0.3)
       ai:
-        specifier: ^6.0.205
+        specifier: 'catalog:'
         version: 6.0.205(zod@4.4.3)
       density-clustering:
         specifier: ^1.3.0
@@ -1069,12 +1066,6 @@ packages:
 
   '@ai-sdk/gateway@3.0.131':
     resolution: {integrity: sha512-CnjOZdywQaUnCyZ0N5wVNm7Sm63+NeHDVZQJKFX2IDq+t03SLwiiuoi3ILTLPlM+YSOhkQ/pvIDoR4qa98Zp5A==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/google@3.0.110':
-    resolution: {integrity: sha512-R21bSW+/D9M4gpC22Nq/hdWGmQifsnuSBydxGuyLLhQVo3H4nlo6qa+DaOqklYgrcicen0oRGdJRK/PWFRJzvQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -6935,12 +6926,6 @@ snapshots:
       '@ai-sdk/provider': 3.0.10
       '@ai-sdk/provider-utils': 4.0.29(zod@4.4.3)
       '@vercel/oidc': 3.2.0
-      zod: 4.4.3
-
-  '@ai-sdk/google@3.0.110(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.15
-      '@ai-sdk/provider-utils': 4.0.46(zod@4.4.3)
       zod: 4.4.3
 
   '@ai-sdk/groq@3.0.41(zod@4.4.3)':

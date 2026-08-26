@@ -48,7 +48,7 @@ Run tests: `pnpm --filter @harmonia/common test`
 
 ## LLM Calls
 
-All LLM calls resolve their model via `@harmonia/ai-provider`'s `getAIModel(task)` — never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in `@harmonia/common`. Each task is pinned to a fixed provider (`groq` | `concentrate` | `gemini`) via `TASK_PROVIDER`, not a global switch; gate on `isProviderConfigured(task)` before calling, and use `withLLMRetry()` for the shared 429-aware backoff instead of a bare `pRetry`. See `.cursor/rules/packages/00-package-index.mdc` § `@harmonia/ai-provider`.
+All LLM calls resolve their model via `@harmonia/ai-provider`'s `getAIModel(task)` — never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in `@harmonia/common`. Each task is pinned to a fixed provider (`groq` | `concentrate`) via `TASK_PROVIDER`, not a global switch; gate on `isProviderConfigured(task)` before calling, and use `withLLMRetry()` for the shared 429-aware backoff instead of a bare `pRetry`. See `.cursor/rules/packages/00-package-index.mdc` § `@harmonia/ai-provider`.
 
 Prompts are structured using `llml` from `@zenbase/llml`.
 

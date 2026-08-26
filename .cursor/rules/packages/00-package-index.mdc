@@ -8,7 +8,7 @@ alwaysApply: false
 # Package Index
 
 ## `@harmonia/ai-provider`
-Swappable LLM client — `getAIModel(task)` / `getModelId(task)` resolve a model per that task's fixed assigned provider (`TASK_PROVIDER` in `models.ts`, each task pinned to one of `groq` | `concentrate` | `gemini` — not a global switch); `isProviderConfigured(task)` gates on that provider's credential; `withLLMRetry()` shares the 429-aware backoff/hard-4xx-abort logic across call sites. This package is the one place allowed to call `createGroq`/`createOpenAI`/`createGoogleGenerativeAI` — every other consumer goes through `getAIModel()` instead. See `.cursor/rules/packages/trigger.mdc` § LLM Keys in Tasks.
+Swappable LLM client — `getAIModel(task)` / `getModelId(task)` resolve a model per that task's fixed assigned provider (`TASK_PROVIDER` in `models.ts`, each task pinned to one of `groq` | `concentrate` — not a global switch); `isProviderConfigured(task)` gates on that provider's credential; `withLLMRetry()` shares the 429-aware backoff/hard-4xx-abort logic across call sites. This package is the one place allowed to call `createGroq`/`createOpenAI` — every other consumer goes through `getAIModel()` instead. See `.cursor/rules/packages/trigger.mdc` § LLM Keys in Tasks.
 
 ## `@harmonia/auth`
 Dual Better Auth instances: `createDashboardAuth()` (Spotify OAuth, `/api/auth`) and `createAdminAuth()` (email/password, `/api/admin-auth`). Import from `@harmonia/core` as `dashboardAuth`, `adminAuth`, or `auth` (dashboard alias).
