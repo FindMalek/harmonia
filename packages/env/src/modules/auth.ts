@@ -11,5 +11,6 @@ export const authModule = {
 		HARMONIA_CRON_SECRET: z.string().min(1).optional(),
 		HARMONIA_OPENAI_API_KEY: z.string().min(1).optional(),
 		HARMONIA_GROQ_API_KEY: z.string().min(1).optional(),
+		HARMONIA_GETSONGBPM_API_KEY: z.string().min(1).optional(),
 	},
 } as const;

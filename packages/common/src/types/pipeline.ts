@@ -19,6 +19,13 @@ export type LyricsProgress = {
 	total: number;
 };
 
+export type AudioFeaturesProgress = {
+	found: number;
+	notFound: number;
+	processed: number;
+	total: number;
+};
+
 export type ClassifyProgress = {
 	classified: number;
 	total: number;
@@ -49,6 +56,7 @@ export type GenerateProgress = {
 export type PipelineProgress = {
 	sync?: SyncProgress;
 	lyrics?: LyricsProgress;
+	audioFeatures?: AudioFeaturesProgress;
 	classify?: ClassifyProgress;
 	embed?: EmbedProgress;
 	cluster?: ClusterProgress;

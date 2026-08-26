@@ -1,3 +1,4 @@
+export { fetchAudioFeaturesForTrackIds } from "./audio-features/fetch-audio-features";
 export { fetchLyricsForTrackIds } from "./lyrics/fetch-lyrics";
 export { fetchAndCacheArtistImages } from "./spotify/artist-images";
 export { autoExportUpdatedPlaylists } from "./spotify/auto-export";

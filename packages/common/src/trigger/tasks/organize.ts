@@ -9,6 +9,7 @@ import {
 import { assessRunOutcome } from "./assess-run-outcome";
 import { sendOrganizeCompleteEmailTask } from "./emails/send-organize-complete";
 import { artistsStageTask } from "./stages/artists";
+import { audioFeaturesStageTask } from "./stages/audio-features";
 import { classifyStageTask } from "./stages/classify";
 import { clusterStageTask } from "./stages/cluster";
 import { embedStageTask } from "./stages/embed";
@@ -79,6 +80,11 @@ export const organizePipeline = task({
 				lyricsRun.ok ? lyricsRun.output.total : null,
 			);
 
+			const audioFeaturesRun = await audioFeaturesStageTask.triggerAndWait({
+				userId,
+				runId,
+			});
+
 			const classifyStart = new Date();
 			const classifyRun = await classifyStageTask.triggerAndWait({
 				userId,
@@ -148,6 +154,7 @@ export const organizePipeline = task({
 			const stageFailures: string[] = [];
 			if (!syncRun.ok) stageFailures.push("sync");
 			if (!lyricsRun.ok) stageFailures.push("lyrics");
+			if (!audioFeaturesRun.ok) stageFailures.push("audioFeatures");
 			if (!classifyRun.ok) stageFailures.push("classify");
 			if (!embedRun.ok) stageFailures.push("embed");
 			if (!clusterRun.ok) stageFailures.push("cluster");

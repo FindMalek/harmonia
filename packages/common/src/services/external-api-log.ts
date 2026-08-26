@@ -26,7 +26,7 @@ function deriveStatusCategory(httpStatus: number | undefined | null): string {
 export type LogExternalApiCallInput = {
 	userId?: string | null;
 	pipelineRunId?: number | null;
-	provider: "spotify" | "lrclib" | "openai" | "groq";
+	provider: "spotify" | "lrclib" | "openai" | "groq" | "getsongbpm";
 	endpoint: string;
 	method?: string;
 	httpStatus?: number | null;

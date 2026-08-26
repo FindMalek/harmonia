@@ -1,6 +1,7 @@
 // Canonical domain types; Zod schemas in schemas/ handle validation.
 
 export type {
+	AudioFeaturesProgress,
 	ClassifyProgress,
 	ClusterProgress,
 	EmbedProgress,

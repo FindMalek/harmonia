@@ -46,6 +46,12 @@ export type PipelineProgress = {
 		processed: number;
 		total: number;
 	};
+	audioFeatures?: {
+		found: number;
+		notFound: number;
+		processed: number;
+		total: number;
+	};
 	classify?: { classified: number; total: number; pending: number };
 	embed?: { embedded: number; total: number; pending: number };
 	cluster?: { clusters: number; noise: number; totalTracks: number };
