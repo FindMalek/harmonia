@@ -1,6 +1,6 @@
 "use client";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,7 +25,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { formatDistanceToNow } from "date-fns";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -70,7 +70,7 @@ export default function SettingsPage() {
 		try {
 			const { error } = await authClient.signIn.social({
 				provider: "spotify",
-				callbackURL: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}${DASHBOARD_ROUTES.settings.path}`,
+				callbackURL: `${env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL}${DASHBOARD_ROUTES.settings.path}`,
 			});
 			// A successful call redirects the browser away — reaching here at all
 			// means it didn't, so treat a missing `error` the same as one present.
@@ -218,7 +218,7 @@ export default function SettingsPage() {
 						<AlertDialogHeader>
 							<AlertDialogTitle>Delete your account?</AlertDialogTitle>
 							<AlertDialogDescription>
-								This permanently deletes your Harmonia account, your library
+								This permanently deletes your Sonaraem account, your library
 								cache, generated playlists, and all AI analysis. This does not
 								affect your actual Spotify account or library. This cannot be
 								undone.

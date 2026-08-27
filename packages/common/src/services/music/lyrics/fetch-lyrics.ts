@@ -1,7 +1,7 @@
-import type { LyricsProgress } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
-import { logger } from "@harmonia/logger";
+import type { LyricsProgress } from "@sonaraem/common/types";
+import { db } from "@sonaraem/db";
+import { track } from "@sonaraem/db/schema/track";
+import { logger } from "@sonaraem/logger";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import pLimit from "p-limit";
 

@@ -3,8 +3,8 @@
 import type {
 	WaitlistAdminItem,
 	WaitlistStatus,
-} from "@harmonia/common/schemas";
-import { Badge, Button, Checkbox, Icons } from "@harmonia/ui";
+} from "@sonaraem/common/schemas";
+import { Badge, Button, Checkbox, Icons } from "@sonaraem/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { format } from "date-fns";

@@ -7,13 +7,13 @@ alwaysApply: false
 
 # Package Index
 
-## `@harmonia/ai-provider`
+## `@sonaraem/ai-provider`
 Swappable LLM client — `getAIModel(task)` / `getModelId(task)` resolve a model per that task's fixed assigned provider (`TASK_PROVIDER` in `models.ts`, each task pinned to one of `groq` | `concentrate` — not a global switch); `isProviderConfigured(task)` gates on that provider's credential; `withLLMRetry()` shares the 429-aware backoff/hard-4xx-abort logic across call sites. This package is the one place allowed to call `createGroq`/`createOpenAI` — every other consumer goes through `getAIModel()` instead. See `.cursor/rules/packages/trigger.mdc` § LLM Keys in Tasks.
 
-## `@harmonia/auth`
-Dual Better Auth instances: `createDashboardAuth()` (Spotify OAuth, `/api/auth`) and `createAdminAuth()` (email/password, `/api/admin-auth`). Import from `@harmonia/core` as `dashboardAuth`, `adminAuth`, or `auth` (dashboard alias).
+## `@sonaraem/auth`
+Dual Better Auth instances: `createDashboardAuth()` (Spotify OAuth, `/api/auth`) and `createAdminAuth()` (email/password, `/api/admin-auth`). Import from `@sonaraem/core` as `dashboardAuth`, `adminAuth`, or `auth` (dashboard alias).
 
-## `@harmonia/common`
+## `@sonaraem/common`
 Shared schemas, types, services, Trigger.dev task definitions. The bulk of business logic.
 - `src/schemas/` — Zod input/output schemas per domain (including `admin/`, `waitlist/`)
 - `src/utils/waitlist-token.ts` — HMAC tokens for waitlist status URLs
@@ -23,42 +23,42 @@ Shared schemas, types, services, Trigger.dev task definitions. The bulk of busin
 - `src/services/organize/` — pipeline orchestration + DB helpers (`updateRun`, `updateStageProgress`, `checkCancelled`)
 - `src/trigger/tasks/` — Trigger.dev task definitions (parent + stage tasks + email tasks)
 
-Run tests: `pnpm --filter @harmonia/common test`
+Run tests: `pnpm --filter @sonaraem/common test`
 
-## `@harmonia/config`
+## `@sonaraem/config`
 Shared `tsconfig.base.json`. No runtime code.
 
-## `@harmonia/core`
+## `@sonaraem/core`
 Lazy initialization of DB + `dashboardAuth` / `adminAuth`. Re-exports `auth` as dashboard alias.
 
-## `@harmonia/db`
+## `@sonaraem/db`
 Drizzle ORM schema, migrations, and DB client. Auto-detects driver: `.neon.tech` URL → serverless, otherwise → `pg`.
 
-## `@harmonia/env`
+## `@sonaraem/env`
 Zod-validated environment variable presets. **Always import from here, never `process.env`.**
-- `@harmonia/env/server` — server-side (API, services, tasks)
-- `@harmonia/env/presets/api` — API app preset
-- `@harmonia/env/presets/web` — web app preset
-- `@harmonia/env/presets/dashboard` — dashboard app preset
-- `@harmonia/env/presets/admin` — admin app preset
+- `@sonaraem/env/server` — server-side (API, services, tasks)
+- `@sonaraem/env/presets/api` — API app preset
+- `@sonaraem/env/presets/web` — web app preset
+- `@sonaraem/env/presets/dashboard` — dashboard app preset
+- `@sonaraem/env/presets/admin` — admin app preset
 
-## `@harmonia/logger`
-Pino structured logger. `import { logger } from "@harmonia/logger"`.
+## `@sonaraem/logger`
+Pino structured logger. `import { logger } from "@sonaraem/logger"`.
 
-## `@harmonia/orpc`
+## `@sonaraem/orpc`
 oRPC routers, procedures, context, and client. All API definitions live here.
 
-## `@harmonia/tracing`
+## `@sonaraem/tracing`
 OpenTelemetry instrumentation. Initialised at app startup.
 
-## `@harmonia/ui`
-shadcn/ui component library + Tailwind config. Import components via `@harmonia/ui` or `@/components/ui/*` within apps. Email templates do **not** use this package — see `@harmonia/email`.
+## `@sonaraem/ui`
+shadcn/ui component library + Tailwind config. Import components via `@sonaraem/ui` or `@/components/ui/*` within apps. Email templates do **not** use this package — see `@sonaraem/email`.
 
-## `@harmonia/email`
-React Email templates (`emails/`), shared components (`components/`), Resend send helpers (`@harmonia/email/send`). Preview via `pnpm dev:email`. See `.cursor/rules/packages/email.mdc`.
+## `@sonaraem/email`
+React Email templates (`emails/`), shared components (`components/`), Resend send helpers (`@sonaraem/email/send`). Preview via `pnpm dev:email`. See `.cursor/rules/packages/email.mdc`.
 
 ## Dependency Rules
 
 - Apps can import from any package
 - Packages can only import from packages with no circular deps
-- `@harmonia/common` must not import from `@harmonia/orpc` or `@harmonia/tracing`
+- `@sonaraem/common` must not import from `@sonaraem/orpc` or `@sonaraem/tracing`

@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const selectMock = vi.fn();
 
-vi.mock("@harmonia/db", () => ({
+vi.mock("@sonaraem/db", () => ({
 	db: {
 		select: selectMock,
 	},
 }));
 
-vi.mock("@harmonia/db/schema/auth", () => ({
+vi.mock("@sonaraem/db/schema/auth", () => ({
 	user: {
 		isApproved: "isApproved",
 		banned: "banned",

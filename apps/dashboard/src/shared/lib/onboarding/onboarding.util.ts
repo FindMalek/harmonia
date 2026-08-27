@@ -1,5 +1,5 @@
-import type { SyncProgressEvent } from "@harmonia/common/schemas";
-import type { SyncPhase } from "@harmonia/common/types";
+import type { SyncProgressEvent } from "@sonaraem/common/schemas";
+import type { SyncPhase } from "@sonaraem/common/types";
 import type { QueryClient } from "@tanstack/react-query";
 import type { Dispatch, SetStateAction } from "react";
 import { queryKeys } from "@/shared/api/query-keys";

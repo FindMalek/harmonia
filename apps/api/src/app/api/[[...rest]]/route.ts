@@ -1,7 +1,3 @@
-import { apiEnv } from "@harmonia/env/presets/api";
-import { logger } from "@harmonia/logger";
-import { appRouter, type Context, createContext } from "@harmonia/orpc";
-import { flushTelemetry } from "@harmonia/tracing";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { RPCHandler } from "@orpc/server/fetch";
@@ -10,6 +6,10 @@ import type {
 	StandardHandlerInterceptorOptions,
 } from "@orpc/server/standard";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { apiEnv } from "@sonaraem/env/presets/api";
+import { logger } from "@sonaraem/logger";
+import { appRouter, type Context, createContext } from "@sonaraem/orpc";
+import { flushTelemetry } from "@sonaraem/tracing";
 import type { NextRequest } from "next/server";
 import { getCorsHeaders } from "@/lib/cors";
 import { getErrorMessage, safeErrorPayload } from "@/lib/payload";
@@ -50,9 +50,9 @@ const apiHandler = new OpenAPIHandler(appRouter, {
 			schemaConverters: [new ZodToJsonSchemaConverter()],
 			specGenerateOptions: {
 				info: {
-					title: "Harmonia API",
+					title: "Sonaraem API",
 					version: "1.0.0",
-					description: "API documentation and playground for Harmonia",
+					description: "API documentation and playground for Sonaraem",
 				},
 			},
 		}),
@@ -65,7 +65,7 @@ function maybeDevErrorResponse(
 	corsHeaders: Record<string, string>,
 ): Response {
 	if (
-		// standard Node.js runtime var, not in @harmonia/env — Next.js sets this to "development"
+		// standard Node.js runtime var, not in @sonaraem/env — Next.js sets this to "development"
 		process.env.NODE_ENV !== "development" ||
 		response.status !== 500 ||
 		!lastError

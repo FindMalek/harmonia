@@ -24,7 +24,7 @@ const dbMock = vi.hoisted(() => {
 	return { chain, selectMock, updateMock, updateSetMock };
 });
 
-vi.mock("@harmonia/db", () => ({
+vi.mock("@sonaraem/db", () => ({
 	db: {
 		select: dbMock.selectMock,
 		update: dbMock.updateMock,

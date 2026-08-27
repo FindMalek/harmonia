@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		name: "Harmonia Dashboard",
-		short_name: "Harmonia",
-		description: "Manage your Spotify library and playlists in Harmonia.",
+		name: "Sonaraem Dashboard",
+		short_name: "Sonaraem",
+		description: "Manage your Spotify library and playlists in Sonaraem.",
 		theme_color: "#173322",
 		background_color: "#173322",
 		display: "standalone",

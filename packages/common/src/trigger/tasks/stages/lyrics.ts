@@ -1,6 +1,6 @@
-import { db } from "@harmonia/db";
-import { track, userTracks } from "@harmonia/db/schema/track";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { track, userTracks } from "@sonaraem/db/schema/track";
+import { logger } from "@sonaraem/logger";
 import { queue, task } from "@trigger.dev/sdk";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import { fetchLyricsForTrackIds } from "../../../services/music";

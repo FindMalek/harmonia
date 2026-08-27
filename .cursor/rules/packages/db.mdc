@@ -5,7 +5,7 @@ globs:
 alwaysApply: false
 ---
 
-# `@harmonia/db`
+# `@sonaraem/db`
 
 ## Schema Conventions
 
@@ -43,7 +43,7 @@ Use `hnsw` with `vector_cosine_ops` — matches the cosine-distance clustering i
 ## Query Patterns
 
 ```typescript
-import { conflictValue, db } from "@harmonia/db";
+import { conflictValue, db } from "@sonaraem/db";
 import { eq, and, isNull, inArray } from "drizzle-orm";
 
 // Select
@@ -70,7 +70,7 @@ await db.update(pipelineRun).set({
 
 ### `conflictValue(col)` helper
 
-`conflictValue<T>(col: Column): SQL<T>` — exported from `@harmonia/db`.
+`conflictValue<T>(col: Column): SQL<T>` — exported from `@sonaraem/db`.
 
 Wraps the PostgreSQL `excluded.<col>` expression used in `ON CONFLICT DO UPDATE` set blocks. Use it instead of `sql\`excluded.<snake_col>\`` to keep conflict resolution typed and refactor-safe.
 

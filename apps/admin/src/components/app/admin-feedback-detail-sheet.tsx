@@ -1,6 +1,6 @@
 "use client";
 
-import type { FeedbackAdminItem } from "@harmonia/common/schemas";
+import type { FeedbackAdminItem } from "@sonaraem/common/schemas";
 import {
 	Badge,
 	Button,
@@ -13,7 +13,7 @@ import {
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { format } from "date-fns";
 import { toast } from "sonner";
 

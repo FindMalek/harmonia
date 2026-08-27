@@ -1,4 +1,4 @@
-import { getSpotifyLibraryStats } from "@harmonia/common";
+import { getSpotifyLibraryStats } from "@sonaraem/common";
 import { DashboardLibraryOverview } from "./dashboard-library-overview";
 
 export async function DashboardLibraryStatsWrapper({

@@ -1,6 +1,6 @@
 "use client";
 
-import type { SpotifyLibraryStats } from "@harmonia/common/schemas";
+import type { SpotifyLibraryStats } from "@sonaraem/common/schemas";
 import { DashboardStatRow } from "./dashboard-stat-row";
 
 type LibraryOverviewProps = {

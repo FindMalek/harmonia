@@ -1,5 +1,5 @@
 {
-	"extends": "@harmonia/config/tsconfig.base.json",
+	"extends": "@sonaraem/config/tsconfig.base.json",
 	"compilerOptions": {
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"jsx": "react-jsx",

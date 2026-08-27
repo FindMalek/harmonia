@@ -1,6 +1,6 @@
 "use client";
 
-import { DASHBOARD_MOBILE_NAV_ITEMS } from "@harmonia/common/utils/routes";
+import { DASHBOARD_MOBILE_NAV_ITEMS } from "@sonaraem/common/utils/routes";
 import {
 	Button,
 	cn,
@@ -8,7 +8,7 @@ import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import Link, { type LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
 import { useMobileBottomNavState } from "@/hooks/use-mobile-bottom-nav-state";

@@ -1,7 +1,7 @@
 "use client";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Button, Icons } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { Button, Icons } from "@sonaraem/ui";
 import { useState } from "react";
 import { env } from "@/lib/env";
 import { authClient } from "@/shared/api/auth-client";
@@ -14,7 +14,7 @@ export function AuthSpotifySignInButton() {
 		try {
 			await authClient.signIn.social({
 				provider: "spotify",
-				callbackURL: `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL}${DASHBOARD_ROUTES.overview.path}`,
+				callbackURL: `${env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL}${DASHBOARD_ROUTES.overview.path}`,
 			});
 		} catch (error) {
 			setIsLoading(false);

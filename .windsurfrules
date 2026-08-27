@@ -1,4 +1,4 @@
-# Harmonia Windsurf Rules
+# Sonaraem Windsurf Rules
 
 Follow these rules for all code generation, edits, and reviews in this repository.
 
@@ -12,8 +12,8 @@ Follow these rules for all code generation, edits, and reviews in this repositor
 
 - Monorepo: Turborepo + pnpm workspaces.
 - Apps live in `apps/*`; shared code lives in `packages/*`.
-- Use internal imports via `@harmonia/*` package names.
-- Use typed env values from `@harmonia/env`; avoid direct `process.env` in app code.
+- Use internal imports via `@sonaraem/*` package names.
+- Use typed env values from `@sonaraem/env`; avoid direct `process.env` in app code.
 - Run commands from repository root unless a package script requires otherwise.
 
 ## Domain routing
@@ -25,10 +25,10 @@ Follow these rules for all code generation, edits, and reviews in this repositor
 
 ## Hard rules
 
-- Never `process.env` directly — use `@harmonia/env`.
-- Never `groq()` without explicit key — use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`.
+- Never `process.env` directly — use `@sonaraem/env`.
+- Never `groq()` without explicit key — use `createGroq({ apiKey: env.SONARAEM_GROQ_API_KEY })`.
 - Never `inngest` — background jobs use `@trigger.dev/sdk` only.
-- All env vars prefixed `HARMONIA_` or `NEXT_PUBLIC_HARMONIA_`.
+- All env vars prefixed `SONARAEM_` or `NEXT_PUBLIC_SONARAEM_`.
 - JSONB progress writes: use `updateStageProgress(runId, stage, val)`.
 
 ## Coding expectations

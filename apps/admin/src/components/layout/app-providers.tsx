@@ -1,6 +1,6 @@
 "use client";
 
-import { Providers } from "@harmonia/ui";
+import { Providers } from "@sonaraem/ui";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { queryClient } from "@/shared/api/orpc";

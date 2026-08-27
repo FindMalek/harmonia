@@ -1,4 +1,4 @@
-import { InsightSectionCard, Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@sonaraem/ui";
 
 type MoodItem = { mood: string; count: number; percentage: number };
 

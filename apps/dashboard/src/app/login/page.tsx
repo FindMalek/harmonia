@@ -1,5 +1,5 @@
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { HarmoniaBrandHeader } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { SonaraemBrandHeader } from "@sonaraem/ui";
 import type { Route } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -13,7 +13,7 @@ export default async function LoginPage() {
 		if (!session.user.isApproved) {
 			// proxy.ts's middleware never runs on /login, so this is the only place left that can redeem a fresh invite cookie for a returning, already-signed-in user (#281).
 			const cookieStore = await cookies();
-			if (cookieStore.has("harmonia_invite")) {
+			if (cookieStore.has("sonaraem_invite")) {
 				redirect("/api/redeem-invite" as Route);
 			}
 			redirect("/waiting" as Route);
@@ -28,7 +28,7 @@ export default async function LoginPage() {
 	return (
 		<div className="flex h-full min-h-svh flex-col bg-background font-sans">
 			<div className="flex flex-1 flex-col justify-between p-8 sm:p-12 lg:p-16">
-				<HarmoniaBrandHeader />
+				<SonaraemBrandHeader />
 
 				{/* Hero Text */}
 				<div className="mt-42 mb-16 max-w-2xl border-foreground border-l-4 pl-6 sm:pl-8">
@@ -52,7 +52,7 @@ export default async function LoginPage() {
 								Connect your Spotify account
 							</h2>
 							<p className="max-w-md text-muted-foreground text-sm leading-relaxed">
-								Harmonia analyzes your music library and automatically creates
+								Sonaraem analyzes your music library and automatically creates
 								intelligent playlists based on your music taste.
 							</p>
 						</div>
@@ -60,7 +60,7 @@ export default async function LoginPage() {
 						<AuthSpotifySignInButton />
 
 						<p className="text-muted-foreground text-xs">
-							Harmonia only reads your playlists and liked songs.
+							Sonaraem only reads your playlists and liked songs.
 						</p>
 					</div>
 				</div>

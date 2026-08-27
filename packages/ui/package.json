@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/ui",
+	"name": "@sonaraem/ui",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -46,7 +46,7 @@
 		"next": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@tailwindcss/postcss": "^4.3.1",
 		"@tailwindcss/typography": "^0.5.20",
 		"@types/react": "catalog:",

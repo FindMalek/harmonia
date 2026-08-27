@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import { accountDeleteOutputSchema } from "@harmonia/common/schemas";
-import { redeemWaitlistRow } from "@harmonia/common/services/waitlist";
-import { db } from "@harmonia/db";
-import { account, user } from "@harmonia/db/schema/auth";
-import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
+import { accountDeleteOutputSchema } from "@sonaraem/common/schemas";
+import { redeemWaitlistRow } from "@sonaraem/common/services/waitlist";
+import { db } from "@sonaraem/db";
+import { account, user } from "@sonaraem/db/schema/auth";
+import { waitlistSignup } from "@sonaraem/db/schema/waitlist-signup";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { approvedProcedure, protectedProcedure } from "../../procedures";

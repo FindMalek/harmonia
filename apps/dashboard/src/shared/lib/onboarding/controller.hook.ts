@@ -1,6 +1,6 @@
 "use client";
 
-import type { SyncPhase } from "@harmonia/common/types";
+import type { SyncPhase } from "@sonaraem/common/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { client, orpc } from "@/shared/api/orpc";

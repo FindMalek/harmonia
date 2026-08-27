@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@harmonia/db", () => ({
+vi.mock("@sonaraem/db", () => ({
 	db: { insert: vi.fn(() => ({ values: vi.fn(() => Promise.resolve()) })) },
 }));
 

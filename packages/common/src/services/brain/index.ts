@@ -3,7 +3,7 @@ export type {
 	ClusterMetadata,
 	PlaylistMetadata,
 	TrackForClassification,
-} from "@harmonia/common/schemas";
+} from "@sonaraem/common/schemas";
 export { classifyTrackIds } from "./classifier";
 export { generateClusterMetadata } from "./cluster-metadata";
 export { runClustering } from "./clustering";

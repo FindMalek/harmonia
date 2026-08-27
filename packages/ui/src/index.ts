@@ -185,8 +185,8 @@ export {
 // Lib
 export { cn } from "./lib/utils";
 
-// Brand (dashboard / web chrome only — emails use @harmonia/email)
-export { brandTokens, HarmoniaBrandHeader } from "./theme/brand";
+// Brand (dashboard / web chrome only — emails use @sonaraem/email)
+export { brandTokens, SonaraemBrandHeader } from "./theme/brand";
 
 // Types
 export type { AuthClientForUI } from "./types/auth";

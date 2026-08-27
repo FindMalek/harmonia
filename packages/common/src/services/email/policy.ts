@@ -1,6 +1,6 @@
-import { db } from "@harmonia/db";
-import { emailSuppression } from "@harmonia/db/schema/email-suppression";
-import { userEmailPreferences } from "@harmonia/db/schema/user-email-preferences";
+import { db } from "@sonaraem/db";
+import { emailSuppression } from "@sonaraem/db/schema/email-suppression";
+import { userEmailPreferences } from "@sonaraem/db/schema/user-email-preferences";
 import { eq } from "drizzle-orm";
 
 import type { EmailTemplateKey } from "../../schemas";

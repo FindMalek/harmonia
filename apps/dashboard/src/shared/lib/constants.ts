@@ -1,6 +1,6 @@
 export const DASHBOARD_SESSION_STORAGE_KEYS = {
-	ACTIVE_PIPELINE_RUN_ID: "harmonia.dashboard.activePipelineRunId",
-	ANALYSIS_DRAWER_OPEN: "harmonia.dashboard.isAnalysisDrawerOpen",
+	ACTIVE_PIPELINE_RUN_ID: "sonaraem.dashboard.activePipelineRunId",
+	ANALYSIS_DRAWER_OPEN: "sonaraem.dashboard.isAnalysisDrawerOpen",
 } as const;
 
 export const ONBOARDING_SYNC_MAX_ATTEMPTS = 6;

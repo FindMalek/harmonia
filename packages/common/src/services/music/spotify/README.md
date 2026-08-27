@@ -6,7 +6,7 @@
 - **library-stats.ts** — Dashboard stats: fetches owned playlists + items (with snapshot cache), aggregates tracks/albums/artists, 24h cache.
 - **library-sync.ts** — Full sync for Organize pipeline: saved tracks + playlist items (uses cache when snapshot matches), track upsert.
 - **playlist-cache.ts** — Typed cache for playlist items: `getCachedPlaylistItems`, `setCachedPlaylistItems`. Shared by stats and sync.
-- **export.ts** — Write-back: create/update Spotify playlists from Harmonia playlists.
+- **export.ts** — Write-back: create/update Spotify playlists from Sonaraem playlists.
 
 ## Data Flow
 

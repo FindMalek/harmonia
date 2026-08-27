@@ -1,9 +1,9 @@
 import {
 	adminUserListInput,
 	adminUserListOutputSchema,
-} from "@harmonia/common/schemas";
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
+} from "@sonaraem/common/schemas";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
 import { count, desc, ilike, or } from "drizzle-orm";
 
 import { adminProcedure } from "../../procedures";

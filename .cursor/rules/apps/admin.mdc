@@ -14,7 +14,7 @@ Internal tool for waitlist approval, user lookup, and platform stats. Port **300
 ## Auth (separate from dashboard)
 
 - Email/password via Better Auth at **`/api/admin-auth`** (not `/api/auth`)
-- Session cookie prefix: `harmonia-admin` (dashboard uses `harmonia-dashboard`)
+- Session cookie prefix: `sonaraem-admin` (dashboard uses `sonaraem-dashboard`)
 - Signing into admin **does not** sign you into the dashboard
 - Layout gate: `role === "admin"` in `(admin)/layout.tsx`
 - API gate: `adminProcedure` resolves `context.adminSession` only
@@ -22,7 +22,7 @@ Internal tool for waitlist approval, user lookup, and platform stats. Port **300
 ```typescript
 // apps/admin/src/shared/api/auth-client.ts
 createAuthClient({
-  baseURL: env.NEXT_PUBLIC_HARMONIA_API_URL,
+  baseURL: env.NEXT_PUBLIC_SONARAEM_API_URL,
   basePath: "/api/admin-auth",
   plugins: [adminClient()],
 });
@@ -57,8 +57,8 @@ apps/admin/src/
 ## Local Setup
 
 ```bash
-pnpm db:seed    # requires HARMONIA_ADMIN_PASSWORD in .env
+pnpm db:seed    # requires SONARAEM_ADMIN_PASSWORD in .env
 pnpm dev:admin  # needs API on :3002
 ```
 
-Default seed email: `admin@harmonia.com` (override with `HARMONIA_ADMIN_EMAIL`).
+Default seed email: `admin@sonaraem.com` (override with `SONARAEM_ADMIN_EMAIL`).

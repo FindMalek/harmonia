@@ -5,7 +5,7 @@
  * All apps and components should import icons from this file for consistency.
  *
  * Usage:
- *   import { Icons } from "@harmonia/ui";
+ *   import { Icons } from "@sonaraem/ui";
  *   <Icons.arrowLeft className="..." />
  *   <Icons.spinner className="animate-spin" />
  */

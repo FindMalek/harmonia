@@ -1,19 +1,19 @@
-import "@harmonia/ui/styles/globals.css";
+import "@sonaraem/ui/styles/globals.css";
 import type { Metadata, Viewport } from "next";
 
 import AppProviders from "@/components/app-providers";
 import { getSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getSiteUrl();
-const title = "Harmonia — Your Spotify library, intelligently organized.";
+const title = "Sonaraem — Your Spotify library, intelligently organized.";
 const description =
-	"Harmonia uses AI to analyze your music library and automatically create meaningful playlists from your songs.";
+	"Sonaraem uses AI to analyze your music library and automatically create meaningful playlists from your songs.";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(siteUrl),
 	title: {
 		default: title,
-		template: "%s — Harmonia",
+		template: "%s — Sonaraem",
 	},
 	description,
 	keywords: [
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
 		"automatic playlists",
 		"music discovery AI",
 	],
-	authors: [{ name: "Harmonia" }],
-	creator: "Harmonia",
+	authors: [{ name: "Sonaraem" }],
+	creator: "Sonaraem",
 	robots: {
 		index: true,
 		follow: true,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 		url: siteUrl,
 		title,
 		description,
-		siteName: "Harmonia",
+		siteName: "Sonaraem",
 	},
 	twitter: {
 		card: "summary_large_image",
@@ -52,12 +52,12 @@ const structuredData = {
 	"@graph": [
 		{
 			"@type": "WebSite",
-			name: "Harmonia",
+			name: "Sonaraem",
 			url: siteUrl,
 		},
 		{
 			"@type": "SoftwareApplication",
-			name: "Harmonia",
+			name: "Sonaraem",
 			applicationCategory: "MusicApplication",
 			operatingSystem: "Web",
 			description,

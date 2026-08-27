@@ -1,7 +1,7 @@
-import type { TracksListOutput } from "@harmonia/common/schemas";
-import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Skeleton } from "@harmonia/ui";
+import type { TracksListOutput } from "@sonaraem/common/schemas";
+import { parseJsonStringArray } from "@sonaraem/common/utils/parse-json-string-array";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { Skeleton } from "@sonaraem/ui";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";

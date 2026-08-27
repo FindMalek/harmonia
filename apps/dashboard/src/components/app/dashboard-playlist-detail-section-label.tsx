@@ -1,4 +1,4 @@
-import { Separator } from "@harmonia/ui";
+import { Separator } from "@sonaraem/ui";
 
 export function DashboardPlaylistDetailSectionLabel({
 	label,

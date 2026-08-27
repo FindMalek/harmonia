@@ -8,7 +8,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 
 type AdminTablePaginationProps = {
 	total: number;

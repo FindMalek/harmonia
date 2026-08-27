@@ -1,4 +1,4 @@
-import { apiEnv } from "@harmonia/env";
+import { apiEnv } from "@sonaraem/env";
 
 /**
  * Build CORS headers for a given origin.
@@ -10,10 +10,10 @@ export async function getCorsHeaders(
 ): Promise<Record<string, string>> {
 	const allowedOrigins: string[] = [];
 	for (const url of [
-		apiEnv.NEXT_PUBLIC_HARMONIA_API_URL,
-		apiEnv.NEXT_PUBLIC_HARMONIA_WEB_URL,
-		apiEnv.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
-		apiEnv.NEXT_PUBLIC_HARMONIA_ADMIN_URL,
+		apiEnv.NEXT_PUBLIC_SONARAEM_API_URL,
+		apiEnv.NEXT_PUBLIC_SONARAEM_WEB_URL,
+		apiEnv.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL,
+		apiEnv.NEXT_PUBLIC_SONARAEM_ADMIN_URL,
 	]) {
 		if (url) {
 			try {

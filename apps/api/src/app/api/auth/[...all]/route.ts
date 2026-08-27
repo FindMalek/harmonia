@@ -1,4 +1,4 @@
-import { auth } from "@harmonia/core";
+import { auth } from "@sonaraem/core";
 import { toNextJsHandler } from "better-auth/next-js";
 import { createAuthRouteHandlers } from "@/lib/auth-route";
 

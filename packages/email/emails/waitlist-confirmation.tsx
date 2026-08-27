@@ -27,7 +27,7 @@ export function WaitlistConfirmationEmail({
 
 	return (
 		<EmailThemeProvider
-			preview={<Preview>You're on the Harmonia waitlist</Preview>}
+			preview={<Preview>You're on the Sonaraem waitlist</Preview>}
 		>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
@@ -52,7 +52,7 @@ export function WaitlistConfirmationEmail({
 						className={`mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.mutedText}`}
 						style={{ color: lightStyles.mutedText.color }}
 					>
-						Thanks for your interest in Harmonia. We review signups in small
+						Thanks for your interest in Sonaraem. We review signups in small
 						batches and will email you the moment you're approved.
 					</Text>
 					<Text
@@ -67,7 +67,7 @@ export function WaitlistConfirmationEmail({
 						<Button href={waitingUrl}>Check your status</Button>
 					</Section>
 
-					<Footer complianceText="You are receiving this email because you joined the Harmonia waitlist." />
+					<Footer complianceText="You are receiving this email because you joined the Sonaraem waitlist." />
 				</Container>
 			</Body>
 		</EmailThemeProvider>

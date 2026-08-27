@@ -1,7 +1,7 @@
-import { conflictValue, db } from "@harmonia/db";
-import { artist } from "@harmonia/db/schema/artist";
-import { track, userTracks } from "@harmonia/db/schema/track";
-import { logger } from "@harmonia/logger";
+import { conflictValue, db } from "@sonaraem/db";
+import { artist } from "@sonaraem/db/schema/artist";
+import { track, userTracks } from "@sonaraem/db/schema/track";
+import { logger } from "@sonaraem/logger";
 import { eq, inArray } from "drizzle-orm";
 
 import { fetchArtistsByIds, getUserSpotifyAccessToken } from "./client";

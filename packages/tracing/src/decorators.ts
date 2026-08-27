@@ -80,7 +80,7 @@ export function Trace(
 
 		// Create the wrapped method - preserves original return type (sync/async)
 		const wrappedMethod = function (this: unknown, ...args: unknown[]) {
-			const tracer = trace.getTracer("harmonia");
+			const tracer = trace.getTracer("sonaraem");
 
 			// Call original method and detect if result is a Promise/thenable
 			let result: unknown;

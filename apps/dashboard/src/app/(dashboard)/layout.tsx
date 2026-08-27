@@ -1,4 +1,4 @@
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardLayoutShell } from "@/components/layout/dashboard-layout-shell";

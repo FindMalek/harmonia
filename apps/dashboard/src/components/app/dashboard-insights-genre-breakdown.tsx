@@ -1,13 +1,13 @@
 "use client";
 
-import type { ChartConfig } from "@harmonia/ui";
+import type { ChartConfig } from "@sonaraem/ui";
 import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 	InsightSectionCard,
 	Skeleton,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { Cell, Pie, PieChart } from "recharts";
 
 type GenreItem = { name: string; count: number; percentage: number };

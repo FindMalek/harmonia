@@ -1,6 +1,6 @@
 import { createGroq } from "@ai-sdk/groq";
 import { createOpenAI } from "@ai-sdk/openai";
-import { env } from "@harmonia/env/server";
+import { env } from "@sonaraem/env/server";
 import type { LanguageModel } from "ai";
 
 import {
@@ -20,9 +20,9 @@ export function getTaskProvider(task: AITask): AIProviderName {
 export function isProviderConfigured(task: AITask): boolean {
 	switch (getTaskProvider(task)) {
 		case AI_PROVIDER.groq:
-			return Boolean(env.HARMONIA_GROQ_API_KEY);
+			return Boolean(env.SONARAEM_GROQ_API_KEY);
 		case AI_PROVIDER.concentrate:
-			return Boolean(env.HARMONIA_CONCENTRATE_API_KEY);
+			return Boolean(env.SONARAEM_CONCENTRATE_API_KEY);
 	}
 }
 
@@ -30,14 +30,14 @@ let groqClient: ReturnType<typeof createGroq> | undefined;
 let concentrateClient: ReturnType<typeof createOpenAI> | undefined;
 
 function getGroqClient() {
-	groqClient ??= createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
+	groqClient ??= createGroq({ apiKey: env.SONARAEM_GROQ_API_KEY });
 	return groqClient;
 }
 
 function getConcentrateClient() {
 	concentrateClient ??= createOpenAI({
 		baseURL: "https://api.concentrate.ai/v1",
-		apiKey: env.HARMONIA_CONCENTRATE_API_KEY,
+		apiKey: env.SONARAEM_CONCENTRATE_API_KEY,
 		name: "concentrate",
 	});
 	return concentrateClient;

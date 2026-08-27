@@ -34,7 +34,7 @@ export async function getSessionFromCookie(
 ): Promise<Session | null> {
 	try {
 		const res = await fetch(
-			`${env.NEXT_PUBLIC_HARMONIA_API_URL}/api/auth/get-session`,
+			`${env.NEXT_PUBLIC_SONARAEM_API_URL}/api/auth/get-session`,
 			{
 				headers: cookie ? { cookie } : undefined,
 				credentials: "include",

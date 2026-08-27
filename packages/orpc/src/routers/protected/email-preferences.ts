@@ -2,10 +2,10 @@ import {
 	emailPreferencesOutputSchema,
 	emailPreferencesUpdateInput,
 	emptyInput,
-} from "@harmonia/common/schemas";
-import { ensureUserEmailPreferences } from "@harmonia/common/services/email";
-import { db } from "@harmonia/db";
-import { userEmailPreferences } from "@harmonia/db/schema/user-email-preferences";
+} from "@sonaraem/common/schemas";
+import { ensureUserEmailPreferences } from "@sonaraem/common/services/email";
+import { db } from "@sonaraem/db";
+import { userEmailPreferences } from "@sonaraem/db/schema/user-email-preferences";
 import { eq } from "drizzle-orm";
 
 import { approvedProcedure } from "../../procedures";

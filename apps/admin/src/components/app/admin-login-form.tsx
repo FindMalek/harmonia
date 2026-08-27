@@ -7,7 +7,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 	Input,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -73,7 +73,7 @@ export function AdminLoginForm() {
 									id={field.name}
 									name={field.name}
 									type="email"
-									placeholder="admin@harmonia.com"
+									placeholder="admin@sonaraem.com"
 									autoComplete="email"
 									className="h-8"
 									value={field.state.value}

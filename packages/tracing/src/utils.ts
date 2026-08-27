@@ -9,7 +9,7 @@ export async function withSpan<T>(
 	fn: (span: Span) => Promise<T>,
 	attributes?: Record<string, string | number | boolean>,
 ): Promise<T> {
-	const tracer = trace.getTracer("harmonia");
+	const tracer = trace.getTracer("sonaraem");
 	return tracer.startActiveSpan(name, async (span) => {
 		try {
 			// Add attributes if provided
@@ -145,7 +145,7 @@ export function traceStaticClass<
 				...descriptor,
 				value: function (this: unknown, ...args: unknown[]) {
 					const spanName = `${prefix}.${prop}`;
-					const tracer = trace.getTracer("harmonia");
+					const tracer = trace.getTracer("sonaraem");
 
 					// Call original method and detect if result is a Promise/thenable
 					let result: unknown;

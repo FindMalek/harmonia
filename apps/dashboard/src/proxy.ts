@@ -1,4 +1,4 @@
-import { resolveWaitlistGate } from "@harmonia/common/utils/waitlist-gate";
+import { resolveWaitlistGate } from "@sonaraem/common/utils/waitlist-gate";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
@@ -14,7 +14,7 @@ export const config = {
 };
 
 export async function proxy(request: NextRequest) {
-	const hasInvite = request.cookies.has("harmonia_invite");
+	const hasInvite = request.cookies.has("sonaraem_invite");
 	const session = await getSessionFromCookie(request.headers.get("cookie"));
 
 	const decision = resolveWaitlistGate(
@@ -25,7 +25,7 @@ export async function proxy(request: NextRequest) {
 			pathname: request.nextUrl.pathname,
 			search: request.nextUrl.search,
 		},
-		env.NEXT_PUBLIC_HARMONIA_WEB_URL,
+		env.NEXT_PUBLIC_SONARAEM_WEB_URL,
 	);
 
 	if (decision.action === "next") {

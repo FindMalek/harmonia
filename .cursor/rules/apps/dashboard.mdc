@@ -16,7 +16,7 @@ apps/dashboard/src/
   app/login/
   app/waiting/          # waitlist status (signed token in URL)
   app/invite-expired/
-  app/api/invite/       # sets harmonia_invite cookie from email link
+  app/api/invite/       # sets sonaraem_invite cookie from email link
   app/api/redeem-invite/
   proxy.ts              # waitlist approval gate (Next.js 16 proxy)
   hooks/                  # cross-cutting client hooks (prefix use-, co-locate only when owned by one component)
@@ -43,7 +43,7 @@ apps/dashboard/src/
 
 Access control is enforced in two layers:
 
-1. **`apps/dashboard/src/proxy.ts`** — page-level gate via `resolveWaitlistGate()` from `@harmonia/common/utils/waitlist-gate`
+1. **`apps/dashboard/src/proxy.ts`** — page-level gate via `resolveWaitlistGate()` from `@sonaraem/common/utils/waitlist-gate`
    - Unapproved users → `/waiting`
    - Unauthenticated without invite → web app or `/waiting`
    - `/login`, `/waiting`, invite routes excluded from matcher
@@ -97,5 +97,5 @@ Returning approved users reach `/login` without an invite cookie. Invite flow: e
 
 ## Navigation
 
-- Routes defined in `@harmonia/common/utils/routes` as `DASHBOARD_ROUTES`
+- Routes defined in `@sonaraem/common/utils/routes` as `DASHBOARD_ROUTES`
 - Use `Link` from `next/link` for all navigation — no `window.location.href` except hard redirects

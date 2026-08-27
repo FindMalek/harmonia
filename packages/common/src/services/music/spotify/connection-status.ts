@@ -1,6 +1,6 @@
-import { db } from "@harmonia/db";
-import { account } from "@harmonia/db/schema/auth";
-import { userSpotifyLibraryStats } from "@harmonia/db/schema/spotify";
+import { db } from "@sonaraem/db";
+import { account } from "@sonaraem/db/schema/auth";
+import { userSpotifyLibraryStats } from "@sonaraem/db/schema/spotify";
 import { and, eq } from "drizzle-orm";
 
 /**

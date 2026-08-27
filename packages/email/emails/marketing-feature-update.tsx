@@ -54,7 +54,7 @@ export function MarketingFeatureUpdateEmail({
 
 	return (
 		<EmailThemeProvider
-			preview={<Preview>{`New in Harmonia: ${featureTitle}`}</Preview>}
+			preview={<Preview>{`New in Sonaraem: ${featureTitle}`}</Preview>}
 		>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
@@ -179,7 +179,7 @@ export function MarketingFeatureUpdateEmail({
 					<Footer
 						settingsUrl={preferencesUrl}
 						unsubscribeUrl={unsubscribeUrl}
-						complianceText="You are receiving this email because you opted in to product updates from Harmonia."
+						complianceText="You are receiving this email because you opted in to product updates from Sonaraem."
 					/>
 				</Container>
 			</Body>

@@ -1,6 +1,6 @@
-# @harmonia/email
+# @sonaraem/email
 
-React Email templates and Resend send helpers for Harmonia.
+React Email templates and Resend send helpers for Sonaraem.
 
 ## Structure
 
@@ -17,7 +17,7 @@ packages/email/
 
 Templates use **Tailwind `className`** + `EmailThemeProvider` + `getEmailThemeClasses()` + `getEmailInlineStyles("light")` inline fallbacks. Dark mode is CSS-only in `components/theme.tsx` — never add `*.dark.tsx` duplicates.
 
-Theme colors live in `components/theme.tsx` only. Do not import `@harmonia/ui` from this package.
+Theme colors live in `components/theme.tsx` only. Do not import `@sonaraem/ui` from this package.
 
 ## Preview
 
@@ -27,4 +27,4 @@ pnpm dev:email
 
 ## Send
 
-Import from `@harmonia/email/send`. Policy, dedupe, and triggers live in `@harmonia/common`.
+Import from `@sonaraem/email/send`. Policy, dedupe, and triggers live in `@sonaraem/common`.

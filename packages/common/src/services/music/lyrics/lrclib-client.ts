@@ -1,4 +1,4 @@
-import { logger } from "@harmonia/logger";
+import { logger } from "@sonaraem/logger";
 import pRetry, { AbortError } from "p-retry";
 import { logExternalApiCall } from "../../external-api-log";
 

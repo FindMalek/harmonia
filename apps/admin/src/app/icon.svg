@@ -1,5 +1,5 @@
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <title>Harmonia Admin</title>
+  <title>Sonaraem Admin</title>
   <style>
     .bar { fill: #33418f; }
     @media (prefers-color-scheme: dark) { .bar { fill: #8b98e8; } }

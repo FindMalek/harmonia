@@ -1,5 +1,5 @@
-import { db, eq } from "@harmonia/db";
-import { emailSendLog } from "@harmonia/db/schema/email-send-log";
+import { db, eq } from "@sonaraem/db";
+import { emailSendLog } from "@sonaraem/db/schema/email-send-log";
 import { Resend } from "resend";
 import { z } from "zod";
 

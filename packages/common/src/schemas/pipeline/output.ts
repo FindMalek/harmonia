@@ -7,7 +7,7 @@ export const pipelineRunListItemSchema = z.object({
 	userId: z.string(),
 	status: pipelineStatusEnum,
 	currentStage: z.string().nullable(),
-	/** Stage-specific shapes (SyncProgress, LyricsProgress, etc.) — see @harmonia/common/types */
+	/** Stage-specific shapes (SyncProgress, LyricsProgress, etc.) — see @sonaraem/common/types */
 	progress: z.record(z.string(), z.unknown()).nullable(),
 	error: z.string().nullable(),
 	startedAt: z.date().nullable(),

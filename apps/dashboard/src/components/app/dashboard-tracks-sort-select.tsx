@@ -1,6 +1,6 @@
 "use client";
 
-import type { TracksListSort } from "@harmonia/common/schemas";
+import type { TracksListSort } from "@sonaraem/common/schemas";
 import {
 	Button,
 	DropdownMenu,
@@ -9,7 +9,7 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 	Icons,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 
 const SORT_OPTIONS: Array<{ value: TracksListSort; label: string }> = [
 	{ value: "recent", label: "Recently added" },

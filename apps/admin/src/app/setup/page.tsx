@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, Icons } from "@harmonia/ui";
+import { Card, CardContent, CardHeader, CardTitle, Icons } from "@sonaraem/ui";
 import { redirect } from "next/navigation";
 
 import { AdminSetupForm } from "@/components/app/admin-setup-form";
@@ -30,7 +30,7 @@ export default async function SetupPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle className="text-sm">Set up Harmonia Admin</CardTitle>
+						<CardTitle className="text-sm">Set up Sonaraem Admin</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<AdminSetupForm />

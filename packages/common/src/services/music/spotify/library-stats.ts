@@ -1,12 +1,12 @@
 import type {
 	SpotifyLibraryStats,
 	SpotifyPlaylistTrackItem,
-} from "@harmonia/common/schemas";
-import { conflictValue, db } from "@harmonia/db";
+} from "@sonaraem/common/schemas";
+import { conflictValue, db } from "@sonaraem/db";
 import {
 	userPlaylistSnapshots,
 	userSpotifyLibraryStats,
-} from "@harmonia/db/schema/spotify";
+} from "@sonaraem/db/schema/spotify";
 import { eq } from "drizzle-orm";
 import pLimit from "p-limit";
 

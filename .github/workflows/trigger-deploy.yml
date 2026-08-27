@@ -4,9 +4,9 @@
 #
 # Required secrets:
 #   TRIGGER_ACCESS_TOKEN        - Personal Access Token (Trigger.dev profile -> Personal Access Tokens).
-#                                  NOT the project API key (HARMONIA_TRIGGER_SECRET_KEY) — deploy needs
+#                                  NOT the project API key (SONARAEM_TRIGGER_SECRET_KEY) — deploy needs
 #                                  account-level auth, not an environment-scoped runtime key.
-#   HARMONIA_TRIGGER_PROJECT_REF - Trigger.dev prod project ref (Project -> Settings).
+#   SONARAEM_TRIGGER_PROJECT_REF - Trigger.dev prod project ref (Project -> Settings).
 #   Add both in: GitHub repo → Settings → Secrets and variables → Actions.
 
 name: Trigger.dev Deploy
@@ -41,5 +41,5 @@ jobs:
       - name: Deploy Trigger.dev tasks
         env:
           TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
-          HARMONIA_TRIGGER_PROJECT_REF: ${{ secrets.HARMONIA_TRIGGER_PROJECT_REF }}
+          SONARAEM_TRIGGER_PROJECT_REF: ${{ secrets.SONARAEM_TRIGGER_PROJECT_REF }}
         run: pnpm deploy:trigger

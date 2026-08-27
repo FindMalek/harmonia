@@ -1,4 +1,4 @@
-import type { playlistListItemSchema } from "@harmonia/common/schemas";
+import type { playlistListItemSchema } from "@sonaraem/common/schemas";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -6,7 +6,7 @@ import {
 	BreadcrumbSeparator,
 	Icons,
 	Skeleton,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { Fragment } from "react";

@@ -1,14 +1,14 @@
-name: harmonia
+name: sonaraem
 
 services:
   postgres:
     image: pgvector/pgvector:pg15
-    container_name: harmonia-postgres
+    container_name: sonaraem-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: harmonia
+      POSTGRES_DB: sonaraem
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5433:5432"
@@ -16,7 +16,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/01-vector.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d harmonia"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sonaraem"]
       interval: 10s
       timeout: 5s
       retries: 5

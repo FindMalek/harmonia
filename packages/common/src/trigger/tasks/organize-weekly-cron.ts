@@ -1,7 +1,7 @@
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
-import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
+import { pipelineRun } from "@sonaraem/db/schema/pipeline-run";
+import { logger } from "@sonaraem/logger";
 import { schedules } from "@trigger.dev/sdk";
 import { and, eq } from "drizzle-orm";
 

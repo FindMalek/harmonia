@@ -1,6 +1,6 @@
-# @harmonia/common
+# @sonaraem/common
 
-Shared schemas, types, and services for the Harmonia monorepo.
+Shared schemas, types, and services for the Sonaraem monorepo.
 
 ## Structure
 

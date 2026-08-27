@@ -1,10 +1,10 @@
-import type { EmbedProgress } from "@harmonia/common/types";
-import { llmFieldsFromAnalysis } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
-import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
-import { env } from "@harmonia/env/server";
-import { logger } from "@harmonia/logger";
+import type { EmbedProgress } from "@sonaraem/common/types";
+import { llmFieldsFromAnalysis } from "@sonaraem/common/types";
+import { db } from "@sonaraem/db";
+import { track } from "@sonaraem/db/schema/track";
+import { trackAnalysis } from "@sonaraem/db/schema/track-analysis";
+import { env } from "@sonaraem/env/server";
+import { logger } from "@sonaraem/logger";
 import { and, inArray, isNull, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
@@ -45,7 +45,7 @@ async function fetchEmbeddingsBatch(
 			const response = await fetch("https://api.openai.com/v1/embeddings", {
 				method: "POST",
 				headers: {
-					Authorization: `Bearer ${env.HARMONIA_OPENAI_API_KEY}`,
+					Authorization: `Bearer ${env.SONARAEM_OPENAI_API_KEY}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
@@ -190,10 +190,10 @@ export async function embedTrackIds(
 		pending: trackIds.length,
 	};
 
-	if (!env.HARMONIA_OPENAI_API_KEY) {
+	if (!env.SONARAEM_OPENAI_API_KEY) {
 		logger.warn(
 			{ type: "embeddings" },
-			"No HARMONIA_OPENAI_API_KEY configured; skipping embedding generation",
+			"No SONARAEM_OPENAI_API_KEY configured; skipping embedding generation",
 		);
 		return stats;
 	}

@@ -5,7 +5,7 @@ import { ORPCInstrumentation } from "@orpc/otel";
 
 /**
  * Get all auto-instrumentations for OpenTelemetry
- * Note: Harmonia uses Drizzle, not Prisma - no @prisma/instrumentation
+ * Note: Sonaraem uses Drizzle, not Prisma - no @prisma/instrumentation
  */
 export function getInstrumentations(): Instrumentation[] {
 	const instrumentations: Instrumentation[] = [

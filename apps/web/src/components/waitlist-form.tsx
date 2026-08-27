@@ -7,7 +7,7 @@ import {
 	InputGroupButton,
 	InputGroupInput,
 	Label,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
