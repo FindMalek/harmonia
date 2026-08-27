@@ -680,6 +680,7 @@ async function generatePlaylistMetadata(
 	const modelId = getModelId("playlistNaming");
 	const startTime = Date.now();
 	let attempt = 0;
+	let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
 
 	try {
 		const output = await withLLMRetry(
@@ -702,7 +703,7 @@ async function generatePlaylistMetadata(
 					clusterInfo.namesToAvoid = avoidNames.join(", ");
 				}
 
-				const { output } = await generateText({
+				const { output, usage: callUsage } = await generateText({
 					model: getAIModel("playlistNaming"),
 					output: Output.object({ schema: playlistMetadataSchema }),
 					temperature: 0.8,
@@ -722,6 +723,7 @@ async function generatePlaylistMetadata(
 						],
 					}),
 				});
+				usage = callUsage;
 				return output;
 			},
 			{
@@ -738,6 +740,7 @@ async function generatePlaylistMetadata(
 			method: "POST",
 			httpStatus: 200,
 			requestPayload: { model: modelId, avoidNameCount: avoidNames.length },
+			responsePayload: { usage },
 			durationMs: Date.now() - startTime,
 			retryAttempt: attempt,
 		});

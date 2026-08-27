@@ -17,6 +17,7 @@
 		"db:studio": "drizzle-kit studio",
 		"db:migrate": "tsx scripts/migrate.ts",
 		"db:mark-migrations-applied": "node scripts/mark-migrations-applied.mjs",
+		"db:backfill-cost-usd": "node scripts/backfill-cost-usd.mjs",
 		"db:reset": "tsx scripts/db-reset.ts",
 		"db:reset:all": "tsx scripts/db-reset.ts --all",
 		"db:reset:embeddings": "tsx scripts/reset-embeddings.ts",

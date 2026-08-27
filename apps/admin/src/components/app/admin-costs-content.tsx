@@ -11,8 +11,10 @@ import {
 	parseAsStringLiteral,
 	useQueryStates,
 } from "nuqs";
+import { useState } from "react";
 
 import { orpc } from "@/shared/api/orpc";
+import { AdminCostsDetailSheet } from "./admin-costs-detail-sheet";
 import { AdminDataTable } from "./admin-data-table";
 import { AdminTablePagination } from "./admin-table-pagination";
 import { AdminTableToolbar } from "./admin-table-toolbar";
@@ -72,21 +74,6 @@ const columns: ColumnDef<AdminCostsRunItem>[] = [
 				: "—",
 	},
 	{
-		accessorKey: "groqCostUsd",
-		header: "Groq",
-		cell: ({ row }) => formatCost(row.original.groqCostUsd),
-	},
-	{
-		accessorKey: "openaiCostUsd",
-		header: "OpenAI",
-		cell: ({ row }) => formatCost(row.original.openaiCostUsd),
-	},
-	{
-		accessorKey: "concentrateCostUsd",
-		header: "Concentrate",
-		cell: ({ row }) => formatCost(row.original.concentrateCostUsd),
-	},
-	{
 		accessorKey: "totalCostUsd",
 		header: "Total",
 		cell: ({ row }) => (
@@ -102,6 +89,9 @@ export function AdminCostsContent() {
 		shallow: false,
 		startTransition: undefined,
 	});
+
+	const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
+	const [isSheetOpen, setIsSheetOpen] = useState(false);
 
 	const { data, isFetching } = useQuery(
 		orpc.admin.costs.list.queryOptions({
@@ -137,6 +127,11 @@ export function AdminCostsContent() {
 				columns={columns}
 				data={data?.items ?? []}
 				isLoading={isFetching && !data}
+				getRowId={(row) => String(row.runId)}
+				onRowClick={(row) => {
+					setSelectedRunId(row.runId);
+					setIsSheetOpen(true);
+				}}
 			/>
 
 			<AdminTablePagination
@@ -146,6 +141,12 @@ export function AdminCostsContent() {
 				pageCount={data?.pageCount ?? 1}
 				onPageChange={(p) => setParams({ page: p })}
 				onPageSizeChange={(size) => setParams({ pageSize: size, page: 1 })}
+			/>
+
+			<AdminCostsDetailSheet
+				runId={selectedRunId}
+				open={isSheetOpen}
+				onOpenChange={setIsSheetOpen}
 			/>
 		</div>
 	);

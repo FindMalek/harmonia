@@ -18,15 +18,11 @@ export const PRICING_PER_1M_TOKENS: Record<
 	},
 };
 
-// Tolerates both the AI SDK's { inputTokens, outputTokens } and the raw OpenAI REST API's { prompt_tokens }; returns null when unpriced (e.g. Spotify, LRCLib) or usage is missing.
-export function computeCostUsd(
-	provider: string,
-	endpoint: string,
+// Tolerates both the AI SDK's { inputTokens, outputTokens } and the raw OpenAI REST API's { prompt_tokens }; returns null when usage is missing/malformed.
+export function parseUsageTokens(
 	usage: unknown,
-): number | null {
-	const rates = PRICING_PER_1M_TOKENS[provider]?.[endpoint];
-	if (!rates || typeof usage !== "object" || usage === null) return null;
-
+): { inputTokens: number; outputTokens: number } | null {
+	if (typeof usage !== "object" || usage === null) return null;
 	const u = usage as Record<string, unknown>;
 	const inputTokens =
 		typeof u.inputTokens === "number"
@@ -35,11 +31,22 @@ export function computeCostUsd(
 				? u.prompt_tokens
 				: 0;
 	const outputTokens = typeof u.outputTokens === "number" ? u.outputTokens : 0;
-
 	if (inputTokens === 0 && outputTokens === 0) return null;
+	return { inputTokens, outputTokens };
+}
+
+// Returns null when unpriced (e.g. Spotify, LRCLib) or usage is missing.
+export function computeCostUsd(
+	provider: string,
+	endpoint: string,
+	usage: unknown,
+): number | null {
+	const rates = PRICING_PER_1M_TOKENS[provider]?.[endpoint];
+	const tokens = parseUsageTokens(usage);
+	if (!rates || !tokens) return null;
 
 	return (
-		(inputTokens / 1_000_000) * rates.input +
-		(outputTokens / 1_000_000) * rates.output
+		(tokens.inputTokens / 1_000_000) * rates.input +
+		(tokens.outputTokens / 1_000_000) * rates.output
 	);
 }
