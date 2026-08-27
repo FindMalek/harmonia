@@ -1,3 +1,4 @@
+import { getModelId } from "@harmonia/ai-provider";
 import type {
 	ClassificationResult,
 	TrackForClassification,
@@ -11,7 +12,6 @@ import { logger } from "@harmonia/logger";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import pLimit from "p-limit";
 
-import { CLASSIFICATION_LLM_MODEL } from "../../constants/brain";
 import { chunk } from "../../trigger/utils/chunk";
 import { parseJsonStringArray } from "../../utils/parse-json-string-array";
 import { classifyTracksWithLLM } from "./llml";
@@ -124,10 +124,8 @@ export async function classifyTrackIds(
 
 				const now = new Date();
 				if (updates.length > 0) {
-					// Append-only insert (no upsert guard): the coordinator's fan-out
-					// assigns each track ID to exactly one worker batch, so a duplicate
-					// row here would only happen on a genuine retry — harmless for an
-					// audit-log table where "a" row per track is all reads assume today.
+					const modelId = getModelId("classification");
+					// Append-only insert: fan-out assigns each track to one worker batch, a duplicate row only happens on genuine retry.
 					await db.insert(trackAnalysis).values(
 						updates.map(({ trackId, result }) => ({
 							trackId,
@@ -140,7 +138,7 @@ export async function classifyTrackIds(
 							energyLevel: result.energyLevel ?? "unknown",
 							language: result.language ?? "unknown",
 							era: result.era ?? "unknown",
-							modelId: CLASSIFICATION_LLM_MODEL,
+							modelId,
 							classifiedAt: now,
 						})),
 					);

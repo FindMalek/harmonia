@@ -16,15 +16,14 @@ export const externalApiCall = pgTable(
 	{
 		id: serial("id").primaryKey(),
 
-		// userId is nullable — Spotify token-refresh calls run before a user
-		// session is fully resolved.
+		// userId is nullable — Spotify token-refresh calls run before a user session is fully resolved.
 		userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
 		// SET NULL so audit rows survive run deletion.
 		pipelineRunId: integer("pipeline_run_id").references(() => pipelineRun.id, {
 			onDelete: "set null",
 		}),
 
-		provider: text("provider").notNull(), // 'spotify' | 'lrclib' | 'openai' | 'groq'
+		provider: text("provider").notNull(), // 'spotify' | 'lrclib' | 'openai' | 'groq' | 'concentrate'
 		endpoint: text("endpoint").notNull(), // REST path (e.g. '/me/tracks') or model ID for AI providers
 		method: text("method").notNull().default("GET"),
 
@@ -37,15 +36,10 @@ export const externalApiCall = pgTable(
 		durationMs: integer("duration_ms"),
 		errorMessage: text("error_message"),
 
-		// Computed at write time from responsePayload.usage against the static
-		// pricing table (packages/common/src/constants/pricing.ts). Null for
-		// calls with no per-token pricing (Spotify, LRCLib — not token-billed)
-		// or missing/malformed usage data.
+		// Computed at write time from responsePayload.usage via the pricing table; null when not token-billed or usage is missing.
 		costUsd: real("cost_usd"),
 
-		// Denormalized status bucket for O(1) dashboard WHERE clauses (no CASE
-		// in every query): 'success' | 'rate_limited' | 'not_found' |
-		// 'client_error' | 'server_error' | 'error'
+		// Denormalized status bucket for O(1) dashboard WHERE clauses: 'success' | 'rate_limited' | 'not_found' | 'client_error' | 'server_error' | 'error'
 		statusCategory: text("status_category").notNull(),
 
 		// 0 = first attempt, 1+ = retry number

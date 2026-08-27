@@ -1,3 +1,4 @@
+import type { AIProviderName } from "@harmonia/ai-provider";
 import { db } from "@harmonia/db";
 import { externalApiCall } from "@harmonia/db/schema/external-api-call";
 import { logger } from "@harmonia/logger";
@@ -28,7 +29,7 @@ function deriveStatusCategory(httpStatus: number | undefined | null): string {
 export type LogExternalApiCallInput = {
 	userId?: string | null;
 	pipelineRunId?: number | null;
-	provider: "spotify" | "lrclib" | "openai" | "groq";
+	provider: "spotify" | "lrclib" | "openai" | AIProviderName;
 	endpoint: string;
 	method?: string;
 	httpStatus?: number | null;

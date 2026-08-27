@@ -45,6 +45,7 @@ catalog:
   '@trigger.dev/sdk': ^4.4.6
   '@types/react': ^19.2.17
   '@types/react-dom': ^19.2.3
+  ai: ^6.0.205
   better-auth: 1.6.18
   dotenv: ^17.4.2
   drizzle-orm: ^0.45.2

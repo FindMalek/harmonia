@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import { baseEnv } from "../base";
 import {
+	aiModule,
 	authModule,
 	emailsModule,
 	observabilityModule,
@@ -16,6 +17,7 @@ import { dbEnv } from "./db";
 export const apiEnv = createEnv({
 	extends: [dbEnv, baseEnv],
 	server: {
+		...aiModule.server,
 		...authModule.server,
 		...emailsModule.server,
 		...observabilityModule.server,

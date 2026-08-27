@@ -1,20 +1,25 @@
-import { createGroq } from "@ai-sdk/groq";
+import {
+	getAIModel,
+	getModelId,
+	getTaskProvider,
+	isProviderConfigured,
+	isSplitRetryableError,
+	logInvalidJsonError,
+	withLLMRetry,
+} from "@harmonia/ai-provider";
 import {
 	type ClassificationResult,
 	classificationResultListSchema,
 	type TrackForClassification,
 } from "@harmonia/common/schemas";
-import { env } from "@harmonia/env/server";
 import { logger } from "@harmonia/logger";
 import { llml as formatPrompt } from "@zenbase/llml";
-import { APICallError, generateText, NoObjectGeneratedError, Output } from "ai";
-import pRetry, { AbortError } from "p-retry";
+import { APICallError, generateText, Output } from "ai";
 
-import { CLASSIFICATION_LLM_MODEL } from "../../constants/brain";
 import { logExternalApiCall } from "../external-api-log";
 
 const CLASSIFICATION_MAX_OUTPUT_TOKENS = 8192;
-const GROQ_RATE_LIMIT_FALLBACK_DELAY_MS = 45_000;
+const CLASSIFICATION_RETRIES = 5;
 
 export type LLMCallContext = {
 	userId?: string | null;
@@ -57,54 +62,17 @@ function buildClassificationPrompt(tracks: TrackForClassification[]): string {
 	});
 }
 
-export function isSplitRetryableError(err: unknown): boolean {
-	const cause =
-		err instanceof AbortError && err.originalError != null
-			? err.originalError
-			: err;
-
-	if (NoObjectGeneratedError.isInstance(cause)) return true;
-	const message = cause instanceof Error ? cause.message : String(cause);
-	return (
-		message.includes("Failed to validate JSON") ||
-		message.includes("No output generated") ||
-		// Groq's structured-output rejection (surfaces as a 4xx APICallError,
-		// not NoObjectGeneratedError) — e.g. "Generated JSON does not match
-		// the expected schema... jsonschema: '' does not validate with ...".
-		message.includes("does not match the expected schema")
-	);
-}
-
-function logInvalidJsonError(err: unknown): void {
-	if (!NoObjectGeneratedError.isInstance(err)) return;
-	const e = err as { text?: string; cause?: unknown };
-	const failedText =
-		e.text ??
-		(typeof e.cause === "object" &&
-		e.cause !== null &&
-		"failed_generation" in e.cause
-			? String((e.cause as { failed_generation?: string }).failed_generation)
-			: undefined);
-	logger.warn(
-		{
-			errorMessage: err.message,
-			rawOutput: failedText,
-			cause: e.cause,
-		},
-		"LLM returned invalid JSON; see rawOutput for model output",
-	);
-}
-
 async function classifyTracksBatchOnce(
 	tracks: TrackForClassification[],
 	context: LLMCallContext,
 	retryAttempt: number,
 ): Promise<ClassificationResult[]> {
+	const provider = getTaskProvider("classification");
+	const modelId = getModelId("classification");
 	const startTime = Date.now();
 	try {
-		const groq = createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY });
 		const { output, usage, response } = await generateText({
-			model: groq(CLASSIFICATION_LLM_MODEL),
+			model: getAIModel("classification"),
 			prompt: buildClassificationPrompt(tracks),
 			temperature: 0,
 			maxOutputTokens: CLASSIFICATION_MAX_OUTPUT_TOKENS,
@@ -116,7 +84,8 @@ async function classifyTracksBatchOnce(
 
 		logger.info(
 			{
-				model: CLASSIFICATION_LLM_MODEL,
+				provider,
+				model: modelId,
 				batchSize: tracks.length,
 				trackIds: tracks.map((t) => t.id),
 			},
@@ -132,17 +101,16 @@ async function classifyTracksBatchOnce(
 			}
 		}
 
-		// Prompt text and per-track metadata are never logged (large,
-		// contains user library data) — only counts and token usage.
+		// Prompt text and per-track metadata are never logged (large, contains user library data) — only counts and token usage.
 		await logExternalApiCall({
 			userId: context.userId,
 			pipelineRunId: context.pipelineRunId,
-			provider: "groq",
-			endpoint: CLASSIFICATION_LLM_MODEL,
+			provider,
+			endpoint: modelId,
 			method: "POST",
 			httpStatus: 200,
 			requestPayload: {
-				model: CLASSIFICATION_LLM_MODEL,
+				model: modelId,
 				trackCount: tracks.length,
 			},
 			responsePayload: {
@@ -164,20 +132,17 @@ async function classifyTracksBatchOnce(
 		await logExternalApiCall({
 			userId: context.userId,
 			pipelineRunId: context.pipelineRunId,
-			provider: "groq",
-			endpoint: CLASSIFICATION_LLM_MODEL,
+			provider,
+			endpoint: modelId,
 			method: "POST",
 			httpStatus,
 			requestPayload: {
-				model: CLASSIFICATION_LLM_MODEL,
+				model: modelId,
 				trackCount: tracks.length,
 			},
 			durationMs,
 			errorMessage: err instanceof Error ? err.message : String(err),
-			// The Vercel AI SDK's generateText() doesn't always surface a raw
-			// HTTP status (e.g. NoObjectGeneratedError has none) — default the
-			// bucket to server_error rather than the generic "no status" case,
-			// since these are Groq-side failures, not client/request errors.
+			// generateText() doesn't always surface an HTTP status — default to server_error, these are provider-side failures.
 			statusCategory: httpStatus ? undefined : "server_error",
 			retryAttempt,
 		});
@@ -185,80 +150,15 @@ async function classifyTracksBatchOnce(
 	}
 }
 
-function isRateLimit(err: unknown): err is APICallError {
-	return APICallError.isInstance(err) && err.statusCode === 429;
-}
-
-function getRateLimitDelayMs(err: APICallError): number {
-	const retryAfter = err.responseHeaders?.["retry-after"];
-	if (retryAfter) {
-		const seconds = Number(retryAfter);
-		if (Number.isFinite(seconds) && seconds > 0) return seconds * 1000;
-	}
-	return GROQ_RATE_LIMIT_FALLBACK_DELAY_MS;
-}
-
-function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 async function classifyTracksAdaptive(
 	tracks: TrackForClassification[],
 	context: LLMCallContext,
 ): Promise<ClassificationResult[]> {
 	try {
-		return await pRetry(
-			async (attemptCount) => {
-				try {
-					return await classifyTracksBatchOnce(
-						tracks,
-						context,
-						attemptCount - 1,
-					);
-				} catch (err) {
-					if (isRateLimit(err)) {
-						const delayMs = getRateLimitDelayMs(err);
-						logger.warn(
-							{
-								batchSize: tracks.length,
-								delayMs,
-								retryAfterHeader: err.responseHeaders?.["retry-after"],
-							},
-							"Groq rate limit (429); sleeping before retry",
-						);
-						await sleep(delayMs);
-						throw err;
-					}
-					// Hard 4xx (not 429) — abort immediately, don't waste retries
-					if (
-						APICallError.isInstance(err) &&
-						err.statusCode !== undefined &&
-						err.statusCode >= 400 &&
-						err.statusCode < 500
-					) {
-						throw new AbortError(
-							err instanceof Error ? err.message : String(err),
-						);
-					}
-					throw err;
-				}
-			},
-			{
-				retries: 5,
-				minTimeout: 1000,
-				randomize: true,
-				onFailedAttempt: (error) => {
-					logger.warn(
-						{
-							attempt: error.attemptNumber,
-							retriesLeft: error.retriesLeft,
-							batchSize: tracks.length,
-							error: String(error),
-						},
-						"LLM classification failed, retrying",
-					);
-				},
-			},
+		return await withLLMRetry(
+			(attemptCount) =>
+				classifyTracksBatchOnce(tracks, context, attemptCount - 1),
+			{ retries: CLASSIFICATION_RETRIES, label: "classification" },
 		);
 	} catch (err) {
 		if (tracks.length <= 1 || !isSplitRetryableError(err)) {
@@ -286,10 +186,10 @@ export async function classifyTracksWithLLM(
 	tracks: TrackForClassification[],
 	context: LLMCallContext = {},
 ): Promise<ClassificationResult[]> {
-	if (!env.HARMONIA_GROQ_API_KEY) {
+	if (!isProviderConfigured("classification")) {
 		logger.warn(
-			{ type: "llml" },
-			"No HARMONIA_GROQ_API_KEY configured; skipping LLM classification and returning empty results",
+			{ type: "llml", provider: getTaskProvider("classification") },
+			"No credentials configured for the classification task's assigned provider; skipping LLM classification and returning empty results",
 		);
 		return [];
 	}
