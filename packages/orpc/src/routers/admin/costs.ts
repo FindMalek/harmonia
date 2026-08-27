@@ -22,9 +22,7 @@ export const adminCostsRouter = {
 				? or(ilike(user.email, `%${q}%`), ilike(user.name, `%${q}%`))
 				: undefined;
 
-			// Runs that had at least one call from the filtered provider —
-			// resolved separately rather than a correlated subquery, simpler
-			// to read and this table is small enough it doesn't matter.
+			// Runs with at least one call from the filtered provider — resolved separately rather than a correlated subquery; this table is small enough it doesn't matter.
 			let providerRunIds: number[] | null = null;
 			if (provider) {
 				const rows = await db
