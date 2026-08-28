@@ -8,8 +8,7 @@ describe("computeCostUsd", () => {
 			inputTokens: 1_000_000,
 			outputTokens: 1_000_000,
 		});
-		// $0.10 input + $0.50 output per 1M tokens
-		expect(cost).toBeCloseTo(0.6, 6);
+		expect(cost).toBeCloseTo(0.375, 6);
 	});
 
 	it("computes cost from the raw OpenAI REST usage shape (prompt_tokens, no output)", () => {
@@ -51,8 +50,7 @@ describe("computeCostUsd", () => {
 			inputTokens: 1_000_000,
 			outputTokens: 1_000_000,
 		});
-		// $0.15 input + $0.75 output per 1M tokens
-		expect(cost).toBeCloseTo(0.9, 6);
+		expect(cost).toBeCloseTo(0.75, 6);
 	});
 
 	it("computes zero (not null) for Concentrate's free gpt-oss tier with real usage", () => {

@@ -29,6 +29,7 @@ const TABLES_TO_TRUNCATE = [
 	"external_api_call",
 	"pipeline_run",
 	"user_tracks",
+	"harmonia_db_ops",
 ] as const;
 
 // Include track only with --all (tracks hold expensive computed data)
@@ -77,8 +78,8 @@ async function main(): Promise<void> {
 			await client.query("COMMIT");
 			console.info(
 				includeAll
-					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged)"
-					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged)",
+					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged; harmonia_db_ops truncated)"
+					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged; harmonia_db_ops truncated)",
 			);
 		} catch (err) {
 			await client.query("ROLLBACK");

@@ -1,5 +1,5 @@
-# Drizzle migration workflow
-# Runs database migrations when schema or migration files change on main.
+# Database migrations workflow
+# Runs Drizzle schema migrations and db-ops data migrations when relevant files change on main.
 #
 # Required secret:
 #   PRODUCTION_DATABASE_URL - Production PostgreSQL connection string.
@@ -15,6 +15,7 @@ on:
       - "packages/db/src/schema/**"
       - "packages/db/drizzle.config.ts"
       - "packages/db/package.json"
+      - "packages/db-ops/**"
   workflow_dispatch:
 
 jobs:
@@ -36,8 +37,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run migrations
+      - name: Run schema migrations
         working-directory: packages/db
         env:
           HARMONIA_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: pnpm db:migrate
+
+      - name: Run db-ops migrations
+        working-directory: packages/db-ops
+        env:
+          HARMONIA_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: pnpm db:ops:migrate

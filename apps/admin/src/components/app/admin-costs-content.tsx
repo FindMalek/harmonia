@@ -1,7 +1,7 @@
 "use client";
 
 import type { AdminCostsRunItem } from "@harmonia/common/schemas";
-import { Badge } from "@harmonia/ui";
+import { Badge, Button } from "@harmonia/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
@@ -93,7 +93,7 @@ export function AdminCostsContent() {
 	const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-	const { data, isFetching } = useQuery(
+	const { data, isFetching, isError, refetch } = useQuery(
 		orpc.admin.costs.list.queryOptions({
 			input: {
 				page: params.page,
@@ -123,25 +123,41 @@ export function AdminCostsContent() {
 				}
 			/>
 
-			<AdminDataTable
-				columns={columns}
-				data={data?.items ?? []}
-				isLoading={isFetching && !data}
-				getRowId={(row) => String(row.runId)}
-				onRowClick={(row) => {
-					setSelectedRunId(row.runId);
-					setIsSheetOpen(true);
-				}}
-			/>
+			{isError && !data ? (
+				<div className="rounded-md border p-8 text-center">
+					<p className="text-muted-foreground text-sm">Failed to load costs</p>
+					<Button
+						variant="link"
+						size="sm"
+						className="mt-2"
+						onClick={() => refetch()}
+					>
+						Retry
+					</Button>
+				</div>
+			) : (
+				<>
+					<AdminDataTable
+						columns={columns}
+						data={data?.items ?? []}
+						isLoading={isFetching && !data}
+						getRowId={(row) => String(row.runId)}
+						onRowClick={(row) => {
+							setSelectedRunId(row.runId);
+							setIsSheetOpen(true);
+						}}
+					/>
 
-			<AdminTablePagination
-				total={data?.total ?? 0}
-				page={params.page}
-				pageSize={params.pageSize}
-				pageCount={data?.pageCount ?? 1}
-				onPageChange={(p) => setParams({ page: p })}
-				onPageSizeChange={(size) => setParams({ pageSize: size, page: 1 })}
-			/>
+					<AdminTablePagination
+						total={data?.total ?? 0}
+						page={params.page}
+						pageSize={params.pageSize}
+						pageCount={data?.pageCount ?? 1}
+						onPageChange={(p) => setParams({ page: p })}
+						onPageSizeChange={(size) => setParams({ pageSize: size, page: 1 })}
+					/>
+				</>
+			)}
 
 			<AdminCostsDetailSheet
 				runId={selectedRunId}

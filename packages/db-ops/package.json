@@ -1,0 +1,27 @@
+{
+	"name": "@harmonia/db-ops",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --noEmit",
+		"test": "vitest run",
+		"db:ops:migrate": "tsx src/migrate.ts",
+		"db:ops:generate": "tsx src/generate.ts",
+		"db:ops:status": "tsx src/status.ts"
+	},
+	"dependencies": {
+		"@harmonia/common": "workspace:*",
+		"@harmonia/db": "workspace:*",
+		"@harmonia/env": "workspace:*",
+		"@harmonia/logger": "workspace:*",
+		"dotenv": "catalog:",
+		"drizzle-orm": "catalog:"
+	},
+	"devDependencies": {
+		"@harmonia/config": "workspace:*",
+		"tsx": "^4.22.4",
+		"typescript": "catalog:",
+		"vitest": "^3.2.4"
+	}
+}

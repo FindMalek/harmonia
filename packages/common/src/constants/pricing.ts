@@ -1,12 +1,12 @@
-// $ per 1M tokens by provider/model, sourced 2026-08-24/25 from each provider's own pricing page except Groq (JS-rendered, third-party aggregator estimate — verify against console.groq.com for billing reconciliation).
+// $ per 1M tokens by provider/model, sourced 2026-08-24/25 from each provider's own pricing page.
 // ponytail: static table, no auto-refresh — revisit when a provider changes pricing.
 export const PRICING_PER_1M_TOKENS: Record<
 	string,
 	Record<string, { input: number; output: number }>
 > = {
 	groq: {
-		"openai/gpt-oss-20b": { input: 0.1, output: 0.5 },
-		"openai/gpt-oss-120b": { input: 0.15, output: 0.75 },
+		"openai/gpt-oss-20b": { input: 0.075, output: 0.3 },
+		"openai/gpt-oss-120b": { input: 0.15, output: 0.6 },
 	},
 	concentrate: {
 		"gpt-oss-20b": { input: 0, output: 0 },
