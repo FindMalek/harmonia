@@ -15,11 +15,16 @@
 		"@harmonia/db": "workspace:*",
 		"@harmonia/env": "workspace:*",
 		"@harmonia/logger": "workspace:*",
+		"@neondatabase/serverless": "^1.1.0",
 		"dotenv": "catalog:",
-		"drizzle-orm": "catalog:"
+		"drizzle-orm": "catalog:",
+		"pg": "^8.21.0",
+		"ws": "^8.21.0"
 	},
 	"devDependencies": {
 		"@harmonia/config": "workspace:*",
+		"@types/pg": "^8.20.0",
+		"@types/ws": "^8.18.1",
 		"tsx": "^4.22.4",
 		"typescript": "catalog:",
 		"vitest": "^3.2.4"

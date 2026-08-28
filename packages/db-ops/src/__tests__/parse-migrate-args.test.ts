@@ -54,6 +54,15 @@ describe("resolveMigrationFileByOnly", () => {
 		const file = resolveMigrationFileByOnly("20260828120000-backfill-cost-usd");
 		expect(file).toBe("20260828120000-backfill-cost-usd.ts");
 	});
+
+	it("throws when slug matches multiple timestamped files", () => {
+		expect(() =>
+			resolveMigrationFileByOnly("backfill-cost-usd", [
+				"20260828120000-backfill-cost-usd.ts",
+				"20260829120000-backfill-cost-usd.ts",
+			]),
+		).toThrow(/matches multiple migrations/);
+	});
 });
 
 describe("filterFilesByOnly", () => {

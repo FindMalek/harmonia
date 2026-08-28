@@ -3,6 +3,7 @@
 import type { AdminCostsCall, AdminCostsStage } from "@harmonia/common/schemas";
 import {
 	Badge,
+	Button,
 	ScrollArea,
 	Separator,
 	Sheet,
@@ -111,7 +112,7 @@ export function AdminCostsDetailSheet({
 	open,
 	onOpenChange,
 }: AdminCostsDetailSheetProps) {
-	const { data, isFetching } = useQuery(
+	const { data, isFetching, isError, refetch } = useQuery(
 		orpc.admin.costs.detail.queryOptions({
 			input: { runId: runId ?? -1 },
 			enabled: open && runId != null,
@@ -128,7 +129,14 @@ export function AdminCostsDetailSheet({
 					</SheetDescription>
 				</SheetHeader>
 
-				{data && !isFetching ? (
+				{open && runId != null && isError && !data ? (
+					<div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+						<p className="text-muted-foreground text-sm">Failed to load run</p>
+						<Button variant="link" size="sm" onClick={() => refetch()}>
+							Retry
+						</Button>
+					</div>
+				) : data && !isFetching ? (
 					<ScrollArea className="min-h-0 flex-1">
 						<div className="space-y-5 px-5 py-4">
 							<div>

@@ -1,7 +1,9 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 
+import { dbEnv } from "@harmonia/env/presets/db";
 import { logger } from "@harmonia/logger";
+
 import {
 	acquireAdvisoryLock,
 	ensureOpsTable,
@@ -13,6 +15,7 @@ import {
 	releaseAdvisoryLock,
 	resolveMigrationAction,
 } from "./ledger";
+import { createSessionDb } from "./lib/create-session-db";
 import {
 	filterFilesByOnly,
 	parseDatabaseHost,
@@ -57,7 +60,7 @@ export async function runMigrations(
 	}
 
 	if (dryRun) {
-		printDryRunBanner(options, process.env.HARMONIA_DATABASE_URL);
+		printDryRunBanner(options, dbEnv.HARMONIA_DATABASE_URL);
 	} else {
 		await ensureOpsTable(db);
 		await acquireAdvisoryLock(db);
@@ -150,9 +153,13 @@ export async function runMigrations(
 export async function runMigrationsFromEnv(
 	options: RunOptions = {},
 ): Promise<void> {
-	const { db } = await import("@harmonia/db");
-	await runMigrations(
-		{ db, log: logger, dryRun: options.dryRun === true },
-		options,
-	);
+	const session = await createSessionDb();
+	try {
+		await runMigrations(
+			{ db: session.db, log: logger, dryRun: options.dryRun === true },
+			options,
+		);
+	} finally {
+		await session.release();
+	}
 }

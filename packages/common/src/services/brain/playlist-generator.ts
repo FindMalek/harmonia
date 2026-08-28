@@ -757,6 +757,7 @@ async function generatePlaylistMetadata(
 			method: "POST",
 			httpStatus,
 			requestPayload: { model: modelId, avoidNameCount: avoidNames.length },
+			responsePayload: usage != null ? { usage } : undefined,
 			durationMs: Date.now() - startTime,
 			errorMessage: err instanceof Error ? err.message : String(err),
 			statusCategory: httpStatus ? undefined : "server_error",

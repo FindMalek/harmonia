@@ -791,16 +791,31 @@ importers:
       '@harmonia/logger':
         specifier: workspace:*
         version: link:../logger
+      '@neondatabase/serverless':
+        specifier: ^1.1.0
+        version: 1.1.0
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@neondatabase/serverless@1.1.0)(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.21.0)
+      pg:
+        specifier: ^8.21.0
+        version: 8.21.0
+      ws:
+        specifier: ^8.21.0
+        version: 8.21.0
     devDependencies:
       '@harmonia/config':
         specifier: workspace:*
         version: link:../config
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       tsx:
         specifier: ^4.22.4
         version: 4.22.4

@@ -32,6 +32,9 @@ const TABLES_TO_TRUNCATE = [
 	"harmonia_db_ops",
 ] as const;
 
+/** Created by db-ops ensureOpsTable — may be absent after a fresh db:push. */
+const OPTIONAL_TABLES = new Set(["harmonia_db_ops"]);
+
 // Include track only with --all (tracks hold expensive computed data)
 const EXTRA_ALL_TABLES = ["track"] as const;
 
@@ -58,31 +61,57 @@ async function main(): Promise<void> {
 	assertSafeResetHost(dbEnv.HARMONIA_DATABASE_URL);
 
 	const includeAll = process.argv.includes("--all");
-	const tables = includeAll
+	const candidateTables = includeAll
 		? ([...TABLES_TO_TRUNCATE, ...EXTRA_ALL_TABLES] as const)
 		: TABLES_TO_TRUNCATE;
 
 	const pool = new Pool({ connectionString: dbEnv.HARMONIA_DATABASE_URL });
-	const quotedTables = tables.map((t) => `"${t}"`).join(", ");
-	const sql = `TRUNCATE TABLE ${quotedTables} RESTART IDENTITY CASCADE`;
-
-	console.info(
-		`db:reset: truncating ${String(tables.length)} tables${includeAll ? " (--all: includes track)" : ""}`,
-	);
 
 	try {
 		const client = await pool.connect();
 		try {
+			const tables: string[] = [];
+			for (const name of candidateTables) {
+				if (OPTIONAL_TABLES.has(name)) {
+					const exists = await client.query<{ exists: string | null }>(
+						"SELECT to_regclass($1) AS exists",
+						[`public.${name}`],
+					);
+					if (exists.rows[0]?.exists == null) {
+						console.info(`db:reset: skipping missing optional table ${name}`);
+						continue;
+					}
+				}
+				tables.push(name);
+			}
+
+			if (tables.length === 0) {
+				console.info("db:reset: no tables to truncate");
+				return;
+			}
+
+			const quotedTables = tables.map((t) => `"${t}"`).join(", ");
+			const sql = `TRUNCATE TABLE ${quotedTables} RESTART IDENTITY CASCADE`;
+
+			console.info(
+				`db:reset: truncating ${String(tables.length)} tables${includeAll ? " (--all: includes track)" : ""}`,
+			);
+
 			await client.query("BEGIN");
-			await client.query(sql);
-			await client.query("COMMIT");
+			try {
+				await client.query(sql);
+				await client.query("COMMIT");
+			} catch (err) {
+				await client.query("ROLLBACK");
+				throw err;
+			}
+
 			console.info(
 				includeAll
-					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged; harmonia_db_ops truncated)"
-					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged; harmonia_db_ops truncated)",
+					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged; harmonia_db_ops truncated when present)"
+					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged; harmonia_db_ops truncated when present)",
 			);
 		} catch (err) {
-			await client.query("ROLLBACK");
 			console.error("db:reset failed:", err);
 			process.exitCode = 1;
 		} finally {

@@ -39,8 +39,10 @@ export function parseMigrateArgs(argv: string[]): ParsedMigrateArgs {
 }
 
 /** Match slug (backfill-cost-usd) or full name (20260828120000-backfill-cost-usd). */
-export function resolveMigrationFileByOnly(only: string): string | null {
-	const files = listMigrationFiles();
+export function resolveMigrationFileByOnly(
+	only: string,
+	files: string[] = listMigrationFiles(),
+): string | null {
 	const normalized = only.trim();
 
 	const exact = files.find(
@@ -48,8 +50,15 @@ export function resolveMigrationFileByOnly(only: string): string | null {
 	);
 	if (exact) return exact;
 
-	const suffix = files.find((file) => file.endsWith(`-${normalized}.ts`));
-	return suffix ?? null;
+	const suffixMatches = files.filter((file) =>
+		file.endsWith(`-${normalized}.ts`),
+	);
+	if (suffixMatches.length > 1) {
+		throw new Error(
+			`db-ops:migrate: --only ${normalized} matches multiple migrations: ${suffixMatches.join(", ")} — use the full timestamped name`,
+		);
+	}
+	return suffixMatches[0] ?? null;
 }
 
 export function filterFilesByOnly(

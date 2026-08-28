@@ -179,6 +179,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						method: "POST",
 						httpStatus,
 						requestPayload: { model: modelId, clusterId: c.id },
+						responsePayload: usage != null ? { usage } : undefined,
 						durationMs: Date.now() - startTime,
 						errorMessage: err instanceof Error ? err.message : String(err),
 						statusCategory: httpStatus ? undefined : "server_error",
