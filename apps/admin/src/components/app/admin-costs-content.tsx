@@ -74,6 +74,21 @@ const columns: ColumnDef<AdminCostsRunItem>[] = [
 				: "—",
 	},
 	{
+		accessorKey: "groqCostUsd",
+		header: "Groq",
+		cell: ({ row }) => formatCost(row.original.groqCostUsd),
+	},
+	{
+		accessorKey: "openaiCostUsd",
+		header: "OpenAI",
+		cell: ({ row }) => formatCost(row.original.openaiCostUsd),
+	},
+	{
+		accessorKey: "concentrateCostUsd",
+		header: "Concentrate",
+		cell: ({ row }) => formatCost(row.original.concentrateCostUsd),
+	},
+	{
 		accessorKey: "totalCostUsd",
 		header: "Total",
 		cell: ({ row }) => (

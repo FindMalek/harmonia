@@ -20,6 +20,13 @@ describe("computeCostUsd", () => {
 		expect(cost).toBeCloseTo(0.01, 6);
 	});
 
+	it("resolves legacy /v1/embeddings endpoint to text-embedding-3-small", () => {
+		const cost = computeCostUsd("openai", "/v1/embeddings", {
+			prompt_tokens: 1_000_000,
+		});
+		expect(cost).toBeCloseTo(0.02, 6);
+	});
+
 	it("returns null for a provider/model not in the pricing table", () => {
 		expect(
 			computeCostUsd("spotify", "/me/tracks", { inputTokens: 1000 }),

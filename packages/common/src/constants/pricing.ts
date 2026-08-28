@@ -35,13 +35,21 @@ export function parseUsageTokens(
 	return { inputTokens, outputTokens };
 }
 
+function resolvePricingEndpoint(provider: string, endpoint: string): string {
+	if (provider === "openai" && endpoint === "/v1/embeddings") {
+		return "text-embedding-3-small";
+	}
+	return endpoint;
+}
+
 // Returns null when unpriced (e.g. Spotify, LRCLib) or usage is missing.
 export function computeCostUsd(
 	provider: string,
 	endpoint: string,
 	usage: unknown,
 ): number | null {
-	const rates = PRICING_PER_1M_TOKENS[provider]?.[endpoint];
+	const pricingEndpoint = resolvePricingEndpoint(provider, endpoint);
+	const rates = PRICING_PER_1M_TOKENS[provider]?.[pricingEndpoint];
 	const tokens = parseUsageTokens(usage);
 	if (!rates || !tokens) return null;
 

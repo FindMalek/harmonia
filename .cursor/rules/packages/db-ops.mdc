@@ -22,6 +22,7 @@ alwaysApply: false
 ```bash
 pnpm db:ops:generate my-fix-name   # scaffold YYYYMMDDHHmmss-my-fix-name.ts
 pnpm db:ops:migrate                # run pending/failed ops (local + prod CI)
+pnpm db:ops:migrate -- --dry-run --only my-fix   # test without writes or ledger
 pnpm db:ops:status                 # show ledger vs migration files
 ```
 
@@ -30,7 +31,8 @@ Prod CI runs `db:ops:migrate` after `db:migrate` in `.github/workflows/drizzle-m
 ## Migration file contract
 
 - Path: `packages/db-ops/src/migrations/YYYYMMDDHHmmss-kebab-name.ts`
-- Export: `export async function up({ db, log }: DbOpsContext): Promise<void>`
+- Export: `export async function up({ db, log, dryRun }: DbOpsContext): Promise<void>`
+- **dryRun** — when true, read + log only; return before any insert/update/delete
 - Use Drizzle + `@harmonia/common` helpers — no duplicated business logic
 - **Idempotent** — safe if retried after a crash before ledger marks `completed`
 - **No schema DDL** — required columns must exist via Drizzle migration first

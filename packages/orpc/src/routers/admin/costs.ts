@@ -50,6 +50,16 @@ export const adminCostsRouter = {
 				providerRunIds = rows
 					.map((r) => r.pipelineRunId)
 					.filter((id): id is number => id !== null);
+
+				if (providerRunIds.length === 0) {
+					return {
+						items: [],
+						total: 0,
+						page,
+						pageSize,
+						pageCount: 0,
+					};
+				}
 			}
 
 			const where = and(
@@ -92,7 +102,12 @@ export const adminCostsRouter = {
 								costUsd: sql<string>`coalesce(sum(${externalApiCall.costUsd}), 0)`,
 							})
 							.from(externalApiCall)
-							.where(inArray(externalApiCall.pipelineRunId, runIds))
+							.where(
+								and(
+									inArray(externalApiCall.pipelineRunId, runIds),
+									provider ? eq(externalApiCall.provider, provider) : undefined,
+								),
+							)
 							.groupBy(externalApiCall.pipelineRunId, externalApiCall.provider)
 					: [];
 
@@ -128,7 +143,13 @@ export const adminCostsRouter = {
 						groqCostUsd: cost.groq,
 						openaiCostUsd: cost.openai,
 						concentrateCostUsd: cost.concentrate,
-						totalCostUsd: cost.groq + cost.openai + cost.concentrate,
+						totalCostUsd: provider
+							? provider === "groq"
+								? cost.groq
+								: provider === "openai"
+									? cost.openai
+									: cost.concentrate
+							: cost.groq + cost.openai + cost.concentrate,
 					};
 				}),
 				total,

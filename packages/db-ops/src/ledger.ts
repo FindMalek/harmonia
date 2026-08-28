@@ -1,6 +1,5 @@
-import { sql } from "drizzle-orm";
-
 import type { db } from "@harmonia/db";
+import { sql } from "drizzle-orm";
 
 import type { MigrationAction, OpsLedgerRow, OpsStatus } from "./types";
 import { STALE_RUNNING_MS } from "./types";
@@ -91,6 +90,25 @@ export async function listLedgerRows(dbClient: Db): Promise<OpsLedgerRow[]> {
 		ORDER BY name
 	`);
 	return (result.rows as Record<string, unknown>[]).map(mapLedgerRow);
+}
+
+export async function getLedgerRowSafe(
+	dbClient: Db,
+	name: string,
+): Promise<OpsLedgerRow | null> {
+	try {
+		return await getLedgerRow(dbClient, name);
+	} catch (err) {
+		if (
+			err &&
+			typeof err === "object" &&
+			"code" in err &&
+			err.code === "42P01"
+		) {
+			return null;
+		}
+		throw err;
+	}
 }
 
 export async function markRunning(

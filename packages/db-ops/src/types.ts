@@ -19,9 +19,15 @@ export type OpsLedgerRow = {
 	error: string | null;
 };
 
+export type RunOptions = {
+	dryRun?: boolean;
+	only?: string;
+};
+
 export type DbOpsContext = {
 	db: typeof db;
 	log: typeof logger;
+	dryRun: boolean;
 };
 
 export type MigrationModule = {
@@ -30,6 +36,6 @@ export type MigrationModule = {
 
 export const STALE_RUNNING_MS = 30 * 60 * 1000;
 
-export const MIGRATION_FILENAME_RE = /^\d{14}-[\w-]+\.ts$/;
+export const MIGRATION_FILENAME_RE = /^\d{14}-[a-z0-9]+(?:-[a-z0-9]+)*\.ts$/;
 
 export const ADVISORY_LOCK_KEY = "harmonia_db_ops_runner";
