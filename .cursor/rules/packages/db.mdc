@@ -89,7 +89,7 @@ pnpm db:push      # dev: push schema directly (no migration files)
 pnpm db:studio    # dev: Drizzle Studio UI (inspect/edit rows)
 pnpm db:generate  # generate migration SQL files
 pnpm db:migrate   # apply migrations (production)
-pnpm db:reset     # dev: truncate user-data tables (keeps auth, genre_domain, drizzle migrations)
+pnpm db:reset     # dev: truncate user-data tables (keeps auth, genre_domain, drizzle migrations; truncates sonaraem_db_ops)
 pnpm db:nuke      # dev: Docker volume wipe + db:push (guards: localhost:5433)
 ```
 
@@ -99,6 +99,8 @@ When adding new user-owned tables under `packages/db/src/schema/`, extend `TABLE
 
 **Waitlist approval gate:** migration `0020_grandfather_user_approval.sql` sets `is_approved = true` for all existing users when deploying the closed-beta gate to a database that already has accounts. Run `pnpm db:migrate` in production after that deploy.
 
-### Hand-Written Migrations
+### Data migrations
 
-Data-seed or non-schema migrations (e.g. `0003_seed_genre_domain.sql`) are written by hand and share a numeric prefix with the adjacent `drizzle-kit generate` file — they are **not** added to `meta/_journal.json`, so `drizzle-kit migrate` never runs them automatically. If the target DB already has the underlying schema (e.g. it was set up via `db:push`), `db:migrate` will fail with "relation already exists"; run `pnpm db:mark-migrations-applied` first to backfill `drizzle.__drizzle_migrations` from the journal, then apply hand-written files manually.
+New backfills, seeds, and one-off prod data fixes go in `@sonaraem/db-ops` — not hand-written SQL in `packages/db/src/migrations/` and not ad-hoc scripts in `packages/db/scripts/`. See `.cursor/rules/packages/db-ops.mdc`.
+
+Legacy hand-written SQL (e.g. `0003_seed_genre_domain.sql`) predates db-ops; do not add more.

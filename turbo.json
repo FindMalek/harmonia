@@ -122,6 +122,16 @@
 		},
 		"db:seed": {
 			"cache": false
+		},
+		"db:ops:migrate": {
+			"cache": false,
+			"persistent": true
+		},
+		"db:ops:generate": {
+			"cache": false
+		},
+		"db:ops:status": {
+			"cache": false
 		}
 	}
 }

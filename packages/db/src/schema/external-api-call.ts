@@ -3,6 +3,7 @@ import {
 	integer,
 	jsonb,
 	pgTable,
+	real,
 	serial,
 	text,
 	timestamp,
@@ -34,6 +35,9 @@ export const externalApiCall = pgTable(
 		responsePayload: jsonb("response_payload").$type<Record<string, unknown>>(),
 		durationMs: integer("duration_ms"),
 		errorMessage: text("error_message"),
+
+		// Computed at write time from responsePayload.usage via the pricing table; null when not token-billed or usage is missing.
+		costUsd: real("cost_usd"),
 
 		// Denormalized status bucket for O(1) dashboard WHERE clauses: 'success' | 'rate_limited' | 'not_found' | 'client_error' | 'server_error' | 'error'
 		statusCategory: text("status_category").notNull(),

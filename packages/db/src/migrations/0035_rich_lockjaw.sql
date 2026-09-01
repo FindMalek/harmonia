@@ -1,0 +1,1 @@
+ALTER TABLE "external_api_call" ADD COLUMN "cost_usd" real;

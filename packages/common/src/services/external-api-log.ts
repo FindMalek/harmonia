@@ -3,6 +3,8 @@ import { db } from "@sonaraem/db";
 import { externalApiCall } from "@sonaraem/db/schema/external-api-call";
 import { logger } from "@sonaraem/logger";
 
+import { computeCostUsd } from "../constants/pricing";
+
 const PAYLOAD_TRUNCATE_BYTES = 10_000;
 
 function truncatePayload(
@@ -47,6 +49,14 @@ export async function logExternalApiCall(
 		const statusCategory =
 			input.statusCategory ?? deriveStatusCategory(input.httpStatus);
 
+		const usage =
+			input.responsePayload &&
+			typeof input.responsePayload === "object" &&
+			"usage" in input.responsePayload
+				? (input.responsePayload as { usage: unknown }).usage
+				: undefined;
+		const costUsd = computeCostUsd(input.provider, input.endpoint, usage);
+
 		await db.insert(externalApiCall).values({
 			userId: input.userId ?? null,
 			pipelineRunId: input.pipelineRunId ?? null,
@@ -60,6 +70,7 @@ export async function logExternalApiCall(
 			errorMessage: input.errorMessage ?? null,
 			statusCategory,
 			retryAttempt: input.retryAttempt ?? 0,
+			costUsd,
 		});
 	} catch (err) {
 		logger.error({ err }, "Failed to write external_api_call log row");

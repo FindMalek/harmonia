@@ -62,7 +62,7 @@ async function fetchEmbeddingsBatch(
 					userId: context.userId,
 					pipelineRunId: context.pipelineRunId,
 					provider: "openai",
-					endpoint: "/v1/embeddings",
+					endpoint: EMBEDDING_MODEL,
 					method: "POST",
 					httpStatus: response.status,
 					requestPayload: {
@@ -82,7 +82,7 @@ async function fetchEmbeddingsBatch(
 				userId: context.userId,
 				pipelineRunId: context.pipelineRunId,
 				provider: "openai",
-				endpoint: "/v1/embeddings",
+				endpoint: EMBEDDING_MODEL,
 				method: "POST",
 				httpStatus: response.status,
 				requestPayload: {

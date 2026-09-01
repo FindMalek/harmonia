@@ -32,7 +32,10 @@ Shared `tsconfig.base.json`. No runtime code.
 Lazy initialization of DB + `dashboardAuth` / `adminAuth`. Re-exports `auth` as dashboard alias.
 
 ## `@sonaraem/db`
-Drizzle ORM schema, migrations, and DB client. Auto-detects driver: `.neon.tech` URL → serverless, otherwise → `pg`.
+Drizzle ORM schema, migrations, and DB client. Auto-detects driver: `.neon.tech` URL → serverless, otherwise → `pg`. Dev-only scripts live in `packages/db/scripts/`.
+
+## `@sonaraem/db-ops`
+Run-once TypeScript data migrations (backfills, prod fixes). Tracked in `sonaraem_db_ops` ledger; runs in prod CI after Drizzle schema migrate. See `.cursor/rules/packages/db-ops.mdc`.
 
 ## `@sonaraem/env`
 Zod-validated environment variable presets. **Always import from here, never `process.env`.**

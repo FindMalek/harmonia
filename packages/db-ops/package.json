@@ -1,0 +1,32 @@
+{
+	"name": "@sonaraem/db-ops",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --noEmit",
+		"test": "vitest run",
+		"db:ops:migrate": "tsx src/migrate.ts",
+		"db:ops:generate": "tsx src/generate.ts",
+		"db:ops:status": "tsx src/status.ts"
+	},
+	"dependencies": {
+		"@sonaraem/common": "workspace:*",
+		"@sonaraem/db": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/logger": "workspace:*",
+		"@neondatabase/serverless": "^1.1.0",
+		"dotenv": "catalog:",
+		"drizzle-orm": "catalog:",
+		"pg": "^8.21.0",
+		"ws": "^8.21.0"
+	},
+	"devDependencies": {
+		"@sonaraem/config": "workspace:*",
+		"@types/pg": "^8.20.0",
+		"@types/ws": "^8.18.1",
+		"tsx": "^4.22.4",
+		"typescript": "catalog:",
+		"vitest": "^3.2.4"
+	}
+}

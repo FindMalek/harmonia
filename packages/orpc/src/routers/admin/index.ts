@@ -1,3 +1,4 @@
+import { adminCostsRouter } from "./costs";
 import { adminFeedbackRouter } from "./feedback";
 import { adminSetupRouter } from "./setup";
 import { adminStatsRouter } from "./stats";
@@ -9,6 +10,7 @@ export const adminRouter = {
 	waitlist: adminWaitlistRouter,
 	feedback: adminFeedbackRouter,
 	users: adminUsersRouter,
+	costs: adminCostsRouter,
 	setup: adminSetupRouter,
 };
 

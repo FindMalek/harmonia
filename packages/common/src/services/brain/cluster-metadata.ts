@@ -102,11 +102,14 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 				const modelId = getModelId("clusterMetadata");
 				const startTime = Date.now();
 				let attempt = 0;
+				let usage:
+					| Awaited<ReturnType<typeof generateText>>["usage"]
+					| undefined;
 				try {
 					const meta = await withLLMRetry(
 						async (attemptCount) => {
 							attempt = attemptCount - 1;
-							const { output } = await generateText({
+							const { output, usage: callUsage } = await generateText({
 								model: getAIModel("clusterMetadata"),
 								output: Output.object({ schema: clusterMetadataSchema }),
 								temperature: 0,
@@ -130,6 +133,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 									],
 								}),
 							});
+							usage = callUsage;
 							return output;
 						},
 						{
@@ -151,6 +155,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						method: "POST",
 						httpStatus: 200,
 						requestPayload: { model: modelId, clusterId: c.id },
+						responsePayload: { usage },
 						durationMs: Date.now() - startTime,
 						retryAttempt: attempt,
 					});
@@ -174,6 +179,7 @@ export async function generateClusterMetadata(userId: string): Promise<number> {
 						method: "POST",
 						httpStatus,
 						requestPayload: { model: modelId, clusterId: c.id },
+						responsePayload: usage != null ? { usage } : undefined,
 						durationMs: Date.now() - startTime,
 						errorMessage: err instanceof Error ? err.message : String(err),
 						statusCategory: httpStatus ? undefined : "server_error",
