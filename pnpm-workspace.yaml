@@ -17,47 +17,59 @@ allowBuilds:
   sharp: false
 
 catalog:
-  '@biomejs/biome': ^2.5.0
+  '@biomejs/biome': ^2.5.11
   '@opentelemetry/api': ^1.9.1
-  '@opentelemetry/api-logs': ^0.219.0
-  '@opentelemetry/core': ^2.8.0
-  '@opentelemetry/exporter-logs-otlp-http': ^0.219.0
-  '@opentelemetry/exporter-metrics-otlp-http': ^0.219.0
-  '@opentelemetry/exporter-trace-otlp-http': ^0.219.0
-  '@opentelemetry/instrumentation': ^0.219.0
-  '@opentelemetry/instrumentation-http': ^0.219.0
-  '@opentelemetry/instrumentation-pino': ^0.65.0
-  '@opentelemetry/otlp-exporter-base': ^0.219.0
-  '@opentelemetry/resources': ^2.8.0
-  '@opentelemetry/sdk-logs': ^0.219.0
-  '@opentelemetry/sdk-metrics': ^2.8.0
-  '@opentelemetry/sdk-node': ^0.219.0
-  '@opentelemetry/sdk-trace-base': ^2.8.0
-  '@opentelemetry/semantic-conventions': ^1.41.1
-  '@orpc/client': ^1.14.6
-  '@orpc/openapi': ^1.14.6
-  '@orpc/otel': ^1.14.6
-  '@orpc/server': ^1.14.6
-  '@orpc/zod': ^1.14.6
+  '@opentelemetry/api-logs': ^0.221.0
+  '@opentelemetry/core': ^2.10.0
+  '@opentelemetry/exporter-logs-otlp-http': ^0.221.0
+  '@opentelemetry/exporter-metrics-otlp-http': ^0.221.0
+  '@opentelemetry/exporter-trace-otlp-http': ^0.221.0
+  '@opentelemetry/instrumentation': ^0.221.0
+  '@opentelemetry/instrumentation-http': ^0.221.0
+  '@opentelemetry/instrumentation-pino': ^0.67.0
+  '@opentelemetry/otlp-exporter-base': ^0.221.0
+  '@opentelemetry/resources': ^2.10.0
+  '@opentelemetry/sdk-logs': ^0.221.0
+  '@opentelemetry/sdk-metrics': ^2.10.0
+  '@opentelemetry/sdk-node': ^0.221.0
+  '@opentelemetry/sdk-trace-base': ^2.10.0
+  '@opentelemetry/semantic-conventions': ^1.43.0
+  '@orpc/client': ^1.15.0
+  '@orpc/openapi': ^1.15.0
+  '@orpc/otel': ^1.15.0
+  '@orpc/server': ^1.15.0
+  '@orpc/zod': ^1.15.0
   '@t3-oss/env-core': ^0.13.11
   '@t3-oss/env-nextjs': ^0.13.11
-  '@tanstack/react-query': ^5.101.0
-  '@trigger.dev/sdk': ^4.4.6
+  '@tanstack/react-query': ^5.102.8
+  '@trigger.dev/sdk': ^4.5.14
   '@types/react': ^19.2.17
   '@types/react-dom': ^19.2.3
-  ai: ^6.0.205
-  better-auth: 1.6.18
+  ai: ^7.0.85
+  better-auth: 1.7.2
   dotenv: ^17.4.2
   drizzle-orm: ^0.45.2
-  next: ^16.2.9
-  react: ^19.2.7
-  react-dom: ^19.2.7
-  react-email: 6.9.1
-  resend: ^6.12.4
+  next: ^16.3.4
+  react: ^19.2.8
+  react-dom: ^19.2.8
+  react-email: 6.9.3
+  resend: ^6.25.0
   tsdown: ^0.11.0
-  typescript: 6.0.3
-  zod: ^4.4.3
+  typescript: 7.0.2
+  zod: ^4.5.4
   '@react-email/components': ^1.0.12
-  '@react-email/render': ^2.0.8
+  '@react-email/render': ^2.1.0
   '@react-email/tailwind': ^2.0.6
   '@react-email/preview-server': 5.2.11
+
+minimumReleaseAgeExclude:
+  - '@next/env@16.3.4'
+  - '@next/swc-darwin-arm64@16.3.4'
+  - '@next/swc-darwin-x64@16.3.4'
+  - '@next/swc-linux-arm64-gnu@16.3.4'
+  - '@next/swc-linux-arm64-musl@16.3.4'
+  - '@next/swc-linux-x64-gnu@16.3.4'
+  - '@next/swc-linux-x64-musl@16.3.4'
+  - '@next/swc-win32-arm64-msvc@16.3.4'
+  - '@next/swc-win32-x64-msvc@16.3.4'
+  - next@16.3.4
