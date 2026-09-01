@@ -49,7 +49,7 @@ catalog:
   better-auth: 1.7.2
   dotenv: ^17.4.2
   drizzle-orm: ^0.45.2
-  next: ^16.3.3
+  next: ^16.3.4
   react: ^19.2.8
   react-dom: ^19.2.8
   react-email: 6.9.3
@@ -61,3 +61,15 @@ catalog:
   '@react-email/render': ^2.1.0
   '@react-email/tailwind': ^2.0.6
   '@react-email/preview-server': 5.2.11
+
+minimumReleaseAgeExclude:
+  - '@next/env@16.3.4'
+  - '@next/swc-darwin-arm64@16.3.4'
+  - '@next/swc-darwin-x64@16.3.4'
+  - '@next/swc-linux-arm64-gnu@16.3.4'
+  - '@next/swc-linux-arm64-musl@16.3.4'
+  - '@next/swc-linux-x64-gnu@16.3.4'
+  - '@next/swc-linux-x64-musl@16.3.4'
+  - '@next/swc-win32-arm64-msvc@16.3.4'
+  - '@next/swc-win32-x64-msvc@16.3.4'
+  - next@16.3.4
