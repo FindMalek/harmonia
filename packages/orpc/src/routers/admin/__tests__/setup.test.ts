@@ -133,6 +133,25 @@ describe("admin setup", () => {
 		});
 	});
 
+	it("createAdminAccount does not misreport CONFLICT when its own insert committed before a later failure", async () => {
+		// Pre-check says 0; createUser's insert actually succeeds (adminCount
+		// would now read 1) but createUser still throws on a later step — this
+		// must NOT be reported as someone else's race, since it wasn't one.
+		mockAdminCount(0, 1);
+		createUserMock.mockRejectedValue(new Error("session cookie write failed"));
+		const { createAdminAccount } = await import("../setup");
+		await expect(
+			createAdminAccount({
+				name: "Admin",
+				email: "admin@sonaraem.com",
+				password: "password123",
+			}),
+		).rejects.toMatchObject({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Failed to create admin account",
+		});
+	});
+
 	it("createAdminAccount hides an unrelated error behind a generic message", async () => {
 		mockAdminCount(0, 0);
 		createUserMock.mockRejectedValue(new Error("connection terminated"));

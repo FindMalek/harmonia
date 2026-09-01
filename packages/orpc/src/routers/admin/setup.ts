@@ -24,6 +24,21 @@ async function adminCount(): Promise<number> {
 	return row?.count ?? 0;
 }
 
+// A genuine concurrent double-submit trips the DB-level user_single_admin_idx
+// unique index — that's the only case that means "someone else already won."
+// Any other failure is ours to report honestly, not relabel as a conflict.
+function isAdminRaceConflict(err: unknown): boolean {
+	const asRecord = (v: unknown) =>
+		typeof v === "object" && v !== null
+			? (v as { code?: string; constraint?: string; cause?: unknown })
+			: undefined;
+	const direct = asRecord(err);
+	const cause = asRecord(direct?.cause);
+	const code = direct?.code ?? cause?.code;
+	const constraint = direct?.constraint ?? cause?.constraint;
+	return code === "23505" && constraint === "user_single_admin_idx";
+}
+
 export async function checkAdminSetupStatus(): Promise<AdminSetupStatusOutput> {
 	const existing = await adminCount();
 	return { needsSetup: existing === 0 };
@@ -52,8 +67,11 @@ export async function createAdminAccount(input: {
 			},
 		});
 	} catch (err) {
-		// user_single_admin_idx is the real race backstop — a concurrent double-submit lands here as a DB error, not an APIError.
-		if ((await adminCount()) > 0) {
+		logger.error({ err }, "admin.setup.create: createUser failed");
+
+		// user_single_admin_idx is the real race backstop — a concurrent
+		// double-submit trips it as a raw DB error, not an APIError.
+		if (isAdminRaceConflict(err)) {
 			throw new ORPCError("CONFLICT", {
 				message: "An admin account already exists.",
 			});
@@ -61,7 +79,6 @@ export async function createAdminAccount(input: {
 		if (err instanceof APIError) {
 			throw new ORPCError("BAD_REQUEST", { message: err.message });
 		}
-		logger.error({ err }, "admin.setup.create: unexpected failure");
 		throw new ORPCError("INTERNAL_SERVER_ERROR", {
 			message: "Failed to create admin account",
 		});
