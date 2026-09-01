@@ -1,7 +1,7 @@
 # Sonaraem
 
 <p align="center">
-  <img alt="Sonaraem" src="https://shieldcn.dev/header/graph.svg?title=Sonaraem&subtitle=AI-powered+music+organization+for+Spotify&theme=zinc&mode=dark" />
+  <img alt="Sonaraem" src="./github.png" />
 </p>
 
 <p align="center">
