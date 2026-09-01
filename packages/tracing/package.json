@@ -14,7 +14,6 @@
 		"clean": "rm -rf dist node_modules"
 	},
 	"dependencies": {
-		"@sonaraem/env": "workspace:*",
 		"@opentelemetry/api": "catalog:",
 		"@opentelemetry/api-logs": "catalog:",
 		"@opentelemetry/core": "catalog:",
@@ -32,11 +31,12 @@
 		"@opentelemetry/sdk-trace-base": "catalog:",
 		"@opentelemetry/semantic-conventions": "catalog:",
 		"@orpc/otel": "catalog:",
+		"@sonaraem/env": "workspace:*",
 		"pino": "^10.3.1"
 	},
 	"devDependencies": {
 		"@sonaraem/config": "workspace:*",
-		"@types/node": "^25.9.3",
+		"@types/node": "^26.4.0",
 		"typescript": "catalog:"
 	},
 	"peerDependencies": {

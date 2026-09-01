@@ -124,7 +124,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 		traceExporter:
 			traceExporter && !useSimpleProcessor ? traceExporter : undefined,
 		logRecordProcessor: logExporter
-			? new BatchLogRecordProcessor(logExporter)
+			? new BatchLogRecordProcessor({ exporter: logExporter })
 			: undefined,
 		metricReader: metricsExporter
 			? new PeriodicExportingMetricReader({
