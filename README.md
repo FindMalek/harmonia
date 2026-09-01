@@ -1,12 +1,12 @@
-# Harmonia
+# Sonaraem
 
 <p align="center">
-  <img alt="Harmonia" src="https://shieldcn.dev/header/graph.svg?title=Harmonia&subtitle=AI-powered+music+organization+for+Spotify&theme=zinc&mode=dark" />
+  <img alt="Sonaraem" src="./github.png" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/FindMalek/harmonia/commits/main">
-    <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/FindMalek/harmonia.svg?variant=secondary&mode=dark&color=18181b" />
+  <a href="https://github.com/FindMalek/sonaraem/commits/main">
+    <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/FindMalek/sonaraem.svg?variant=secondary&mode=dark&color=18181b" />
   </a>
   <a href="#license">
     <img alt="License: MIT" src="https://shieldcn.dev/badge/license-MIT-18181b.svg?variant=secondary&mode=dark" />
@@ -71,8 +71,8 @@ packages/
 **Prerequisites:** Node.js 20+, pnpm 10+, Docker Desktop
 
 ```bash
-git clone https://github.com/FindMalek/harmonia.git
-cd harmonia
+git clone https://github.com/FindMalek/sonaraem.git
+cd sonaraem
 pnpm install
 cp .env.example .env     # fill in values
 pnpm db:setup            # start local Postgres + push schema
@@ -105,7 +105,7 @@ pnpm dev:ada              # API + dashboard + admin (ports 3002/3003/3004)
 
 Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with:
 
-- Email: `admin@harmonia.com`
+- Email: `admin@sonaraem.com`
 - Password: `changeme123!`
 
 | Page | Purpose |
@@ -114,26 +114,26 @@ Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with
 | `/waitlist` | Approve, reject, resend invite, notes |
 | `/users` | User list (role, approval, banned) |
 
-**Auth isolation:** Admin uses `/api/admin-auth` (`harmonia-admin` cookie). Dashboard uses `/api/auth` (`harmonia-dashboard` cookie). Signing into one does not sign you into the other.
+**Auth isolation:** Admin uses `/api/admin-auth` (`sonaraem-admin` cookie). Dashboard uses `/api/auth` (`sonaraem-dashboard` cookie). Signing into one does not sign you into the other.
 
 ## Testing
 
 ```bash
-pnpm test                 # vitest in @harmonia/common + @harmonia/orpc
+pnpm test                 # vitest in @sonaraem/common + @sonaraem/orpc
 pnpm check-types          # TypeScript
 pnpm check                # Biome
 ```
 
 ## Environment Variables
 
-All variables are prefixed `HARMONIA_` (server) or `NEXT_PUBLIC_HARMONIA_` (client). Copy `.env.example` and fill in:
+All variables are prefixed `SONARAEM_` (server) or `NEXT_PUBLIC_SONARAEM_` (client). Copy `.env.example` and fill in:
 
-- `HARMONIA_DATABASE_URL` — local: `postgresql://postgres:password@localhost:5433/harmonia`
-- `HARMONIA_SPOTIFY_CLIENT_ID` / `HARMONIA_SPOTIFY_CLIENT_SECRET` — Spotify Developer Dashboard
-- `HARMONIA_RESEND_API_KEY` / `HARMONIA_EMAIL_FROM` — waitlist emails
-- `HARMONIA_OPENAI_API_KEY` — embeddings
-- `HARMONIA_GROQ_API_KEY` — LLM classification and playlist generation
-- `HARMONIA_TRIGGER_SECRET_KEY` / `HARMONIA_TRIGGER_PROJECT_REF` — [cloud.trigger.dev](https://cloud.trigger.dev)
+- `SONARAEM_DATABASE_URL` — local: `postgresql://postgres:password@localhost:5433/sonaraem`
+- `SONARAEM_SPOTIFY_CLIENT_ID` / `SONARAEM_SPOTIFY_CLIENT_SECRET` — Spotify Developer Dashboard
+- `SONARAEM_RESEND_API_KEY` / `SONARAEM_EMAIL_FROM` — waitlist emails
+- `SONARAEM_OPENAI_API_KEY` — embeddings
+- `SONARAEM_GROQ_API_KEY` — LLM classification and playlist generation
+- `SONARAEM_TRIGGER_SECRET_KEY` / `SONARAEM_TRIGGER_PROJECT_REF` — [cloud.trigger.dev](https://cloud.trigger.dev)
 
 **Production note:** API rate limits are in-memory per process. Use Redis (or similar) before running multiple API instances.
 

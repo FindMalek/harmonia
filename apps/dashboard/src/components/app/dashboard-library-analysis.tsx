@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress, Skeleton } from "@harmonia/ui";
+import { Progress, Skeleton } from "@sonaraem/ui";
 import { useOrganizeStore } from "@/shared/lib/organize/store";
 import {
 	usePipelineController,

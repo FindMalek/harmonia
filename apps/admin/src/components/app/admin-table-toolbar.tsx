@@ -8,7 +8,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { useEffect, useRef, useState } from "react";
 
 type StatusOption = { value: string; label: string };

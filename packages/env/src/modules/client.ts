@@ -5,15 +5,15 @@ import { z } from "zod";
  */
 export const clientModule = {
 	client: {
-		NEXT_PUBLIC_HARMONIA_NODE_ENV: z
+		NEXT_PUBLIC_SONARAEM_NODE_ENV: z
 			.enum(["development", "production", "local"])
 			.default("local")
 			.transform((val) => {
 				if (process.env.VERCEL_ENV === "preview") return "development";
 				return val;
 			}),
-		NEXT_PUBLIC_HARMONIA_API_URL: z.url(),
-		NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN: z
+		NEXT_PUBLIC_SONARAEM_API_URL: z.url(),
+		NEXT_PUBLIC_SONARAEM_ALLOWED_ORIGIN: z
 			.string()
 			.optional()
 			.refine(
@@ -43,7 +43,7 @@ export const clientModule = {
 				},
 				{
 					message:
-						"NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN must be '*', a valid URL, or a wildcard pattern like *.domain.com",
+						"NEXT_PUBLIC_SONARAEM_ALLOWED_ORIGIN must be '*', a valid URL, or a wildcard pattern like *.domain.com",
 				},
 			),
 	},

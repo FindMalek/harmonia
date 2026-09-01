@@ -8,14 +8,14 @@ const repoRoot = path.resolve(__dirname, "../../..");
 
 dotenv.config({ path: path.join(repoRoot, ".env") });
 
-const { db } = await import("@harmonia/db");
-const { user, account } = await import("@harmonia/db/schema/auth");
+const { db } = await import("@sonaraem/db");
+const { user, account } = await import("@sonaraem/db/schema/auth");
 const { eq } = await import("drizzle-orm");
 
 // Local dev seed only — see README's "Admin dashboard (local)" section.
-const ADMIN_EMAIL = "admin@harmonia.com";
+const ADMIN_EMAIL = "admin@sonaraem.com";
 const ADMIN_PASSWORD = "changeme123!";
-const ADMIN_NAME = "Harmonia Admin";
+const ADMIN_NAME = "Sonaraem Admin";
 
 // Same algorithm as @better-auth/utils/password (node export condition)
 async function hashPassword(password: string): Promise<string> {

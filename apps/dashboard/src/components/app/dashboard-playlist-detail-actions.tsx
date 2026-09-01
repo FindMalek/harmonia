@@ -1,4 +1,4 @@
-import { Badge, Button, Icons, Switch } from "@harmonia/ui";
+import { Badge, Button, Icons, Switch } from "@sonaraem/ui";
 import { formatDistanceToNow } from "date-fns";
 
 export function DashboardPlaylistDetailActions({
@@ -67,8 +67,8 @@ export function DashboardPlaylistDetailActions({
 						<span className="font-medium text-sm">Auto-update in Spotify</span>
 						<span className="text-muted-foreground text-xs">
 							{autoSyncEnabled
-								? "Harmonia pushes changes here automatically after each run."
-								: "Off — Harmonia keeps this playlist current, but you push updates yourself."}
+								? "Sonaraem pushes changes here automatically after each run."
+								: "Off — Sonaraem keeps this playlist current, but you push updates yourself."}
 						</span>
 					</div>
 					<Switch

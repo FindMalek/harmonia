@@ -1,7 +1,7 @@
-import type { AIProviderName } from "@harmonia/ai-provider";
-import { db } from "@harmonia/db";
-import { externalApiCall } from "@harmonia/db/schema/external-api-call";
-import { logger } from "@harmonia/logger";
+import type { AIProviderName } from "@sonaraem/ai-provider";
+import { db } from "@sonaraem/db";
+import { externalApiCall } from "@sonaraem/db/schema/external-api-call";
+import { logger } from "@sonaraem/logger";
 
 const PAYLOAD_TRUNCATE_BYTES = 10_000;
 

@@ -6,13 +6,13 @@ import {
 	isSplitRetryableError,
 	logInvalidJsonError,
 	withLLMRetry,
-} from "@harmonia/ai-provider";
+} from "@sonaraem/ai-provider";
 import {
 	type ClassificationResult,
 	classificationResultListSchema,
 	type TrackForClassification,
-} from "@harmonia/common/schemas";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/common/schemas";
+import { logger } from "@sonaraem/logger";
 import { llml as formatPrompt } from "@zenbase/llml";
 import { APICallError, generateText, Output } from "ai";
 

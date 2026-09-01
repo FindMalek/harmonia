@@ -1,11 +1,11 @@
 import {
 	PIPELINE_STATUS_VALUES,
 	type PipelineStatus,
-} from "@harmonia/db/schema/pipeline-run";
+} from "@sonaraem/db/schema/pipeline-run";
 import { z } from "zod";
 
-export type { PipelineStatus } from "@harmonia/db/schema/pipeline-run";
-export { PIPELINE_STATUS_VALUES } from "@harmonia/db/schema/pipeline-run";
+export type { PipelineStatus } from "@sonaraem/db/schema/pipeline-run";
+export { PIPELINE_STATUS_VALUES } from "@sonaraem/db/schema/pipeline-run";
 
 /**
  * Zod enum for `pipeline_run.status`. Derived from the DB schema so the

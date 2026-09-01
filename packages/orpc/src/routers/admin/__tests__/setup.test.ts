@@ -4,17 +4,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const selectMock = vi.fn();
 const createUserMock = vi.fn();
 
-vi.mock("@harmonia/db", () => ({
+vi.mock("@sonaraem/db", () => ({
 	db: {
 		select: selectMock,
 	},
 }));
 
-vi.mock("@harmonia/db/schema/auth", () => ({
+vi.mock("@sonaraem/db/schema/auth", () => ({
 	user: { role: "role" },
 }));
 
-vi.mock("@harmonia/core", () => ({
+vi.mock("@sonaraem/core", () => ({
 	adminAuth: {
 		api: {
 			createUser: createUserMock,
@@ -68,7 +68,7 @@ describe("admin setup", () => {
 		await expect(
 			createAdminAccount({
 				name: "Admin",
-				email: "admin@harmonia.com",
+				email: "admin@sonaraem.com",
 				password: "password123",
 			}),
 		).rejects.toMatchObject({ code: "CONFLICT" });
@@ -82,13 +82,13 @@ describe("admin setup", () => {
 		await expect(
 			createAdminAccount({
 				name: "Admin",
-				email: "Admin@Harmonia.com",
+				email: "Admin@Sonaraem.com",
 				password: "password123",
 			}),
 		).resolves.toEqual({ success: true });
 		expect(createUserMock).toHaveBeenCalledWith({
 			body: {
-				email: "admin@harmonia.com",
+				email: "admin@sonaraem.com",
 				password: "password123",
 				name: "Admin",
 				role: "admin",
@@ -109,7 +109,7 @@ describe("admin setup", () => {
 		await expect(
 			createAdminAccount({
 				name: "Admin",
-				email: "admin@harmonia.com",
+				email: "admin@sonaraem.com",
 				password: "password123",
 			}),
 		).rejects.toMatchObject({ code: "CONFLICT" });
@@ -124,7 +124,7 @@ describe("admin setup", () => {
 		await expect(
 			createAdminAccount({
 				name: "Admin",
-				email: "taken@harmonia.com",
+				email: "taken@sonaraem.com",
 				password: "password123",
 			}),
 		).rejects.toMatchObject({
@@ -140,7 +140,7 @@ describe("admin setup", () => {
 		await expect(
 			createAdminAccount({
 				name: "Admin",
-				email: "admin@harmonia.com",
+				email: "admin@sonaraem.com",
 				password: "password123",
 			}),
 		).rejects.toMatchObject({

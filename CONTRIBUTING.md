@@ -1,4 +1,4 @@
-# Contributing to Harmonia
+# Contributing to Sonaraem
 
 Thanks for contributing. This guide explains how to get the repo running locally and how to work on issues efficiently.
 
@@ -16,8 +16,8 @@ Architecture and conventions are documented in `.cursor/rules/`.
 ## Repository Setup
 
 ```bash
-git clone https://github.com/FindMalek/harmonia.git
-cd harmonia
+git clone https://github.com/FindMalek/sonaraem.git
+cd sonaraem
 pnpm install
 ```
 
@@ -33,7 +33,7 @@ Start local infrastructure and push the schema:
 pnpm db:setup   # starts Docker Postgres + pushes Drizzle schema
 ```
 
-For Trigger.dev background jobs, fill in `HARMONIA_TRIGGER_SECRET_KEY` and `HARMONIA_TRIGGER_PROJECT_REF` from [cloud.trigger.dev](https://cloud.trigger.dev).
+For Trigger.dev background jobs, fill in `SONARAEM_TRIGGER_SECRET_KEY` and `SONARAEM_TRIGGER_PROJECT_REF` from [cloud.trigger.dev](https://cloud.trigger.dev).
 
 ## Most-Used Scripts
 
@@ -52,17 +52,17 @@ pnpm dev:web        # web app only
 
 ```bash
 pnpm db:push
-pnpm db:seed        # creates admin@harmonia.com / changeme123!
+pnpm db:seed        # creates admin@sonaraem.com / changeme123!
 pnpm dev:ada        # API + dashboard + admin
 ```
 
-Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with `admin@harmonia.com` / `changeme123!`. Admin auth uses `/api/admin-auth` and is **separate** from dashboard Spotify sessions.
+Open [http://127.0.0.1:3004/login](http://127.0.0.1:3004/login) and sign in with `admin@sonaraem.com` / `changeme123!`. Admin auth uses `/api/admin-auth` and is **separate** from dashboard Spotify sessions.
 
 ### Quality checks
 
 ```bash
 pnpm check-types    # TypeScript across all packages
-pnpm test           # vitest (@harmonia/common + @harmonia/orpc)
+pnpm test           # vitest (@sonaraem/common + @sonaraem/orpc)
 pnpm check          # Biome check + fix
 pnpm lint           # Biome lint + fix
 pnpm format         # Biome format + fix
@@ -85,12 +85,12 @@ pnpm db:push        # push schema to local Postgres
 pnpm db:studio      # open Drizzle Studio UI
 pnpm db:generate    # generate migration files
 pnpm db:migrate     # apply migrations (production)
-pnpm db:seed        # seed local admin user (requires HARMONIA_ADMIN_PASSWORD)
+pnpm db:seed        # seed local admin user (requires SONARAEM_ADMIN_PASSWORD)
 ```
 
 ## Waitlist & Access Control
 
-Harmonia runs a closed beta:
+Sonaraem runs a closed beta:
 
 1. **Web** (`:3001`) — public waitlist signup
 2. **Admin** (`:3004`) — approve/reject; sends invite email
@@ -118,7 +118,7 @@ Follow the conventional commits format:
 
 ```
 feat: add artist diversity cap to playlist generation
-fix: pass HARMONIA_GROQ_API_KEY explicitly to createGroq
+fix: pass SONARAEM_GROQ_API_KEY explicitly to createGroq
 chore: update CONTRIBUTING.md
 perf: add p-limit concurrency to embed stage
 refactor: extract playlist card into separate component
@@ -134,8 +134,8 @@ refactor: extract playlist card into separate component
 
 All conventions are documented in `.cursor/rules/`. The short version:
 
-- **Never `process.env` directly** — use `@harmonia/env`
-- **Never `groq()` without explicit key** — use `createGroq({ apiKey: env.HARMONIA_GROQ_API_KEY })`
+- **Never `process.env` directly** — use `@sonaraem/env`
+- **Never `groq()` without explicit key** — use `createGroq({ apiKey: env.SONARAEM_GROQ_API_KEY })`
 - **Tabs for indentation**, double quotes, Biome for formatting
 - **Component files**: kebab-case, always include a skeleton variant
 - **No comments** unless the WHY is non-obvious

@@ -8,7 +8,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 	Icons,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 
 type RowAction = {
 	label: string;

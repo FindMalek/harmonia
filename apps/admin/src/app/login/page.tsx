@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, Icons } from "@harmonia/ui";
+import { Card, CardContent, CardHeader, CardTitle, Icons } from "@sonaraem/ui";
 import { redirect } from "next/navigation";
 
 import { AdminLoginForm } from "@/components/app/admin-login-form";
@@ -31,7 +31,7 @@ export default async function LoginPage({
 					</div>
 					<div>
 						<h1 className="font-semibold text-lg tracking-tight">
-							Harmonia Admin
+							Sonaraem Admin
 						</h1>
 						<p className="text-muted-foreground text-xs">
 							Authorised personnel only

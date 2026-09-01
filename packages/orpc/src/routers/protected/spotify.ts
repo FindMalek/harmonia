@@ -1,15 +1,15 @@
-import { getSpotifyLibraryStats } from "@harmonia/common";
+import { eventIterator, ORPCError } from "@orpc/server";
+import { getSpotifyLibraryStats } from "@sonaraem/common";
 import {
 	emptyInput,
 	type SpotifyLibraryStats,
 	spotifyLibraryStatsSchema,
 	syncProgressEventSchema,
-} from "@harmonia/common/schemas";
-import { syncUserLibraryTask } from "@harmonia/common/trigger/tasks/spotify/sync-user-library";
-import type { SyncPhase, SyncProgress } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
-import { eventIterator, ORPCError } from "@orpc/server";
+} from "@sonaraem/common/schemas";
+import { syncUserLibraryTask } from "@sonaraem/common/trigger/tasks/spotify/sync-user-library";
+import type { SyncPhase, SyncProgress } from "@sonaraem/common/types";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
 import { runs } from "@trigger.dev/sdk";
 import { eq } from "drizzle-orm";
 import { z } from "zod";

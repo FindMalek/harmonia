@@ -1,4 +1,4 @@
-import { rateLimiters } from "@harmonia/orpc/utils/rate-limiter";
+import { rateLimiters } from "@sonaraem/orpc/utils/rate-limiter";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -42,9 +42,9 @@ export async function GET(req: NextRequest) {
 	const nextUrl = resolveSafeNext(nextParam, req.url, "/introduction");
 
 	const cookieStore = await cookies();
-	const token = cookieStore.get("harmonia_invite")?.value;
+	const token = cookieStore.get("sonaraem_invite")?.value;
 	// Delete the cookie regardless of outcome — one attempt only
-	cookieStore.delete("harmonia_invite");
+	cookieStore.delete("sonaraem_invite");
 
 	if (!token) {
 		return NextResponse.redirect(new URL("/waiting", req.url));

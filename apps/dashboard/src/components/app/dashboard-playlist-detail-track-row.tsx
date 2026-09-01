@@ -1,6 +1,6 @@
-import type { PlaylistTrackItem } from "@harmonia/common/schemas";
-import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import type { PlaylistTrackItem } from "@sonaraem/common/schemas";
+import { parseJsonStringArray } from "@sonaraem/common/utils/parse-json-string-array";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";

@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { env } from "@harmonia/env/server";
+import { env } from "@sonaraem/env/server";
 
 const TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 
@@ -10,7 +10,7 @@ type WaitlistTokenPayload = {
 };
 
 function getSigningSecret(): string {
-	return env.HARMONIA_BETTER_AUTH_SECRET;
+	return env.SONARAEM_BETTER_AUTH_SECRET;
 }
 
 function encodePayload(payload: WaitlistTokenPayload): string {

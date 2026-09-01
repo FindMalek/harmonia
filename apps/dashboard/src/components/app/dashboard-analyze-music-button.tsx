@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Icons } from "@harmonia/ui";
+import { Button, Icons } from "@sonaraem/ui";
 import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
 
 export function DashboardAnalyzeMusicButton() {

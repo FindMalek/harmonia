@@ -7,7 +7,7 @@ import { dbEnv } from "./db";
 export const adminEnv = createEnv({
 	extends: [dbEnv],
 	server: {
-		HARMONIA_BETTER_AUTH_SECRET: z.string().min(32),
+		SONARAEM_BETTER_AUTH_SECRET: z.string().min(32),
 		...observabilityModule.server,
 	},
 	client: {
@@ -16,7 +16,7 @@ export const adminEnv = createEnv({
 	},
 	runtimeEnv: {
 		...createNextjsRuntimeEnv(),
-		HARMONIA_BETTER_AUTH_SECRET: process.env.HARMONIA_BETTER_AUTH_SECRET,
+		SONARAEM_BETTER_AUTH_SECRET: process.env.SONARAEM_BETTER_AUTH_SECRET,
 	},
 	emptyStringAsUndefined: true,
 	skipValidation:

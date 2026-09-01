@@ -10,6 +10,6 @@ export default defineConfig({
 	out: "./src/migrations",
 	dialect: "postgresql",
 	dbCredentials: {
-		url: process.env.HARMONIA_DATABASE_URL || "",
+		url: process.env.SONARAEM_DATABASE_URL || "",
 	},
 });

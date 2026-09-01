@@ -1,5 +1,5 @@
-import { env } from "@harmonia/env/server";
 import { ORPCError } from "@orpc/server";
+import { env } from "@sonaraem/env/server";
 
 import { rateLimitMiddleware } from "./middleware/rate-limit";
 import { o } from "./os";
@@ -39,7 +39,7 @@ const requireCronOrAuth = o.middleware(async ({ context, next }) => {
 		context.headers?.get("X-Organize-Secret") ??
 		context.headers?.get("Authorization")?.replace(/^Bearer\s+/i, "");
 	const isCron =
-		env.HARMONIA_CRON_SECRET && cronSecret === env.HARMONIA_CRON_SECRET;
+		env.SONARAEM_CRON_SECRET && cronSecret === env.SONARAEM_CRON_SECRET;
 	const isAuth = !!context.session?.user;
 
 	if (!isCron && !isAuth) {

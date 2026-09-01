@@ -1,3 +1,3 @@
-import { cn } from "@harmonia/ui";
+import { cn } from "@sonaraem/ui";
 
 export { cn };

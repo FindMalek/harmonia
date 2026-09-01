@@ -71,11 +71,11 @@ Reuse this coordinator/worker split (see `stages/classify.ts`, `stages/lyrics.ts
 
 ## Logging
 
-Import `logger` from `@harmonia/logger` in every task — never the Trigger.dev SDK's own logger.
+Import `logger` from `@sonaraem/logger` in every task — never the Trigger.dev SDK's own logger.
 
 ## Env Key Mapping
 
-`HARMONIA_TRIGGER_SECRET_KEY` → `TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs` (for the worker) and `scripts/with-root-env.mjs` (for the API process).
+`SONARAEM_TRIGGER_SECRET_KEY` → `TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs` (for the worker) and `scripts/with-root-env.mjs` (for the API process).
 
 ## Running Locally
 
@@ -85,4 +85,4 @@ pnpm trigger:dev   # or pnpm dev:api (includes trigger via concurrently)
 
 ## LLM Keys in Tasks
 
-Never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in a task or service — resolve models through `@harmonia/ai-provider`'s `getAIModel(task)` / `getModelId(task)`, and gate on `isProviderConfigured(task)` instead of checking a specific env var. Each task is pinned to a fixed provider via `TASK_PROVIDER` in `packages/ai-provider/src/models.ts` — not a global runtime switch (classification/clusterMetadata → `groq`, playlistNaming → `concentrate`, as of #335). Whichever credential a task's assigned provider needs (`HARMONIA_GROQ_API_KEY` / `HARMONIA_CONCENTRATE_API_KEY`) must be set in the Trigger.dev dashboard for each deployed environment, same as any other var consumed inside a task — see `.cursor/rules/packages/env.mdc` § Adding a New Var, step 7. For provider credentials, task code reads `HARMONIA_*` variables and never bare provider-SDK names like `GROQ_API_KEY` — `TRIGGER_SECRET_KEY` (mapped from `HARMONIA_TRIGGER_SECRET_KEY`, see above) is an explicit exception, not the rule.
+Never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in a task or service — resolve models through `@sonaraem/ai-provider`'s `getAIModel(task)` / `getModelId(task)`, and gate on `isProviderConfigured(task)` instead of checking a specific env var. Each task is pinned to a fixed provider via `TASK_PROVIDER` in `packages/ai-provider/src/models.ts` — not a global runtime switch (classification/clusterMetadata → `groq`, playlistNaming → `concentrate`, as of #335). Whichever credential a task's assigned provider needs (`SONARAEM_GROQ_API_KEY` / `SONARAEM_CONCENTRATE_API_KEY`) must be set in the Trigger.dev dashboard for each deployed environment, same as any other var consumed inside a task — see `.cursor/rules/packages/env.mdc` § Adding a New Var, step 7. For provider credentials, task code reads `SONARAEM_*` variables and never bare provider-SDK names like `GROQ_API_KEY` — `TRIGGER_SECRET_KEY` (mapped from `SONARAEM_TRIGGER_SECRET_KEY`, see above) is an explicit exception, not the rule.

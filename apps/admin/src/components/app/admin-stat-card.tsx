@@ -4,7 +4,7 @@ import {
 	CardHeader,
 	CardTitle,
 	Skeleton,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 
 export function AdminStatCard({
 	label,

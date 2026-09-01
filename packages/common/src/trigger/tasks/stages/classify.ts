@@ -1,7 +1,7 @@
-import { db } from "@harmonia/db";
-import { track, userTracks } from "@harmonia/db/schema/track";
-import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { track, userTracks } from "@sonaraem/db/schema/track";
+import { trackAnalysis } from "@sonaraem/db/schema/track-analysis";
+import { logger } from "@sonaraem/logger";
 import { queue, task } from "@trigger.dev/sdk";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { classifyTrackIds } from "../../../services/brain";

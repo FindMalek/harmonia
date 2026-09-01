@@ -1,4 +1,4 @@
-import { logger } from "@harmonia/logger";
+import { logger } from "@sonaraem/logger";
 import { metadata, task } from "@trigger.dev/sdk";
 
 import { syncLibraryTracks } from "../../../services/music";

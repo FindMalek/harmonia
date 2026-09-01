@@ -3,12 +3,12 @@ import {
 	waitlistSignupOutputSchema,
 	waitlistStatusInput,
 	waitlistStatusOutputSchema,
-} from "@harmonia/common/schemas";
-import { sendWaitlistConfirmationEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-confirmation";
-import { verifyWaitlistStatusToken } from "@harmonia/common/utils/waitlist-token";
-import { db } from "@harmonia/db";
-import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/common/schemas";
+import { sendWaitlistConfirmationEmailTask } from "@sonaraem/common/trigger/tasks/emails/send-waitlist-confirmation";
+import { verifyWaitlistStatusToken } from "@sonaraem/common/utils/waitlist-token";
+import { db } from "@sonaraem/db";
+import { waitlistSignup } from "@sonaraem/db/schema/waitlist-signup";
+import { logger } from "@sonaraem/logger";
 import { and, count, eq, isNull, lt } from "drizzle-orm";
 
 import { publicProcedure } from "../../procedures";

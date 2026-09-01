@@ -39,5 +39,5 @@ jobs:
       - name: Run migrations
         working-directory: packages/db
         env:
-          HARMONIA_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          SONARAEM_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: pnpm db:migrate

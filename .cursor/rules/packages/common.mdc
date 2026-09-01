@@ -5,7 +5,7 @@ globs:
 alwaysApply: false
 ---
 
-# `@harmonia/common`
+# `@sonaraem/common`
 
 ## Structure
 
@@ -13,7 +13,7 @@ alwaysApply: false
 src/
   schemas/{entity}/   index.ts, input.ts, output.ts, enum.ts
   utils/
-    waitlist-token.ts   HMAC sign/verify for waitlist status URLs (uses HARMONIA_BETTER_AUTH_SECRET)
+    waitlist-token.ts   HMAC sign/verify for waitlist status URLs (uses SONARAEM_BETTER_AUTH_SECRET)
     waitlist-gate.ts    pure proxy gate decision (resolveWaitlistGate)
   services/
     brain/            classifier, embeddings, clustering, cluster-metadata, playlist-generator, track-matcher
@@ -25,7 +25,7 @@ src/
   types/              pipeline progress types
 ```
 
-Run tests: `pnpm --filter @harmonia/common test`
+Run tests: `pnpm --filter @sonaraem/common test`
 
 ## Waitlist Utilities
 
@@ -40,7 +40,7 @@ Run tests: `pnpm --filter @harmonia/common test`
 
 ## Service Safety Rules
 
-- No inline raw SQL snippets in `@harmonia/common` services.
+- No inline raw SQL snippets in `@sonaraem/common` services.
 - Use typed Drizzle predicates/helpers exclusively for queries and mutations.
 - If a DB operation seems to require raw SQL, redesign the implementation so it stays typed and schema-aware.
 - For serialized DB string fields (for example `artistNames`), use a shared safe parser utility instead of inline `JSON.parse` calls.
@@ -48,7 +48,7 @@ Run tests: `pnpm --filter @harmonia/common test`
 
 ## LLM Calls
 
-All LLM calls resolve their model via `@harmonia/ai-provider`'s `getAIModel(task)` — never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in `@harmonia/common`. Each task is pinned to a fixed provider (`groq` | `concentrate`) via `TASK_PROVIDER`, not a global switch; gate on `isProviderConfigured(task)` before calling, and use `withLLMRetry()` for the shared 429-aware backoff instead of a bare `pRetry`. See `.cursor/rules/packages/00-package-index.mdc` § `@harmonia/ai-provider`.
+All LLM calls resolve their model via `@sonaraem/ai-provider`'s `getAIModel(task)` — never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in `@sonaraem/common`. Each task is pinned to a fixed provider (`groq` | `concentrate`) via `TASK_PROVIDER`, not a global switch; gate on `isProviderConfigured(task)` before calling, and use `withLLMRetry()` for the shared 429-aware backoff instead of a bare `pRetry`. See `.cursor/rules/packages/00-package-index.mdc` § `@sonaraem/ai-provider`.
 
 Prompts are structured using `llml` from `@zenbase/llml`.
 

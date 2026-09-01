@@ -1,5 +1,5 @@
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { buttonVariants, cn, HarmoniaBrandHeader, Icons } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { buttonVariants, cn, Icons, SonaraemBrandHeader } from "@sonaraem/ui";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -53,7 +53,7 @@ function WaitingShell({ children }: { children: React.ReactNode }) {
 	return (
 		<div className="flex h-full min-h-svh flex-col bg-background font-sans">
 			<div className="flex flex-1 flex-col justify-between p-8 sm:p-12 lg:p-16">
-				<HarmoniaBrandHeader />
+				<SonaraemBrandHeader />
 				{children}
 				<div className="flex-1" />
 			</div>
@@ -79,7 +79,7 @@ export default async function WaitingPage({
 	// proxy.ts's middleware never runs on /waiting either — same #281 fallback as /login.
 	if (session?.user && !session.user.isApproved) {
 		const cookieStore = await cookies();
-		if (cookieStore.has("harmonia_invite")) {
+		if (cookieStore.has("sonaraem_invite")) {
 			redirect("/api/redeem-invite");
 		}
 	}

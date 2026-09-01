@@ -1,4 +1,4 @@
-import { InsightSectionCard, Skeleton } from "@harmonia/ui";
+import { InsightSectionCard, Skeleton } from "@sonaraem/ui";
 
 type Props = {
 	topGenre: string | null;

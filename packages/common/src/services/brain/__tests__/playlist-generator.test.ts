@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@harmonia/db", () => ({ db: {} }));
+vi.mock("@sonaraem/db", () => ({ db: {} }));
 
 import {
 	dedupeTracksBySongIdentity,

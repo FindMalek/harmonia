@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/tracing",
+	"name": "@sonaraem/tracing",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -14,7 +14,7 @@
 		"clean": "rm -rf dist node_modules"
 	},
 	"dependencies": {
-		"@harmonia/env": "workspace:*",
+		"@sonaraem/env": "workspace:*",
 		"@opentelemetry/api": "catalog:",
 		"@opentelemetry/api-logs": "catalog:",
 		"@opentelemetry/core": "catalog:",
@@ -35,7 +35,7 @@
 		"pino": "^10.3.1"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@types/node": "^25.9.3",
 		"typescript": "catalog:"
 	},

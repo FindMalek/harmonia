@@ -3,9 +3,9 @@ import {
 	adminAuth as adminAuthSingleton,
 	dashboardAuth as dashboardAuthSingleton,
 	initializeAuth,
-} from "@harmonia/auth";
-import { db as dbSingleton } from "@harmonia/db";
-import { apiEnv } from "@harmonia/env/presets/api";
+} from "@sonaraem/auth";
+import { db as dbSingleton } from "@sonaraem/db";
+import { apiEnv } from "@sonaraem/env/presets/api";
 
 /**
  * Core initialization module
@@ -20,7 +20,7 @@ import { apiEnv } from "@harmonia/env/presets/api";
  *
  * Usage:
  * ```ts
- * import { database, dashboardAuth, adminAuth } from "@harmonia/core";
+ * import { database, dashboardAuth, adminAuth } from "@sonaraem/core";
  * ```
  */
 
@@ -28,15 +28,15 @@ let authInitialized = false;
 
 function buildAuthEnvConfig(): AuthEnvConfig {
 	return {
-		HARMONIA_BETTER_AUTH_SECRET: apiEnv.HARMONIA_BETTER_AUTH_SECRET,
-		NEXT_PUBLIC_HARMONIA_API_URL: apiEnv.NEXT_PUBLIC_HARMONIA_API_URL,
-		NEXT_PUBLIC_HARMONIA_DASHBOARD_URL:
-			apiEnv.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL,
-		NEXT_PUBLIC_HARMONIA_ADMIN_URL: apiEnv.NEXT_PUBLIC_HARMONIA_ADMIN_URL,
-		NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN:
-			apiEnv.NEXT_PUBLIC_HARMONIA_ALLOWED_ORIGIN,
-		HARMONIA_SPOTIFY_CLIENT_ID: apiEnv.HARMONIA_SPOTIFY_CLIENT_ID,
-		HARMONIA_SPOTIFY_CLIENT_SECRET: apiEnv.HARMONIA_SPOTIFY_CLIENT_SECRET,
+		SONARAEM_BETTER_AUTH_SECRET: apiEnv.SONARAEM_BETTER_AUTH_SECRET,
+		NEXT_PUBLIC_SONARAEM_API_URL: apiEnv.NEXT_PUBLIC_SONARAEM_API_URL,
+		NEXT_PUBLIC_SONARAEM_DASHBOARD_URL:
+			apiEnv.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL,
+		NEXT_PUBLIC_SONARAEM_ADMIN_URL: apiEnv.NEXT_PUBLIC_SONARAEM_ADMIN_URL,
+		NEXT_PUBLIC_SONARAEM_ALLOWED_ORIGIN:
+			apiEnv.NEXT_PUBLIC_SONARAEM_ALLOWED_ORIGIN,
+		SONARAEM_SPOTIFY_CLIENT_ID: apiEnv.SONARAEM_SPOTIFY_CLIENT_ID,
+		SONARAEM_SPOTIFY_CLIENT_SECRET: apiEnv.SONARAEM_SPOTIFY_CLIENT_SECRET,
 		VERCEL: apiEnv.VERCEL,
 		VERCEL_BRANCH_URL: apiEnv.VERCEL_BRANCH_URL,
 		VERCEL_PROJECT_PRODUCTION_URL: apiEnv.VERCEL_PROJECT_PRODUCTION_URL,

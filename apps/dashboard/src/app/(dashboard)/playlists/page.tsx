@@ -1,7 +1,7 @@
 "use client";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Icons } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { Icons } from "@sonaraem/ui";
 import {
 	DashboardPlaylistsListRow,
 	DashboardPlaylistsListSkeleton,

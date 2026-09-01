@@ -12,7 +12,7 @@ import {
 	Icons,
 	Progress,
 	ScrollArea,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { cn } from "@/lib/utils";
 import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
 import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";

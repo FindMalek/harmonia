@@ -1,4 +1,4 @@
-import "@harmonia/ui/styles/globals.css";
+import "@sonaraem/ui/styles/globals.css";
 
 import type { Metadata, Viewport } from "next";
 
@@ -6,14 +6,14 @@ import AppProviders from "@/components/layout/app-providers";
 import { getSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getSiteUrl();
-const title = "Harmonia Dashboard";
-const description = "Manage your Spotify library and playlists in Harmonia.";
+const title = "Sonaraem Dashboard";
+const description = "Manage your Spotify library and playlists in Sonaraem.";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(siteUrl),
 	title: {
 		default: title,
-		template: "%s — Harmonia Dashboard",
+		template: "%s — Sonaraem Dashboard",
 	},
 	description,
 	robots: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 		url: siteUrl,
 		title,
 		description,
-		siteName: "Harmonia Dashboard",
+		siteName: "Sonaraem Dashboard",
 	},
 	twitter: {
 		card: "summary",

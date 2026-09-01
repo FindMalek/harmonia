@@ -1,6 +1,6 @@
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
 import { ORPCError } from "@orpc/server";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
 import { eq } from "drizzle-orm";
 
 export async function assertUserApproved(userId: string): Promise<void> {

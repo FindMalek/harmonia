@@ -1,4 +1,4 @@
-import type { PlaylistSort, PlaylistTrackSort } from "@harmonia/common/schemas";
+import type { PlaylistSort, PlaylistTrackSort } from "@sonaraem/common/schemas";
 import { create } from "zustand";
 
 interface PlaylistsStore {

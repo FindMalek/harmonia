@@ -1,6 +1,6 @@
 "use client";
 
-import type { PlaylistTrackSort } from "@harmonia/common/schemas";
+import type { PlaylistTrackSort } from "@sonaraem/common/schemas";
 import {
 	Button,
 	DropdownMenu,
@@ -9,10 +9,10 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 	Icons,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 
 const SORT_OPTIONS: Array<{ value: PlaylistTrackSort; label: string }> = [
-	{ value: "default", label: "Harmonia order" },
+	{ value: "default", label: "Sonaraem order" },
 	{ value: "name", label: "Name (A-Z)" },
 	{ value: "duration", label: "Duration" },
 ];

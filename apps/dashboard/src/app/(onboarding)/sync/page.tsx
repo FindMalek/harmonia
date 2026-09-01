@@ -1,6 +1,6 @@
 "use client";
 
-import { Icons, Progress } from "@harmonia/ui";
+import { Icons, Progress } from "@sonaraem/ui";
 import {
 	useOnboardingController,
 	useOnboardingSyncStream,
@@ -61,7 +61,7 @@ export default function SyncPage() {
 					Importing your Spotify library
 				</h1>
 				<p className="text-base text-muted-foreground">
-					Harmonia is collecting your music so it can begin analyzing your
+					Sonaraem is collecting your music so it can begin analyzing your
 					library.
 				</p>
 			</div>

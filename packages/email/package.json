@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/email",
+	"name": "@sonaraem/email",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -27,7 +27,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@types/react": "catalog:",
 		"typescript": "catalog:"
 	}

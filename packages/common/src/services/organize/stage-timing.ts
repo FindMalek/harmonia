@@ -1,7 +1,7 @@
-import type { PipelineProgress } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
-import { pipelineStageTiming } from "@harmonia/db/schema/pipeline-run";
-import { logger } from "@harmonia/logger";
+import type { PipelineProgress } from "@sonaraem/common/types";
+import { db } from "@sonaraem/db";
+import { pipelineStageTiming } from "@sonaraem/db/schema/pipeline-run";
+import { logger } from "@sonaraem/logger";
 import { and, gt, inArray, isNotNull, sql } from "drizzle-orm";
 
 // Fixed run order organizePipeline actually executes stages in (#283) — `artists`

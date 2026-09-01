@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/ai-provider",
+	"name": "@sonaraem/ai-provider",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": {
@@ -13,13 +13,13 @@
 	"dependencies": {
 		"@ai-sdk/groq": "^3.0.41",
 		"@ai-sdk/openai": "^3.0.97",
-		"@harmonia/env": "workspace:*",
-		"@harmonia/logger": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/logger": "workspace:*",
 		"ai": "catalog:",
 		"p-retry": "^8.0.0"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"typescript": "catalog:"
 	}
 }

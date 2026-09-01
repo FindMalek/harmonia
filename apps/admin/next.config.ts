@@ -1,4 +1,4 @@
-import "@harmonia/env/admin";
+import "@sonaraem/env/admin";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

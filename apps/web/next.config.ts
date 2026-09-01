@@ -1,7 +1,7 @@
-import "@harmonia/env/presets/web";
+import "@sonaraem/env/presets/web";
 import type { NextConfig } from "next";
 
-const dashboardUrl = process.env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(
+const dashboardUrl = process.env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL?.replace(
 	/\/$/,
 	"",
 );

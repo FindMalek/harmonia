@@ -2,15 +2,15 @@ import type {
 	SpotifyLibraryStats,
 	SpotifyPlaylistTrackItem,
 	SpotifySavedTracksResponse,
-} from "@harmonia/common/schemas";
-import type { SyncProgress } from "@harmonia/common/types";
-import { conflictValue, conflictValuePreserveExisting, db } from "@harmonia/db";
+} from "@sonaraem/common/schemas";
+import type { SyncProgress } from "@sonaraem/common/types";
+import { conflictValue, conflictValuePreserveExisting, db } from "@sonaraem/db";
 import {
 	userPlaylistSnapshots,
 	userSpotifyLibraryStats,
-} from "@harmonia/db/schema/spotify";
-import { track, userTracks } from "@harmonia/db/schema/track";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/db/schema/spotify";
+import { track, userTracks } from "@sonaraem/db/schema/track";
+import { logger } from "@sonaraem/logger";
 import { eq } from "drizzle-orm";
 import pLimit from "p-limit";
 

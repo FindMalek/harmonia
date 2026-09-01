@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@harmonia/db", () => ({ db: {} }));
+vi.mock("@sonaraem/db", () => ({ db: {} }));
 
-import type { PipelineProgress } from "@harmonia/common/types";
+import type { PipelineProgress } from "@sonaraem/common/types";
 import type { StageRate } from "../stage-timing";
 import { estimateRemainingSeconds } from "../stage-timing";
 

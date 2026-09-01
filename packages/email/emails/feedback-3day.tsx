@@ -39,7 +39,7 @@ export function Feedback3DayEmail({
 
 	return (
 		<EmailThemeProvider
-			preview={<Preview>How is Harmonia working for you?</Preview>}
+			preview={<Preview>How is Sonaraem working for you?</Preview>}
 		>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
@@ -66,13 +66,13 @@ export function Feedback3DayEmail({
 						className={`mt-[24px] mb-[8px] text-center font-normal font-serif text-[21px] ${themeClasses.heading}`}
 						style={{ color: lightStyles.text.color }}
 					>
-						How is Harmonia working for you?
+						How is Sonaraem working for you?
 					</Heading>
 					<Text
 						className={`mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.mutedText}`}
 						style={{ color: lightStyles.mutedText.color }}
 					>
-						Hi {safeName}, you have been using Harmonia for a few days. We would
+						Hi {safeName}, you have been using Sonaraem for a few days. We would
 						love to hear what is working and what we can improve.
 					</Text>
 
@@ -96,7 +96,7 @@ export function Feedback3DayEmail({
 
 					<Footer
 						settingsUrl={settingsUrl}
-						complianceText="You are receiving this email based on your Harmonia notification preferences."
+						complianceText="You are receiving this email based on your Sonaraem notification preferences."
 					/>
 				</Container>
 			</Body>

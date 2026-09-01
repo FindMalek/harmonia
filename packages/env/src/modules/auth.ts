@@ -5,10 +5,10 @@ import { z } from "zod";
  */
 export const authModule = {
 	server: {
-		HARMONIA_BETTER_AUTH_SECRET: z.string().min(32),
-		HARMONIA_SPOTIFY_CLIENT_ID: z.string().min(1),
-		HARMONIA_SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
-		HARMONIA_CRON_SECRET: z.string().min(1).optional(),
-		HARMONIA_OPENAI_API_KEY: z.string().min(1).optional(),
+		SONARAEM_BETTER_AUTH_SECRET: z.string().min(32),
+		SONARAEM_SPOTIFY_CLIENT_ID: z.string().min(1),
+		SONARAEM_SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
+		SONARAEM_CRON_SECRET: z.string().min(1).optional(),
+		SONARAEM_OPENAI_API_KEY: z.string().min(1).optional(),
 	},
 } as const;

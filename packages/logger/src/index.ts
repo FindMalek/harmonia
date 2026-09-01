@@ -145,11 +145,11 @@ function getLogger(): Logger {
 		return loggerInstance;
 	}
 
-	// Infra package: direct process.env access is intentional — @harmonia/env
+	// Infra package: direct process.env access is intentional — @sonaraem/env
 	// cannot be imported here because the logger is used in browser contexts where
 	// env validation would run before Next.js has bundled NEXT_PUBLIC_* vars.
 	const nodeEnv =
-		process.env.NEXT_PUBLIC_HARMONIA_NODE_ENV ?? process.env.NODE_ENV;
+		process.env.NEXT_PUBLIC_SONARAEM_NODE_ENV ?? process.env.NODE_ENV;
 	const isDevelopment = nodeEnv !== "production";
 
 	if (isDevelopment) {

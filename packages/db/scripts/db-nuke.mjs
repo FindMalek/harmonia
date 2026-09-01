@@ -10,23 +10,23 @@ const repoRoot = path.resolve(__dirname, "../../..");
 
 dotenv.config({ path: path.join(repoRoot, ".env") });
 
-const databaseUrl = process.env.HARMONIA_DATABASE_URL;
+const databaseUrl = process.env.SONARAEM_DATABASE_URL;
 if (!databaseUrl) {
 	console.error(
-		"HARMONIA_DATABASE_URL is not set. Ensure root .env exists with HARMONIA_DATABASE_URL.",
+		"SONARAEM_DATABASE_URL is not set. Ensure root .env exists with SONARAEM_DATABASE_URL.",
 	);
 	process.exit(1);
 }
 
 const parsed = new URL(databaseUrl);
-const allowOverride = process.env.HARMONIA_ALLOW_DB_NUKE === "true";
+const allowOverride = process.env.SONARAEM_ALLOW_DB_NUKE === "true";
 const isLocalDocker =
 	(parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") &&
 	parsed.port === "5433";
 
 if (!allowOverride && !isLocalDocker) {
 	console.error(
-		"db:nuke refused: expected HARMONIA_DATABASE_URL pointing at localhost:5433 (Docker Compose). Set HARMONIA_ALLOW_DB_NUKE=true only if you accept wiping a non-default target.",
+		"db:nuke refused: expected SONARAEM_DATABASE_URL pointing at localhost:5433 (Docker Compose). Set SONARAEM_ALLOW_DB_NUKE=true only if you accept wiping a non-default target.",
 	);
 	process.exit(1);
 }
@@ -65,7 +65,7 @@ for (let i = 0; i < 60; i++) {
 			"-U",
 			"postgres",
 			"-d",
-			"harmonia",
+			"sonaraem",
 		],
 		{ cwd: repoRoot, encoding: "utf-8" },
 	);

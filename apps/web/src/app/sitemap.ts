@@ -1,4 +1,4 @@
-import { WEB_ROUTES } from "@harmonia/common/utils/routes";
+import { WEB_ROUTES } from "@sonaraem/common/utils/routes";
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/site-url";
 

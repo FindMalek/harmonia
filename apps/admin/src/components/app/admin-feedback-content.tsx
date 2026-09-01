@@ -1,7 +1,7 @@
 "use client";
 
-import type { FeedbackAdminItem } from "@harmonia/common/schemas";
-import { Badge } from "@harmonia/ui";
+import type { FeedbackAdminItem } from "@sonaraem/common/schemas";
+import { Badge } from "@sonaraem/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";

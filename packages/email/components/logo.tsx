@@ -24,7 +24,7 @@ export function Logo() {
 				src={logoSrc}
 				width="40"
 				height="40"
-				alt="Harmonia"
+				alt="Sonaraem"
 				className="mx-auto my-0 block"
 			/>
 		</Section>

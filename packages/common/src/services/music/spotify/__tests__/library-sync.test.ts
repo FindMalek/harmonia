@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@harmonia/db", () => ({ db: {}, conflictValue: vi.fn() }));
+vi.mock("@sonaraem/db", () => ({ db: {}, conflictValue: vi.fn() }));
 
 import { partitionTracksByKnownLikedAt } from "../library-sync";
 

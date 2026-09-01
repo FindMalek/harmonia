@@ -1,4 +1,4 @@
-import { isSplitRetryableError } from "@harmonia/ai-provider";
+import { isSplitRetryableError } from "@sonaraem/ai-provider";
 import { AbortError } from "p-retry";
 import { describe, expect, it } from "vitest";
 

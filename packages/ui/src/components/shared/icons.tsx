@@ -5,7 +5,7 @@
  * All apps and components should import icons from this file for consistency.
  *
  * Usage:
- *   import { Icons } from "@harmonia/ui";
+ *   import { Icons } from "@sonaraem/ui";
  *   <Icons.arrowLeft className="..." />
  *   <Icons.spinner className="animate-spin" />
  */
@@ -20,7 +20,6 @@ import {
 	IconArrowsSort,
 	IconArrowUpRight,
 	IconBrain,
-	IconBrandBandlab,
 	IconBrandSpotifyFilled,
 	IconChartBar,
 	IconCheck,
@@ -56,6 +55,7 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 import type * as React from "react";
+import { Logo } from "./logo";
 
 export type Icon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -107,7 +107,7 @@ export const Icons = {
 	sun: IconSun,
 
 	// Brand
-	logo: IconBrandBandlab,
+	logo: Logo,
 	spotify: IconBrandSpotifyFilled,
 
 	// Navigation / App

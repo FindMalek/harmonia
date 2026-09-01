@@ -77,7 +77,7 @@ export function InvoiceEmail({
 			? lineItems
 			: [
 					{
-						description: `Harmonia ${planName}`,
+						description: `Sonaraem ${planName}`,
 						quantity: 1,
 						unitPrice: amount,
 						total: amount,
@@ -86,7 +86,7 @@ export function InvoiceEmail({
 
 	return (
 		<EmailThemeProvider
-			preview={<Preview>Your Harmonia receipt — {billingPeriod}</Preview>}
+			preview={<Preview>Your Sonaraem receipt — {billingPeriod}</Preview>}
 		>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
@@ -121,7 +121,7 @@ export function InvoiceEmail({
 						className={`mt-0 mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.mutedText}`}
 						style={{ color: lightStyles.mutedText.color }}
 					>
-						Hi {safeName}, here is your Harmonia receipt for {billingPeriod}.
+						Hi {safeName}, here is your Sonaraem receipt for {billingPeriod}.
 					</Text>
 
 					{/* Status + Invoice number row */}
@@ -422,7 +422,7 @@ export function InvoiceEmail({
 						</Text>
 					) : null}
 
-					<Footer complianceText="You are receiving this transactional billing email because you have an active or recent Harmonia subscription." />
+					<Footer complianceText="You are receiving this transactional billing email because you have an active or recent Sonaraem subscription." />
 				</Container>
 			</Body>
 		</EmailThemeProvider>
@@ -442,7 +442,7 @@ InvoiceEmail.PreviewProps = {
 	paymentMethod: "Visa ending in 4242",
 	lineItems: [
 		{
-			description: "Harmonia Pro — monthly",
+			description: "Sonaraem Pro — monthly",
 			quantity: 1,
 			unitPrice: "$9.00",
 			total: "$9.00",

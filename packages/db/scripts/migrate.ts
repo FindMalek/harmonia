@@ -13,9 +13,9 @@ dotenv.config({ path: path.join(repoRoot, ".env") });
 // This mirrors packages/db/src/index.ts's connection selection and calls
 // drizzle-orm's migrate() directly so failures print the actual error.
 async function main() {
-	const connectionString = process.env.HARMONIA_DATABASE_URL;
+	const connectionString = process.env.SONARAEM_DATABASE_URL;
 	if (!connectionString) {
-		throw new Error("HARMONIA_DATABASE_URL is not set");
+		throw new Error("SONARAEM_DATABASE_URL is not set");
 	}
 
 	const migrationsFolder = path.join(__dirname, "../src/migrations");

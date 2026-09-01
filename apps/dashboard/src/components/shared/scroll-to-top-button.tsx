@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, Icons } from "@harmonia/ui";
+import { cn, Icons } from "@sonaraem/ui";
 import type { RefObject } from "react";
 import { useMobileBottomNavState } from "@/hooks/use-mobile-bottom-nav-state";
 

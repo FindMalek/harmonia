@@ -8,12 +8,12 @@
 		"start": "node ../../scripts/with-root-env.mjs next start --port=3004"
 	},
 	"dependencies": {
-		"@harmonia/auth": "workspace:*",
-		"@harmonia/common": "workspace:*",
-		"@harmonia/env": "workspace:*",
-		"@harmonia/orpc": "workspace:*",
-		"@harmonia/tracing": "workspace:*",
-		"@harmonia/ui": "workspace:*",
+		"@sonaraem/auth": "workspace:*",
+		"@sonaraem/common": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/orpc": "workspace:*",
+		"@sonaraem/tracing": "workspace:*",
+		"@sonaraem/ui": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/tanstack-query": "^1.14.6",
 		"@orpc/zod": "catalog:",
@@ -36,7 +36,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@tailwindcss/postcss": "^4.3.1",
 		"@tanstack/react-query-devtools": "^5.101.0",
 		"@types/node": "^25.9.3",

@@ -1,9 +1,9 @@
-import { db } from "@harmonia/db";
+import { db } from "@sonaraem/db";
 import {
 	type PipelineProgress,
 	type PipelineStatus,
 	pipelineRun,
-} from "@harmonia/db/schema/pipeline-run";
+} from "@sonaraem/db/schema/pipeline-run";
 import { and, eq, sql } from "drizzle-orm";
 
 export class PipelineCancelledError extends Error {

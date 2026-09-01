@@ -1,31 +1,31 @@
-import { buildWaitlistStatusUrl } from "@harmonia/common/utils/waitlist-token";
-import { db } from "@harmonia/db";
-import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
+import { buildWaitlistStatusUrl } from "@sonaraem/common/utils/waitlist-token";
+import { db } from "@sonaraem/db";
+import { waitlistSignup } from "@sonaraem/db/schema/waitlist-signup";
 import {
 	sendWaitlistApprovedEmail,
 	sendWaitlistConfirmationEmail,
-} from "@harmonia/email/send";
-import { env } from "@harmonia/env/server";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/email/send";
+import { env } from "@sonaraem/env/server";
+import { logger } from "@sonaraem/logger";
 import { eq } from "drizzle-orm";
 
 import { markEmailDelivery, reserveEmailDelivery } from "./dedupe";
 import { isEmailSuppressed } from "./policy";
 
 function buildSendConfig() {
-	if (!env.HARMONIA_RESEND_API_KEY || !env.HARMONIA_EMAIL_FROM) {
+	if (!env.SONARAEM_RESEND_API_KEY || !env.SONARAEM_EMAIL_FROM) {
 		return null;
 	}
 
 	return {
-		apiKey: env.HARMONIA_RESEND_API_KEY,
-		from: env.HARMONIA_EMAIL_FROM,
-		replyTo: env.HARMONIA_EMAIL_REPLY_TO,
+		apiKey: env.SONARAEM_RESEND_API_KEY,
+		from: env.SONARAEM_EMAIL_FROM,
+		replyTo: env.SONARAEM_EMAIL_REPLY_TO,
 	};
 }
 
 function getDashboardInviteUrl(rawToken: string): string | null {
-	const dashboardUrl = env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL;
+	const dashboardUrl = env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL;
 	if (!dashboardUrl) {
 		return null;
 	}
@@ -33,7 +33,7 @@ function getDashboardInviteUrl(rawToken: string): string | null {
 }
 
 function getDashboardWaitingUrl(email: string): string | null {
-	const dashboardUrl = env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL;
+	const dashboardUrl = env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL;
 	if (!dashboardUrl) {
 		return null;
 	}

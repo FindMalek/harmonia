@@ -1,29 +1,29 @@
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
-import { sendMarketingFeatureUpdateEmail } from "@harmonia/email/send";
-import { env } from "@harmonia/env/server";
-import { logger } from "@harmonia/logger";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
+import { sendMarketingFeatureUpdateEmail } from "@sonaraem/email/send";
+import { env } from "@sonaraem/env/server";
+import { logger } from "@sonaraem/logger";
 import { eq } from "drizzle-orm";
 
 import { markEmailDelivery, reserveEmailDelivery } from "./dedupe";
 import { evaluateEmailPolicy } from "./policy";
 
 function buildSendConfig() {
-	if (!env.HARMONIA_RESEND_API_KEY || !env.HARMONIA_EMAIL_FROM) {
+	if (!env.SONARAEM_RESEND_API_KEY || !env.SONARAEM_EMAIL_FROM) {
 		return null;
 	}
 
 	return {
-		apiKey: env.HARMONIA_RESEND_API_KEY,
-		from: env.HARMONIA_EMAIL_FROM,
-		replyTo: env.HARMONIA_EMAIL_REPLY_TO,
+		apiKey: env.SONARAEM_RESEND_API_KEY,
+		from: env.SONARAEM_EMAIL_FROM,
+		replyTo: env.SONARAEM_EMAIL_REPLY_TO,
 	};
 }
 
 function getDashboardUrl() {
 	return (
-		env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL ?? env.NEXT_PUBLIC_HARMONIA_API_URL
+		env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL ?? env.NEXT_PUBLIC_SONARAEM_API_URL
 	);
 }
 

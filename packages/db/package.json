@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/db",
+	"name": "@sonaraem/db",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": {
@@ -24,7 +24,7 @@
 		"db:seed": "tsx scripts/seed-admin.ts"
 	},
 	"dependencies": {
-		"@harmonia/env": "workspace:*",
+		"@sonaraem/env": "workspace:*",
 		"@neondatabase/serverless": "^1.1.0",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
@@ -33,7 +33,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@types/pg": "^8.20.0",
 		"@types/ws": "^8.18.1",
 		"drizzle-kit": "^0.31.10",

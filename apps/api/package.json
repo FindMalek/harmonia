@@ -8,12 +8,12 @@
 		"start": "node ../../scripts/with-root-env.mjs next start --port=3002"
 	},
 	"dependencies": {
-		"@harmonia/common": "workspace:*",
-		"@harmonia/core": "workspace:*",
-		"@harmonia/env": "workspace:*",
-		"@harmonia/logger": "workspace:*",
-		"@harmonia/orpc": "workspace:*",
-		"@harmonia/tracing": "workspace:*",
+		"@sonaraem/common": "workspace:*",
+		"@sonaraem/core": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/logger": "workspace:*",
+		"@sonaraem/orpc": "workspace:*",
+		"@sonaraem/tracing": "workspace:*",
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
@@ -26,7 +26,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@types/node": "^25.9.3",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
