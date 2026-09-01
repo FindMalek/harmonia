@@ -24,6 +24,18 @@ async function adminCount(): Promise<number> {
 	return row?.count ?? 0;
 }
 
+// Only a real user_single_admin_idx unique-violation means someone else already won the race.
+function isAdminRaceConflict(err: unknown): boolean {
+	const asRecord = (v: unknown) =>
+		typeof v === "object" && v !== null
+			? (v as { code?: string; constraint?: string; cause?: unknown })
+			: undefined;
+	const isViolation = (r?: { code?: string; constraint?: string }) =>
+		r?.code === "23505" && r?.constraint === "user_single_admin_idx";
+	const direct = asRecord(err);
+	return isViolation(direct) || isViolation(asRecord(direct?.cause));
+}
+
 export async function checkAdminSetupStatus(): Promise<AdminSetupStatusOutput> {
 	const existing = await adminCount();
 	return { needsSetup: existing === 0 };
@@ -41,27 +53,40 @@ export async function createAdminAccount(input: {
 		});
 	}
 
+	const normalizedEmail = input.email.toLowerCase().trim();
+
 	try {
 		// No headers/request passed — bypasses auth.api.createUser's normal session check (better-auth's internal/privileged call path).
 		await adminAuth.api.createUser({
 			body: {
-				email: input.email.toLowerCase().trim(),
+				email: normalizedEmail,
 				password: input.password,
 				name: input.name,
 				role: "admin",
 			},
 		});
 	} catch (err) {
-		// user_single_admin_idx is the real race backstop — a concurrent double-submit lands here as a DB error, not an APIError.
-		if ((await adminCount()) > 0) {
+		logger.error({ err }, "admin.setup.create: createUser failed");
+
+		if (isAdminRaceConflict(err)) {
 			throw new ORPCError("CONFLICT", {
 				message: "An admin account already exists.",
 			});
 		}
+
+		// createUser inserts the user row before linking the credential, so a later failure leaves an orphan that would otherwise permanently lock /setup — clean it up so the operator can just retry.
+		try {
+			await db.delete(user).where(eq(user.email, normalizedEmail));
+		} catch (cleanupErr) {
+			logger.error(
+				{ err: cleanupErr, email: normalizedEmail },
+				"admin.setup.create: failed to clean up orphaned user row",
+			);
+		}
+
 		if (err instanceof APIError) {
 			throw new ORPCError("BAD_REQUEST", { message: err.message });
 		}
-		logger.error({ err }, "admin.setup.create: unexpected failure");
 		throw new ORPCError("INTERNAL_SERVER_ERROR", {
 			message: "Failed to create admin account",
 		});
