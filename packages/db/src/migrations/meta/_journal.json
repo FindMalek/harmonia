@@ -253,6 +253,13 @@
 			"when": 1787586548355,
 			"tag": "0035_rich_lockjaw",
 			"breakpoints": true
+		},
+		{
+			"idx": 36,
+			"version": "7",
+			"when": 1788267242834,
+			"tag": "0036_complete_elektra",
+			"breakpoints": true
 		}
 	]
 }

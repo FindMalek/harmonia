@@ -67,6 +67,8 @@ export const account = pgTable(
 		id: text("id").primaryKey(),
 		accountId: text("account_id").notNull(),
 		providerId: text("provider_id").notNull(),
+		// better-auth 1.7 core field, required internally and populated by better-auth itself on write — nullable here only so existing rows aren't broken; see #349 for backfilling old rows + the (issuer, accountId) unique index better-auth expects.
+		issuer: text("issuer"),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
