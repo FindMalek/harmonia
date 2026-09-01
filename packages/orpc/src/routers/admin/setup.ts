@@ -24,19 +24,16 @@ async function adminCount(): Promise<number> {
 	return row?.count ?? 0;
 }
 
-// A genuine concurrent double-submit trips the DB-level user_single_admin_idx
-// unique index — that's the only case that means "someone else already won."
-// Any other failure is ours to report honestly, not relabel as a conflict.
+// Only a real user_single_admin_idx unique-violation means someone else already won the race.
 function isAdminRaceConflict(err: unknown): boolean {
 	const asRecord = (v: unknown) =>
 		typeof v === "object" && v !== null
 			? (v as { code?: string; constraint?: string; cause?: unknown })
 			: undefined;
+	const isViolation = (r?: { code?: string; constraint?: string }) =>
+		r?.code === "23505" && r?.constraint === "user_single_admin_idx";
 	const direct = asRecord(err);
-	const cause = asRecord(direct?.cause);
-	const code = direct?.code ?? cause?.code;
-	const constraint = direct?.constraint ?? cause?.constraint;
-	return code === "23505" && constraint === "user_single_admin_idx";
+	return isViolation(direct) || isViolation(asRecord(direct?.cause));
 }
 
 export async function checkAdminSetupStatus(): Promise<AdminSetupStatusOutput> {
@@ -56,11 +53,13 @@ export async function createAdminAccount(input: {
 		});
 	}
 
+	const normalizedEmail = input.email.toLowerCase().trim();
+
 	try {
 		// No headers/request passed — bypasses auth.api.createUser's normal session check (better-auth's internal/privileged call path).
 		await adminAuth.api.createUser({
 			body: {
-				email: input.email.toLowerCase().trim(),
+				email: normalizedEmail,
 				password: input.password,
 				name: input.name,
 				role: "admin",
@@ -69,13 +68,22 @@ export async function createAdminAccount(input: {
 	} catch (err) {
 		logger.error({ err }, "admin.setup.create: createUser failed");
 
-		// user_single_admin_idx is the real race backstop — a concurrent
-		// double-submit trips it as a raw DB error, not an APIError.
 		if (isAdminRaceConflict(err)) {
 			throw new ORPCError("CONFLICT", {
 				message: "An admin account already exists.",
 			});
 		}
+
+		// createUser inserts the user row before linking the credential, so a later failure leaves an orphan that would otherwise permanently lock /setup — clean it up so the operator can just retry.
+		try {
+			await db.delete(user).where(eq(user.email, normalizedEmail));
+		} catch (cleanupErr) {
+			logger.error(
+				{ err: cleanupErr, email: normalizedEmail },
+				"admin.setup.create: failed to clean up orphaned user row",
+			);
+		}
+
 		if (err instanceof APIError) {
 			throw new ORPCError("BAD_REQUEST", { message: err.message });
 		}
