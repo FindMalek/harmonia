@@ -7,6 +7,7 @@ export { Providers } from "./components/providers/providers";
 export { ThemeProvider } from "./components/providers/theme-provider";
 export type { Icon } from "./components/shared/icons";
 export { Icons } from "./components/shared/icons";
+export { Logo } from "./components/shared/logo";
 export { ModeToggle } from "./components/shared/mode-toggle";
 export { UserMenu } from "./components/shared/user-menu";
 export {
