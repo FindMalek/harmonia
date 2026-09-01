@@ -27,4 +27,19 @@ if (
 const [cmd, ...args] = process.argv.slice(2);
 if (!cmd) process.exit(1);
 
-spawn(cmd, args, { stdio: "inherit", shell: true, env: process.env });
+const child = spawn(cmd, args, {
+	stdio: "inherit",
+	shell: true,
+	env: process.env,
+});
+child.on("error", (err) => {
+	console.error(err);
+	process.exit(1);
+});
+child.on("exit", (code, signal) => {
+	if (signal) {
+		process.kill(process.pid, signal);
+		return;
+	}
+	process.exit(code ?? 1);
+});
