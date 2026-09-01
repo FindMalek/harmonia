@@ -1,24 +1,24 @@
 ---
-description: @harmonia/email package — React Email templates and send layer
+description: @sonaraem/email package — React Email templates and send layer
 globs: packages/email/**/*
 alwaysApply: false
 ---
 
-# @harmonia/email
+# @sonaraem/email
 
-Package name is **`@harmonia/email`** (singular). Directory: `packages/email/`.
+Package name is **`@sonaraem/email`** (singular). Directory: `packages/email/`.
 
 ## Structure
 
 - Shared UI: `packages/email/components/` (`theme.tsx`, `logo.tsx`, `button.tsx`, `footer.tsx`)
 - Templates: `packages/email/emails/*.tsx` — **one file per email**
 - Assets: `packages/email/public/`
-- Send: `packages/email/src/send.ts` — import as `@harmonia/email/send`
+- Send: `packages/email/src/send.ts` — import as `@sonaraem/email/send`
 - Render: `packages/email/render.ts`
 
 ## Hard rules
 
-1. **Never** put email theme in `@harmonia/ui` or import `@harmonia/ui` from this package.
+1. **Never** put email theme in `@sonaraem/ui` or import `@sonaraem/ui` from this package.
 2. **Never** use `emails/_components/` — use `components/` at package root only.
 3. **Never** add `*.dark.tsx` duplicate templates. Dark mode is `getEmailDarkModeCSS()` in `components/theme.tsx` only.
 4. Templates must use: `EmailThemeProvider` + Tailwind `className` + `getEmailThemeClasses()` + `getEmailInlineStyles("light")` on `style={}` fallbacks.
@@ -27,4 +27,4 @@ Package name is **`@harmonia/email`** (singular). Directory: `packages/email/`.
 
 ## Delivery (outside this package)
 
-Policy, dedupe, Trigger tasks, DB preferences, and Resend webhooks live in `@harmonia/common` and `apps/api` — do not duplicate that logic here.
+Policy, dedupe, Trigger tasks, DB preferences, and Resend webhooks live in `@sonaraem/common` and `apps/api` — do not duplicate that logic here.

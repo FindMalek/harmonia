@@ -1,7 +1,7 @@
 "use client";
 
-import type { TracksListSort } from "@harmonia/common/schemas";
-import { Icons, Input } from "@harmonia/ui";
+import type { TracksListSort } from "@sonaraem/common/schemas";
+import { Icons, Input } from "@sonaraem/ui";
 import { PageHeader } from "../shared/page-header";
 import { DashboardTracksSortSelect } from "./dashboard-tracks-sort-select";
 

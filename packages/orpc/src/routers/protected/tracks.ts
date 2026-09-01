@@ -1,23 +1,23 @@
 import {
 	fetchAllUserPlaylists,
 	getUserSpotifyAccessToken,
-} from "@harmonia/common";
+} from "@sonaraem/common";
 import {
 	trackGetByIdInput,
 	trackGetByIdOutputSchema,
 	tracksListInput,
 	tracksListOutputSchema,
-} from "@harmonia/common/schemas";
-import { llmFieldsFromAnalysis } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
-import { artist } from "@harmonia/db/schema/artist";
-import { clusterTracks } from "@harmonia/db/schema/cluster";
-import { genreDomain } from "@harmonia/db/schema/genre-domain";
-import { playlist, playlistTracks } from "@harmonia/db/schema/playlist";
-import { userPlaylistSnapshotItems } from "@harmonia/db/schema/spotify";
-import { track, userTracks } from "@harmonia/db/schema/track";
-import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/common/schemas";
+import { llmFieldsFromAnalysis } from "@sonaraem/common/types";
+import { db } from "@sonaraem/db";
+import { artist } from "@sonaraem/db/schema/artist";
+import { clusterTracks } from "@sonaraem/db/schema/cluster";
+import { genreDomain } from "@sonaraem/db/schema/genre-domain";
+import { playlist, playlistTracks } from "@sonaraem/db/schema/playlist";
+import { userPlaylistSnapshotItems } from "@sonaraem/db/schema/spotify";
+import { track, userTracks } from "@sonaraem/db/schema/track";
+import { trackAnalysis } from "@sonaraem/db/schema/track-analysis";
+import { logger } from "@sonaraem/logger";
 import {
 	and,
 	asc,
@@ -223,7 +223,7 @@ export const tracksRouter = {
 				.where(eq(clusterTracks.trackId, input.id))
 				.limit(1);
 
-			const harmoniaPlaylists = await db
+			const sonaraemPlaylists = await db
 				.select({ id: playlist.id, name: playlist.name })
 				.from(playlistTracks)
 				.innerJoin(playlist, eq(playlist.id, playlistTracks.playlistId))
@@ -284,7 +284,7 @@ export const tracksRouter = {
 				clusterId: clusterAssignment[0]?.clusterId ?? null,
 				genreDomainName: result.genreDomainName,
 				likedAt: result.likedAt,
-				harmoniaPlaylists,
+				sonaraemPlaylists,
 				spotifyPlaylists,
 				artistImageUrls,
 			};

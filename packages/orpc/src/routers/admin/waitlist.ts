@@ -1,17 +1,17 @@
 import { createHash, randomBytes } from "node:crypto";
+import { ORPCError } from "@orpc/server";
 import {
 	waitlistAdminBulkIdsInput,
 	waitlistAdminListInput,
 	waitlistAdminListOutputSchema,
 	waitlistAdminResendInviteInput,
 	waitlistAdminUpdateStatusInput,
-} from "@harmonia/common/schemas";
-import { sendWaitlistApprovedEmailTask } from "@harmonia/common/trigger/tasks/emails/send-waitlist-approved";
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
-import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { logger } from "@harmonia/logger";
-import { ORPCError } from "@orpc/server";
+} from "@sonaraem/common/schemas";
+import { sendWaitlistApprovedEmailTask } from "@sonaraem/common/trigger/tasks/emails/send-waitlist-approved";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
+import { waitlistSignup } from "@sonaraem/db/schema/waitlist-signup";
+import { logger } from "@sonaraem/logger";
 import { and, count, desc, eq, ilike, inArray, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { adminProcedure } from "../../procedures";

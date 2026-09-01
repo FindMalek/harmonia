@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/core",
+	"name": "@sonaraem/core",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": {
@@ -11,12 +11,12 @@
 		"build": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@harmonia/auth": "workspace:*",
-		"@harmonia/db": "workspace:*",
-		"@harmonia/env": "workspace:*"
+		"@sonaraem/auth": "workspace:*",
+		"@sonaraem/db": "workspace:*",
+		"@sonaraem/env": "workspace:*"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"typescript": "catalog:"
 	}
 }

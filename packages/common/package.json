@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/common",
+	"name": "@sonaraem/common",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -121,25 +121,25 @@
 		}
 	},
 	"dependencies": {
-		"@harmonia/ai-provider": "workspace:*",
-		"@harmonia/db": "workspace:*",
-		"@harmonia/email": "workspace:*",
-		"@harmonia/env": "workspace:*",
-		"@harmonia/logger": "workspace:*",
+		"@sonaraem/ai-provider": "workspace:*",
+		"@sonaraem/db": "workspace:*",
+		"@sonaraem/email": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/logger": "workspace:*",
 		"@trigger.dev/sdk": "catalog:",
 		"@zenbase/llml": "^0.4.0",
 		"ai": "catalog:",
 		"density-clustering": "^1.3.0",
 		"drizzle-orm": "catalog:",
-		"p-limit": "^7.3.0",
+		"p-limit": "^7.3.1",
 		"p-retry": "^8.0.0",
 		"resend": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@types/density-clustering": "^1.3.3",
 		"typescript": "catalog:",
-		"vitest": "^3.2.4"
+		"vitest": "^4.1.11"
 	}
 }

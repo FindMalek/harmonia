@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/db-ops",
+	"name": "@sonaraem/db-ops",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -11,10 +11,10 @@
 		"db:ops:status": "tsx src/status.ts"
 	},
 	"dependencies": {
-		"@harmonia/common": "workspace:*",
-		"@harmonia/db": "workspace:*",
-		"@harmonia/env": "workspace:*",
-		"@harmonia/logger": "workspace:*",
+		"@sonaraem/common": "workspace:*",
+		"@sonaraem/db": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/logger": "workspace:*",
 		"@neondatabase/serverless": "^1.1.0",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
@@ -22,7 +22,7 @@
 		"ws": "^8.21.0"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"@types/pg": "^8.20.0",
 		"@types/ws": "^8.18.1",
 		"tsx": "^4.22.4",

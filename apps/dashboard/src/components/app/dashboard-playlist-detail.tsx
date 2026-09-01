@@ -4,9 +4,9 @@ import type {
 	PlaylistGetByIdOutput,
 	PlaylistTrackItem,
 	PlaylistTrackSort,
-} from "@harmonia/common/schemas";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Skeleton } from "@harmonia/ui";
+} from "@sonaraem/common/schemas";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { Skeleton } from "@sonaraem/ui";
 import type { RefObject } from "react";
 import { DashboardDetailBackLink } from "@/components/shared/dashboard-detail-back-link";
 import { DashboardPlaylistDetailActions } from "./dashboard-playlist-detail-actions";

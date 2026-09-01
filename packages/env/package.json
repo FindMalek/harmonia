@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/env",
+	"name": "@sonaraem/env",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -27,8 +27,8 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
-		"@types/node": "^25.9.3",
+		"@sonaraem/config": "workspace:*",
+		"@types/node": "^26.4.0",
 		"typescript": "catalog:"
 	}
 }

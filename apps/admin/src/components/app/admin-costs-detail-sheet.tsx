@@ -1,6 +1,6 @@
 "use client";
 
-import type { AdminCostsCall, AdminCostsStage } from "@harmonia/common/schemas";
+import type { AdminCostsCall, AdminCostsStage } from "@sonaraem/common/schemas";
 import {
 	Badge,
 	Button,
@@ -11,7 +11,7 @@ import {
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 

@@ -1,5 +1,5 @@
 {
-	"name": "@harmonia/orpc",
+	"name": "@sonaraem/orpc",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": {
@@ -24,14 +24,14 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@harmonia/common": "workspace:*",
-		"@harmonia/core": "workspace:*",
-		"@harmonia/db": "workspace:*",
-		"@harmonia/env": "workspace:*",
-		"@harmonia/logger": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
+		"@sonaraem/common": "workspace:*",
+		"@sonaraem/core": "workspace:*",
+		"@sonaraem/db": "workspace:*",
+		"@sonaraem/env": "workspace:*",
+		"@sonaraem/logger": "workspace:*",
 		"@trigger.dev/sdk": "catalog:",
 		"better-auth": "catalog:",
 		"drizzle-orm": "catalog:",
@@ -39,8 +39,8 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@harmonia/config": "workspace:*",
+		"@sonaraem/config": "workspace:*",
 		"typescript": "catalog:",
-		"vitest": "^3.2.4"
+		"vitest": "^4.1.11"
 	}
 }

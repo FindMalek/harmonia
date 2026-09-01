@@ -7,7 +7,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 	Icons,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { useOrganizeController } from "@/shared/lib/organize/controller.hook";
 import { usePlaylistsController } from "@/shared/lib/playlists/controller.hook";
 import { PageHeader } from "../shared/page-header";

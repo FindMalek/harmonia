@@ -4,28 +4,28 @@ import {
 	getTaskProvider,
 	isProviderConfigured,
 	withLLMRetry,
-} from "@harmonia/ai-provider";
+} from "@sonaraem/ai-provider";
 import type {
 	CreatedPlaylist,
 	PlaylistMetadata,
-} from "@harmonia/common/schemas";
-import { playlistMetadataSchema } from "@harmonia/common/schemas";
-import type { GenerateProgress } from "@harmonia/common/types";
-import { getLlmTags, llmFieldsFromAnalysis } from "@harmonia/common/types";
-import { db } from "@harmonia/db";
+} from "@sonaraem/common/schemas";
+import { playlistMetadataSchema } from "@sonaraem/common/schemas";
+import type { GenerateProgress } from "@sonaraem/common/types";
+import { getLlmTags, llmFieldsFromAnalysis } from "@sonaraem/common/types";
+import { db } from "@sonaraem/db";
 import {
 	type ClusterMeta,
 	cluster,
 	clusterTracks,
-} from "@harmonia/db/schema/cluster";
+} from "@sonaraem/db/schema/cluster";
 import {
 	playlist,
 	playlistClusters,
 	playlistTracks,
-} from "@harmonia/db/schema/playlist";
-import { track } from "@harmonia/db/schema/track";
-import { trackAnalysis } from "@harmonia/db/schema/track-analysis";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/db/schema/playlist";
+import { track } from "@sonaraem/db/schema/track";
+import { trackAnalysis } from "@sonaraem/db/schema/track-analysis";
+import { logger } from "@sonaraem/logger";
 import { llml } from "@zenbase/llml";
 import { APICallError, generateText, Output } from "ai";
 import { and, eq, inArray } from "drizzle-orm";
@@ -584,7 +584,7 @@ export function findPrunableOrphanedPlaylists(
  * hearing the same song twice in one playlist (#160). Keyed by normalized
  * (title, primary artist); keeps the lexicographically smallest track ID per
  * group for a deterministic result. This is per-playlist only — the same
- * song can still appear across two different Harmonia playlists.
+ * song can still appear across two different Sonaraem playlists.
  */
 export function dedupeTracksBySongIdentity(trackRows: TrackRow[]): TrackRow[] {
 	const canonicalByKey = new Map<string, TrackRow>();

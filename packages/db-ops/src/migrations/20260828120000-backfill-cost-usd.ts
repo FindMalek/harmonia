@@ -10,7 +10,7 @@
  * PREREQUISITES
  *   - Drizzle migration 0035 (cost_usd column) must be applied first
  *
- * RUN (set HARMONIA_DATABASE_URL in .env to the database you want)
+ * RUN (set SONARAEM_DATABASE_URL in .env to the database you want)
  *
  *   Test without writes:
  *     pnpm db:ops:migrate -- --dry-run --only backfill-cost-usd
@@ -22,11 +22,11 @@
  *
  * OTHER
  *   pnpm db:ops:status
- *   pnpm db:reset   (truncates harmonia_db_ops locally)
+ *   pnpm db:reset   (truncates sonaraem_db_ops locally)
  */
 
-import { computeCostUsd } from "@harmonia/common/constants";
-import { externalApiCall } from "@harmonia/db/schema/external-api-call";
+import { computeCostUsd } from "@sonaraem/common/constants";
+import { externalApiCall } from "@sonaraem/db/schema/external-api-call";
 import { and, eq, isNotNull, isNull, or } from "drizzle-orm";
 
 import type { DbOpsContext } from "../types";

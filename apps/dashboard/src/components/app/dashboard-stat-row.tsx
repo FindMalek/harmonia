@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@harmonia/ui";
+import { Skeleton } from "@sonaraem/ui";
 
 function DashboardStatRowValueSkeleton() {
 	return <Skeleton className="h-4 w-10" />;

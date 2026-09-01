@@ -40,7 +40,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      # SKIP_ENV_VALIDATION only bypasses the zod schema check — several pages/routes
+      # (e.g. admin's /setup) still read these values directly during static generation
+      # and crash on undefined, so real-shaped (non-secret) placeholders are required too.
       SKIP_ENV_VALIDATION: "true"
+      NEXT_PUBLIC_SONARAEM_API_URL: "http://127.0.0.1:3002"
+      NEXT_PUBLIC_SONARAEM_WEB_URL: "http://127.0.0.1:3001"
+      NEXT_PUBLIC_SONARAEM_DASHBOARD_URL: "http://127.0.0.1:3003"
+      NEXT_PUBLIC_SONARAEM_ADMIN_URL: "http://127.0.0.1:3004"
+      SONARAEM_DATABASE_URL: "postgresql://postgres:password@localhost:5433/sonaraem"
+      SONARAEM_BETTER_AUTH_SECRET: "ci-build-only-placeholder-not-a-real-secret-32"
+      SONARAEM_SPOTIFY_CLIENT_ID: "ci-build-only-placeholder"
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:

@@ -1,10 +1,10 @@
-import type { SpotifyPlaylistTrackItem } from "@harmonia/common/schemas";
-import { db } from "@harmonia/db";
+import type { SpotifyPlaylistTrackItem } from "@sonaraem/common/schemas";
+import { db } from "@sonaraem/db";
 import {
 	userPlaylistSnapshotItemArtists,
 	userPlaylistSnapshotItems,
 	userPlaylistSnapshots,
-} from "@harmonia/db/schema/spotify";
+} from "@sonaraem/db/schema/spotify";
 import { and, asc, eq } from "drizzle-orm";
 
 /**

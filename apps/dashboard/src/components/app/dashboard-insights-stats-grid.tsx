@@ -1,4 +1,4 @@
-import { InsightStatCard, Skeleton } from "@harmonia/ui";
+import { InsightStatCard, Skeleton } from "@sonaraem/ui";
 
 type Props = {
 	totalTracks: number;

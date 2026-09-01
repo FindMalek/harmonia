@@ -1,4 +1,4 @@
-import { adminAuth, dashboardAuth } from "@harmonia/core";
+import { adminAuth, dashboardAuth } from "@sonaraem/core";
 
 export type DashboardSession = Awaited<
 	ReturnType<typeof dashboardAuth.api.getSession>

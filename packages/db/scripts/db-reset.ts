@@ -8,7 +8,7 @@ const repoRoot = path.resolve(__dirname, "../../..");
 
 dotenv.config({ path: path.join(repoRoot, ".env") });
 
-const { dbEnv } = await import("@harmonia/env/presets/db");
+const { dbEnv } = await import("@sonaraem/env/presets/db");
 
 const TABLES_TO_TRUNCATE = [
 	"user_playlist_snapshot_item_artists",
@@ -29,11 +29,11 @@ const TABLES_TO_TRUNCATE = [
 	"external_api_call",
 	"pipeline_run",
 	"user_tracks",
-	"harmonia_db_ops",
+	"sonaraem_db_ops",
 ] as const;
 
 /** Created by db-ops ensureOpsTable — may be absent after a fresh db:push. */
-const OPTIONAL_TABLES = new Set(["harmonia_db_ops"]);
+const OPTIONAL_TABLES = new Set(["sonaraem_db_ops"]);
 
 // Include track only with --all (tracks hold expensive computed data)
 const EXTRA_ALL_TABLES = ["track"] as const;
@@ -41,13 +41,13 @@ const EXTRA_ALL_TABLES = ["track"] as const;
 function assertSafeResetHost(databaseUrl: string): void {
 	const parsed = new URL(databaseUrl);
 	const host = parsed.hostname;
-	const allowRemote = process.env.HARMONIA_ALLOW_DB_RESET_REMOTE === "true";
+	const allowRemote = process.env.SONARAEM_ALLOW_DB_RESET_REMOTE === "true";
 	const isLocal =
 		host === "localhost" || host === "127.0.0.1" || host === "::1";
 
 	if (!allowRemote && !isLocal) {
 		console.error(
-			`db:reset refused: host "${host}" is not local. Set HARMONIA_ALLOW_DB_RESET_REMOTE=true only when you intend to truncate a remote database.`,
+			`db:reset refused: host "${host}" is not local. Set SONARAEM_ALLOW_DB_RESET_REMOTE=true only when you intend to truncate a remote database.`,
 		);
 		process.exit(1);
 	}
@@ -58,14 +58,14 @@ function assertSafeResetHost(databaseUrl: string): void {
 }
 
 async function main(): Promise<void> {
-	assertSafeResetHost(dbEnv.HARMONIA_DATABASE_URL);
+	assertSafeResetHost(dbEnv.SONARAEM_DATABASE_URL);
 
 	const includeAll = process.argv.includes("--all");
 	const candidateTables = includeAll
 		? ([...TABLES_TO_TRUNCATE, ...EXTRA_ALL_TABLES] as const)
 		: TABLES_TO_TRUNCATE;
 
-	const pool = new Pool({ connectionString: dbEnv.HARMONIA_DATABASE_URL });
+	const pool = new Pool({ connectionString: dbEnv.SONARAEM_DATABASE_URL });
 
 	try {
 		const client = await pool.connect();
@@ -108,8 +108,8 @@ async function main(): Promise<void> {
 
 			console.info(
 				includeAll
-					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged; harmonia_db_ops truncated when present)"
-					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged; harmonia_db_ops truncated when present)",
+					? "db:reset: done (auth, genre_domain, drizzle migrations unchanged; sonaraem_db_ops truncated when present)"
+					: "db:reset: done (auth, genre_domain, track, drizzle migrations unchanged; sonaraem_db_ops truncated when present)",
 			);
 		} catch (err) {
 			console.error("db:reset failed:", err);

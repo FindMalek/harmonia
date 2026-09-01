@@ -73,7 +73,7 @@ export function Footer({
 				className={`mt-[12px] text-center text-[11px] ${themeClasses.secondaryText}`}
 				style={{ color: lightStyles.secondaryText.color }}
 			>
-				Harmonia
+				Sonaraem
 			</Text>
 		</Section>
 	);

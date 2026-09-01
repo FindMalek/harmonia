@@ -1,6 +1,6 @@
-import { db } from "@harmonia/db";
-import { pipelineRun } from "@harmonia/db/schema/pipeline-run";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { pipelineRun } from "@sonaraem/db/schema/pipeline-run";
+import { logger } from "@sonaraem/logger";
 import { task } from "@trigger.dev/sdk";
 import { and, eq } from "drizzle-orm";
 

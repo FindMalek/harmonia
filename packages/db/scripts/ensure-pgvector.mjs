@@ -7,10 +7,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPackageRoot = path.resolve(__dirname, "..");
 dotenv.config({ path: path.resolve(dbPackageRoot, "../../.env") });
 
-const url = process.env.HARMONIA_DATABASE_URL?.trim();
+const url = process.env.SONARAEM_DATABASE_URL?.trim();
 if (!url) {
 	console.error(
-		"ensure-pgvector: HARMONIA_DATABASE_URL is not set (see .env.example)",
+		"ensure-pgvector: SONARAEM_DATABASE_URL is not set (see .env.example)",
 	);
 	process.exit(1);
 }

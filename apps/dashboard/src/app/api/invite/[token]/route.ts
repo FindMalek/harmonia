@@ -1,4 +1,4 @@
-import { rateLimiters } from "@harmonia/orpc/utils/rate-limiter";
+import { rateLimiters } from "@sonaraem/orpc/utils/rate-limiter";
 import type { Route } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -27,9 +27,9 @@ export async function GET(
 	}
 
 	const cookieStore = await cookies();
-	cookieStore.set("harmonia_invite", token, {
+	cookieStore.set("sonaraem_invite", token, {
 		httpOnly: true,
-		secure: env.NEXT_PUBLIC_HARMONIA_NODE_ENV === "production",
+		secure: env.NEXT_PUBLIC_SONARAEM_NODE_ENV === "production",
 		sameSite: "lax", // lax: cookie sent on top-level nav (final OAuth redirect back to dashboard)
 		maxAge: COOKIE_MAX_AGE,
 		path: "/",

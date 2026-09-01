@@ -17,7 +17,7 @@ import { user } from "./auth";
  *
  * The DB column is plain `text` (no enum type, to keep migrations cheap), but
  * its TS type is narrowed here so every read/write is type-checked against the
- * valid set. `@harmonia/common/schemas/pipeline/enum.ts` derives its Zod enum
+ * valid set. `@sonaraem/common/schemas/pipeline/enum.ts` derives its Zod enum
  * from these values.
  *
  * - `pending`   : run row created, task not yet picked up
@@ -37,7 +37,7 @@ export const PIPELINE_STATUS_VALUES = [
 ] as const;
 export type PipelineStatus = (typeof PIPELINE_STATUS_VALUES)[number];
 
-/** Pipeline stage progress. Typed definitions live in @harmonia/common/types. */
+/** Pipeline stage progress. Typed definitions live in @sonaraem/common/types. */
 export type PipelineProgress = {
 	sync?: { total: number; done: boolean };
 	lyrics?: {

@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		name: "Harmonia",
-		short_name: "Harmonia",
+		name: "Sonaraem",
+		short_name: "Sonaraem",
 		description:
-			"Harmonia uses AI to analyze your music library and automatically create meaningful playlists from your songs.",
+			"Sonaraem uses AI to analyze your music library and automatically create meaningful playlists from your songs.",
 		theme_color: "#14161a",
 		background_color: "#14161a",
 		display: "standalone",

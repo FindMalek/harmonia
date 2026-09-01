@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		name: "Harmonia Admin",
-		short_name: "Harmonia Admin",
-		description: "Internal admin dashboard for Harmonia.",
+		name: "Sonaraem Admin",
+		short_name: "Sonaraem Admin",
+		description: "Internal admin dashboard for Sonaraem.",
 		theme_color: "#1c2350",
 		background_color: "#1c2350",
 		display: "standalone",

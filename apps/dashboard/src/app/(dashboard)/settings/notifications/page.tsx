@@ -1,7 +1,7 @@
 "use client";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Switch } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { Switch } from "@sonaraem/ui";
 import {
 	DashboardSettingsRow,
 	DashboardSettingsSection,
@@ -26,7 +26,7 @@ export default function NotificationsSettingsPage() {
 			<div>
 				<h1 className="font-bold text-2xl tracking-tight">Notifications</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
-					Choose which emails Harmonia sends to your inbox.
+					Choose which emails Sonaraem sends to your inbox.
 				</p>
 			</div>
 

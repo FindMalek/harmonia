@@ -6,11 +6,11 @@ import type {
 	SpotifyPlaylistTracksResponse,
 	SpotifySavedTracksResponse,
 	SpotifyTokenResponse,
-} from "@harmonia/common/schemas";
-import { db } from "@harmonia/db";
-import { account } from "@harmonia/db/schema/auth";
-import { env } from "@harmonia/env/server";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/common/schemas";
+import { db } from "@sonaraem/db";
+import { account } from "@sonaraem/db/schema/auth";
+import { env } from "@sonaraem/env/server";
+import { logger } from "@sonaraem/logger";
 import { and, eq } from "drizzle-orm";
 
 import { logExternalApiCall } from "../../external-api-log";
@@ -109,8 +109,8 @@ export async function getUserSpotifyAccessToken(
 		return null;
 	}
 
-	const clientId = env.HARMONIA_SPOTIFY_CLIENT_ID;
-	const clientSecret = env.HARMONIA_SPOTIFY_CLIENT_SECRET;
+	const clientId = env.SONARAEM_SPOTIFY_CLIENT_ID;
+	const clientSecret = env.SONARAEM_SPOTIFY_CLIENT_SECRET;
 
 	if (!clientId || !clientSecret) {
 		logger.warn(

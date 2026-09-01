@@ -1,4 +1,4 @@
-import { Icons, Separator } from "@harmonia/ui";
+import { Icons, Separator } from "@sonaraem/ui";
 import type { Route } from "next";
 import Link from "next/link";
 

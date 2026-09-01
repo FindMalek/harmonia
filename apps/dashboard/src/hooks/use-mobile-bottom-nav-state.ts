@@ -1,6 +1,6 @@
 "use client";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
 import { usePathname } from "next/navigation";
 import { useOrganizeStore } from "@/shared/lib/organize/store";
 import { usePipelineProgress } from "@/shared/lib/pipeline/controller.hook";

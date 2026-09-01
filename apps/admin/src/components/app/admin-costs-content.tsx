@@ -1,7 +1,7 @@
 "use client";
 
-import type { AdminCostsRunItem } from "@harmonia/common/schemas";
-import { Badge, Button } from "@harmonia/ui";
+import type { AdminCostsRunItem } from "@sonaraem/common/schemas";
+import { Badge, Button } from "@sonaraem/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";

@@ -1,5 +1,5 @@
-import { db } from "@harmonia/db";
-import { emailSendLog } from "@harmonia/db/schema/email-send-log";
+import { db } from "@sonaraem/db";
+import { emailSendLog } from "@sonaraem/db/schema/email-send-log";
 import { and, eq } from "drizzle-orm";
 
 import type { EmailSendStatus, EmailTemplateKey } from "../../schemas";

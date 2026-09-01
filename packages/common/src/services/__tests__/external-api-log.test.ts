@@ -4,7 +4,7 @@ const dbMock = vi.hoisted(() => ({
 	insertMock: vi.fn(() => ({ values: vi.fn(() => Promise.resolve()) })),
 }));
 
-vi.mock("@harmonia/db", () => ({
+vi.mock("@sonaraem/db", () => ({
 	db: { insert: dbMock.insertMock },
 }));
 

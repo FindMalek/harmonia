@@ -1,4 +1,4 @@
-import { Button, Icons, Separator } from "@harmonia/ui";
+import { Button, Icons, Separator } from "@sonaraem/ui";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 

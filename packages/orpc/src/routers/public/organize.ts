@@ -1,15 +1,15 @@
+import { ORPCError } from "@orpc/server";
 import {
 	organizeRunInput,
 	organizeRunOutputSchema,
-} from "@harmonia/common/schemas";
-import { updateRun } from "@harmonia/common/services/organize";
-import { organizePipeline } from "@harmonia/common/trigger/tasks/organize";
+} from "@sonaraem/common/schemas";
+import { updateRun } from "@sonaraem/common/services/organize";
+import { organizePipeline } from "@sonaraem/common/trigger/tasks/organize";
 import {
 	insertRunOrSkip,
 	runOrganizeForAllUsers,
-} from "@harmonia/common/trigger/tasks/organize-weekly-cron";
-import { logger } from "@harmonia/logger";
-import { ORPCError } from "@orpc/server";
+} from "@sonaraem/common/trigger/tasks/organize-weekly-cron";
+import { logger } from "@sonaraem/logger";
 
 import { cronOrAuthProcedure } from "../../procedures";
 
@@ -17,7 +17,7 @@ import { cronOrAuthProcedure } from "../../procedures";
  * Organize pipeline: syncs Spotify, fetches lyrics, classifies, embeds, clusters, generates playlists.
  *
  * 3rd party cron: POST {API_URL}/api/rpc/organize/run
- * Headers: Authorization: Bearer <HARMONIA_CRON_SECRET> or X-Organize-Secret: <HARMONIA_CRON_SECRET>
+ * Headers: Authorization: Bearer <SONARAEM_CRON_SECRET> or X-Organize-Secret: <SONARAEM_CRON_SECRET>
  * Body: {}
  * Cron mode runs the pipeline for all users in the database.
  */
@@ -29,7 +29,7 @@ export const organizeRouter = {
 				path: "/organize/run",
 				summary: "Run full organize pipeline",
 				description:
-					"Syncs Spotify, fetches lyrics, classifies with AI, generates embeddings, clusters tracks, and generates playlists. Requires auth or Authorization: Bearer HARMONIA_CRON_SECRET / X-Organize-Secret header. Cron mode runs for all users.",
+					"Syncs Spotify, fetches lyrics, classifies with AI, generates embeddings, clusters tracks, and generates playlists. Requires auth or Authorization: Bearer SONARAEM_CRON_SECRET / X-Organize-Secret header. Cron mode runs for all users.",
 				tags: ["organize"],
 			},
 		})

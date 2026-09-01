@@ -28,10 +28,10 @@ export function buildMigrationFileContent(options: {
  *   TODO: describe the data change (backfill, fix, seed, etc.)
  *
  * PREREQUISITES
- *   - Any new columns/tables must exist via Drizzle first (@harmonia/db)
+ *   - Any new columns/tables must exist via Drizzle first (@sonaraem/db)
  *   - Local: pnpm db:push  (or pnpm db:migrate if testing SQL migration files)
  *
- * RUN (set HARMONIA_DATABASE_URL in .env to the database you want)
+ * RUN (set SONARAEM_DATABASE_URL in .env to the database you want)
  *
  *   Test without writes:
  *     pnpm db:ops:migrate -- --dry-run --only ${slug}
@@ -43,7 +43,7 @@ export function buildMigrationFileContent(options: {
  *
  * OTHER
  *   pnpm db:ops:status
- *   pnpm db:reset   (truncates harmonia_db_ops locally)
+ *   pnpm db:reset   (truncates sonaraem_db_ops locally)
  *
  * AUTHOR RULES
  *   - Handle dryRun in up() — reads OK, no writes when dryRun is true
@@ -52,7 +52,7 @@ export function buildMigrationFileContent(options: {
  *   - Never edit this file after it is completed in prod — checksum mismatch fails CI
  *
  * ESCAPE HATCH (prod, rare)
- *   UPDATE harmonia_db_ops SET status = 'failed' WHERE name = '${migrationName}';
+ *   UPDATE sonaraem_db_ops SET status = 'failed' WHERE name = '${migrationName}';
  *   then re-run the Database migrations workflow
  */
 

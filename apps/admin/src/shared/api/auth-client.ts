@@ -6,7 +6,7 @@ import { createAuthClient } from "better-auth/react";
 import { env } from "@/lib/env";
 
 export const authClient = createAuthClient({
-	baseURL: env.NEXT_PUBLIC_HARMONIA_API_URL,
+	baseURL: env.NEXT_PUBLIC_SONARAEM_API_URL,
 	basePath: "/api/admin-auth",
 	plugins: [adminClient()],
 	sessionOptions: {

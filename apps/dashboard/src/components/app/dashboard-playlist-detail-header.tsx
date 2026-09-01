@@ -1,8 +1,8 @@
 "use client";
 
-import type { PlaylistTrackSort } from "@harmonia/common/schemas";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { cn, Icons, Input } from "@harmonia/ui";
+import type { PlaylistTrackSort } from "@sonaraem/common/schemas";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { cn, Icons, Input } from "@sonaraem/ui";
 import { DashboardDetailBackLink } from "@/components/shared/dashboard-detail-back-link";
 import { DashboardPlaylistTracklistSortSelect } from "./dashboard-playlist-tracklist-sort-select";
 

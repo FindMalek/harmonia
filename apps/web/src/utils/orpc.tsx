@@ -1,6 +1,6 @@
-import { env } from "@harmonia/env/web";
-import { createORPCClientUtils } from "@harmonia/orpc/client";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { env } from "@sonaraem/env/web";
+import { createORPCClientUtils } from "@sonaraem/orpc/client";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -46,7 +46,7 @@ export const queryClient = new QueryClient({
 });
 
 const { client, link } = createORPCClientUtils({
-	apiUrl: env.NEXT_PUBLIC_HARMONIA_API_URL,
+	apiUrl: env.NEXT_PUBLIC_SONARAEM_API_URL,
 	getHeaders: async () => {
 		if (typeof window !== "undefined") {
 			return {};

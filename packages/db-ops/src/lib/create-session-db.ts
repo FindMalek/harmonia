@@ -1,6 +1,6 @@
-import type { db as DbSingleton } from "@harmonia/db";
-import { dbEnv } from "@harmonia/env/presets/db";
 import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
+import type { db as DbSingleton } from "@sonaraem/db";
+import { dbEnv } from "@sonaraem/env/presets/db";
 import { drizzle as neonDrizzle } from "drizzle-orm/neon-serverless";
 import { drizzle as pgDrizzle } from "drizzle-orm/node-postgres";
 import { Pool as PgPool } from "pg";
@@ -18,7 +18,7 @@ export type SessionDbHandle = {
  * and ledger/migration queries share the same backend session.
  */
 export async function createSessionDb(): Promise<SessionDbHandle> {
-	const connectionString = dbEnv.HARMONIA_DATABASE_URL;
+	const connectionString = dbEnv.SONARAEM_DATABASE_URL;
 
 	if (connectionString.includes(".neon.tech")) {
 		neonConfig.webSocketConstructor = ws;

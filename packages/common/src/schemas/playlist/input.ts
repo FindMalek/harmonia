@@ -5,7 +5,7 @@ export const playlistGetByIdInput = z.object({
 });
 export type PlaylistGetByIdInput = z.infer<typeof playlistGetByIdInput>;
 
-// "default" keeps Harmonia's algorithmic energy-arc ordering (playlistTracks.position).
+// "default" keeps Sonaraem's algorithmic energy-arc ordering (playlistTracks.position).
 export const playlistTrackSortEnum = z.enum(["default", "name", "duration"]);
 export type PlaylistTrackSort = z.infer<typeof playlistTrackSortEnum>;
 

@@ -3,10 +3,10 @@ export default function WelcomePage() {
 		<div className="flex flex-col items-start gap-8">
 			<div className="space-y-4">
 				<h1 className="font-semibold text-3xl text-foreground leading-tight tracking-tight sm:text-4xl">
-					Welcome to Harmonia
+					Welcome to Sonaraem
 				</h1>
 				<p className="max-w-md text-sm">
-					Harmonia organizes your Spotify library automatically using AI.
+					Sonaraem organizes your Spotify library automatically using AI.
 				</p>
 
 				<p className="max-w-md text-muted-foreground text-sm">

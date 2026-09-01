@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Matches LlmTags type from @harmonia/common/types. Used for validation and API output. */
+/** Matches LlmTags type from @sonaraem/common/types. Used for validation and API output. */
 export const llmTagsSchema = z.object({
 	secondaryMoods: z.array(z.string()),
 	themes: z.array(z.string()),
@@ -83,8 +83,8 @@ export const trackGetByIdOutputSchema = z.object({
 	genreDomainName: z.string().nullable(),
 	/** When the user saved this track on Spotify (userTracks.addedAt) — null if never in Liked Songs. */
 	likedAt: z.date().nullable(),
-	harmoniaPlaylists: z.array(z.object({ id: z.number(), name: z.string() })),
-	/** The user's own Spotify playlists (any, not just Harmonia's) that currently contain this track. */
+	sonaraemPlaylists: z.array(z.object({ id: z.number(), name: z.string() })),
+	/** The user's own Spotify playlists (any, not just Sonaraem's) that currently contain this track. */
 	spotifyPlaylists: z.array(z.object({ id: z.string(), name: z.string() })),
 	/** Parallel to artistIds, same order — null where the image isn't cached yet. */
 	artistImageUrls: z.array(z.string().nullable()),

@@ -1,6 +1,6 @@
 "use client";
 
-import { SidebarInset, SidebarProvider } from "@harmonia/ui";
+import { SidebarInset, SidebarProvider } from "@sonaraem/ui";
 
 import { AdminSidebar } from "./admin-sidebar";
 

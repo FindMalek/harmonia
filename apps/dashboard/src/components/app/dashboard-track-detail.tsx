@@ -1,8 +1,8 @@
 "use client";
 
-import type { TrackGetByIdOutput } from "@harmonia/common/schemas";
-import { parseJsonStringArray } from "@harmonia/common/utils/parse-json-string-array";
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
+import type { TrackGetByIdOutput } from "@sonaraem/common/schemas";
+import { parseJsonStringArray } from "@sonaraem/common/utils/parse-json-string-array";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
 import {
 	Button,
 	cn,
@@ -10,7 +10,7 @@ import {
 	InsightSectionCard,
 	InsightStatCard,
 	Skeleton,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { format } from "date-fns";
 import type { Route } from "next";
 import Image from "next/image";
@@ -300,11 +300,11 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 			<InsightSectionCard title="Playlists">
 				<div className="flex flex-col gap-2">
 					<span className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
-						In Harmonia
+						In Sonaraem
 					</span>
-					{track.harmoniaPlaylists.length > 0 ? (
+					{track.sonaraemPlaylists.length > 0 ? (
 						<div>
-							{track.harmoniaPlaylists.map((pl) => (
+							{track.sonaraemPlaylists.map((pl) => (
 								<Link
 									key={pl.id}
 									href={
@@ -321,7 +321,7 @@ export function DashboardTrackDetail({ track }: { track: TrackGetByIdOutput }) {
 						</div>
 					) : (
 						<p className="py-3 text-muted-foreground text-sm">
-							Not in any Harmonia playlist.
+							Not in any Sonaraem playlist.
 						</p>
 					)}
 				</div>

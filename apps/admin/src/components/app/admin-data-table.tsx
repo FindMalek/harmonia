@@ -8,7 +8,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import {
 	type ColumnDef,
 	flexRender,

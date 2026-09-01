@@ -74,10 +74,10 @@ export function filterFilesByOnly(
 }
 
 export function parseDatabaseHost(databaseUrl: string | undefined): string {
-	if (!databaseUrl) return "(HARMONIA_DATABASE_URL not set)";
+	if (!databaseUrl) return "(SONARAEM_DATABASE_URL not set)";
 	try {
 		return new URL(databaseUrl).host;
 	} catch {
-		return "(invalid HARMONIA_DATABASE_URL)";
+		return "(invalid SONARAEM_DATABASE_URL)";
 	}
 }

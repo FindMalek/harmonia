@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@harmonia/ui";
+import { Button } from "@sonaraem/ui";
 import { useQuery } from "@tanstack/react-query";
 
 import { orpc } from "@/shared/api/orpc";

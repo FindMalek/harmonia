@@ -1,5 +1,5 @@
-import { env } from "@harmonia/env/server";
 import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
+import { env } from "@sonaraem/env/server";
 import { type Column, eq, type SQL, sql } from "drizzle-orm";
 import { drizzle as neonDrizzle } from "drizzle-orm/neon-serverless";
 import { drizzle as pgDrizzle } from "drizzle-orm/node-postgres";
@@ -11,10 +11,10 @@ import * as schema from "./schema";
 export { eq };
 
 export type DatabaseEnv = {
-	HARMONIA_DATABASE_URL: string;
+	SONARAEM_DATABASE_URL: string;
 };
 
-const connectionString = env.HARMONIA_DATABASE_URL;
+const connectionString = env.SONARAEM_DATABASE_URL;
 
 function createDb() {
 	if (connectionString.includes(".neon.tech")) {

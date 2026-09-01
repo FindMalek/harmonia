@@ -22,8 +22,8 @@ Business logic lives in `packages/orpc/src/routers/`. Auth route handlers share 
 
 | Path | Instance | Cookie prefix | Used by |
 |------|----------|---------------|---------|
-| `/api/auth/*` | `dashboardAuth` | `harmonia-dashboard` | Dashboard (Spotify OAuth) |
-| `/api/admin-auth/*` | `adminAuth` | `harmonia-admin` | Admin (email/password) |
+| `/api/auth/*` | `dashboardAuth` | `sonaraem-dashboard` | Dashboard (Spotify OAuth) |
+| `/api/admin-auth/*` | `adminAuth` | `sonaraem-admin` | Admin (email/password) |
 
 Both share the same Postgres `user` / `session` tables but issue **separate session cookies**.
 
@@ -38,9 +38,9 @@ Both share the same Postgres `user` / `session` tables but issue **separate sess
 
 - Config: `apps/api/trigger.config.ts` — `maxDuration: 1800`, `dirs: ["./src/trigger"]`
 - Task re-exports for CLI discovery: `apps/api/src/trigger/organize.ts`
-- Dev script: `pnpm trigger:dev` (reads `HARMONIA_TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs`)
+- Dev script: `pnpm trigger:dev` (reads `SONARAEM_TRIGGER_SECRET_KEY` via `scripts/run-trigger-dev.mjs`)
 
 ## Environment
 
-- Loaded via `scripts/with-root-env.mjs` (maps `HARMONIA_TRIGGER_*` → `TRIGGER_*`)
-- Import env: `import { apiEnv } from "@harmonia/env/presets/api"`
+- Loaded via `scripts/with-root-env.mjs` (maps `SONARAEM_TRIGGER_*` → `TRIGGER_*`)
+- Import env: `import { apiEnv } from "@sonaraem/env/presets/api"`

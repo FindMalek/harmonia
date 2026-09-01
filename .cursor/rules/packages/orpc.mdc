@@ -5,7 +5,7 @@ globs:
 alwaysApply: false
 ---
 
-# `@harmonia/orpc`
+# `@sonaraem/orpc`
 
 ## Procedure Chain
 
@@ -14,20 +14,20 @@ publicProcedure
   ├── protectedProcedure    → context.session (dashboard auth)
   │     └── approvedProcedure → + DB isApproved && !banned
   ├── adminProcedure        → context.adminSession + role === "admin"
-  └── cronOrAuthProcedure   → session OR HARMONIA_CRON_SECRET
+  └── cronOrAuthProcedure   → session OR SONARAEM_CRON_SECRET
 ```
 
 - `protectedProcedure`: dashboard session → `context.session.user.id`
 - `approvedProcedure`: same + live DB check via `assertUserApproved()` — use for all user data routes
 - `adminProcedure`: admin session only → `context.adminSession` (separate cookie from dashboard)
-- `cronOrAuthProcedure`: accepts session OR `X-Organize-Secret`/`Authorization: Bearer <HARMONIA_CRON_SECRET>`
+- `cronOrAuthProcedure`: accepts session OR `X-Organize-Secret`/`Authorization: Bearer <SONARAEM_CRON_SECRET>`
 
 ## Context
 
 `createContext()` resolves **both** sessions in parallel:
 
-- `session` — from `dashboardAuth.api.getSession()` (`/api/auth`, `harmonia-dashboard` cookie)
-- `adminSession` — from `adminAuth.api.getSession()` (`/api/admin-auth`, `harmonia-admin` cookie)
+- `session` — from `dashboardAuth.api.getSession()` (`/api/auth`, `sonaraem-dashboard` cookie)
+- `adminSession` — from `adminAuth.api.getSession()` (`/api/admin-auth`, `sonaraem-admin` cookie)
 
 ## Router Structure
 
@@ -77,7 +77,7 @@ if (!row || row.banned || !row.isApproved) {
 }
 ```
 
-Codes in use: `UNAUTHORIZED`, `FORBIDDEN`, `BAD_REQUEST`, `TOO_MANY_REQUESTS`, `INTERNAL_SERVER_ERROR`. Domain errors that originate in `@harmonia/common` services (e.g. `PipelineCancelledError`) stay plain `Error` subclasses there — only the oRPC layer translates into `ORPCError`.
+Codes in use: `UNAUTHORIZED`, `FORBIDDEN`, `BAD_REQUEST`, `TOO_MANY_REQUESTS`, `INTERNAL_SERVER_ERROR`. Domain errors that originate in `@sonaraem/common` services (e.g. `PipelineCancelledError`) stay plain `Error` subclasses there — only the oRPC layer translates into `ORPCError`.
 
 ## Rate Limiting
 
@@ -87,7 +87,7 @@ Codes in use: `UNAUTHORIZED`, `FORBIDDEN`, `BAD_REQUEST`, `TOO_MANY_REQUESTS`, `
 ## Tests
 
 ```bash
-pnpm --filter @harmonia/orpc test
+pnpm --filter @sonaraem/orpc test
 ```
 
 ## CORS

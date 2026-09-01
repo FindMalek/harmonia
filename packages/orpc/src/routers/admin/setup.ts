@@ -1,15 +1,15 @@
+import { ORPCError } from "@orpc/server";
 import {
 	type AdminSetupCreateOutput,
 	type AdminSetupStatusOutput,
 	adminSetupCreateInput,
 	adminSetupCreateOutputSchema,
 	adminSetupStatusOutputSchema,
-} from "@harmonia/common/schemas";
-import { adminAuth } from "@harmonia/core";
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
-import { logger } from "@harmonia/logger";
-import { ORPCError } from "@orpc/server";
+} from "@sonaraem/common/schemas";
+import { adminAuth } from "@sonaraem/core";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
+import { logger } from "@sonaraem/logger";
 import { APIError } from "better-auth";
 import { count, eq } from "drizzle-orm";
 import { z } from "zod";

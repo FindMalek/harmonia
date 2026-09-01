@@ -49,11 +49,11 @@ import { useDashboardPipelineBootstrap } from "@/hooks/use-dashboard-pipeline-bo
 
 Across packages, use workspace package names:
 ```typescript
-import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
-import { env } from "@harmonia/env/server";
-import { dashboardAuth, adminAuth } from "@harmonia/core";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { track } from "@sonaraem/db/schema/track";
+import { env } from "@sonaraem/env/server";
+import { dashboardAuth, adminAuth } from "@sonaraem/core";
+import { logger } from "@sonaraem/logger";
 ```
 
 ## Constants

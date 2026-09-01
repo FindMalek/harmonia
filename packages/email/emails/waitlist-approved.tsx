@@ -27,7 +27,7 @@ export function WaitlistApprovedEmail({
 
 	return (
 		<EmailThemeProvider
-			preview={<Preview>You're in — welcome to Harmonia</Preview>}
+			preview={<Preview>You're in — welcome to Sonaraem</Preview>}
 		>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
@@ -52,8 +52,8 @@ export function WaitlistApprovedEmail({
 						className={`mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.mutedText}`}
 						style={{ color: lightStyles.mutedText.color }}
 					>
-						Your spot on Harmonia is ready. Sign in with Spotify to connect your
-						library and let Harmonia start organizing it for you.
+						Your spot on Sonaraem is ready. Sign in with Spotify to connect your
+						library and let Sonaraem start organizing it for you.
 					</Text>
 					<Text
 						className={`mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.text}`}
@@ -67,7 +67,7 @@ export function WaitlistApprovedEmail({
 						<Button href={loginUrl}>Sign in with Spotify</Button>
 					</Section>
 
-					<Footer complianceText="You are receiving this email because you were approved from the Harmonia waitlist." />
+					<Footer complianceText="You are receiving this email because you were approved from the Sonaraem waitlist." />
 				</Container>
 			</Body>
 		</EmailThemeProvider>

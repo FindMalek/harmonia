@@ -1,4 +1,4 @@
-import { getLlmTags } from "@harmonia/common/types";
+import { getLlmTags } from "@sonaraem/common/types";
 
 export function buildEmbeddingInput(track: {
 	llmMood: string | null;

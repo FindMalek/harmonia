@@ -7,7 +7,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 	Input,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -110,7 +110,7 @@ export function AdminSetupForm() {
 									id={field.name}
 									name={field.name}
 									type="email"
-									placeholder="admin@harmonia.com"
+									placeholder="admin@sonaraem.com"
 									autoComplete="email"
 									className="h-8"
 									value={field.state.value}

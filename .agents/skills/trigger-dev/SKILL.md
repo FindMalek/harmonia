@@ -1,23 +1,23 @@
 ---
 name: trigger-dev
-description: Trigger.dev v3 background jobs in this monorepo. Use when editing Trigger tasks, calling tasks.trigger, trigger.config.ts, HARMONIA_TRIGGER_* env vars, or pipeline stage subtasks.
+description: Trigger.dev v3 background jobs in this monorepo. Use when editing Trigger tasks, calling tasks.trigger, trigger.config.ts, SONARAEM_TRIGGER_* env vars, or pipeline stage subtasks.
 ---
 
-# Trigger.dev (Harmonia)
+# Trigger.dev (Sonaraem)
 
 Background work runs on [Trigger.dev](https://trigger.dev) v3. Do **not** use Inngest patterns here; tasks are defined with `@trigger.dev/sdk` and executed via `*.trigger()`.
 
 ## Layout
 
-- **`apps/api/trigger.config.ts`** — `project` ref (`HARMONIA_TRIGGER_PROJECT_REF`), task directories, retries.
+- **`apps/api/trigger.config.ts`** — `project` ref (`SONARAEM_TRIGGER_PROJECT_REF`), task directories, retries.
 - **`packages/common/src/trigger/tasks/`** — task implementations (e.g. organize pipeline and per-stage children).
 
 ## Environment
 
-- **`HARMONIA_TRIGGER_SECRET_KEY`** — API secret (validated in `@harmonia/env` for the API preset).
-- **`HARMONIA_TRIGGER_PROJECT_REF`** — project slug/ref from the Trigger dashboard.
+- **`SONARAEM_TRIGGER_SECRET_KEY`** — API secret (validated in `@sonaraem/env` for the API preset).
+- **`SONARAEM_TRIGGER_PROJECT_REF`** — project slug/ref from the Trigger dashboard.
 
-Local CLI expects `TRIGGER_SECRET_KEY` / `TRIGGER_PROJECT_REF`; **`pnpm trigger:dev`** loads root `.env` and maps from the `HARMONIA_*` names when the legacy vars are unset (`scripts/run-trigger-dev.mjs`).
+Local CLI expects `TRIGGER_SECRET_KEY` / `TRIGGER_PROJECT_REF`; **`pnpm trigger:dev`** loads root `.env` and maps from the `SONARAEM_*` names when the legacy vars are unset (`scripts/run-trigger-dev.mjs`).
 
 ## Conventions
 

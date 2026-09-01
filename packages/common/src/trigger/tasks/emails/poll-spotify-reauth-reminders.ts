@@ -1,7 +1,7 @@
-import { db } from "@harmonia/db";
-import { account } from "@harmonia/db/schema/auth";
-import { userSpotifyLibraryStats } from "@harmonia/db/schema/spotify";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { account } from "@sonaraem/db/schema/auth";
+import { userSpotifyLibraryStats } from "@sonaraem/db/schema/spotify";
+import { logger } from "@sonaraem/logger";
 import { schedules } from "@trigger.dev/sdk";
 import { and, eq, isNotNull, isNull, lte, ne, or } from "drizzle-orm";
 

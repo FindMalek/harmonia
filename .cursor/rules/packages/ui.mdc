@@ -6,17 +6,17 @@ globs:
 alwaysApply: false
 ---
 
-# `@harmonia/ui`
+# `@sonaraem/ui`
 
 ## Using Components
 
 ```typescript
 // Within an app
 import { Button } from "@/components/ui/button";
-import { Icons } from "@harmonia/ui";
+import { Icons } from "@sonaraem/ui";
 
 // Across packages
-import { Button } from "@harmonia/ui";
+import { Button } from "@sonaraem/ui";
 ```
 
 ## Tailwind

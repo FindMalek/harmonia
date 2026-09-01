@@ -1,6 +1,6 @@
 "use client";
 
-import { Icons } from "@harmonia/ui";
+import { Icons } from "@sonaraem/ui";
 import { Fragment } from "react";
 import {
 	DashboardTracksListRow,

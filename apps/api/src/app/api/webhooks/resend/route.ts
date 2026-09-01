@@ -1,16 +1,16 @@
 import {
 	processResendWebhookEvent,
 	verifyResendWebhookEvent,
-} from "@harmonia/common/services/email";
-import { apiEnv } from "@harmonia/env/presets/api";
-import { logger } from "@harmonia/logger";
+} from "@sonaraem/common/services/email";
+import { apiEnv } from "@sonaraem/env/presets/api";
+import { logger } from "@sonaraem/logger";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-	const webhookSecret = apiEnv.HARMONIA_RESEND_WEBHOOK_SECRET;
+	const webhookSecret = apiEnv.SONARAEM_RESEND_WEBHOOK_SECRET;
 	if (!webhookSecret) {
 		logger.error(
-			"Missing HARMONIA_RESEND_WEBHOOK_SECRET for webhook verification",
+			"Missing SONARAEM_RESEND_WEBHOOK_SECRET for webhook verification",
 		);
 		return NextResponse.json(
 			{ error: "Webhook secret is not configured" },
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 	// is optional here (inbound webhook ingestion is independent of outbound
 	// send configuration).
 	const event = verifyResendWebhookEvent({
-		apiKey: apiEnv.HARMONIA_RESEND_API_KEY,
+		apiKey: apiEnv.SONARAEM_RESEND_API_KEY,
 		webhookSecret,
 		payload,
 		headers: { id, timestamp, signature },

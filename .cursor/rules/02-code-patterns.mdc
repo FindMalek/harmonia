@@ -15,7 +15,7 @@ publicProcedure              — no auth; rate-limited
   ├── protectedProcedure     — dashboard session (context.session)
   │     └── approvedProcedure — dashboard session + DB isApproved + !banned
   ├── adminProcedure         — admin session only (context.adminSession, role=admin)
-  └── cronOrAuthProcedure    — session OR HARMONIA_CRON_SECRET header
+  └── cronOrAuthProcedure    — session OR SONARAEM_CRON_SECRET header
 ```
 
 - **`approvedProcedure`**: use for all dashboard data routes (tracks, pipeline, playlists, etc.)
@@ -47,8 +47,8 @@ Before writing an inline object type/interface for a shape that already has a Zo
 ## Drizzle Query Patterns
 
 ```typescript
-import { db } from "@harmonia/db";
-import { track } from "@harmonia/db/schema/track";
+import { db } from "@sonaraem/db";
+import { track } from "@sonaraem/db/schema/track";
 import { eq, and, isNull } from "drizzle-orm";
 
 // Select

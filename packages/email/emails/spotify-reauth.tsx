@@ -28,17 +28,17 @@ const STAGE_COPY: Record<
 	"14d": {
 		preview: "Your Spotify connection expires in about 2 weeks",
 		heading: "Your Spotify connection needs a refresh soon",
-		body: "Spotify automatically expires account connections after 6 months. Yours is set to expire in about 2 weeks — reconnect now and Harmonia will keep syncing without any interruption.",
+		body: "Spotify automatically expires account connections after 6 months. Yours is set to expire in about 2 weeks — reconnect now and Sonaraem will keep syncing without any interruption.",
 	},
 	"3d": {
 		preview: "Your Spotify connection expires in a few days",
 		heading: "Your Spotify connection expires in a few days",
-		body: "This is a second reminder — your Spotify connection to Harmonia expires in about 3 days. Reconnect now to avoid a gap in your syncs and organize runs.",
+		body: "This is a second reminder — your Spotify connection to Sonaraem expires in about 3 days. Reconnect now to avoid a gap in your syncs and organize runs.",
 	},
 	"0d": {
 		preview: "Your Spotify connection expires today",
 		heading: "Your Spotify connection expires today",
-		body: "This is your final reminder — your Spotify connection to Harmonia expires today. Reconnect now to avoid any interruption to your syncs and organize runs.",
+		body: "This is your final reminder — your Spotify connection to Sonaraem expires today. Reconnect now to avoid any interruption to your syncs and organize runs.",
 	},
 };
 
@@ -87,7 +87,7 @@ export function SpotifyReauthEmail({
 						<Button href={dashboardUrl}>Reconnect Spotify</Button>
 					</Section>
 
-					<Footer complianceText="You are receiving this email because your Harmonia account's Spotify connection needs attention." />
+					<Footer complianceText="You are receiving this email because your Sonaraem account's Spotify connection needs attention." />
 				</Container>
 			</Body>
 		</EmailThemeProvider>

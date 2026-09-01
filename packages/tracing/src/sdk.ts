@@ -1,4 +1,3 @@
-import { baseEnv } from "@harmonia/env/base";
 import { trace } from "@opentelemetry/api";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import {
@@ -16,6 +15,7 @@ import {
 	ATTR_SERVICE_NAME,
 	ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
+import { baseEnv } from "@sonaraem/env/base";
 import { getInstrumentations } from "./instrumentations";
 import {
 	createOTLPLogExporter,
@@ -75,7 +75,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 	}
 
 	const samplingRate = config.samplingRate ?? 1.0;
-	// standard Node.js var, not in @harmonia/env
+	// standard Node.js var, not in @sonaraem/env
 	const environment =
 		config.environment ?? process.env.NODE_ENV ?? "development";
 
@@ -86,7 +86,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 	const resource = resourceFromAttributes(
 		{
 			[ATTR_SERVICE_NAME]: config.serviceName,
-			// standard Node.js var, not in @harmonia/env
+			// standard Node.js var, not in @sonaraem/env
 			[ATTR_SERVICE_VERSION]: process.env.npm_package_version ?? "0.1.0",
 			"deployment.environment.name": environment,
 		},
@@ -107,7 +107,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 	// Choose span processor based on config
 	// SimpleSpanProcessor: immediate export (good for serverless/debugging)
 	// BatchSpanProcessor: batched export (better performance, default)
-	// standard OTEL var, not in @harmonia/env
+	// standard OTEL var, not in @sonaraem/env
 	const useSimpleProcessor =
 		config.useSimpleSpanProcessor ??
 		process.env.OTEL_USE_SIMPLE_PROCESSOR === "true";
@@ -124,7 +124,7 @@ export function initializeSDK(config: TracingConfig): NodeSDK | null {
 		traceExporter:
 			traceExporter && !useSimpleProcessor ? traceExporter : undefined,
 		logRecordProcessor: logExporter
-			? new BatchLogRecordProcessor(logExporter)
+			? new BatchLogRecordProcessor({ exporter: logExporter })
 			: undefined,
 		metricReader: metricsExporter
 			? new PeriodicExportingMetricReader({

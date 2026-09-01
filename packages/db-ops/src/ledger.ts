@@ -1,4 +1,4 @@
-import type { db } from "@harmonia/db";
+import type { db } from "@sonaraem/db";
 import { sql } from "drizzle-orm";
 
 import type { MigrationAction, OpsLedgerRow, OpsStatus } from "./types";
@@ -41,7 +41,7 @@ function mapLedgerRow(row: Record<string, unknown>): OpsLedgerRow {
 
 export async function ensureOpsTable(dbClient: Db): Promise<void> {
 	await dbClient.execute(sql`
-		CREATE TABLE IF NOT EXISTS harmonia_db_ops (
+		CREATE TABLE IF NOT EXISTS sonaraem_db_ops (
 			name text PRIMARY KEY,
 			status text NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
 			checksum text NOT NULL,
@@ -52,19 +52,19 @@ export async function ensureOpsTable(dbClient: Db): Promise<void> {
 		)
 	`);
 	await dbClient.execute(sql`
-		CREATE INDEX IF NOT EXISTS harmonia_db_ops_status_idx ON harmonia_db_ops (status)
+		CREATE INDEX IF NOT EXISTS sonaraem_db_ops_status_idx ON sonaraem_db_ops (status)
 	`);
 }
 
 export async function acquireAdvisoryLock(dbClient: Db): Promise<void> {
 	await dbClient.execute(
-		sql`SELECT pg_advisory_lock(hashtext('harmonia_db_ops_runner'))`,
+		sql`SELECT pg_advisory_lock(hashtext('sonaraem_db_ops_runner'))`,
 	);
 }
 
 export async function releaseAdvisoryLock(dbClient: Db): Promise<void> {
 	await dbClient.execute(
-		sql`SELECT pg_advisory_unlock(hashtext('harmonia_db_ops_runner'))`,
+		sql`SELECT pg_advisory_unlock(hashtext('sonaraem_db_ops_runner'))`,
 	);
 }
 
@@ -74,7 +74,7 @@ export async function getLedgerRow(
 ): Promise<OpsLedgerRow | null> {
 	const result = await dbClient.execute(sql`
 		SELECT name, status, checksum, attempts, started_at, completed_at, error
-		FROM harmonia_db_ops
+		FROM sonaraem_db_ops
 		WHERE name = ${name}
 	`);
 	const rows = result.rows as Record<string, unknown>[];
@@ -86,7 +86,7 @@ export async function getLedgerRow(
 export async function listLedgerRows(dbClient: Db): Promise<OpsLedgerRow[]> {
 	const result = await dbClient.execute(sql`
 		SELECT name, status, checksum, attempts, started_at, completed_at, error
-		FROM harmonia_db_ops
+		FROM sonaraem_db_ops
 		ORDER BY name
 	`);
 	return (result.rows as Record<string, unknown>[]).map(mapLedgerRow);
@@ -117,12 +117,12 @@ export async function markRunning(
 	checksum: string,
 ): Promise<void> {
 	await dbClient.execute(sql`
-		INSERT INTO harmonia_db_ops (name, status, checksum, attempts, started_at, completed_at, error)
+		INSERT INTO sonaraem_db_ops (name, status, checksum, attempts, started_at, completed_at, error)
 		VALUES (${name}, 'running', ${checksum}, 1, now(), null, null)
 		ON CONFLICT (name) DO UPDATE SET
 			status = 'running',
 			checksum = EXCLUDED.checksum,
-			attempts = harmonia_db_ops.attempts + 1,
+			attempts = sonaraem_db_ops.attempts + 1,
 			started_at = now(),
 			completed_at = null,
 			error = null
@@ -131,7 +131,7 @@ export async function markRunning(
 
 export async function markCompleted(dbClient: Db, name: string): Promise<void> {
 	await dbClient.execute(sql`
-		UPDATE harmonia_db_ops
+		UPDATE sonaraem_db_ops
 		SET status = 'completed', completed_at = now(), error = null
 		WHERE name = ${name}
 	`);
@@ -143,7 +143,7 @@ export async function markFailed(
 	errorMessage: string,
 ): Promise<void> {
 	await dbClient.execute(sql`
-		UPDATE harmonia_db_ops
+		UPDATE sonaraem_db_ops
 		SET status = 'failed', error = ${errorMessage}
 		WHERE name = ${name}
 	`);

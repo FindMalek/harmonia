@@ -40,7 +40,7 @@ export function WelcomeEmail({
 			: "there";
 
 	return (
-		<EmailThemeProvider preview={<Preview>Welcome to Harmonia</Preview>}>
+		<EmailThemeProvider preview={<Preview>Welcome to Sonaraem</Preview>}>
 			<Body
 				className={`mx-auto my-auto font-sans ${themeClasses.body}`}
 				style={lightStyles.body}
@@ -66,13 +66,13 @@ export function WelcomeEmail({
 						className={`mt-[24px] mb-[8px] text-center font-normal font-serif text-[21px] ${themeClasses.heading}`}
 						style={{ color: lightStyles.text.color }}
 					>
-						Welcome to Harmonia, {safeName}
+						Welcome to Sonaraem, {safeName}
 					</Heading>
 					<Text
 						className={`mb-[24px] text-center text-[14px] leading-[24px] ${themeClasses.mutedText}`}
 						style={{ color: lightStyles.mutedText.color }}
 					>
-						Thanks for signing up. Harmonia helps you organize your Spotify
+						Thanks for signing up. Sonaraem helps you organize your Spotify
 						library with AI — so you spend less time sorting and more time
 						listening.
 					</Text>
@@ -91,7 +91,7 @@ export function WelcomeEmail({
 						<Button href={dashboardUrl}>Open dashboard</Button>
 					</Section>
 
-					<Footer complianceText="You are receiving this email because you created a Harmonia account." />
+					<Footer complianceText="You are receiving this email because you created a Sonaraem account." />
 				</Container>
 			</Body>
 		</EmailThemeProvider>

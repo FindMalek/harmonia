@@ -1,7 +1,7 @@
-import { db } from "@harmonia/db";
-import { user } from "@harmonia/db/schema/auth";
-import { waitlistSignup } from "@harmonia/db/schema/waitlist-signup";
-import { logger } from "@harmonia/logger";
+import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
+import { waitlistSignup } from "@sonaraem/db/schema/waitlist-signup";
+import { logger } from "@sonaraem/logger";
 import { and, eq, isNull } from "drizzle-orm";
 
 /**
@@ -43,7 +43,7 @@ export async function redeemWaitlistRow(
  * signal, which is a deliberate, accepted tradeoff for this app: the
  * approval this grants has low stakes (personal-project waitlist access,
  * not payment or admin rights), and every auto-approval is logged below for
- * after-the-fact review. If Harmonia's risk profile changes (more users,
+ * after-the-fact review. If Sonaraem's risk profile changes (more users,
  * more valuable access), require an app-controlled verification step (e.g.
  * a confirmation email to the matched address) before trusting this path.
  */

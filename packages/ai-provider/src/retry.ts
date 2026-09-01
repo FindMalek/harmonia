@@ -1,4 +1,4 @@
-import { logger } from "@harmonia/logger";
+import { logger } from "@sonaraem/logger";
 import { APICallError, NoObjectGeneratedError } from "ai";
 import pRetry, { AbortError } from "p-retry";
 

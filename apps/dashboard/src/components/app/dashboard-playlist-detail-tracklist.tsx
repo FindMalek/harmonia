@@ -1,4 +1,4 @@
-import { Skeleton } from "@harmonia/ui";
+import { Skeleton } from "@sonaraem/ui";
 import type { RefObject } from "react";
 import { DashboardPlaylistDetailSectionLabel } from "./dashboard-playlist-detail-section-label";
 import type { DashboardPlaylistDetailTrackRowTrack } from "./dashboard-playlist-detail-track-row";

@@ -1,7 +1,7 @@
 "use client";
 
-import { DASHBOARD_ROUTES } from "@harmonia/common/utils/routes";
-import { Button, buttonVariants, cn } from "@harmonia/ui";
+import { DASHBOARD_ROUTES } from "@sonaraem/common/utils/routes";
+import { Button, buttonVariants, cn } from "@sonaraem/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

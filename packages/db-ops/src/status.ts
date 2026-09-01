@@ -10,7 +10,7 @@ const repoRoot = path.resolve(__dirname, "../../..");
 
 dotenv.config({ path: path.join(repoRoot, ".env") });
 
-const { db } = await import("@harmonia/db");
+const { db } = await import("@sonaraem/db");
 const { ensureOpsTable, getLedgerRow, listLedgerRows, resolveMigrationAction } =
 	await import("./ledger");
 const { listMigrationFiles, migrationFilePath, migrationNameFromFile } =

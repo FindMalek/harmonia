@@ -12,36 +12,36 @@ describe("diffManualSpotifyEdits", () => {
 	});
 
 	it("detects a manually removed track", () => {
-		const harmonia = new Set(["a", "b", "c"]);
+		const sonaraem = new Set(["a", "b", "c"]);
 		const live = new Set(["a", "c"]);
-		expect(diffManualSpotifyEdits(harmonia, live)).toEqual({
+		expect(diffManualSpotifyEdits(sonaraem, live)).toEqual({
 			added: [],
 			removed: ["b"],
 		});
 	});
 
 	it("detects a manually added track", () => {
-		const harmonia = new Set(["a", "b"]);
+		const sonaraem = new Set(["a", "b"]);
 		const live = new Set(["a", "b", "d"]);
-		expect(diffManualSpotifyEdits(harmonia, live)).toEqual({
+		expect(diffManualSpotifyEdits(sonaraem, live)).toEqual({
 			added: ["d"],
 			removed: [],
 		});
 	});
 
 	it("detects both an addition and a removal at once", () => {
-		const harmonia = new Set(["a", "b"]);
+		const sonaraem = new Set(["a", "b"]);
 		const live = new Set(["a", "d"]);
-		expect(diffManualSpotifyEdits(harmonia, live)).toEqual({
+		expect(diffManualSpotifyEdits(sonaraem, live)).toEqual({
 			added: ["d"],
 			removed: ["b"],
 		});
 	});
 
-	it("treats an empty live playlist as removing every Harmonia track", () => {
-		const harmonia = new Set(["a", "b"]);
+	it("treats an empty live playlist as removing every Sonaraem track", () => {
+		const sonaraem = new Set(["a", "b"]);
 		const live = new Set<string>();
-		expect(diffManualSpotifyEdits(harmonia, live)).toEqual({
+		expect(diffManualSpotifyEdits(sonaraem, live)).toEqual({
 			added: [],
 			removed: ["a", "b"],
 		});

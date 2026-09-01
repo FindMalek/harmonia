@@ -1,18 +1,18 @@
-import { WEB_ROUTES } from "@harmonia/common/utils/routes";
-import { env } from "@harmonia/env/web";
-import { HarmoniaBrandHeader } from "@harmonia/ui";
+import { WEB_ROUTES } from "@sonaraem/common/utils/routes";
+import { env } from "@sonaraem/env/web";
+import { SonaraemBrandHeader } from "@sonaraem/ui";
 import type { Route } from "next";
 import Link from "next/link";
 
 import { WaitlistForm } from "@/components/waitlist-form";
 
-const dashboardLoginUrl = `${env.NEXT_PUBLIC_HARMONIA_DASHBOARD_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:3003"}/login`;
+const dashboardLoginUrl = `${env.NEXT_PUBLIC_SONARAEM_DASHBOARD_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:3003"}/login`;
 
 export default function WaitlistPage() {
 	return (
 		<div className="flex h-full min-h-svh flex-col bg-background font-sans">
 			<div className="flex flex-1 flex-col justify-between p-6 sm:p-12 lg:p-16">
-				<HarmoniaBrandHeader />
+				<SonaraemBrandHeader />
 
 				{/* Hero */}
 				<div className="mt-8 mb-6 max-w-2xl border-foreground border-l-4 pl-5 sm:mt-16 sm:mb-16 sm:pl-8">
@@ -22,7 +22,7 @@ export default function WaitlistPage() {
 						intelligently organized.
 					</h1>
 					<p className="mt-4 max-w-md text-muted-foreground text-sm leading-snug sm:mt-6 sm:text-base sm:leading-relaxed">
-						Harmonia uses AI to analyze your library and build meaningful
+						Sonaraem uses AI to analyze your library and build meaningful
 						playlists—no manual sorting through thousands of tracks.
 					</p>
 				</div>
@@ -39,7 +39,7 @@ export default function WaitlistPage() {
 							</h2>
 							<p className="max-w-md text-muted-foreground text-sm leading-snug sm:leading-relaxed">
 								We're in early testing and inviting a small group of users to
-								try Harmonia first.
+								try Sonaraem first.
 							</p>
 						</div>
 

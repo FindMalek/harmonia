@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 
-import { dbEnv } from "@harmonia/env/presets/db";
-import { logger } from "@harmonia/logger";
+import { dbEnv } from "@sonaraem/env/presets/db";
+import { logger } from "@sonaraem/logger";
 
 import {
 	acquireAdvisoryLock,
@@ -60,7 +60,7 @@ export async function runMigrations(
 	}
 
 	if (dryRun) {
-		printDryRunBanner(options, dbEnv.HARMONIA_DATABASE_URL);
+		printDryRunBanner(options, dbEnv.SONARAEM_DATABASE_URL);
 	} else {
 		await ensureOpsTable(db);
 		await acquireAdvisoryLock(db);

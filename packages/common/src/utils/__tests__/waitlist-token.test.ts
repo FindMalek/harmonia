@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@harmonia/env/server", () => ({
+vi.mock("@sonaraem/env/server", () => ({
 	env: {
-		HARMONIA_BETTER_AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+		SONARAEM_BETTER_AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
 	},
 }));
 

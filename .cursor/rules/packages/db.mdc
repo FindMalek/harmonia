@@ -5,7 +5,7 @@ globs:
 alwaysApply: false
 ---
 
-# `@harmonia/db`
+# `@sonaraem/db`
 
 ## Schema Conventions
 
@@ -43,7 +43,7 @@ Use `hnsw` with `vector_cosine_ops` — matches the cosine-distance clustering i
 ## Query Patterns
 
 ```typescript
-import { conflictValue, db } from "@harmonia/db";
+import { conflictValue, db } from "@sonaraem/db";
 import { eq, and, isNull, inArray } from "drizzle-orm";
 
 // Select
@@ -70,7 +70,7 @@ await db.update(pipelineRun).set({
 
 ### `conflictValue(col)` helper
 
-`conflictValue<T>(col: Column): SQL<T>` — exported from `@harmonia/db`.
+`conflictValue<T>(col: Column): SQL<T>` — exported from `@sonaraem/db`.
 
 Wraps the PostgreSQL `excluded.<col>` expression used in `ON CONFLICT DO UPDATE` set blocks. Use it instead of `sql\`excluded.<snake_col>\`` to keep conflict resolution typed and refactor-safe.
 
@@ -89,7 +89,7 @@ pnpm db:push      # dev: push schema directly (no migration files)
 pnpm db:studio    # dev: Drizzle Studio UI (inspect/edit rows)
 pnpm db:generate  # generate migration SQL files
 pnpm db:migrate   # apply migrations (production)
-pnpm db:reset     # dev: truncate user-data tables (keeps auth, genre_domain, drizzle migrations; truncates harmonia_db_ops)
+pnpm db:reset     # dev: truncate user-data tables (keeps auth, genre_domain, drizzle migrations; truncates sonaraem_db_ops)
 pnpm db:nuke      # dev: Docker volume wipe + db:push (guards: localhost:5433)
 ```
 
@@ -101,6 +101,6 @@ When adding new user-owned tables under `packages/db/src/schema/`, extend `TABLE
 
 ### Data migrations
 
-New backfills, seeds, and one-off prod data fixes go in `@harmonia/db-ops` — not hand-written SQL in `packages/db/src/migrations/` and not ad-hoc scripts in `packages/db/scripts/`. See `.cursor/rules/packages/db-ops.mdc`.
+New backfills, seeds, and one-off prod data fixes go in `@sonaraem/db-ops` — not hand-written SQL in `packages/db/src/migrations/` and not ad-hoc scripts in `packages/db/scripts/`. See `.cursor/rules/packages/db-ops.mdc`.
 
 Legacy hand-written SQL (e.g. `0003_seed_genre_domain.sql`) predates db-ops; do not add more.

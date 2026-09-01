@@ -5,14 +5,14 @@ globs:
 alwaysApply: false
 ---
 
-# `@harmonia/db-ops`
+# `@sonaraem/db-ops`
 
 ## When to use
 
 | Change type | Where |
 |---|---|
-| DDL (CREATE/ALTER/DROP, indexes, new columns) | Drizzle — `pnpm db:generate` + `pnpm db:migrate` in `@harmonia/db` |
-| DML (backfills, data fixes, seeds for prod) | `@harmonia/db-ops` |
+| DDL (CREATE/ALTER/DROP, indexes, new columns) | Drizzle — `pnpm db:generate` + `pnpm db:migrate` in `@sonaraem/db` |
+| DML (backfills, data fixes, seeds for prod) | `@sonaraem/db-ops` |
 | Dev-only utilities (reset, nuke, local seed) | `packages/db/scripts/` |
 
 **Never** add new hand-written SQL data migrations to `packages/db/src/migrations/`.
@@ -33,13 +33,13 @@ Prod CI runs `db:ops:migrate` after `db:migrate` in `.github/workflows/drizzle-m
 - Path: `packages/db-ops/src/migrations/YYYYMMDDHHmmss-kebab-name.ts`
 - Export: `export async function up({ db, log, dryRun }: DbOpsContext): Promise<void>`
 - **dryRun** — when true, read + log only; return before any insert/update/delete
-- Use Drizzle + `@harmonia/common` helpers — no duplicated business logic
+- Use Drizzle + `@sonaraem/common` helpers — no duplicated business logic
 - **Idempotent** — safe if retried after a crash before ledger marks `completed`
 - **No schema DDL** — required columns must exist via Drizzle migration first
 - **Batch large backfills** — avoid Neon timeouts
 - **Never edit** a migration after it is `completed` in prod (checksum guard fails CI)
 
-## Ledger (`harmonia_db_ops`)
+## Ledger (`sonaraem_db_ops`)
 
 Runner bootstraps the table. States: `running` → `completed` | `failed`.
 
@@ -48,8 +48,8 @@ Runner bootstraps the table. States: `running` → `completed` | `failed`.
 - `running` &lt; 30 min — CI aborts (another run may be in progress)
 - `running` ≥ 30 min — treated as stale crash, retried
 
-Manual escape hatch (rare): `UPDATE harmonia_db_ops SET status = 'failed' WHERE name = '...'` then re-run workflow.
+Manual escape hatch (rare): `UPDATE sonaraem_db_ops SET status = 'failed' WHERE name = '...'` then re-run workflow.
 
 ## Local dev
 
-`pnpm db:reset` truncates `harmonia_db_ops` so ops migrations re-run on a fresh local DB. Drizzle schema history (`drizzle.__drizzle_migrations`) is unchanged.
+`pnpm db:reset` truncates `sonaraem_db_ops` so ops migrations re-run on a fresh local DB. Drizzle schema history (`drizzle.__drizzle_migrations`) is unchanged.

@@ -1,5 +1,5 @@
-import type { db } from "@harmonia/db";
-import type { logger } from "@harmonia/logger";
+import type { db } from "@sonaraem/db";
+import type { logger } from "@sonaraem/logger";
 
 export type OpsStatus = "running" | "completed" | "failed";
 
@@ -38,4 +38,4 @@ export const STALE_RUNNING_MS = 30 * 60 * 1000;
 
 export const MIGRATION_FILENAME_RE = /^\d{14}-[a-z0-9]+(?:-[a-z0-9]+)*\.ts$/;
 
-export const ADVISORY_LOCK_KEY = "harmonia_db_ops_runner";
+export const ADVISORY_LOCK_KEY = "sonaraem_db_ops_runner";

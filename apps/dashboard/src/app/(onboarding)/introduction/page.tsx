@@ -3,7 +3,7 @@ export default function IntroductionPage() {
 		<div className="flex w-full flex-col items-start gap-8">
 			<div className="space-y-2">
 				<h1 className="font-semibold text-muted-foreground text-sm uppercase tracking-widest">
-					HOW HARMONIA WORKS
+					HOW SONARAEM WORKS
 				</h1>
 			</div>
 
@@ -15,7 +15,7 @@ export default function IntroductionPage() {
 							AI analyzes your music
 						</h3>
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							Harmonia examines your songs to understand their mood, themes, and
+							Sonaraem examines your songs to understand their mood, themes, and
 							musical patterns.
 						</p>
 					</div>

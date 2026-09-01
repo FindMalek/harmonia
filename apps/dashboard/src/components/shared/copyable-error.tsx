@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, cn, Icons } from "@harmonia/ui";
+import { Button, cn, Icons } from "@sonaraem/ui";
 import { toast } from "sonner";
 
 type CopyableErrorProps = {

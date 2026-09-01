@@ -1,4 +1,4 @@
-import "@harmonia/env/dashboard";
+import "@sonaraem/env/dashboard";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ADMIN_NAV_ITEMS } from "@harmonia/common/utils/routes";
+import { ADMIN_NAV_ITEMS } from "@sonaraem/common/utils/routes";
 import {
 	Button,
 	Icons,
@@ -16,7 +16,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarSeparator,
-} from "@harmonia/ui";
+} from "@sonaraem/ui";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -47,7 +47,7 @@ export function AdminSidebar() {
 						<Icons.logo className="size-4" />
 					</div>
 					<div className="leading-none">
-						<p className="font-semibold text-sm">Harmonia</p>
+						<p className="font-semibold text-sm">Sonaraem</p>
 						<p className="text-[10px] text-muted-foreground">Admin Panel</p>
 					</div>
 				</div>

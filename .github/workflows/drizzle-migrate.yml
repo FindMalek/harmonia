@@ -40,11 +40,11 @@ jobs:
       - name: Run schema migrations
         working-directory: packages/db
         env:
-          HARMONIA_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          SONARAEM_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: pnpm db:migrate
 
       - name: Run db-ops migrations
         working-directory: packages/db-ops
         env:
-          HARMONIA_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          SONARAEM_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: pnpm db:ops:migrate
