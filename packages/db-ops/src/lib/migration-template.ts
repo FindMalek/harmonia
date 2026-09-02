@@ -34,10 +34,10 @@ export function buildMigrationFileContent(options: {
  * RUN (set SONARAEM_DATABASE_URL in .env to the database you want)
  *
  *   Test without writes:
- *     pnpm db:ops:migrate -- --dry-run --only ${slug}
+ *     pnpm db:ops:migrate --dry-run --only ${slug}
  *
  *   Apply for real (local dev):
- *     pnpm db:ops:migrate -- --only ${slug}
+ *     pnpm db:ops:migrate --only ${slug}
  *
  *   Prod: merge PR — CI runs pnpm db:ops:migrate (no --dry-run)
  *

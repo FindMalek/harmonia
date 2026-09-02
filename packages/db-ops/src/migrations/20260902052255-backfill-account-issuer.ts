@@ -35,10 +35,10 @@
  * RUN (set SONARAEM_DATABASE_URL in .env to the database you want)
  *
  *   Test without writes:
- *     pnpm db:ops:migrate -- --dry-run --only backfill-account-issuer
+ *     pnpm db:ops:migrate --dry-run --only backfill-account-issuer
  *
  *   Apply for real (local dev):
- *     pnpm db:ops:migrate -- --only backfill-account-issuer
+ *     pnpm db:ops:migrate --only backfill-account-issuer
  *
  *   Prod: merge PR — CI runs pnpm db:ops:migrate (no --dry-run)
  *

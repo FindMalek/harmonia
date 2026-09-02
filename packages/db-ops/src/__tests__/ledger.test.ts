@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveMigrationAction } from "../ledger";
+import { isUndefinedTableError, resolveMigrationAction } from "../ledger";
 
 const NOW = new Date("2026-08-28T12:00:00.000Z");
 const STALE_MS = 30 * 60 * 1000;
@@ -84,5 +84,32 @@ describe("resolveMigrationAction", () => {
 				STALE_MS,
 			),
 		).toBe("run");
+	});
+});
+
+describe("isUndefinedTableError", () => {
+	it("matches a bare pg error with code 42P01", () => {
+		expect(isUndefinedTableError({ code: "42P01" })).toBe(true);
+	});
+
+	it("matches a DrizzleQueryError wrapping the pg error in .cause", () => {
+		// drizzle-orm wraps the underlying pg driver error instead of
+		// surfacing its `code` directly on the thrown error.
+		expect(
+			isUndefinedTableError({
+				message: "Failed query",
+				cause: { code: "42P01" },
+			}),
+		).toBe(true);
+	});
+
+	it("does not match an unrelated error code", () => {
+		expect(isUndefinedTableError({ code: "23505" })).toBe(false);
+	});
+
+	it("does not match non-object values", () => {
+		expect(isUndefinedTableError(null)).toBe(false);
+		expect(isUndefinedTableError("boom")).toBe(false);
+		expect(isUndefinedTableError(undefined)).toBe(false);
 	});
 });
