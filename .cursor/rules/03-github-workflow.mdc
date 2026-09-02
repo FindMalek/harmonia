@@ -39,3 +39,7 @@ Two transitions have no built-in trigger and are your responsibility:
 2. **Review feedback loops** are handled automatically by `.github/workflows/project-review-status.yml` (changes requested → `In progress`, approved/resolved → `In review`). If that workflow is down or you're resolving feedback outside a formal PR review (e.g. comments from the user directly), move it yourself using the same script with `"In progress"` / `"In review"`.
 
 `scripts/gh-project-status.sh` and `scripts/gh-project-status-for-pr.sh` are the only supported way to touch project status from the command line — they resolve the correct project item and field/option IDs for project #7. Don't hand-roll `gh project item-edit` calls elsewhere.
+
+## PR assignees
+
+`.github/workflows/pr-auto-assign.yml` assigns the PR author on open, and adds anyone whose commits land on the branch afterward, automatically. You don't need to set assignees by hand.
