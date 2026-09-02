@@ -92,6 +92,12 @@ export async function listLedgerRows(dbClient: Db): Promise<OpsLedgerRow[]> {
 	return (result.rows as Record<string, unknown>[]).map(mapLedgerRow);
 }
 
+export function isUndefinedTableError(err: unknown): boolean {
+	if (!err || typeof err !== "object") return false;
+	if ("code" in err && err.code === "42P01") return true;
+	return "cause" in err && isUndefinedTableError(err.cause);
+}
+
 export async function getLedgerRowSafe(
 	dbClient: Db,
 	name: string,
@@ -99,12 +105,7 @@ export async function getLedgerRowSafe(
 	try {
 		return await getLedgerRow(dbClient, name);
 	} catch (err) {
-		if (
-			err &&
-			typeof err === "object" &&
-			"code" in err &&
-			err.code === "42P01"
-		) {
+		if (isUndefinedTableError(err)) {
 			return null;
 		}
 		throw err;

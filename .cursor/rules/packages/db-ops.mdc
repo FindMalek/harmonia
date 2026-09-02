@@ -22,7 +22,7 @@ alwaysApply: false
 ```bash
 pnpm db:ops:generate my-fix-name   # scaffold YYYYMMDDHHmmss-my-fix-name.ts
 pnpm db:ops:migrate                # run pending/failed ops (local + prod CI)
-pnpm db:ops:migrate -- --dry-run --only my-fix   # test without writes or ledger
+pnpm db:ops:migrate --dry-run --only my-fix      # test without writes or ledger
 pnpm db:ops:status                 # show ledger vs migration files
 ```
 
