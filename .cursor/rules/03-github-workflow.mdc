@@ -1,0 +1,41 @@
+---
+description: Issue/branch/PR linking and Sonaraem project board status workflow
+alwaysApply: true
+---
+
+# GitHub Issue, Branch, and Project Status Workflow
+
+Applies whenever you start work on a tracked issue, create a branch, or open a PR in this repo. All work is tracked on the **Sonaraem** GitHub Project (project #7, owner `FindMalek`, https://github.com/users/FindMalek/projects/7).
+
+## Branch creation — always link via the issue, never by hand
+
+The single most important rule here: **never create a working branch manually.** Always create it from the issue so GitHub links the branch (and later the PR) to it automatically:
+
+```bash
+gh issue develop <issue-number> --checkout
+```
+
+This generates the branch name for you and registers the branch in the issue's "Development" panel. A PR opened from that branch is then auto-linked to the issue, and merging it into `main` auto-closes the issue — no manual `Closes #<n>` needed.
+
+`gh issue develop` always creates a *new* branch — it cannot retroactively link one that already exists. If you're picking up a branch that wasn't created this way, don't try to force a link; just add `Closes #<issue-number>` to the PR body when you open the PR so it still links and auto-closes on merge. But default to `gh issue develop` from the start so this fallback is rarely needed.
+
+## Project board status
+
+Statuses on the board, in order: `Backlog` → `Ready` → `In progress` → `In review` → `Done` (plus `On hold` as a side state).
+
+Most of the mechanical transitions are handled by the project's built-in workflows (already enabled — do not re-implement them):
+
+- **Item added to project** — new issues land on the board automatically.
+- **Pull request linked to issue** — moves the issue to `In review` once a linked PR exists (which is exactly why the branch-linking step above matters).
+- **Pull request merged** — moves the item to `Done`.
+- **Item closed / Auto-close issue** — closes the issue and reflects it on the board.
+
+Two transitions have no built-in trigger and are your responsibility:
+
+1. **Starting work on an issue.** The moment you begin implementation (after creating the linked branch), move it to `In progress`:
+   ```bash
+   scripts/gh-project-status.sh <issue-number> "In progress"
+   ```
+2. **Review feedback loops** are handled automatically by `.github/workflows/project-review-status.yml` (changes requested → `In progress`, approved/resolved → `In review`). If that workflow is down or you're resolving feedback outside a formal PR review (e.g. comments from the user directly), move it yourself using the same script with `"In progress"` / `"In review"`.
+
+`scripts/gh-project-status.sh` and `scripts/gh-project-status-for-pr.sh` are the only supported way to touch project status from the command line — they resolve the correct project item and field/option IDs for project #7. Don't hand-roll `gh project item-edit` calls elsewhere.

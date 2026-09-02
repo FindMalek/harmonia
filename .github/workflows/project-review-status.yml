@@ -1,0 +1,35 @@
+name: Project review status sync
+
+# The Sonaraem project's built-in workflows already handle "PR linked to issue"
+# -> In review, "PR merged" -> Done, and issue auto-close. This workflow covers
+# the one transition GitHub Projects has no built-in trigger for: bouncing an
+# issue between In progress and In review as review feedback comes in and gets
+# resolved.
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  sync-status:
+    if: github.event.review.state == 'changes_requested' || github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Changes requested -> In progress
+        if: github.event.review.state == 'changes_requested'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: ./scripts/gh-project-status-for-pr.sh ${{ github.event.pull_request.number }} "In progress"
+
+      - name: Approved -> In review
+        if: github.event.review.state == 'approved'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: ./scripts/gh-project-status-for-pr.sh ${{ github.event.pull_request.number }} "In review"
