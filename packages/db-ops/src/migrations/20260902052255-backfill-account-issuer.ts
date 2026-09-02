@@ -5,27 +5,13 @@
  *
  * WHAT
  *   Backfills account.issuer (added nullable in #350) on every pre-existing
- *   row. Without this, better-auth 1.7 can't find any account created before
- *   the column existed — it looks accounts up by (issuer, accountId), and a
- *   NULL issuer never matches the value it computes at request time. That
- *   breaks both Spotify sign-in/re-auth (error=account_not_linked) and the
- *   admin email/password login, for every existing user, not just new ones.
+ *   row, fixing account_not_linked on sign-in for accounts created before
+ *   that column existed (#351). Value matches better-auth 1.7's own
+ *   derivation exactly (cross-checked against the installed
+ *   better-auth@1.7.2 source): providerId "credential" -> "local:credential",
+ *   any other providerId -> "local:oauth:" + encodeURIComponent(providerId).
  *
- *   Value written matches better-auth's own internal derivation exactly
- *   (verified against the installed better-auth@1.7.2 source — see
- *   createLocalAccountIssuer/createOAuthAccountIssuer in
- *   @better-auth/core's db/schema/account.mjs, and every call site that
- *   reads issuer back: oauth2/account-key.mjs, oauth2/link-account.mjs,
- *   api/routes/{sign-up,sign-in,password}.mjs, plugins/admin/routes.mjs):
- *     - providerId "credential" (email/password, incl. the admin account)
- *         -> "local:credential"
- *     - any other providerId (OAuth, e.g. "spotify")
- *         -> "local:oauth:" + encodeURIComponent(providerId)
- *   This repo only ever writes those two providerId values (see
- *   packages/auth/src/index.ts), but the encode step keeps this correct if
- *   a provider id ever contains characters requiring escaping.
- *
- *   Part of #349. Deliberately data-only: the follow-up NOT NULL + unique
+ *   Part of #349. Data-only — the follow-up NOT NULL + unique
  *   (issuer, accountId) index is a separate Drizzle migration once this is
  *   confirmed clean in prod (see the collision check this migration logs).
  *
@@ -62,10 +48,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 
 import type { DbOpsContext } from "../types";
 
-/**
- * Mirrors better-auth 1.7's own issuer derivation exactly — see the file
- * header for every call site this was cross-checked against.
- */
+// Mirrors better-auth 1.7's own issuer derivation exactly (see file header).
 function computeIssuer(providerId: string): string {
 	return providerId === "credential"
 		? "local:credential"
