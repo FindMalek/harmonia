@@ -22,6 +22,15 @@ Follow these rules for all code generation, edits, and reviews in this repositor
 - `apps/dashboard/**` → `.cursor/rules/apps/dashboard.mdc`
 - `apps/web/**` → `.cursor/rules/apps/web.mdc`
 - `packages/**` → `.cursor/rules/packages/00-package-index.mdc` plus specific package rule
+- Issue/branch/PR work → `.cursor/rules/03-github-workflow.mdc`
+
+## GitHub issue, branch, and project status workflow
+
+See `.cursor/rules/03-github-workflow.mdc` for the full rule. Summary:
+
+- Never create a branch by hand. Always `gh issue develop <issue-number> --checkout` so the branch, and later the PR, auto-link to the issue and the issue auto-closes on merge.
+- When you start work on an issue, move it to `In progress` on the Sonaraem project (#7) with `scripts/gh-project-status.sh <issue-number> "In progress"`.
+- Everything else (issue added → board, PR linked → In review, review feedback bouncing between In progress/In review, PR merged → Done, issue closed) is automated by the project's built-in workflows plus `.github/workflows/project-review-status.yml` — don't hand-roll it.
 
 ## Hard rules
 
