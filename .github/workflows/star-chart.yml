@@ -24,3 +24,7 @@ jobs:
         uses: jal-co/shieldcn@v1
         with:
           color: 18181b
+          commit-message: |
+            chore: update star chart [skip ci]
+
+            Co-Authored-By: FindMalek <hi@findmalek.com>
