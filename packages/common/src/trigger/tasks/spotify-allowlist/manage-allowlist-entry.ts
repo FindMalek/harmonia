@@ -12,12 +12,34 @@ import {
 	removeAllowlistUser,
 	scrapeAllowlistEmails,
 } from "../../../services/spotify-allowlist/dashboard-automation";
+import { sendAllowlistAutomationFailedEmailTask } from "../emails/send-allowlist-automation-failed";
 
 const USERS_URL = () =>
 	`https://developer.spotify.com/dashboard/${env.SONARAEM_SPOTIFY_CLIENT_ID}/users`;
 
 // No login automation yet (needs Spotify's login/OTP DOM) — a session must already exist.
 export class AllowlistAutomationError extends Error {}
+
+// Fire-and-forget: an alerting failure must never mask the automation
+// failure that triggered it.
+async function alertAdmin(
+	targetEmail: string,
+	action: "add" | "remove",
+	err: unknown,
+) {
+	try {
+		await sendAllowlistAutomationFailedEmailTask.trigger({
+			targetEmail,
+			action,
+			errorMessage: err instanceof Error ? err.message : String(err),
+		});
+	} catch (alertErr) {
+		logger.error(
+			{ alertErr },
+			"Failed to enqueue Spotify allowlist failure alert",
+		);
+	}
+}
 
 export const manageAllowlistEntryTask = task({
 	id: "spotify-allowlist-manage-entry",
@@ -31,9 +53,11 @@ export const manageAllowlistEntryTask = task({
 	}) => {
 		const sessionState = await loadAllowlistSession();
 		if (!sessionState) {
-			throw new AllowlistAutomationError(
-				"No saved Spotify allowlist session — log in manually once to seed one (login automation isn't built yet)",
+			const missingSessionErr = new AllowlistAutomationError(
+				"No saved Spotify allowlist session - log in manually once to seed one (login automation isn't built yet)",
 			);
+			await alertAdmin(email, action, missingSessionErr);
+			throw missingSessionErr;
 		}
 
 		const browser = await chromium.launch({ headless: true });
@@ -89,6 +113,7 @@ export const manageAllowlistEntryTask = task({
 				},
 				"Spotify allowlist automation failed",
 			);
+			await alertAdmin(email, action, err);
 			throw err;
 		} finally {
 			await browser.close();
