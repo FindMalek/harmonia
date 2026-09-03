@@ -80,6 +80,9 @@
 		"./trigger/tasks/emails/poll-spotify-reauth-reminders": {
 			"default": "./src/trigger/tasks/emails/poll-spotify-reauth-reminders.ts"
 		},
+		"./trigger/tasks/spotify-allowlist/spike-dashboard-reach": {
+			"default": "./src/trigger/tasks/spotify-allowlist/spike-dashboard-reach.ts"
+		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
 		},
@@ -133,6 +136,7 @@
 		"drizzle-orm": "catalog:",
 		"p-limit": "^7.3.1",
 		"p-retry": "^8.0.0",
+		"playwright": "catalog:",
 		"resend": "catalog:",
 		"zod": "catalog:"
 	},
