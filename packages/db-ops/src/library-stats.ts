@@ -9,7 +9,7 @@ const repoRoot = path.resolve(__dirname, "../../..");
 
 dotenv.config({ path: path.join(repoRoot, ".env") });
 
-const { db } = await import("@sonaraem/db");
+const { createSessionDb } = await import("./lib/create-session-db");
 const { playlist } = await import("@sonaraem/db/schema/playlist");
 const { track } = await import("@sonaraem/db/schema/track");
 const { trackAnalysis } = await import("@sonaraem/db/schema/track-analysis");
@@ -60,20 +60,28 @@ function readExistingCounts(content: string): {
 	};
 }
 
-const [embeddedRows, taggedRows, generatedRows] = await Promise.all([
-	db.select({ total: count() }).from(track).where(isNotNull(track.embedding)),
-	db
-		.select({ total: countDistinct(trackAnalysis.trackId) })
-		.from(trackAnalysis),
-	db
-		.select({ total: count() })
-		.from(playlist)
-		.where(eq(playlist.isGenerated, true)),
-]);
+const { db, release } = await createSessionDb();
+let tracksEmbedded: number;
+let tracksTagged: number;
+let playlistsGenerated: number;
+try {
+	const [embeddedRows, taggedRows, generatedRows] = await Promise.all([
+		db.select({ total: count() }).from(track).where(isNotNull(track.embedding)),
+		db
+			.select({ total: countDistinct(trackAnalysis.trackId) })
+			.from(trackAnalysis),
+		db
+			.select({ total: count() })
+			.from(playlist)
+			.where(eq(playlist.isGenerated, true)),
+	]);
 
-const tracksEmbedded = embeddedRows[0]?.total ?? 0;
-const tracksTagged = taggedRows[0]?.total ?? 0;
-const playlistsGenerated = generatedRows[0]?.total ?? 0;
+	tracksEmbedded = embeddedRows[0]?.total ?? 0;
+	tracksTagged = taggedRows[0]?.total ?? 0;
+	playlistsGenerated = generatedRows[0]?.total ?? 0;
+} finally {
+	await release();
+}
 
 const readme = fs.readFileSync(README_PATH, "utf-8");
 const existingCounts = readExistingCounts(readme);
