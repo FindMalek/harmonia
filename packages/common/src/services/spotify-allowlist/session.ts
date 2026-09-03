@@ -1,0 +1,40 @@
+import { db } from "@sonaraem/db";
+import { spotifyAllowlistSession } from "@sonaraem/db/schema/spotify-allowlist";
+import { eq } from "drizzle-orm";
+
+import { decryptSessionState, encryptSessionState } from "./crypto";
+
+const SESSION_ROW_ID = 1;
+
+export async function saveAllowlistSession(state: string): Promise<void> {
+	const { ciphertext, iv, authTag } = encryptSessionState(state);
+
+	await db
+		.insert(spotifyAllowlistSession)
+		.values({ id: SESSION_ROW_ID, ciphertext, iv, authTag })
+		.onConflictDoUpdate({
+			target: spotifyAllowlistSession.id,
+			set: { ciphertext, iv, authTag },
+		});
+}
+
+export async function loadAllowlistSession(): Promise<string | null> {
+	const [row] = await db
+		.select()
+		.from(spotifyAllowlistSession)
+		.where(eq(spotifyAllowlistSession.id, SESSION_ROW_ID));
+
+	if (!row) return null;
+
+	try {
+		return decryptSessionState(row);
+	} catch {
+		return null;
+	}
+}
+
+export async function clearAllowlistSession(): Promise<void> {
+	await db
+		.delete(spotifyAllowlistSession)
+		.where(eq(spotifyAllowlistSession.id, SESSION_ROW_ID));
+}

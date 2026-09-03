@@ -267,6 +267,13 @@
 			"when": 1788426085291,
 			"tag": "0037_even_madelyne_pryor",
 			"breakpoints": true
+		},
+		{
+			"idx": 38,
+			"version": "7",
+			"when": 1788432498908,
+			"tag": "0038_chubby_sally_floyd",
+			"breakpoints": true
 		}
 	]
 }

@@ -115,3 +115,15 @@ export const spotifyOtpRequest = pgTable(
 		index("spotify_otp_request_requested_at_idx").on(table.requestedAt),
 	],
 );
+
+// Single row (id always 1) holding the encrypted Playwright session for the one automation account.
+export const spotifyAllowlistSession = pgTable("spotify_allowlist_session", {
+	id: integer("id").primaryKey(),
+	ciphertext: text("ciphertext").notNull(),
+	iv: text("iv").notNull(),
+	authTag: text("auth_tag").notNull(),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull(),
+});

@@ -13,3 +13,8 @@ export {
 	tryAcquireSlot,
 	yieldCheck,
 } from "./queue";
+export {
+	clearAllowlistSession,
+	loadAllowlistSession,
+	saveAllowlistSession,
+} from "./session";
