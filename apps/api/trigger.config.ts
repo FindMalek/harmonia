@@ -6,6 +6,7 @@ export default defineConfig({
 		process.env.SONARAEM_TRIGGER_PROJECT_REF ??
 		process.env.TRIGGER_PROJECT_REF ??
 		"",
+	runtime: "node-24",
 	dirs: ["./src/trigger"],
 	maxDuration: 1800,
 	retries: {
