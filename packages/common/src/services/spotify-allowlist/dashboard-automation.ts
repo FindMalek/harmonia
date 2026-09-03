@@ -23,6 +23,11 @@ export async function addAllowlistUser(
 	await page.locator("#name").fill(email.split("@")[0] ?? email);
 	await page.locator("#email").fill(email);
 	await page.locator(`form button[type="submit"]`).click();
+	// The dialog only closes once Spotify's add-user request resolves — waiting
+	// for it to disappear is what separates "submitted" from "actually landed".
+	// If it's still open at the timeout, submission was rejected (validation,
+	// cap reached, etc.) rather than merely slow.
+	await page.locator("#email").waitFor({ state: "hidden", timeout: 15_000 });
 }
 
 export async function removeAllowlistUser(
@@ -42,6 +47,7 @@ export async function removeAllowlistUser(
 
 		await row.getByRole("button", { name: "User options" }).click();
 		await page.getByRole("button", { name: "Remove user" }).click();
+		await row.waitFor({ state: "detached", timeout: 15_000 });
 		return;
 	}
 

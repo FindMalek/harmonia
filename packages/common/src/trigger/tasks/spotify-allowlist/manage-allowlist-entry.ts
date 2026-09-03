@@ -67,6 +67,10 @@ export const manageAllowlistEntryTask = task({
 			const confirmed = action === "add" ? present : !present;
 
 			if (!confirmed) {
+				logger.error(
+					{ email, action, scrapedEmails: emails },
+					"Allowlist re-scrape did not confirm the mutation",
+				);
 				throw new AllowlistAutomationError(
 					`Re-scrape didn't confirm "${action}" for ${email} — the dashboard's DOM may have changed`,
 				);
