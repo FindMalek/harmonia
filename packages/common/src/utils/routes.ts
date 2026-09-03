@@ -24,6 +24,12 @@ export const ADMIN_ROUTES = {
 		icon: "message",
 		isNav: true,
 	},
+	spotifyLoginRelay: {
+		path: "/spotify-login-relay",
+		label: "Spotify Login",
+		icon: "key",
+		isNav: true,
+	},
 	costs: {
 		path: "/costs",
 		label: "Costs",
