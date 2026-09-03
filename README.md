@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/FindMalek/sonaraem/commits/main">
-    <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/FindMalek/sonaraem.svg?variant=secondary&mode=dark&color=18181b" />
+  <a href="https://github.com/FindMalek/sonaraem">
+    <img alt="Repo stats" src="https://shieldcn.dev/group/github/last-commit/FindMalek/sonaraem+github/stars/FindMalek/sonaraem+badge/license-MIT-18181b.svg?variant=secondary&mode=dark&color=18181b" />
   </a>
-  <a href="#license">
-    <img alt="License: MIT" src="https://shieldcn.dev/badge/license-MIT-18181b.svg?variant=secondary&mode=dark" />
-  </a>
+</p>
+
+<p align="center">
   <img alt="Next.js" src="https://shieldcn.dev/badge/-Next.js-18181b.svg?logo=nextdotjs&variant=secondary&mode=dark" />
   <img alt="TypeScript" src="https://shieldcn.dev/badge/-TypeScript-18181b.svg?logo=typescript&variant=secondary&mode=dark" />
   <img alt="Drizzle ORM" src="https://shieldcn.dev/badge/-Drizzle-18181b.svg?logo=drizzle&variant=secondary&mode=dark" />
@@ -42,6 +42,10 @@
 | Clustering | DBSCAN (`density-clustering`) |
 | Monorepo | pnpm + Turborepo |
 | Formatting | Biome |
+
+## Library Stats
+
+Snapshot of pipeline progress, refreshed every 3 days — see [STATS.md](./STATS.md).
 
 ## Repo Structure
 
@@ -136,6 +140,17 @@ All variables are prefixed `SONARAEM_` (server) or `NEXT_PUBLIC_SONARAEM_` (clie
 - `SONARAEM_TRIGGER_SECRET_KEY` / `SONARAEM_TRIGGER_PROJECT_REF` — [cloud.trigger.dev](https://cloud.trigger.dev)
 
 **Production note:** API rate limits are in-memory per process. Use Redis (or similar) before running multiple API instances.
+
+## Star History
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/shieldcn/star-chart-dark.svg">
+  <img alt="Star history" src=".github/shieldcn/star-chart-light.svg">
+</picture>
+
+## Contributors
+
+[![Contributors](https://shieldcn.dev/contributors/FindMalek/sonaraem.svg?theme=violet)](https://github.com/FindMalek/sonaraem/graphs/contributors)
 
 ## Contributing
 
