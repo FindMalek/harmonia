@@ -1,4 +1,5 @@
 import { db } from "@sonaraem/db";
+import { user } from "@sonaraem/db/schema/auth";
 import { pipelineRun } from "@sonaraem/db/schema/pipeline-run";
 import { logger } from "@sonaraem/logger";
 import { wait } from "@trigger.dev/sdk";
@@ -9,6 +10,7 @@ import {
 	releaseSlot,
 	tryAcquireSlot,
 } from "../../services/spotify-allowlist";
+import { manageAllowlistEntryTask } from "../tasks/spotify-allowlist/manage-allowlist-entry";
 
 const POLL_INTERVAL_SECONDS = 10;
 // Comfortably under queue.ts's 30-min DEFAULT_OCCUPIED_TIMEOUT_MS so a waiting stage never races timeoutReclaim.
@@ -27,6 +29,19 @@ async function priorityForRun(runId: number): Promise<"manual" | "cron"> {
 		.from(pipelineRun)
 		.where(eq(pipelineRun.id, runId));
 	return run?.triggeredBy === "cron" ? "cron" : "manual";
+}
+
+async function getUserEmail(userId: string): Promise<string> {
+	const [row] = await db
+		.select({ email: user.email })
+		.from(user)
+		.where(eq(user.id, userId));
+	if (!row) {
+		throw new Error(
+			`User ${userId} not found while acquiring an allowlist slot`,
+		);
+	}
+	return row.email;
 }
 
 // Holds a Spotify allowlist slot for `work` — a busy pool is a wait state, not a failure, so this durably polls until one frees up.
@@ -58,9 +73,47 @@ export async function withAllowlistSlot<T>(
 		throw new AllowlistSlotTimeoutError();
 	}
 
+	const email = await getUserEmail(userId);
+
 	try {
-		return await work();
+		await manageAllowlistEntryTask
+			.triggerAndWait({ email, action: "add" })
+			.unwrap();
+	} catch (err) {
+		// Never actually landed on the real dashboard — give the slot straight
+		// back rather than holding it occupied for timeoutReclaim to notice.
+		await releaseSlot(slotId);
+		throw err;
+	}
+
+	let result: T;
+	try {
+		result = await work();
+	} catch (workErr) {
+		try {
+			await manageAllowlistEntryTask
+				.triggerAndWait({ email, action: "remove" })
+				.unwrap();
+		} catch (removeErr) {
+			// Don't mask the real failure (`work` itself) with a cleanup failure —
+			// manageAllowlistEntryTask already alerts on this independently.
+			logger.error(
+				{ userId, email, removeErr },
+				"Failed to remove Spotify allowlist entry after a failed stage",
+			);
+		} finally {
+			await releaseSlot(slotId);
+		}
+		throw workErr;
+	}
+
+	try {
+		await manageAllowlistEntryTask
+			.triggerAndWait({ email, action: "remove" })
+			.unwrap();
 	} finally {
 		await releaseSlot(slotId);
 	}
+
+	return result;
 }
