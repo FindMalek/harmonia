@@ -83,6 +83,18 @@ Import `logger` from `@sonaraem/logger` in every task — never the Trigger.dev 
 pnpm trigger:dev   # or pnpm dev:api (includes trigger via concurrently)
 ```
 
+## External Resource Gating: Spotify Allowlist Worker (#290)
+
+Spotify's Dev Mode allowlist caps the app at 5 accounts total, with no public API to manage it — only a browser-driven Developer Dashboard. `packages/common/src/services/spotify-allowlist/` automates churn through that cap. Reuse these patterns for any future integration against a scarce, UI-only external resource:
+
+- **Playwright in a task**: `apps/api/trigger.config.ts` registers `@trigger.dev/build/extensions/playwright` so tasks can drive a real Chromium instance. Keep Playwright tasks isolated from the organize pipeline stages above — they have a different failure mode (DOM drift on someone else's site, not our own data).
+- **Slot/queue for a hard cap**: `spotify_allowlist_slot` (4 usable slots, 1 reserved for admin) + `packages/common/src/services/spotify-allowlist/queue.ts` (`enqueue`, `tryAcquireSlot`, `releaseSlot`) gate access with `SELECT ... FOR UPDATE SKIP LOCKED` and a priority field (manual requests jump cron-enqueued ones). `withAllowlistSlot(userId, runId, work)` wraps only the Spotify-calling portion of a stage, never the whole task, to keep slot hold time minimal.
+- **Encrypted session persistence**: `spotify_allowlist_session` holds the automation account's Playwright storage state, AES-256-GCM encrypted (`SONARAEM_SPOTIFY_ALLOWLIST_SESSION_KEY`). Every automated login tries the saved session first; a fresh login is the fallback path, not the default.
+- **Human-in-the-loop relay for un-automatable steps**: when a step can't be scripted (e.g. an emailed OTP), write a pending-request row (`spotify_otp_request`), poll it with a bounded timeout, and surface it on a small internal admin page instead of blocking or guessing. Fail loud and alert on timeout — never retry blindly into a UI that changed.
+- **Confirm, don't assume**: after any DOM mutation (add/remove), re-scrape the page to confirm it landed before returning success.
+
+Remaining scope not yet covered by this pattern: gating the OAuth `/authorize` redirect itself on slot acquisition during invite redemption (`apps/dashboard/src/app/api/redeem-invite/route.ts`) — tracked separately as #372.
+
 ## LLM Keys in Tasks
 
 Never construct a provider client (`createGroq`, `createOpenAI`, etc.) directly in a task or service — resolve models through `@sonaraem/ai-provider`'s `getAIModel(task)` / `getModelId(task)`, and gate on `isProviderConfigured(task)` instead of checking a specific env var. Each task is pinned to a fixed provider via `TASK_PROVIDER` in `packages/ai-provider/src/models.ts` — not a global runtime switch (classification/clusterMetadata → `groq`, playlistNaming → `concentrate`, as of #335). Whichever credential a task's assigned provider needs (`SONARAEM_GROQ_API_KEY` / `SONARAEM_CONCENTRATE_API_KEY`) must be set in the Trigger.dev dashboard for each deployed environment, same as any other var consumed inside a task — see `.cursor/rules/packages/env.mdc` § Adding a New Var, step 7. For provider credentials, task code reads `SONARAEM_*` variables and never bare provider-SDK names like `GROQ_API_KEY` — `TRIGGER_SECRET_KEY` (mapped from `SONARAEM_TRIGGER_SECRET_KEY`, see above) is an explicit exception, not the rule.
