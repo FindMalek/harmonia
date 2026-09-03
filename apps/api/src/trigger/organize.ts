@@ -12,6 +12,7 @@ export { organizePipeline } from "@sonaraem/common/trigger/tasks/organize";
 export { organizeWeeklyCronTask } from "@sonaraem/common/trigger/tasks/organize-weekly-cron";
 export { refreshLibrarySnapshotsTask } from "@sonaraem/common/trigger/tasks/spotify/refresh-library-snapshots";
 export { syncUserLibraryTask } from "@sonaraem/common/trigger/tasks/spotify/sync-user-library";
+export { manageAllowlistEntryTask } from "@sonaraem/common/trigger/tasks/spotify-allowlist/manage-allowlist-entry";
 export { spikeDashboardReachTask } from "@sonaraem/common/trigger/tasks/spotify-allowlist/spike-dashboard-reach";
 export { artistsStageTask } from "@sonaraem/common/trigger/tasks/stages/artists";
 export {

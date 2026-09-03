@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc --noEmit",
-		"test": "vitest run"
+		"test": "vitest run",
+		"bootstrap:spotify-allowlist-session": "tsx scripts/bootstrap-spotify-allowlist-session.ts"
 	},
 	"exports": {
 		".": {
@@ -83,6 +84,9 @@
 		"./trigger/tasks/spotify-allowlist/spike-dashboard-reach": {
 			"default": "./src/trigger/tasks/spotify-allowlist/spike-dashboard-reach.ts"
 		},
+		"./trigger/tasks/spotify-allowlist/manage-allowlist-entry": {
+			"default": "./src/trigger/tasks/spotify-allowlist/manage-allowlist-entry.ts"
+		},
 		"./services/brain": {
 			"default": "./src/services/brain/index.ts"
 		},
@@ -146,6 +150,7 @@
 	"devDependencies": {
 		"@sonaraem/config": "workspace:*",
 		"@types/density-clustering": "^1.3.3",
+		"tsx": "^4.23.13",
 		"typescript": "catalog:",
 		"vitest": "^4.1.11"
 	}
