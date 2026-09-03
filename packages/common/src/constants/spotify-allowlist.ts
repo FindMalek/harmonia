@@ -1,0 +1,2 @@
+export const DEFAULT_COOLDOWN_MS = 2 * 60 * 1000;
+export const DEFAULT_OCCUPIED_TIMEOUT_MS = 30 * 60 * 1000;

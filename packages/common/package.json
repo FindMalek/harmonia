@@ -95,6 +95,9 @@
 		"./services/organize": {
 			"default": "./src/services/organize/index.ts"
 		},
+		"./services/spotify-allowlist": {
+			"default": "./src/services/spotify-allowlist/index.ts"
+		},
 		"./services/waitlist": {
 			"default": "./src/services/waitlist/index.ts"
 		},
