@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/FindMalek/sonaraem/commits/main">
-    <img alt="Last commit" src="https://shieldcn.dev/github/last-commit/FindMalek/sonaraem.svg?variant=secondary&mode=dark&color=18181b" />
+  <a href="https://github.com/FindMalek/sonaraem">
+    <img alt="Repo stats" src="https://shieldcn.dev/group/github/last-commit/FindMalek/sonaraem+github/stars/FindMalek/sonaraem+badge/license-MIT-18181b.svg?variant=secondary&mode=dark&color=18181b" />
   </a>
-  <a href="#license">
-    <img alt="License: MIT" src="https://shieldcn.dev/badge/license-MIT-18181b.svg?variant=secondary&mode=dark" />
-  </a>
+</p>
+
+<p align="center">
   <img alt="Next.js" src="https://shieldcn.dev/badge/-Next.js-18181b.svg?logo=nextdotjs&variant=secondary&mode=dark" />
   <img alt="TypeScript" src="https://shieldcn.dev/badge/-TypeScript-18181b.svg?logo=typescript&variant=secondary&mode=dark" />
   <img alt="Drizzle ORM" src="https://shieldcn.dev/badge/-Drizzle-18181b.svg?logo=drizzle&variant=secondary&mode=dark" />
@@ -18,6 +18,14 @@
 </p>
 
 > AI-powered music organization — sync your Spotify library, classify every track, and auto-generate playlists by mood, theme, and vibe.
+
+<!-- STATS:START -->
+<!-- STATS:DATA tracksEmbedded=0 tracksTagged=0 playlistsGenerated=0 -->
+<p align="center">
+  <img alt="Library stats" src="https://shieldcn.dev/group/badge/Tracks_embedded-0-18181b+badge/Tracks_tagged-0-18181b+badge/Playlists_generated-0-18181b.svg?variant=secondary&mode=dark" />
+</p>
+<p align="center"><sub>Last updated: never</sub></p>
+<!-- STATS:END -->
 
 ## What it does
 
@@ -136,6 +144,17 @@ All variables are prefixed `SONARAEM_` (server) or `NEXT_PUBLIC_SONARAEM_` (clie
 - `SONARAEM_TRIGGER_SECRET_KEY` / `SONARAEM_TRIGGER_PROJECT_REF` — [cloud.trigger.dev](https://cloud.trigger.dev)
 
 **Production note:** API rate limits are in-memory per process. Use Redis (or similar) before running multiple API instances.
+
+## Star History
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/shieldcn/star-chart-dark.svg">
+  <img alt="Star history" src=".github/shieldcn/star-chart-light.svg">
+</picture>
+
+## Contributors
+
+[![Contributors](https://shieldcn.dev/contributors/FindMalek/sonaraem.svg?theme=violet)](https://github.com/FindMalek/sonaraem/graphs/contributors)
 
 ## Contributing
 
