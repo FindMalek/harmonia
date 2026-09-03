@@ -87,6 +87,9 @@
 		"./trigger/tasks/spotify-allowlist/spike-dashboard-reach": {
 			"default": "./src/trigger/tasks/spotify-allowlist/spike-dashboard-reach.ts"
 		},
+		"./trigger/tasks/spotify-allowlist/reclaim-allowlist-slots": {
+			"default": "./src/trigger/tasks/spotify-allowlist/reclaim-allowlist-slots.ts"
+		},
 		"./trigger/tasks/spotify-allowlist/manage-allowlist-entry": {
 			"default": "./src/trigger/tasks/spotify-allowlist/manage-allowlist-entry.ts"
 		},

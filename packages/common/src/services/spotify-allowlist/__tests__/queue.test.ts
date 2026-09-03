@@ -103,14 +103,14 @@ describe("queue", () => {
 	describe("tryAcquireSlot", () => {
 		it("refuses when the request is no longer waiting", async () => {
 			push([{ id: 1, userId: "u1", status: "active" }]); // request lookup
-			const result = await tryAcquireSlot(1);
+			const result = await tryAcquireSlot(1, "u1@example.com");
 			expect(result).toEqual({ acquired: false, reason: "not-your-turn" });
 		});
 
 		it("refuses when a higher-priority request is ahead in line", async () => {
 			push([{ id: 5, userId: "u1", status: "waiting" }]); // request lookup
 			push([{ id: 9 }]); // front-of-queue lookup — someone else
-			const result = await tryAcquireSlot(5);
+			const result = await tryAcquireSlot(5, "u1@example.com");
 			expect(result).toEqual({ acquired: false, reason: "not-your-turn" });
 		});
 
@@ -118,7 +118,7 @@ describe("queue", () => {
 			push([{ id: 5, userId: "u1", status: "waiting" }]); // request lookup
 			push([{ id: 5 }]); // front-of-queue lookup — this one
 			push([]); // no available slot
-			const result = await tryAcquireSlot(5);
+			const result = await tryAcquireSlot(5, "u1@example.com");
 			expect(result).toEqual({ acquired: false, reason: "no-slot-available" });
 		});
 
@@ -128,7 +128,7 @@ describe("queue", () => {
 			push([{ id: 2 }]); // available slot
 			push([]); // slot update
 			push([]); // request update
-			const result = await tryAcquireSlot(5);
+			const result = await tryAcquireSlot(5, "u1@example.com");
 			expect(result).toEqual({ acquired: true, slotId: 2 });
 		});
 	});
@@ -152,17 +152,23 @@ describe("queue", () => {
 
 	describe("timeoutReclaim", () => {
 		it("does nothing when no slots are stuck", async () => {
-			push([]); // stuck-slot lookup
-			const count = await timeoutReclaim();
-			expect(count).toBe(0);
-			expect(dbMock.transaction).not.toHaveBeenCalled();
+			push([]); // slot update...returning() finds nothing stuck
+			const reclaimed = await timeoutReclaim();
+			expect(reclaimed).toEqual([]);
+			expect(dbMock.transaction).toHaveBeenCalledTimes(1);
 		});
 
-		it("force-releases every stuck slot and fails its active request", async () => {
-			push([{ id: 1 }, { id: 2 }]); // stuck-slot lookup
-			push([], [], [], []); // 2 slots x (slot update + request update)
-			const count = await timeoutReclaim();
-			expect(count).toBe(2);
+		it("force-releases every stuck slot, fails its active request, and returns its email", async () => {
+			push([
+				{ id: 1, email: "a@example.com" },
+				{ id: 2, email: "b@example.com" },
+			]); // slot update...returning()
+			push([], []); // 2 x request update
+			const reclaimed = await timeoutReclaim();
+			expect(reclaimed).toEqual([
+				{ slotId: 1, email: "a@example.com" },
+				{ slotId: 2, email: "b@example.com" },
+			]);
 			expect(dbMock.transaction).toHaveBeenCalledTimes(1);
 		});
 	});

@@ -104,6 +104,7 @@ export type AcquireSlotResult =
 // Only succeeds if this request is both front-of-queue and a slot is free — that single check is the whole priority guarantee.
 export async function tryAcquireSlot(
 	requestId: number,
+	email: string,
 ): Promise<AcquireSlotResult> {
 	return await db.transaction(async (tx) => {
 		const [request] = await tx
@@ -150,13 +151,19 @@ export async function tryAcquireSlot(
 			.set({
 				status: "occupied",
 				userId: request.userId,
+				email,
 				occupiedAt: new Date(),
 			})
 			.where(eq(spotifyAllowlistSlot.id, slot.id));
 
 		await tx
 			.update(spotifyAllowlistQueueRequest)
-			.set({ status: "active", slotId: slot.id, activatedAt: new Date() })
+			.set({
+				status: "active",
+				slotId: slot.id,
+				email,
+				activatedAt: new Date(),
+			})
 			.where(eq(spotifyAllowlistQueueRequest.id, requestId));
 
 		return { acquired: true, slotId: slot.id };
@@ -177,6 +184,7 @@ export async function releaseSlot(
 			.set({
 				status: "cooldown",
 				userId: null,
+				email: null,
 				releasedAt: now,
 				cooldownUntil: new Date(now.getTime() + cooldownMs),
 			})
@@ -210,37 +218,42 @@ export async function reclaimExpiredCooldowns(): Promise<number> {
 	return updated.length;
 }
 
-// Sweeps slots stuck `occupied` past a timeout (worker crashed) — forces cooldown and fails the owning request.
+export type ReclaimedSlot = { slotId: number; email: string | null };
+
+// Sweeps slots stuck `occupied` past a timeout (worker crashed) — forces
+// cooldown and fails the owning request. A single guarded UPDATE (not a
+// select-then-update loop) so concurrent sweeps can't double-reclaim the same
+// slot. Returns the email each reclaimed slot was occupying — the caller
+// still owes that email a real removal from the Spotify dashboard, since a
+// crashed worker means it was added but never removed.
 export async function timeoutReclaim(
 	timeoutMs: number = DEFAULT_OCCUPIED_TIMEOUT_MS,
-): Promise<number> {
+): Promise<ReclaimedSlot[]> {
 	const cutoff = new Date(Date.now() - timeoutMs);
-
-	const stuckSlots = await db
-		.select({ id: spotifyAllowlistSlot.id })
-		.from(spotifyAllowlistSlot)
-		.where(
-			and(
-				eq(spotifyAllowlistSlot.status, "occupied"),
-				lt(spotifyAllowlistSlot.occupiedAt, cutoff),
-			),
-		);
-
-	if (stuckSlots.length === 0) return 0;
 	const now = new Date();
 
-	await db.transaction(async (tx) => {
-		for (const { id: slotId } of stuckSlots) {
-			await tx
-				.update(spotifyAllowlistSlot)
-				.set({
-					status: "cooldown",
-					userId: null,
-					releasedAt: now,
-					cooldownUntil: new Date(now.getTime() + DEFAULT_COOLDOWN_MS),
-				})
-				.where(eq(spotifyAllowlistSlot.id, slotId));
+	const reclaimed = await db.transaction(async (tx) => {
+		const updated = await tx
+			.update(spotifyAllowlistSlot)
+			.set({
+				status: "cooldown",
+				userId: null,
+				email: null,
+				releasedAt: now,
+				cooldownUntil: new Date(now.getTime() + DEFAULT_COOLDOWN_MS),
+			})
+			.where(
+				and(
+					eq(spotifyAllowlistSlot.status, "occupied"),
+					lt(spotifyAllowlistSlot.occupiedAt, cutoff),
+				),
+			)
+			.returning({
+				id: spotifyAllowlistSlot.id,
+				email: spotifyAllowlistSlot.email,
+			});
 
+		for (const { id: slotId } of updated) {
 			await tx
 				.update(spotifyAllowlistQueueRequest)
 				.set({
@@ -255,14 +268,18 @@ export async function timeoutReclaim(
 					),
 				);
 		}
+
+		return updated;
 	});
 
+	if (reclaimed.length === 0) return [];
+
 	logger.warn(
-		{ slotIds: stuckSlots.map((s) => s.id), timeoutMs },
+		{ slotIds: reclaimed.map((s) => s.id), timeoutMs },
 		"Force-reclaimed Spotify allowlist slots stuck past their occupied timeout",
 	);
 
-	return stuckSlots.length;
+	return reclaimed.map((s) => ({ slotId: s.id, email: s.email }));
 }
 
 // Stale or never-synced, not needing reauth, not already queued.

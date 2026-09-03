@@ -52,12 +52,13 @@ export async function withAllowlistSlot<T>(
 ): Promise<T> {
 	const priority = await priorityForRun(runId);
 	const { requestId } = await enqueue({ userId }, priority);
+	const email = await getUserEmail(userId);
 
 	let slotId: number | null = null;
 	const deadline = Date.now() + MAX_WAIT_SECONDS * 1000;
 
 	while (Date.now() < deadline) {
-		const result = await tryAcquireSlot(requestId);
+		const result = await tryAcquireSlot(requestId, email);
 		if (result.acquired) {
 			slotId = result.slotId;
 			break;
@@ -72,8 +73,6 @@ export async function withAllowlistSlot<T>(
 		);
 		throw new AllowlistSlotTimeoutError();
 	}
-
-	const email = await getUserEmail(userId);
 
 	try {
 		await manageAllowlistEntryTask

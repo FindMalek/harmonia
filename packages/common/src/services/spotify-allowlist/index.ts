@@ -3,6 +3,7 @@ export type {
 	AllowlistIdentity,
 	AllowlistPriority,
 	EnqueueResult,
+	ReclaimedSlot,
 } from "./queue";
 export {
 	enqueue,

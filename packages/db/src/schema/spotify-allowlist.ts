@@ -25,6 +25,10 @@ export const spotifyAllowlistSlot = pgTable(
 	{
 		id: serial("id").primaryKey(),
 		userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+		// Snapshot of the email actually added to the real dashboard for this
+		// occupancy — not re-derived from user.email, which can drift after the
+		// add. Lets a stuck-slot reclaim remove the exact entry it created.
+		email: text("email"),
 		status: allowlistSlotStatusEnum("status").notNull().default("available"),
 		occupiedAt: timestamp("occupied_at"),
 		releasedAt: timestamp("released_at"),
@@ -71,6 +75,10 @@ export const spotifyAllowlistQueueRequest = pgTable(
 		pipelineRunId: integer("pipeline_run_id").references(() => pipelineRun.id, {
 			onDelete: "set null",
 		}),
+		// Snapshot at activation time, kept permanently (unlike the slot's own
+		// email, which is cleared on release) — the historical record of which
+		// email this request actually put on the dashboard.
+		email: text("email"),
 		requestedAt: timestamp("requested_at").defaultNow().notNull(),
 		activatedAt: timestamp("activated_at"),
 		completedAt: timestamp("completed_at"),
