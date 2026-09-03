@@ -4,11 +4,14 @@
   <img alt="Sonaraem" src="./github.png" />
 </p>
 
+> AI-powered music organization — sync your Spotify library, classify every track, and auto-generate playlists by mood, theme, and vibe.
+
 <p align="center">
   <a href="https://github.com/FindMalek/sonaraem">
     <img alt="Repo stats" src="https://shieldcn.dev/group/github/last-commit/FindMalek/sonaraem+github/stars/FindMalek/sonaraem+badge/license-MIT-18181b.svg?variant=secondary&mode=dark&color=18181b" />
   </a>
 </p>
+
 
 <p align="center">
   <img alt="Next.js" src="https://shieldcn.dev/badge/-Next.js-18181b.svg?logo=nextdotjs&variant=secondary&mode=dark" />
@@ -17,7 +20,6 @@
   <img alt="Turborepo" src="https://shieldcn.dev/badge/-Turborepo-18181b.svg?logo=turborepo&variant=secondary&mode=dark" />
 </p>
 
-> AI-powered music organization — sync your Spotify library, classify every track, and auto-generate playlists by mood, theme, and vibe.
 
 <!-- STATS:START -->
 <!-- STATS:DATA tracksEmbedded=0 tracksTagged=0 playlistsGenerated=0 -->
