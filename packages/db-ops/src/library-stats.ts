@@ -15,7 +15,7 @@ const { track } = await import("@sonaraem/db/schema/track");
 const { trackAnalysis } = await import("@sonaraem/db/schema/track-analysis");
 const { count, countDistinct, eq, isNotNull } = await import("drizzle-orm");
 
-const STATS_PATH = path.join(repoRoot, "STATS.md");
+const README_PATH = path.join(repoRoot, "README.md");
 const STATS_COLOR = "18181b";
 const STATS_START = "<!-- STATS:START -->";
 const STATS_END = "<!-- STATS:END -->";
@@ -36,16 +36,15 @@ function renderStatsBlock(
 	return [
 		STATS_START,
 		`<!-- STATS:DATA tracksEmbedded=${tracksEmbedded} tracksTagged=${tracksTagged} playlistsGenerated=${playlistsGenerated} -->`,
-		`![Library stats](${badgeUrl})`,
-		"",
-		`_Last updated: ${lastUpdated}_`,
+		`<p align="center">`,
+		`  <img alt="Library stats" src="${badgeUrl}" />`,
+		"</p>",
+		`<p align="center"><sub>Last updated: ${lastUpdated}</sub></p>`,
 		STATS_END,
 	].join("\n");
 }
 
-function readExistingCounts(
-	content: string,
-): {
+function readExistingCounts(content: string): {
 	tracksEmbedded: number;
 	tracksTagged: number;
 	playlistsGenerated: number;
@@ -76,10 +75,8 @@ const tracksEmbedded = embeddedRows[0]?.total ?? 0;
 const tracksTagged = taggedRows[0]?.total ?? 0;
 const playlistsGenerated = generatedRows[0]?.total ?? 0;
 
-const existing = fs.existsSync(STATS_PATH)
-	? fs.readFileSync(STATS_PATH, "utf-8")
-	: null;
-const existingCounts = existing ? readExistingCounts(existing) : null;
+const readme = fs.readFileSync(README_PATH, "utf-8");
+const existingCounts = readExistingCounts(readme);
 
 if (
 	existingCounts &&
@@ -87,8 +84,14 @@ if (
 	existingCounts.tracksTagged === tracksTagged &&
 	existingCounts.playlistsGenerated === playlistsGenerated
 ) {
-	console.info("library-stats: counts unchanged, leaving STATS.md untouched.");
+	console.info("library-stats: counts unchanged, leaving README.md untouched.");
 	process.exit(0);
+}
+
+if (!readme.includes(STATS_START) || !readme.includes(STATS_END)) {
+	throw new Error(
+		`library-stats: README.md is missing the ${STATS_START}/${STATS_END} markers.`,
+	);
 }
 
 const lastUpdated = new Date().toISOString().slice(0, 10);
@@ -99,22 +102,12 @@ const block = renderStatsBlock(
 	lastUpdated,
 );
 
-const header = [
-	"# Library Stats",
-	"",
-	"Auto-generated snapshot of pipeline progress, refreshed every 3 days by [`library-stats.yml`](.github/workflows/library-stats.yml). Do not edit the block below by hand — it's overwritten on every run.",
-	"",
-].join("\n");
+const nextReadme = readme.replace(
+	new RegExp(`${STATS_START}[\\s\\S]*?${STATS_END}`),
+	block,
+);
 
-const nextContent =
-	existing && existing.includes(STATS_START) && existing.includes(STATS_END)
-		? existing.replace(
-				new RegExp(`${STATS_START}[\\s\\S]*?${STATS_END}`),
-				block,
-			)
-		: `${header}${block}\n`;
-
-fs.writeFileSync(STATS_PATH, nextContent);
+fs.writeFileSync(README_PATH, nextReadme);
 console.info(
-	`library-stats: wrote STATS.md (embedded=${tracksEmbedded}, tagged=${tracksTagged}, generated=${playlistsGenerated}).`,
+	`library-stats: updated README.md (embedded=${tracksEmbedded}, tagged=${tracksTagged}, generated=${playlistsGenerated}).`,
 );

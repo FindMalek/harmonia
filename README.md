@@ -19,6 +19,14 @@
 
 > AI-powered music organization — sync your Spotify library, classify every track, and auto-generate playlists by mood, theme, and vibe.
 
+<!-- STATS:START -->
+<!-- STATS:DATA tracksEmbedded=0 tracksTagged=0 playlistsGenerated=0 -->
+<p align="center">
+  <img alt="Library stats" src="https://shieldcn.dev/group/badge/Tracks_embedded-0-18181b+badge/Tracks_tagged-0-18181b+badge/Playlists_generated-0-18181b.svg?variant=secondary&mode=dark" />
+</p>
+<p align="center"><sub>Last updated: never</sub></p>
+<!-- STATS:END -->
+
 ## What it does
 
 1. **Sync** — pulls your full Spotify saved tracks + playlists
@@ -42,10 +50,6 @@
 | Clustering | DBSCAN (`density-clustering`) |
 | Monorepo | pnpm + Turborepo |
 | Formatting | Biome |
-
-## Library Stats
-
-Snapshot of pipeline progress, refreshed every 3 days — see [STATS.md](./STATS.md).
 
 ## Repo Structure
 
